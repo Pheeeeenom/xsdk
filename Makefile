@@ -3,6 +3,7 @@
 TOOLCHAIN ?= /usr/local/xenon/bin/xenon-
 CC := $(TOOLCHAIN)gcc
 AR := $(TOOLCHAIN)ar
+OBJDUMP := $(TOOLCHAIN)objdump
 PYTHON ?= python3
 
 BUILD := build
@@ -28,6 +29,7 @@ $(BUILD)/xsdk_test.xex: $(BUILD)/xsdk_test.elf tools/elf2xex.py
 
 $(BUILD)/xsdk_test.elf: $(BUILD)/sdk/crt0.o $(TEST_OBJECTS) $(BUILD)/libxsdk.a src/xsdk.ld
 	$(CC) $(LDFLAGS) -Wl,-Map,$(BUILD)/xsdk_test.map -o $@ $(BUILD)/sdk/crt0.o $(TEST_OBJECTS) $(LIBS)
+	$(OBJDUMP) -d $@ | $(PYTHON) tools/xenia_scan.py
 
 $(BUILD)/libxsdk.a: $(SDK_OBJECTS)
 	rm -f $@

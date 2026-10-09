@@ -18,7 +18,8 @@ layer that drives Xenos directly. Scope, sources and milestones are in SCOPE.md.
   The test log lands in its `cache\xsdk.log`, and `DbgPrint` output in its `xenia.log`.
 - Xenia skips instructions it doesn't implement, silently (xenia:src/xenia/cpu/ppc/ppc_emit_*.cc,
   `XEINSTRNOTIMPLEMENTED`). GCC emits one of them, `mcrf`; newlib's printf core uses it, so in Xenia every formatted
-  conversion gains two NUL bytes. Treat any Xenia result from code containing such instructions as unreliable.
+  conversion gains two NUL bytes. Each link runs `tools/xenia_scan.py`, which lists such instructions by function;
+  treat any Xenia result that goes through those functions as unreliable.
 
 ## Build
 
