@@ -75,6 +75,9 @@ def version(major, minor, build, qfe):
     return major << 28 | minor << 24 | build << 8 | qfe
 
 
+# Per-library import IDs; how they're derived is unknown (SynthXEX aee2b8c6 src/setdata/optheaders.c:159-167).
+LIBRARY_IDS = {"xboxkrnl.exe": 0x45DC17E0, "xam.xex": 0xFCA15C76}
+
 # The imports claim the final kernel, 2.0.17559.0; unverified on hardware.
 IMPORT_VERSION = version(2, 0, 17559, 0)
 IMPORT_VERSION_MIN = version(2, 0, 17559, 0)
@@ -192,12 +195,14 @@ def import_libraries_header(libraries):
 
     records = []
     for index, name in enumerate(names):
+        if name not in LIBRARY_IDS:
+            fail(f"no import ID known for {name}")
         table = []
         for entry in libraries[name]:
             table.append(entry["slot"])
             if entry["thunk"]:
                 table.append(entry["thunk"])
-        body = struct.pack(">IIIHH", 0, IMPORT_VERSION, IMPORT_VERSION_MIN, index, len(table))
+        body = struct.pack(">IIIHH", LIBRARY_IDS[name], IMPORT_VERSION, IMPORT_VERSION_MIN, index, len(table))
         body += struct.pack(f">{len(table)}I", *table)
         records.append(body)
 
