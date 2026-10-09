@@ -1,0 +1,11 @@
+# Kernel and XAM imports the SDK uses, one per line: library, ordinal, export name, argument count.
+# Ordinals come from xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_table.inc and xenia:src/xenia/kernel/xam/xam_table.inc.
+# Argument counts come from each export's shim in Xenia (xenia:src/xenia/kernel/xboxkrnl/*.cc, xam/*.cc).
+# Every argument is a 32-bit value; "..." marks variadic calls, which take integer and pointer arguments only.
+
+xboxkrnl.exe  0x003  DbgPrint                 ...
+xboxkrnl.exe  0x0CC  NtAllocateVirtualMemory  5
+xboxkrnl.exe  0x0CF  NtClose                  1
+xboxkrnl.exe  0x0D2  NtCreateFile             9
+xboxkrnl.exe  0x0FF  NtWriteFile              8
+xam.xex       0x1A9  XamLoaderTerminateTitle  0
