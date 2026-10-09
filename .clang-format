@@ -1,0 +1,27 @@
+# Run clang-format on every changed .c/.h file before committing.
+BasedOnStyle: LLVM
+Language: Cpp
+UseTab: ForContinuationAndIndentation
+IndentWidth: 4
+TabWidth: 4
+ContinuationIndentWidth: 4
+ColumnLimit: 120
+AlignAfterOpenBracket: DontAlign
+AlignOperands: DontAlign
+AlignConsecutiveMacros: Consecutive
+AlwaysBreakBeforeMultilineStrings: true
+BreakBeforeBraces: Linux
+IndentCaseLabels: false
+PointerAlignment: Right
+Cpp11BracedListStyle: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
+AlignEscapedNewlines: Left
+SortIncludes: CaseSensitive
+IncludeBlocks: Preserve
+MaxEmptyLinesToKeep: 1
+KeepEmptyLines:
+  AtStartOfBlock: false
