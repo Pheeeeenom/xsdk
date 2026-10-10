@@ -43,6 +43,30 @@ typedef struct {
 	uint32_t pad;
 } FILE_NETWORK_OPEN_INFORMATION;
 
+// One NtQueryDirectoryFile entry (xenia:src/xenia/kernel/xfile.h:36-49).
+typedef struct {
+	uint32_t next_entry_offset;
+	uint32_t file_index;
+	uint64_t creation_time;
+	uint64_t last_access_time;
+	uint64_t last_write_time;
+	uint64_t change_time;
+	uint64_t end_of_file;
+	uint64_t allocation_size;
+	uint32_t attributes;
+	uint32_t file_name_length;
+	char file_name[];
+} FILE_DIRECTORY_INFORMATION;
+
+// xenia:src/xenia/kernel/info/file.h:68-83
+typedef struct {
+	uint8_t delete_file;
+} FILE_DISPOSITION_INFORMATION;
+
+typedef struct {
+	uint64_t end_of_file;
+} FILE_END_OF_FILE_INFORMATION;
+
 // xenia:src/xenia/hid/input.h:57-72
 typedef struct {
 	uint16_t buttons;
@@ -65,10 +89,11 @@ typedef struct {
 	uint32_t context;
 } XAUDIO_RENDER_DRIVER_CLIENT;
 
-// xenia:src/xenia/xbox.h:39-61
+// xenia:src/xenia/xbox.h:39-67
 enum {
 	STATUS_SUCCESS = 0x00000000,
 	STATUS_TIMEOUT = 0x00000102,
+	STATUS_NO_MORE_FILES = (int32_t)0x80000006,
 	STATUS_NOT_IMPLEMENTED = (int32_t)0xC0000002,
 	STATUS_INVALID_HANDLE = (int32_t)0xC0000008,
 	STATUS_INVALID_PARAMETER = (int32_t)0xC000000D,
@@ -76,8 +101,18 @@ enum {
 	STATUS_END_OF_FILE = (int32_t)0xC0000011,
 	STATUS_NO_MEMORY = (int32_t)0xC0000017,
 	STATUS_ACCESS_DENIED = (int32_t)0xC0000022,
+	STATUS_OBJECT_NAME_INVALID = (int32_t)0xC0000033,
 	STATUS_OBJECT_NAME_NOT_FOUND = (int32_t)0xC0000034,
 	STATUS_OBJECT_NAME_COLLISION = (int32_t)0xC0000035,
+	STATUS_FILE_IS_A_DIRECTORY = (int32_t)0xC00000BA,
+};
+
+// File statuses Xenia doesn't list; the values are NT's.
+enum {
+	STATUS_OBJECT_PATH_NOT_FOUND = (int32_t)0xC000003A,
+	STATUS_SHARING_VIOLATION = (int32_t)0xC0000043,
+	STATUS_DIRECTORY_NOT_EMPTY = (int32_t)0xC0000101,
+	STATUS_NOT_A_DIRECTORY = (int32_t)0xC0000103,
 };
 
 // Win32 errors that XAM returns (xenia:src/xenia/xbox.h:86-100).
@@ -99,20 +134,30 @@ enum {
 	PAGE_READWRITE = 0x00000004,
 };
 
-// xenia:src/xenia/base/filesystem.h:64-73, src/xenia/vfs/entry.h:47-60, src/xenia/kernel/xboxkrnl/xboxkrnl_io.cc:30-40
+// xenia:src/xenia/base/filesystem.h:64-73, src/xenia/vfs/entry.h:47-73, src/xenia/kernel/xboxkrnl/xboxkrnl_io.cc:30-40
 enum {
 	GENERIC_READ = (int32_t)0x80000000,
 	GENERIC_WRITE = 0x40000000,
 	// Synchronous IO needs it (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_io.cc:152); the value is NT's.
 	SYNCHRONIZE = 0x00100000,
+	// Needed to mark a file for deletion; the value is NT's.
+	DELETE = 0x00010000,
+	FILE_ATTRIBUTE_DIRECTORY = 0x00000010,
 	FILE_ATTRIBUTE_NORMAL = 0x00000080,
 	FILE_OPEN = 1,
 	FILE_CREATE = 2,
 	FILE_OPEN_IF = 3,
 	FILE_OVERWRITE = 4,
 	FILE_OVERWRITE_IF = 5,
+	FILE_DIRECTORY_FILE = 0x00000001,
 	FILE_SYNCHRONOUS_IO_NONALERT = 0x00000020,
 	FILE_NON_DIRECTORY_FILE = 0x00000040,
+};
+
+// File information classes (xenia:src/xenia/kernel/info/file.h:19-55).
+enum {
+	FILE_DISPOSITION_INFORMATION_CLASS = 13,
+	FILE_END_OF_FILE_INFORMATION_CLASS = 20,
 	FILE_NETWORK_OPEN_INFORMATION_CLASS = 34,
 };
 
@@ -155,12 +200,19 @@ NTSTATUS NtCreateFile(HANDLE *handle, uint32_t desired_access, const OBJECT_ATTR
 	IO_STATUS_BLOCK *io_status, const uint64_t *allocation_size, uint32_t file_attributes, uint32_t share_access,
 	uint32_t creation_disposition, uint32_t create_options);
 NTSTATUS NtCreateSemaphore(HANDLE *semaphore, const OBJECT_ATTRIBUTES *attributes, int32_t count, int32_t limit);
+// file_name, a pattern, is read only when a scan starts (xenia:src/xenia/kernel/xfile.cc:50-71).
+NTSTATUS NtQueryDirectoryFile(HANDLE file, HANDLE event, void *apc_routine, void *apc_context,
+	IO_STATUS_BLOCK *io_status, FILE_DIRECTORY_INFORMATION *information, uint32_t length_bytes,
+	const ANSI_STRING *file_name, uint32_t restart_scan);
+NTSTATUS NtQueryFullAttributesFile(const OBJECT_ATTRIBUTES *attributes, FILE_NETWORK_OPEN_INFORMATION *information);
 NTSTATUS NtQueryInformationFile(
 	HANDLE file, IO_STATUS_BLOCK *io_status, void *information, uint32_t length_bytes, uint32_t information_class);
 NTSTATUS NtReadFile(HANDLE file, HANDLE event, void *apc_routine, void *apc_context, IO_STATUS_BLOCK *io_status,
 	void *buffer, uint32_t length_bytes, const uint64_t *byte_offset);
 NTSTATUS NtReleaseSemaphore(HANDLE semaphore, int32_t release_count, int32_t *previous_count);
 NTSTATUS NtSetEvent(HANDLE event, int32_t *previous_state);
+NTSTATUS NtSetInformationFile(HANDLE file, IO_STATUS_BLOCK *io_status, const void *information, uint32_t length_bytes,
+	uint32_t information_class);
 NTSTATUS NtWaitForSingleObjectEx(HANDLE object, uint32_t wait_mode, uint32_t alertable, const int64_t *timeout);
 NTSTATUS NtWriteFile(HANDLE file, HANDLE event, void *apc_routine, void *apc_context, IO_STATUS_BLOCK *io_status,
 	const void *buffer, uint32_t length_bytes, const uint64_t *byte_offset);

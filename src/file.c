@@ -1,3 +1,5 @@
+#include "file_private.h"
+
 #include <errno.h>
 #include <fcntl.h>
 #include <stdbool.h>
@@ -6,16 +8,16 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "path_private.h"
+#include "time_private.h"
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
 
-// newlib's file system calls on Nt*File; descriptors 0-2 are the console, and stdout and stderr go to the log.
+// newlib's descriptor calls on Nt*File; descriptors 0-2 are the console, and stdout and stderr go to the log.
 
 enum {
 	FILE_SLOTS = 32,
 	FIRST_FILE_FD = 3,
-	// NT's MAX_PATH.
-	PATH_BYTES = 260,
 };
 
 // A slot whose handle is being opened.
@@ -25,26 +27,39 @@ typedef struct {
 	HANDLE handle;
 	uint64_t position;
 	bool append;
+	bool directory;
+	// A directory's kernel path, which openat and unlinkat resolve against.
+	char path[XSDK_PATH_BYTES];
 } FileSlot;
 
 static FileSlot files[FILE_SLOTS];
 
-static int errno_from_status(NTSTATUS status)
+int xsdk_file_errno(NTSTATUS status)
 {
 	switch (status) {
 	case STATUS_OBJECT_NAME_NOT_FOUND:
+	case STATUS_OBJECT_PATH_NOT_FOUND:
 	case STATUS_NO_SUCH_FILE:
 		return ENOENT;
 	case STATUS_OBJECT_NAME_COLLISION:
 		return EEXIST;
+	case STATUS_OBJECT_NAME_INVALID:
+	case STATUS_INVALID_PARAMETER:
+		return EINVAL;
 	case STATUS_ACCESS_DENIED:
 		return EACCES;
+	case STATUS_SHARING_VIOLATION:
+		return EBUSY;
 	case STATUS_NO_MEMORY:
 		return ENOMEM;
 	case STATUS_INVALID_HANDLE:
 		return EBADF;
-	case STATUS_INVALID_PARAMETER:
-		return EINVAL;
+	case STATUS_FILE_IS_A_DIRECTORY:
+		return EISDIR;
+	case STATUS_NOT_A_DIRECTORY:
+		return ENOTDIR;
+	case STATUS_DIRECTORY_NOT_EMPTY:
+		return ENOTEMPTY;
 	default:
 		return EIO;
 	}
@@ -53,7 +68,7 @@ static int errno_from_status(NTSTATUS status)
 static int fail_with_status(const char *call, int fd, NTSTATUS status)
 {
 	xsdk_log_write("%s(fd %d) failed: 0x%08X", call, fd, (unsigned)status);
-	errno = errno_from_status(status);
+	errno = xsdk_file_errno(status);
 	return -1;
 }
 
@@ -111,27 +126,59 @@ static uint32_t disposition_from_flags(int flags)
 	return flags & O_TRUNC ? FILE_OVERWRITE : FILE_OPEN;
 }
 
+static NTSTATUS query_information(HANDLE handle, FILE_NETWORK_OPEN_INFORMATION *information)
+{
+	IO_STATUS_BLOCK io_status;
+	return NtQueryInformationFile(
+		handle, &io_status, information, sizeof(*information), FILE_NETWORK_OPEN_INFORMATION_CLASS);
+}
+
 static NTSTATUS query_size(HANDLE handle, uint64_t *size_bytes)
 {
-	FILE_NETWORK_OPEN_INFORMATION info;
-	IO_STATUS_BLOCK io_status;
-	const NTSTATUS status =
-		NtQueryInformationFile(handle, &io_status, &info, sizeof(info), FILE_NETWORK_OPEN_INFORMATION_CLASS);
+	FILE_NETWORK_OPEN_INFORMATION information;
+	const NTSTATUS status = query_information(handle, &information);
 	if (NT_SUCCESS(status))
-		*size_bytes = info.end_of_file;
+		*size_bytes = information.end_of_file;
 	return status;
 }
 
-int open(const char *path, int flags, ...)
+HANDLE xsdk_file_handle(int fd)
 {
-	char nt_path[PATH_BYTES];
-	const size_t length = strlen(path);
-	if (length >= sizeof(nt_path)) {
-		errno = ENAMETOOLONG;
+	const FileSlot *file = find_slot(fd);
+	return file ? file->handle : 0;
+}
+
+int xsdk_file_directory_path(int fd, char path[XSDK_PATH_BYTES])
+{
+	const FileSlot *file = find_slot(fd);
+	if (!file)
+		return EBADF;
+	if (!file->directory)
+		return ENOTDIR;
+	memcpy(path, file->path, XSDK_PATH_BYTES);
+	return 0;
+}
+
+void xsdk_file_stat(const FILE_NETWORK_OPEN_INFORMATION *information, struct stat *info)
+{
+	memset(info, 0, sizeof(*info));
+	// The kernel keeps attributes, not owners or permissions, so everyone may do anything.
+	info->st_mode = information->attributes & FILE_ATTRIBUTE_DIRECTORY ? S_IFDIR | ACCESSPERMS : S_IFREG | DEFFILEMODE;
+	info->st_nlink = 1;
+	info->st_size = (off_t)information->end_of_file;
+	info->st_atim = xsdk_time_from_nt(information->last_access_time);
+	info->st_mtim = xsdk_time_from_nt(information->last_write_time);
+	info->st_ctim = xsdk_time_from_nt(information->change_time);
+}
+
+int openat(int dir_fd, const char *path, int flags, ...)
+{
+	char resolved[XSDK_PATH_BYTES];
+	const int error = xsdk_path_resolve(dir_fd, path, resolved);
+	if (error) {
+		errno = error;
 		return -1;
 	}
-	for (size_t i = 0; i <= length; i++)
-		nt_path[i] = path[i] == '/' ? '\\' : path[i];
 
 	int fd;
 	FileSlot *file = claim_slot(&fd);
@@ -140,26 +187,32 @@ int open(const char *path, int flags, ...)
 		return -1;
 	}
 
-	const ANSI_STRING name = {
-		.length = (uint16_t)length, .maximum_length = (uint16_t)(length + 1), .pointer = nt_path
-	};
-	// "game:\file" names a drive-letter link; "\Device\..." is absolute.
-	const OBJECT_ATTRIBUTES attributes = { .root_directory = nt_path[0] == '\\' ? 0 : OB_DOS_DEVICES, .name = &name };
+	ANSI_STRING name;
+	OBJECT_ATTRIBUTES attributes;
+	xsdk_path_attributes(resolved, &name, &attributes);
+	const bool directory = (flags & O_DIRECTORY) != 0;
 	IO_STATUS_BLOCK io_status;
 	HANDLE handle;
 	const NTSTATUS status = NtCreateFile(&handle, access_from_flags(flags) | SYNCHRONIZE, &attributes, &io_status, NULL,
 		FILE_ATTRIBUTE_NORMAL, 0, disposition_from_flags(flags),
-		FILE_SYNCHRONOUS_IO_NONALERT | FILE_NON_DIRECTORY_FILE);
+		FILE_SYNCHRONOUS_IO_NONALERT | (directory ? FILE_DIRECTORY_FILE : FILE_NON_DIRECTORY_FILE));
 	if (!NT_SUCCESS(status)) {
 		release_slot(file);
-		xsdk_log_write("open: NtCreateFile(%s) failed: 0x%08X", path, (unsigned)status);
-		errno = errno_from_status(status);
+		xsdk_log_write("open: NtCreateFile(%s) failed: 0x%08X", resolved, (unsigned)status);
+		errno = xsdk_file_errno(status);
 		return -1;
 	}
 	file->position = 0;
 	file->append = (flags & O_APPEND) != 0;
+	file->directory = directory;
+	memcpy(file->path, resolved, sizeof(resolved));
 	__atomic_store_n(&file->handle, handle, __ATOMIC_RELEASE);
 	return fd;
+}
+
+int open(const char *path, int flags, ...)
+{
+	return openat(AT_FDCWD, path, flags);
 }
 
 int close(int fd)
@@ -248,8 +301,8 @@ off_t lseek(int fd, off_t offset, int whence)
 
 int fstat(int fd, struct stat *info)
 {
-	memset(info, 0, sizeof(*info));
 	if (is_console(fd)) {
+		memset(info, 0, sizeof(*info));
 		info->st_mode = S_IFCHR;
 		return 0;
 	}
@@ -258,12 +311,24 @@ int fstat(int fd, struct stat *info)
 		errno = EBADF;
 		return -1;
 	}
-	uint64_t size_bytes;
-	const NTSTATUS status = query_size(file->handle, &size_bytes);
+	FILE_NETWORK_OPEN_INFORMATION information;
+	const NTSTATUS status = query_information(file->handle, &information);
 	if (!NT_SUCCESS(status))
 		return fail_with_status("fstat", fd, status);
-	info->st_mode = S_IFREG;
-	info->st_size = (off_t)size_bytes;
+	xsdk_file_stat(&information, info);
+	return 0;
+}
+
+// Permissions can't change (xsdk_file_stat), so only asking for the ones a file already has succeeds.
+int fchmod(int fd, mode_t mode)
+{
+	struct stat info;
+	if (fstat(fd, &info) != 0)
+		return -1;
+	if ((mode & ALLPERMS) != (info.st_mode & ALLPERMS)) {
+		errno = ENOTSUP;
+		return -1;
+	}
 	return 0;
 }
 

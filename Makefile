@@ -15,8 +15,8 @@ ASFLAGS := -mcpu=cell -Wa,-mregnames -Iinclude -MMD -MP
 LDFLAGS := -static -nostdlib -T src/xsdk.ld
 LIBS := -Wl,--start-group $(BUILD)/libxsdk.a -lc -lm -lgcc -Wl,--end-group
 
-SDK_SOURCES := src/start.c src/log.c src/sbrk.c src/thread.c src/thread_entry.S src/file.c src/pthread.c src/lock.c \
-	src/reent.c src/time.c src/exit.c
+SDK_SOURCES := src/start.c src/log.c src/sbrk.c src/thread.c src/thread_entry.S src/file.c src/path.c src/dir.c \
+	src/pthread.c src/lock.c src/reent.c src/time.c src/exit.c
 IMPORT_NAMES := $(shell $(PYTHON) tools/gen_imports.py --list imports/imports.txt)
 IMPORT_SOURCES := $(IMPORT_NAMES:%=$(BUILD)/imports/%.S)
 SDK_OBJECTS := $(patsubst src/%,$(BUILD)/sdk/%.o,$(basename $(SDK_SOURCES))) $(IMPORT_NAMES:%=$(BUILD)/imports/%.o)

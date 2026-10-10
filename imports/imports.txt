@@ -16,10 +16,13 @@ xboxkrnl.exe  0x0CF  NtClose                             1
 xboxkrnl.exe  0x0D1  NtCreateEvent                       4
 xboxkrnl.exe  0x0D2  NtCreateFile                        9
 xboxkrnl.exe  0x0D5  NtCreateSemaphore                   4
+xboxkrnl.exe  0x0E4  NtQueryDirectoryFile                9
+xboxkrnl.exe  0x0E7  NtQueryFullAttributesFile           2
 xboxkrnl.exe  0x0E8  NtQueryInformationFile              5
 xboxkrnl.exe  0x0F0  NtReadFile                          8
 xboxkrnl.exe  0x0F3  NtReleaseSemaphore                  3
 xboxkrnl.exe  0x0F6  NtSetEvent                          2
+xboxkrnl.exe  0x0F7  NtSetInformationFile                5
 xboxkrnl.exe  0x0FD  NtWaitForSingleObjectEx             4
 xboxkrnl.exe  0x0FF  NtWriteFile                         8
 xboxkrnl.exe  0x101  NtYieldExecution                    0
