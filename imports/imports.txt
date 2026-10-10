@@ -3,9 +3,28 @@
 # Argument counts come from each export's shim in Xenia (xenia:src/xenia/kernel/xboxkrnl/*.cc, xam/*.cc).
 # Every argument is a 32-bit value; "..." marks variadic calls, which take integer and pointer arguments only.
 
-xboxkrnl.exe  0x003  DbgPrint                 ...
-xboxkrnl.exe  0x0CC  NtAllocateVirtualMemory  5
-xboxkrnl.exe  0x0CF  NtClose                  1
-xboxkrnl.exe  0x0D2  NtCreateFile             9
-xboxkrnl.exe  0x0FF  NtWriteFile              8
-xam.xex       0x1A9  XamLoaderTerminateTitle  0
+xboxkrnl.exe  0x003  DbgPrint                            ...
+xboxkrnl.exe  0x00D  ExCreateThread                      7
+xboxkrnl.exe  0x019  ExTerminateThread                   1
+xboxkrnl.exe  0x05A  KeDelayExecutionThread              3
+xboxkrnl.exe  0x0BA  MmAllocatePhysicalMemoryEx          6
+xboxkrnl.exe  0x0BD  MmFreePhysicalMemory                2
+xboxkrnl.exe  0x0CC  NtAllocateVirtualMemory             5
+xboxkrnl.exe  0x0CF  NtClose                             1
+xboxkrnl.exe  0x0D1  NtCreateEvent                       4
+xboxkrnl.exe  0x0D2  NtCreateFile                        9
+xboxkrnl.exe  0x0D5  NtCreateSemaphore                   4
+xboxkrnl.exe  0x0E8  NtQueryInformationFile              5
+xboxkrnl.exe  0x0F0  NtReadFile                          8
+xboxkrnl.exe  0x0F3  NtReleaseSemaphore                  3
+xboxkrnl.exe  0x0F6  NtSetEvent                          2
+xboxkrnl.exe  0x0FD  NtWaitForSingleObjectEx             4
+xboxkrnl.exe  0x0FF  NtWriteFile                         8
+xboxkrnl.exe  0x125  RtlEnterCriticalSection             1
+xboxkrnl.exe  0x12E  RtlInitializeCriticalSection        1
+xboxkrnl.exe  0x130  RtlLeaveCriticalSection             1
+xboxkrnl.exe  0x1F3  XAudioRegisterRenderDriverClient    2
+xboxkrnl.exe  0x1F4  XAudioUnregisterRenderDriverClient  1
+xboxkrnl.exe  0x1F5  XAudioSubmitRenderDriverFrame       2
+xam.xex       0x191  XamInputGetState                    3
+xam.xex       0x1A9  XamLoaderTerminateTitle             0

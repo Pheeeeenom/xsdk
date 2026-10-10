@@ -9,17 +9,18 @@ PYTHON ?= python3
 BUILD := build
 
 CFLAGS := -m32 -mcpu=cell -fno-pic -std=gnu17 -O2 -g -Wall -Wextra -Werror -Iinclude -MMD -MP
-ASFLAGS := -m32 -mcpu=cell -Wa,-mregnames -MMD -MP
+ASFLAGS := -m32 -mcpu=cell -Wa,-mregnames -Iinclude -MMD -MP
 # The driver doesn't search newlib's 32-bit library folder by itself.
 LDFLAGS := -m32 -static -nostdlib -T src/xsdk.ld -L$(dir $(TOOLCHAIN))../xenon/lib/32
-LIBS := -Wl,--start-group $(BUILD)/libxsdk.a -lc -lgcc -Wl,--end-group
+LIBS := -Wl,--start-group $(BUILD)/libxsdk.a -lc -lm -lgcc -Wl,--end-group
 
-SDK_SOURCES := src/start.c src/log.c src/sbrk.c
+SDK_SOURCES := src/start.c src/log.c src/sbrk.c src/thread.c src/thread_entry.S src/malloc_lock.c
 IMPORT_NAMES := $(shell $(PYTHON) tools/gen_imports.py --list imports/imports.txt)
 IMPORT_SOURCES := $(IMPORT_NAMES:%=$(BUILD)/imports/%.S)
-SDK_OBJECTS := $(SDK_SOURCES:src/%.c=$(BUILD)/sdk/%.o) $(IMPORT_NAMES:%=$(BUILD)/imports/%.o)
+SDK_OBJECTS := $(patsubst src/%,$(BUILD)/sdk/%.o,$(basename $(SDK_SOURCES))) $(IMPORT_NAMES:%=$(BUILD)/imports/%.o)
 
-TEST_OBJECTS := $(BUILD)/tests/main.o
+TEST_SOURCES := tests/main.c tests/test_image.c tests/test_threads.c
+TEST_OBJECTS := $(patsubst tests/%,$(BUILD)/tests/%.o,$(basename $(TEST_SOURCES)))
 # Bring-up probes: titles that each answer one question on the console.
 PROBES := probe_spin probe_print
 
@@ -59,6 +60,10 @@ $(BUILD)/sdk/%.o: src/%.c
 $(BUILD)/tests/%.o: tests/%.c
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD)/tests/%.o: tests/%.S
+	@mkdir -p $(@D)
+	$(CC) $(ASFLAGS) -c $< -o $@
 
 clean:
 	rm -rf $(BUILD)

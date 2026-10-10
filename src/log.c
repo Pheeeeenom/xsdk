@@ -21,6 +21,8 @@ static const LogPath log_paths[] = {
 	{ OB_DOS_DEVICES, "cache:\\xsdk.log" },
 };
 
+// Guards log_line and the file; threads log concurrently.
+static RTL_CRITICAL_SECTION log_lock;
 static HANDLE log_file;
 static char log_line[LOG_LINE_BYTES];
 
@@ -37,8 +39,18 @@ static NTSTATUS create_file(HANDLE *handle, const LogPath *log_path)
 		FILE_OVERWRITE_IF, FILE_SYNCHRONOUS_IO_NONALERT | FILE_NON_DIRECTORY_FILE);
 }
 
+static void write_line(const char *line, size_t length_bytes)
+{
+	(void)DbgPrint("%s", line);
+	if (!log_file)
+		return;
+	IO_STATUS_BLOCK io_status;
+	(void)NtWriteFile(log_file, 0, NULL, NULL, &io_status, line, (uint32_t)length_bytes, NULL);
+}
+
 NTSTATUS xsdk_log_open(void)
 {
+	RtlInitializeCriticalSection(&log_lock);
 	NTSTATUS status = STATUS_NOT_IMPLEMENTED;
 	for (size_t i = 0; i < sizeof(log_paths) / sizeof(log_paths[0]); i++) {
 		HANDLE handle;
@@ -55,28 +67,40 @@ NTSTATUS xsdk_log_open(void)
 
 void xsdk_log_write(const char *format, ...)
 {
+	RtlEnterCriticalSection(&log_lock);
 	va_list args;
 	va_start(args, format);
 	int length = vsnprintf(log_line, sizeof(log_line) - 1, format, args);
 	va_end(args);
-	if (length < 0)
-		return;
-	if ((size_t)length > sizeof(log_line) - 2)
-		length = sizeof(log_line) - 2;
-	log_line[length] = '\n';
-	log_line[length + 1] = '\0';
+	if (length >= 0) {
+		if ((size_t)length > sizeof(log_line) - 2)
+			length = sizeof(log_line) - 2;
+		log_line[length] = '\n';
+		log_line[length + 1] = '\0';
+		write_line(log_line, (size_t)length + 1);
+	}
+	RtlLeaveCriticalSection(&log_lock);
+}
 
-	(void)DbgPrint("%s", log_line);
-	if (!log_file)
-		return;
-	IO_STATUS_BLOCK io_status;
-	(void)NtWriteFile(log_file, 0, NULL, NULL, &io_status, log_line, (uint32_t)length + 1, NULL);
+void xsdk_log_write_bytes(const char *bytes, size_t length_bytes)
+{
+	RtlEnterCriticalSection(&log_lock);
+	while (length_bytes) {
+		size_t chunk = length_bytes < sizeof(log_line) - 1 ? length_bytes : sizeof(log_line) - 1;
+		memcpy(log_line, bytes, chunk);
+		log_line[chunk] = '\0';
+		write_line(log_line, chunk);
+		bytes += chunk;
+		length_bytes -= chunk;
+	}
+	RtlLeaveCriticalSection(&log_lock);
 }
 
 void xsdk_log_close(void)
 {
-	if (!log_file)
-		return;
-	(void)NtClose(log_file);
+	RtlEnterCriticalSection(&log_lock);
+	if (log_file)
+		(void)NtClose(log_file);
 	log_file = 0;
+	RtlLeaveCriticalSection(&log_lock);
 }
