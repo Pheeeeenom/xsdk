@@ -7,8 +7,10 @@
 
 // The display takes a title's surface but stays black, even with XAM's registers and 0x60EC (docs/HARDWARE.md). Every
 // colour so far had a zero low byte, the alpha if the display reads pixels little-endian, as libxenon's console says
-// (libxenon:drivers/console/console.c:67-70). So this shows white, 0xFFFFFFFF, opaque in any byte order: first before
-// taking the GPU, then after, with black between, then red with an opaque alpha if pixels are little-endian ARGB.
+// (libxenon:drivers/console/console.c:67-70). So this shows white, 0xFFFFFFFF, opaque in any byte order: from a buffer
+// high in memory, where titles' memory lands, then from one low in memory, near XAM's surface at 0x01C10000, both
+// before taking the GPU; then the high one after taking it, then red with an opaque alpha if pixels are little-endian
+// ARGB.
 
 enum {
 	PAGE_BYTES = 0x10000,
@@ -16,6 +18,8 @@ enum {
 	APPLY_TIMEOUT_MS = 100,
 	TILE_PIXELS = 32,
 	GAP_MS = 1500,
+	// Highest physical address tried for the low buffer; XAM's surface was at 0x01C10000.
+	LOW_MEMORY_LIMIT = 0x03FFFFFF,
 	WHITE = 0xFFFFFFFF,
 	// Bytes 00 00 FF FF: alpha and red set if the display reads 0xAARRGGBB little-endian.
 	RED_LITTLE_ENDIAN_ARGB = 0x0000FFFF,
@@ -111,12 +115,12 @@ static void write_surface(const Surface *s)
 	write_register(LINE_WIDTH, s->line_width);
 }
 
-static volatile uint32_t *allocate(uint32_t pitch, uint32_t height, uint32_t pixel)
+static volatile uint32_t *allocate(uint32_t pitch, uint32_t height, uint32_t pixel, uint32_t max_address)
 {
 	const uint32_t pixel_count = pitch * ((height + TILE_PIXELS - 1) & ~(TILE_PIXELS - 1));
 	const uint32_t bytes = (pixel_count * 4 + PAGE_BYTES - 1) & ~(PAGE_BYTES - 1);
 	volatile uint32_t *const pixels = MmAllocatePhysicalMemoryEx(
-		0, bytes, PAGE_READWRITE | PAGE_WRITECOMBINE | MEM_LARGE_PAGES, 0, UINT32_MAX, PAGE_BYTES);
+		0, bytes, PAGE_READWRITE | PAGE_WRITECOMBINE | MEM_LARGE_PAGES, 0, max_address, PAGE_BYTES);
 	if (!pixels)
 		return NULL;
 	for (uint32_t i = 0; i < pixel_count; i++)
@@ -149,23 +153,31 @@ int main(void)
 	report("at start");
 	const Surface original = read_surface();
 	const uint32_t height = read_register(D1GRPH_Y_END);
-	volatile uint32_t *const pixels = allocate(original.pitch, height, WHITE);
+	volatile uint32_t *const pixels = allocate(original.pitch, height, WHITE, UINT32_MAX);
 	if (!original.pitch || !height || !pixels) {
 		xsdk_log_write("display: no buffer for a %ux%u mode", (unsigned)original.pitch, (unsigned)height);
 		return 1;
 	}
 	const uint32_t physical = MmGetPhysicalAddress((const void *)pixels);
 	const uint32_t pixel_count = original.pitch * ((height + TILE_PIXELS - 1) & ~(TILE_PIXELS - 1));
+	volatile uint32_t *const low_pixels = allocate(original.pitch, height, WHITE, LOW_MEMORY_LIMIT);
+	const uint32_t low_physical = low_pixels ? MmGetPhysicalAddress((const void *)low_pixels) : 0;
+	xsdk_log_write("display: high buffer at physical %08X, low buffer at physical %08X", (unsigned)physical,
+		(unsigned)low_physical);
 
-	show(&original, physical, "white before taking the GPU");
+	show(&original, physical, "white from high memory before taking the GPU");
 	blank(&original);
+	if (low_pixels) {
+		show(&original, low_physical, "white from low memory before taking the GPU");
+		blank(&original);
+	}
 
 	const NTSTATUS status = xsdk_gpu_open();
 	if (!NT_SUCCESS(status)) {
 		xsdk_log_write("display: xsdk_gpu_open returned 0x%08X", (unsigned)status);
 		return 1;
 	}
-	show(&original, physical, "white after taking the GPU");
+	show(&original, physical, "white from high memory after taking the GPU");
 
 	for (uint32_t i = 0; i < pixel_count; i++)
 		pixels[i] = RED_LITTLE_ENDIAN_ARGB;

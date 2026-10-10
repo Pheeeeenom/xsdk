@@ -427,3 +427,6 @@ values) on a blue buffer, then the originals (log: `results/2026-10-10-probe-dis
 - **Every register took its value, and 0x60EC read 0 again straight away** each time, where XAM's read 1 for a sample.
 - **The screen stayed black** throughout. Every colour the probes have shown had a zero low byte, which is the alpha if
   the display reads pixels little-endian, as libxenon's console suggests (libxenon:drivers/console/console.c:67-70).
+
+The Guide did appear on screen during the run that recorded XAM's registers, so the output isn't muted while a title
+runs: XAM's surface shows through the same registers that leave the title's buffers black.
