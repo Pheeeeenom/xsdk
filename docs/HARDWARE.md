@@ -268,3 +268,27 @@ ordinals resolve) and placed the kernel return addresses of Aurora's blocked sta
 So Aurora's D3D called `VdInitializeEngines`, which ran the graphics notification routines, and the one in `xamd.dll`
 waited for XAM's device to stop. That device couldn't stop without its callback. A title takes the GPU from XAM in
 the same call that loads the microcode.
+
+## VdInitializeEngines without microcode (2026-10-10)
+
+`tests/probe_engines.c` called `VdInitializeEngines(0x4F810000, callback, 0, 0, 0)`, with no microcode, and left XAM's
+interrupt callback alone (log: `results/2026-10-10-probe-engines/xsdk.log`).
+
+- **The kernel takes the GPU from XAM without microcode.** The call returned 1 and never called its callback.
+  Afterwards `VdGlobalXamDevice` held 0, XAM's write pointer stopped moving, the ring registers were cleared (base 0,
+  control 0x08020000, both pointers 0), the GPU was idle, and 0x07D8 read 0x06007FFF (bits 25 and 26 newly set).
+- **The kernel's ring set-up then works.** After `VdInitializeRingBuffer` and `VdEnableRingBufferRPtrWriteBack`,
+  0x0700 and 0x070C held the probe's addresses, 0x0704 read 0x0002060C, both pointers were 0, and the GPU was idle.
+- **The command processor runs the title's packets without the title supplying microcode.** The `MEM_WRITE` and
+  libxenon's scratch fence both landed within 1 ms, and the read pointer write-back reached 13. Whether the kernel kept
+  the running microcode or loaded its own doesn't show.
+- **`EVENT_WRITE_SHD` with `CACHE_FLUSH_AND_INV_TS_EVENT` (20) still wedges the GPU.** The read pointer reached the
+  packet's end, the value never landed, the GPU went busy and 0x07D8 gained bit 29. Xenia describes the packet as
+  generating "a VS|PS_done event" (xenia:src/xenia/gpu/xenos.h:1595), so event 20, a cache flush, may be the wrong
+  kind for it, or it may need pipeline state nothing has set yet.
+- **`VdShutdownEngines` didn't return,** presumably held up by the wedged GPU, and the console stopped responding.
+  xbWatson reported no exception.
+
+So SCOPE.md section 3.2 has an answer in option 2's spirit: a title takes the command processor with
+`VdInitializeEngines` and no microcode, and the kernel's ring calls work after it. Still open are giving the GPU back
+cleanly and an `EVENT_WRITE` fence.
