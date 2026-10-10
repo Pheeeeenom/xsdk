@@ -182,7 +182,10 @@ def read_imports(sections, image):
     for name, imports in libraries.items():
         imports.sort(key=lambda entry: entry["ordinal"])
         for entry in imports:
-            for address in (entry["slot"], entry["thunk"]):
+            addresses = [entry["slot"]]
+            if entry["thunk"]:
+                addresses.append(entry["thunk"])
+            for address in addresses:
                 word = struct.unpack_from(">I", image, address - IMAGE_BASE)[0]
                 if word & 0xFFFF != entry["ordinal"]:
                     fail(f"{name} ordinal {entry['ordinal']:#x}: record at {address:#010x} reads {word:#010x}")
