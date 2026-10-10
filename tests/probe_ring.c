@@ -28,12 +28,8 @@ enum {
 	UNKNOWN_01C6 = 0x01C6,
 };
 
-// Register indices (xenia:src/xenia/gpu/register_table.inc), written through the ring as libxenon does (xe.c:28-38).
+// Registers are written through the ring as libxenon does (xe.c:28-38).
 enum {
-	SCRATCH_UMSK = 0x01DC,
-	SCRATCH_ADDR = 0x01DD,
-	SCRATCH_REG0 = 0x0578,
-	WAIT_UNTIL = 0x05C8,
 	// libxenon's values: write back scratch registers 0, 1, 4 and 5 (xe.c:986), and wait for idle (xe.c:1223-1226).
 	SCRATCH_UMSK_VALUE = 0x20033,
 	WAIT_UNTIL_IDLE = 0x20000,

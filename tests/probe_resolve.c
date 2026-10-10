@@ -1,14 +1,16 @@
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
+#include "libxenon_gpu.h"
 #include "probe_gpu.h"
 #include "xsdk/gpu.h"
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
 #include "xsdk/thread.h"
 
-// Clears eDRAM and resolves it into the displayed front buffer as libxenon does, mapping what each resolve wrote.
+// Sets the GPU up and resolves into the displayed front buffer as libxenon does, mapping what each resolve wrote.
 
 enum {
 	PAGE_BYTES = 0x10000,
@@ -17,81 +19,19 @@ enum {
 	APPLY_TIMEOUT_MS = 100,
 	AUTOFILL_TIMEOUT_MS = 100,
 	TILE_PIXELS = 32,
-	MAX_STAGE_DWORDS = 96,
 	HOLD_MS_SHORT = 2000,
 	TILE_BYTES = 4096,
 	TILES_PER_ROW = 640 / TILE_PIXELS,
 	MAX_TILES = 640 * 480 * 4 / TILE_BYTES,
 	MAX_COUNTED_VALUES = 6,
+	REGISTERS_PER_LINE = 6,
+	SCREEN_SCISSOR_8192 = 8192 | 8192 << 16,
 	// The display's colours as words in memory, bytes B, G, R, A (docs/HARDWARE.md).
 	MAGENTA = 0xFF00FFFF,
 	WHITE = 0xFFFFFFFF,
 	RED = 0x0000FFFF,
 	GREEN = 0x00FF00FF,
 	BLUE = 0xFF0000FF,
-};
-
-// Register indices (xenia:src/xenia/gpu/register_table.inc).
-enum {
-	WAIT_UNTIL = 0x05C8,
-	COHER_SIZE_HOST = 0x0A2F,
-	COHER_STATUS_HOST = 0x0A31,
-	RB_SURFACE_INFO = 0x2000,
-	COHER_DEST_BASE_1 = 0x2007,
-	PA_SC_SCREEN_SCISSOR_TL = 0x200E,
-	PA_SC_WINDOW_OFFSET = 0x2080,
-	VGT_MAX_VTX_INDX = 0x2100,
-	RB_COLOR_MASK = 0x2104,
-	SQ_PROGRAM_CNTL = 0x2180,
-	RB_DEPTHCONTROL = 0x2200,
-	RB_HIZCONTROL = 0x2203,
-	PA_CL_CLIP_CNTL = 0x2204,
-	RB_MODECONTROL = 0x2208,
-	PA_SU_VTX_CNTL = 0x2302,
-	PA_SC_AA_MASK = 0x2312,
-	RB_COPY_CONTROL = 0x2318,
-	RB_COPY_DEST_INFO = 0x231B,
-	RB_COLOR_CLEAR = 0x231E,
-	SHADER_CONSTANT_FETCH_00_0 = 0x4800,
-	SHADER_CONSTANT_FLUSH_FETCH_0 = 0x5000,
-};
-
-// Type-3 opcodes and the cache flush event (xenia:src/xenia/gpu/xenos.h:1548, 1572-1622).
-enum {
-	PM4_DRAW_INDX_2 = 0x36,
-	PM4_IM_LOAD_IMMEDIATE = 0x2B,
-	PM4_INVALIDATE_STATE = 0x3B,
-	PM4_WAIT_REG_MEM = 0x3C,
-	PM4_EVENT_WRITE = 0x46,
-	CACHE_FLUSH = 6,
-};
-
-// libxenon's resolve values, decoded with Xenia's registers.h (libxenon:drivers/xenos/xe.c:1069-1165).
-enum {
-	SURFACE_INFO_640 = 640 | 640 << 18,
-	COLOR_INFO_BASE_240 = 240,
-	COPY_CONVERT_CLEAR_COLOR = 1 << 20 | 1 << 8,
-	COPY_DEST_INFO_8888_SWAP = 1 << 24 | 6 << 7,
-	EDRAM_MODE_COPY = 6,
-	// What libxenon's set-up leaves for drawing (libxenon:drivers/xenos/xe.c:398-441).
-	EDRAM_MODE_COLOR_DEPTH = 4,
-	WAIT_3D_IDLE_CLEAN = 1 << 17,
-	INVALIDATE_VERTEX_SHADER = 1 << 8,
-	PROGRAM_CNTL_RESOLVE = 2 | 1 << 16,
-	CLIP_DISABLE = 1 << 16,
-	VTX_WINDOW_OFFSET_ENABLE = 1 << 16,
-	VTE_XY_Z_ALREADY_TRANSFORMED = 0x300,
-	PIX_CENTER_D3D = 4,
-	SCREEN_SCISSOR_8192 = 8192 | 8192 << 16,
-	VERTEX_FETCH_TYPE = 3,
-	VERTEX_FETCH_SIZE_6_8IN32 = 1 << 28 | 6 << 2 | 2,
-	RECTANGLE_LIST_AUTO_INDEX_3 = 8 | 2 << 6 | 3 << 16,
-	COHER_RESOLVE_ACTIONS = 0x03000100,
-	// COHER_STATUS_HOST's vc_action_ena (xenia:src/xenia/gpu/registers.h:84).
-	COHER_VERTEX_CACHE = 1 << 24,
-	WAIT_REG_MEM_EQUAL = 3,
-	COHER_BUSY = 0x80000000,
-	WAIT_REG_MEM_INTERVAL = 8,
 };
 
 typedef struct {
@@ -110,6 +50,74 @@ static const Resolve resolves[] = {
 	{ "white 3", 0xFFFFFFFF },
 	{ "white 4", 0xFFFFFFFF },
 };
+
+typedef struct {
+	const char *name;
+	void (*put)(ProbeStage *stage);
+} SetUpStage;
+
+// Xe_pGInit's parts in order, each fenced, so the log shows any that wedges the GPU.
+static const SetUpStage set_up_stages[] = {
+	{ "ME_INIT", put_libxenon_me_init },
+	{ "shader unit", put_libxenon_shader_unit },
+	{ "render backend", put_libxenon_render_backend },
+	{ "draw state and shaders", put_libxenon_draw_state },
+	{ "register split", put_libxenon_register_split },
+	{ "point draws", put_libxenon_point_draws },
+};
+
+// Every register the probe changes, read after taking the GPU and written back before giving it up.
+static const uint32_t saved_registers[] = {
+	UNKNOWN_0081,
+	UNKNOWN_0082,
+	PA_CL_ENHANCE,
+	SQ_GPR_MANAGEMENT,
+	SQ_FLOW_CONTROL,
+	SQ_INST_STORE_MANAGMENT,
+	SQ_EO_RT,
+	UNKNOWN_0E42,
+	RB_BC_CONTROL,
+	RB_SURFACE_INFO,
+	RB_COLOR_INFO,
+	RB_DEPTH_INFO,
+	COHER_DEST_BASE_7,
+	PA_SC_SCREEN_SCISSOR_TL,
+	PA_SC_SCREEN_SCISSOR_BR,
+	PA_SC_WINDOW_OFFSET,
+	PA_SC_WINDOW_SCISSOR_TL,
+	PA_SC_WINDOW_SCISSOR_BR,
+	VGT_MAX_VTX_INDX,
+	VGT_MIN_VTX_INDX,
+	VGT_INDX_OFFSET,
+	RB_COLOR_MASK,
+	PA_CL_VPORT_XSCALE,
+	PA_CL_VPORT_XOFFSET,
+	PA_CL_VPORT_YSCALE,
+	PA_CL_VPORT_YOFFSET,
+	PA_CL_VPORT_ZSCALE,
+	PA_CL_VPORT_ZOFFSET,
+	SQ_PROGRAM_CNTL,
+	SQ_CONTEXT_MISC,
+	RB_DEPTHCONTROL,
+	RB_HIZCONTROL,
+	PA_CL_CLIP_CNTL,
+	PA_SU_SC_MODE_CNTL,
+	PA_CL_VTE_CNTL,
+	RB_MODECONTROL,
+	PA_SU_POINT_SIZE,
+	PA_SU_VTX_CNTL,
+	PA_SC_AA_MASK,
+	RB_COPY_CONTROL,
+	RB_COPY_DEST_BASE,
+	RB_COPY_DEST_PITCH,
+	RB_COPY_DEST_INFO,
+	RB_DEPTH_CLEAR,
+	RB_COLOR_CLEAR,
+	RB_COLOR_CLEAR_LO,
+};
+
+// libxenon writes these too; only logged until it's known what they control (libxenon:drivers/xenos/xe.c:476-477).
+static const uint32_t logged_registers[] = { UNKNOWN_0A02, UNKNOWN_0A03, UNKNOWN_0A04, UNKNOWN_0A05 };
 
 typedef struct {
 	uint32_t values[MAX_COUNTED_VALUES];
@@ -134,32 +142,8 @@ static const uint32_t resolve_vertex_shader[] = {
 	0xC2000000,
 };
 
-typedef struct {
-	uint32_t dwords[MAX_STAGE_DWORDS];
-	uint32_t count;
-} Stage;
-
-static void put(Stage *stage, uint32_t value)
-{
-	stage->dwords[stage->count++] = value;
-}
-
-static void put_registers(Stage *stage, uint32_t index, const uint32_t *values, uint32_t count)
-{
-	put(stage, (count - 1) << 16 | index);
-	for (uint32_t i = 0; i < count; i++)
-		put(stage, values[i]);
-}
-
-static void put_register(Stage *stage, uint32_t index, uint32_t value)
-{
-	put_registers(stage, index, &value, 1);
-}
-
-static void put_type3(Stage *stage, uint32_t opcode, uint32_t payload_dwords)
-{
-	put(stage, xsdk_gpu_type3(opcode, payload_dwords));
-}
+static uint32_t saved_values[sizeof saved_registers / sizeof saved_registers[0]];
+static ProbeStage stage;
 
 static uint32_t float_bits(float value)
 {
@@ -168,112 +152,70 @@ static uint32_t float_bits(float value)
 	return bits;
 }
 
-// Submits the stage and returns whether its fence landed.
-static bool submit(const Stage *stage, const char *resolve_name, const char *stage_name)
+// Submits the stage, empties it, and returns whether its fence landed.
+static bool submit(const char *name, const char *what)
 {
-	volatile uint32_t *const ring = xsdk_gpu_reserve(stage->count);
-	for (uint32_t i = 0; i < stage->count; i++)
-		ring[i] = stage->dwords[i];
+	volatile uint32_t *const ring = xsdk_gpu_reserve(stage.count);
+	for (uint32_t i = 0; i < stage.count; i++)
+		ring[i] = stage.dwords[i];
+	const uint32_t dword_count = stage.count;
+	stage.count = 0;
 	const NTSTATUS status = xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS);
-	xsdk_log_write("resolve: %s: %s: fence 0x%08X", resolve_name, stage_name, (unsigned)status);
+	xsdk_log_write("resolve: %s: %s, %u dwords: fence 0x%08X", name, what, (unsigned)dword_count, (unsigned)status);
 	return NT_SUCCESS(status);
 }
 
-static void put_state(
-	Stage *stage, uint32_t clear, uint32_t destination, uint32_t vertices, uint32_t width, uint32_t height)
+// Index and value, six to a line.
+static void log_registers(const char *when, const uint32_t *indices, uint32_t count)
 {
-	const uint32_t window[] = { 0, 0, width | height << 16 };
+	for (uint32_t first = 0; first < count; first += REGISTERS_PER_LINE) {
+		char line[REGISTERS_PER_LINE * 14 + 1];
+		uint32_t length = 0;
+		for (uint32_t i = first; i < count && i < first + REGISTERS_PER_LINE; i++)
+			length += (uint32_t)snprintf(&line[length], sizeof line - length, " %04X %08X", (unsigned)indices[i],
+				(unsigned)probe_gpu_registers[indices[i]]);
+		xsdk_log_write("resolve: %s:%s", when, line);
+	}
+}
+
+static void save_registers(void)
+{
+	for (uint32_t i = 0; i < sizeof saved_registers / sizeof saved_registers[0]; i++)
+		saved_values[i] = probe_gpu_registers[saved_registers[i]];
+}
+
+// XAM's device draws after the title exits, so it gets back what it had (docs/HARDWARE.md).
+static void restore_registers(void)
+{
+	probe_put_register(&stage, WAIT_UNTIL, WAIT_3D_IDLE_CLEAN);
+	for (uint32_t i = 0; i < sizeof saved_registers / sizeof saved_registers[0]; i++)
+		probe_put_register(&stage, saved_registers[i], saved_values[i]);
+	(void)submit("exit", "registers back");
+}
+
+// Returns whether every stage's fence landed.
+static bool set_up_like_libxenon(void)
+{
+	for (uint32_t i = 0; i < sizeof set_up_stages / sizeof set_up_stages[0]; i++) {
+		set_up_stages[i].put(&stage);
+		if (!submit("set-up", set_up_stages[i].name))
+			return false;
+	}
+	// Xe_Init invalidates the vertex cache over all memory last (libxenon:drivers/xenos/xe.c:992).
+	put_libxenon_coherency(&stage, COHER_VERTEX_CACHE, 0, ALL_MEMORY_BYTES);
+	if (!submit("set-up", "vertex cache"))
+		return false;
+	// libxenon leaves this at its reset value; D3D keeps it whole (xenia:src/xenia/gpu/draw_util.cc:575-576).
 	const uint32_t screen[] = { 0, SCREEN_SCISSOR_8192 };
-	const uint32_t surface[] = { SURFACE_INFO_640, COLOR_INFO_BASE_240, 0 };
-	const uint32_t copy[] = { COPY_CONVERT_CLEAR_COLOR, destination, width | height << 16, COPY_DEST_INFO_8888_SWAP };
-	const uint32_t clears[] = { clear, clear };
-	const uint32_t program[] = { PROGRAM_CNTL_RESOLVE, 0 };
-	const uint32_t indices[] = { 0xFFFF, 0, 0 };
-	const uint32_t clip[] = { CLIP_DISABLE, VTX_WINDOW_OFFSET_ENABLE, VTE_XY_Z_ALREADY_TRANSFORMED };
-	const uint32_t fetch[] = { vertices | VERTEX_FETCH_TYPE, VERTEX_FETCH_SIZE_6_8IN32 };
-	const uint32_t flush_fetch[] = { 0, 0, 0 };
-	put_registers(stage, PA_SC_WINDOW_OFFSET, window, 3);
-	put_registers(stage, PA_SC_SCREEN_SCISSOR_TL, screen, 2);
-	put_registers(stage, RB_SURFACE_INFO, surface, 3);
-	put_register(stage, RB_COLOR_MASK, 0xF);
-	put_registers(stage, RB_COPY_CONTROL, copy, 4);
-	put_registers(stage, RB_COLOR_CLEAR, clears, 2);
-	put_register(stage, RB_MODECONTROL, EDRAM_MODE_COPY);
-	put_register(stage, RB_DEPTHCONTROL, 0);
-	put_register(stage, WAIT_UNTIL, WAIT_3D_IDLE_CLEAN);
-	put_type3(stage, PM4_INVALIDATE_STATE, 1);
-	put(stage, INVALIDATE_VERTEX_SHADER);
-	// IM_LOAD_IMMEDIATE: shader type 0 is vertex, then start 0 and the size (xenia:command_processor.cc:1565-1576).
-	put_type3(stage, PM4_IM_LOAD_IMMEDIATE, 2 + sizeof resolve_vertex_shader / 4);
-	put(stage, 0);
-	put(stage, sizeof resolve_vertex_shader / 4);
-	for (uint32_t i = 0; i < sizeof resolve_vertex_shader / 4; i++)
-		put(stage, resolve_vertex_shader[i]);
-	put_registers(stage, SQ_PROGRAM_CNTL, program, 2);
-	put_register(stage, RB_HIZCONTROL, 0);
-	put_registers(stage, VGT_MAX_VTX_INDX, indices, 3);
-	put_registers(stage, PA_CL_CLIP_CNTL, clip, 3);
-	put_register(stage, PA_SU_VTX_CNTL, PIX_CENTER_D3D);
-	put_register(stage, PA_SC_AA_MASK, 0xFFFF);
-	put_registers(stage, SHADER_CONSTANT_FETCH_00_0, fetch, 2);
-	// libxenon flushes the fetch constants after setting them (libxenon:drivers/xenos/xe.c:1146, 1702-1703).
-	put_registers(stage, SHADER_CONSTANT_FLUSH_FETCH_0, flush_fetch, 3);
+	probe_put_registers(&stage, PA_SC_SCREEN_SCISSOR_TL, screen, 2);
+	return submit("set-up", "screen scissor");
 }
 
-static void put_coherency_wait(Stage *stage, uint32_t actions, uint32_t base, uint32_t size_bytes)
+static bool resolve_once(const Resolve *resolve, uint32_t destination, uint32_t vertices)
 {
-	const uint32_t range[] = { size_bytes, base };
-	put_register(stage, COHER_STATUS_HOST, actions);
-	put_registers(stage, COHER_SIZE_HOST, range, 2);
-	put_type3(stage, PM4_WAIT_REG_MEM, 5);
-	put(stage, WAIT_REG_MEM_EQUAL);
-	put(stage, COHER_STATUS_HOST);
-	put(stage, 0);
-	put(stage, COHER_BUSY);
-	put(stage, WAIT_REG_MEM_INTERVAL);
-}
-
-// libxenon invalidates the vertex cache after the CPU writes vertices (libxenon:drivers/xenos/xe.c:732-740, 759).
-static bool invalidate_vertex_cache(uint32_t vertices, uint32_t size_bytes)
-{
-	Stage stage = { .count = 0 };
-	put_coherency_wait(&stage, COHER_VERTEX_CACHE, vertices, size_bytes);
-	return submit(&stage, "vertices", "vertex cache");
-}
-
-// A cache flush, then the coherency wait for the front buffer, in two fenced stages.
-static bool flush(const char *name, uint32_t destination, uint32_t width, uint32_t height)
-{
-	Stage stage = { .count = 0 };
-	put_type3(&stage, PM4_EVENT_WRITE, 1);
-	put(&stage, CACHE_FLUSH);
-	put_register(&stage, COHER_DEST_BASE_1, 0);
-	if (!submit(&stage, name, "cache flush"))
-		return false;
-
-	stage.count = 0;
-	put_coherency_wait(&stage, COHER_RESOLVE_ACTIONS, destination, width * height * 4);
-	put_register(&stage, RB_COPY_CONTROL, 0);
-	put_register(&stage, RB_COPY_DEST_INFO, 0);
-	return submit(&stage, name, "coherency wait");
-}
-
-// Returns whether all four stages' fences landed.
-static bool resolve_once(
-	const Resolve *resolve, uint32_t destination, uint32_t vertices, uint32_t width, uint32_t height)
-{
-	Stage stage = { .count = 0 };
-	put_state(&stage, resolve->clear, destination, vertices, width, height);
-	if (!submit(&stage, resolve->name, "state and shader"))
-		return false;
-
-	stage.count = 0;
-	put_type3(&stage, PM4_DRAW_INDX_2, 1);
-	put(&stage, RECTANGLE_LIST_AUTO_INDEX_3);
-	if (!submit(&stage, resolve->name, "draw"))
-		return false;
-
-	return flush(resolve->name, destination, width, height);
+	put_libxenon_resolve(
+		&stage, resolve->clear, destination, vertices, resolve_vertex_shader, sizeof resolve_vertex_shader / 4);
+	return submit(resolve->name, "resolve");
 }
 
 // Sets 0x60EC after the surface registers, as XAM does, and waits for the display to clear it (docs/HARDWARE.md).
@@ -428,34 +370,34 @@ int main(void)
 		xsdk_log_write("resolve: xsdk_gpu_open returned 0x%08X", (unsigned)status);
 		return 1;
 	}
-	if (!invalidate_vertex_cache(vertices_physical, PAGE_BYTES))
-		return 1;
+	save_registers();
+	log_registers("after taking the GPU", saved_registers, sizeof saved_registers / sizeof saved_registers[0]);
+	log_registers("only logged", logged_registers, sizeof logged_registers / sizeof logged_registers[0]);
 	if (has_display) {
 		fill_lut();
 		set_surface(pixels_physical, width);
 	}
 	hold("magenta from the CPU");
 
-	for (uint32_t i = 0; i < sizeof resolves / sizeof resolves[0]; i++) {
+	const bool ready = set_up_like_libxenon();
+	log_registers("after the set-up", saved_registers, sizeof saved_registers / sizeof saved_registers[0]);
+	for (uint32_t i = 0; ready && i < sizeof resolves / sizeof resolves[0]; i++) {
 		// Magenta first, so each map shows what this resolve wrote.
 		for (uint32_t p = 0; p < pixel_count; p++)
 			pixels[p] = MAGENTA;
 		__asm__ volatile("sync" ::: "memory");
-		const bool finished = resolve_once(&resolves[i], pixels_physical, vertices_physical, width, height);
+		const bool finished = resolve_once(&resolves[i], pixels_physical, vertices_physical);
 		log_map(resolves[i].name, pixels, pixel_count);
 		log_values(pixels, pixel_count);
 		if (!finished) {
-			xsdk_log_write("resolve: a stage didn't finish; stopping");
+			xsdk_log_write("resolve: a resolve didn't finish; stopping");
 			break;
 		}
 		xsdk_log_write("resolve: holding for %u ms", (unsigned)HOLD_MS_SHORT);
 		(void)xsdk_thread_sleep(HOLD_MS_SHORT);
 	}
 
-	// XAM's device draws after the title exits, so copy mode mustn't outlive the probe (docs/HARDWARE.md).
-	Stage stage = { .count = 0 };
-	put_register(&stage, RB_MODECONTROL, EDRAM_MODE_COLOR_DEPTH);
-	(void)submit(&stage, "exit", "drawing mode back");
+	restore_registers();
 	if (has_display)
 		set_surface(old_surface, width);
 	return 0;
