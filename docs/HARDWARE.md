@@ -914,3 +914,21 @@ for 12 seconds and wrote back what it had read from each register (log: `results
   themselves, most likely left the display unable to recover.
 
 So the scaler set the kernel builds includes 0x65BC and 0x6578, which the hand-set scaling left alone.
+
+## 0x65BC isn't it, and calling the kernel's scaler builder breaks the way back (2026-10-10)
+
+`tests/probe_720p.c` logged the kernel's starting values for its scaler set, asked `VdInitializeScalerCommandBuffer`
+for its packets only to log them, then scaled the 1280x720 image as before and again with 0x65BC set, writing only
+scaler registers (log: `results/2026-10-10-probe-720p-4/xsdk.log`, with one capture whose phase the user didn't say).
+
+- **The kernel's own 640x480-to-1920x1080 setup:** 0x6590 1, 0x6594 0x505, 0x6528 0, viewport start 0 and size
+  640x480, `D1GRPH` pitch and X end 640 and Y end 480, 0x65E8 0x9F, 0x65A0, 0x65B0, 0x65BC and 0x65DC 0, 0x65B4
+  0x00555560, 0x65B8 0x3AA00, 0x65C0 0x01000000, 0x65C4 0x0071C720 and 0x65C8 0x3B800.
+- **The packets carried zeros again,** the same 43 dwords, and the buffer passed as the tenth argument stayed zero.
+- **0x65BC started at 0,** matching none of the scale or phase values, so the probe gave it the horizontal scale as a
+  guess. The capture looks as scrambled as before; which phase it shows isn't known.
+- **The console crashed after the title exited,** the screen black, and xbWatson reported it restarting. The probe
+  wrote only registers the hand-set scaling had written, which went back to Aurora, plus 0x65BC, and put them back.
+  The two runs that called `VdInitializeScalerCommandBuffer` both failed to return to Aurora, and the one that didn't
+  call it returned, so the call itself may change the kernel's display state, perhaps from arguments it reads
+  differently from Xenia's guess; that isn't shown. The SDK won't call it.

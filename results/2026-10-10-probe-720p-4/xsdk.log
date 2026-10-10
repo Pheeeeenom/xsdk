@@ -1,0 +1,106 @@
+log: game:\xsdk.log
+720p 0x65BC probe
+720p: GPU 0x00000000, display 0x00000000 640x480, output 1920x1080
+720p: at start: 1964 (byte 6590) 00000001
+720p: at start: 1965 (byte 6594) 00000505
+720p: at start: 194A (byte 6528) 00000000
+720p: at start: 1960 (byte 6580) 00000000
+720p: at start: 1961 (byte 6584) 028001E0
+720p: at start: 1848 (byte 6120) 00000280
+720p: at start: 1849 (byte 6124) 00000000
+720p: at start: 184A (byte 6128) 00000000
+720p: at start: 184B (byte 612C) 00000000
+720p: at start: 184C (byte 6130) 00000000
+720p: at start: 184D (byte 6134) 00000280
+720p: at start: 184E (byte 6138) 000001E0
+720p: at start: 197A (byte 65E8) 0000009F
+720p: at start: 1968 (byte 65A0) 00000000
+720p: at start: 196C (byte 65B0) 00000000
+720p: at start: 196D (byte 65B4) 00555560
+720p: at start: 196E (byte 65B8) 0003AA00
+720p: at start: 196F (byte 65BC) 00000000
+720p: at start: 1970 (byte 65C0) 01000000
+720p: at start: 1971 (byte 65C4) 0071C720
+720p: at start: 1972 (byte 65C8) 0003B800
+720p: at start: 1977 (byte 65DC) 00000000
+720p: VdInitializeScalerCommandBuffer returned 43
+720p: command 0: 00011964
+720p: command 1: 00000000
+720p: command 2: 00000000
+720p: command 3: 0000194A
+720p: command 4: 00000000
+720p: command 5: 00011960
+720p: command 6: 00000000
+720p: command 7: 00000000
+720p: command 8: 00061848
+720p: command 9: 00000000
+720p: command 10: 00000000
+720p: command 11: 00000000
+720p: command 12: 00000000
+720p: command 13: 00000000
+720p: command 14: 00000000
+720p: command 15: 00000000
+720p: command 16: 00031811
+720p: command 17: 00000000
+720p: command 18: 00000000
+720p: command 19: 00000000
+720p: command 20: 00000000
+720p: command 21: 0000197A
+720p: command 22: 00000000
+720p: command 23: 00001968
+720p: command 24: 00000000
+720p: command 25: 0006196C
+720p: command 26: 00000000
+720p: command 27: 00000000
+720p: command 28: 00000000
+720p: command 29: 00000000
+720p: command 30: 00000000
+720p: command 31: 00000000
+720p: command 32: 00000000
+720p: command 33: 00001977
+720p: command 34: 00000000
+720p: command 35: 0000195E
+720p: command 36: 00000000
+720p: command 37: FFFF995F
+720p: command 38: 0000195E
+720p: command 39: 00020000
+720p: command 40: FFFF995F
+720p: command 41: 00001964
+720p: command 42: 00000000
+720p: unknown 0: 00000000
+720p: unknown 1: 00000000
+720p: unknown 2: 00000000
+720p: unknown 3: 00000000
+720p: unknown 4: 00000000
+720p: unknown 5: 00000000
+720p: unknown 6: 00000000
+720p: unknown 7: 00000000
+720p: unknown 8: 00000000
+720p: unknown 9: 00000000
+720p: unknown 10: 00000000
+720p: unknown 11: 00000000
+720p: unknown 12: 00000000
+720p: unknown 13: 00000000
+720p: unknown 14: 00000000
+720p: unknown 15: 00000000
+720p: unknown 16: 00000000
+720p: unknown 17: 00000000
+720p: unknown 18: 00000000
+720p: unknown 19: 00000000
+720p: unknown 20: 00000000
+720p: unknown 21: 00000000
+720p: unknown 22: 00000000
+720p: unknown 23: 00000000
+720p: unknown 24: 00000000
+720p: unknown 25: 00000000
+720p: unknown 26: 00000000
+720p: unknown 27: 00000000
+720p: unknown 28: 00000000
+720p: unknown 29: 00000000
+720p: unknown 30: 00000000
+720p: unknown 31: 00000000
+720p: 0x65BC matched none of them, so it takes our horizontal scale as a guess
+720p: phase A, scaled as before with 0x65BC left at 00000000; 10000 ms
+720p: phase B, with 0x65BC 00AAAAAA; 10000 ms
+720p: the scaler put back; the GPU goes back at exit
+exit: status 0
