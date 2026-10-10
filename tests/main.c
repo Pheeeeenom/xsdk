@@ -31,6 +31,7 @@ int main(void)
 	test_audio();
 	test_gpu();
 	test_present();
+	test_triangle();
 	xsdk_log_write("tests: %d passed, %d failed", passed_count, failed_count);
 	return failed_count;
 }

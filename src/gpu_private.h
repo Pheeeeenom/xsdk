@@ -37,6 +37,7 @@ enum {
 	VGT_MIN_VTX_INDX = 0x2101,
 	VGT_INDX_OFFSET = 0x2102,
 	RB_COLOR_MASK = 0x2104,
+	RB_STENCILREFMASK_BF = 0x210C,
 	PA_CL_VPORT_XSCALE = 0x210F,
 	PA_CL_VPORT_XOFFSET = 0x2110,
 	PA_CL_VPORT_YSCALE = 0x2111,
@@ -52,6 +53,7 @@ enum {
 	PA_CL_VTE_CNTL = 0x2206,
 	RB_MODECONTROL = 0x2208,
 	PA_SU_POINT_SIZE = 0x2280,
+	PA_SC_AA_CONFIG = 0x2301,
 	PA_SU_VTX_CNTL = 0x2302,
 	PA_SC_AA_MASK = 0x2312,
 	RB_COPY_CONTROL = 0x2318,
@@ -61,6 +63,7 @@ enum {
 	RB_DEPTH_CLEAR = 0x231D,
 	RB_COLOR_CLEAR = 0x231E,
 	RB_COLOR_CLEAR_LO = 0x231F,
+	PA_SU_POLY_OFFSET_FRONT_SCALE = 0x2380,
 	SHADER_CONSTANT_FETCH_00_0 = 0x4800,
 	SHADER_CONSTANT_FLUSH_FETCH_0 = 0x5000,
 };
@@ -68,6 +71,7 @@ enum {
 // Type-3 opcodes (xenia:src/xenia/gpu/xenos.h:1572-1622).
 enum {
 	PM4_REG_RMW = 0x21,
+	PM4_IM_LOAD = 0x27,
 	PM4_IM_LOAD_IMMEDIATE = 0x2B,
 	PM4_DRAW_INDX_2 = 0x36,
 	PM4_INVALIDATE_STATE = 0x3B,
@@ -139,5 +143,7 @@ void xsdk_gpu_put_back(void);
 // libxenon's Xe_pSetSurfaceClip with no offset, and its cache invalidation with a wait.
 void xsdk_gpu_put_window(GpuPackets *packets, uint32_t width, uint32_t height);
 void xsdk_gpu_put_coherency(GpuPackets *packets, uint32_t actions, uint32_t base, uint32_t size_bytes);
+// The eDRAM layout for a colour and depth target of this size.
+void xsdk_gpu_put_surface(GpuPackets *packets, uint32_t width, uint32_t height);
 
 #endif

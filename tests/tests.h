@@ -30,6 +30,9 @@ void test_gpu(void);
 // A cleared screen (milestone 5).
 void test_present(void);
 
+// A triangle (milestone 6).
+void test_triangle(void);
+
 #ifdef __cplusplus
 }
 #endif

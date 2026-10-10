@@ -37,10 +37,6 @@
 
 enum {
 	RESOLVE_MAX_DWORDS = 128,
-	// eDRAM tiles without multisampling (xenia:src/xenia/gpu/xenos.h:414-416).
-	TILE_WIDTH = 80,
-	TILE_HEIGHT = 16,
-	EDRAM_TILES = 2048,
 	// The size libxenon invalidates for its vertex pool: 12000 bytes and a page (xe.c:33, 1850, 1871).
 	RECTANGLE_INVALIDATE_BYTES = 12000 + 0x1000,
 	INVALIDATE_VERTEX_SHADER = 1 << 8,
@@ -100,13 +96,7 @@ static void put_shader(GpuPackets *packets)
 void xsdk_gpu_resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t clear_argb)
 {
 	assert(width % 32 == 0);
-	// Depth first, then colour, each this many tiles, a whole even number of them across.
-	const uint32_t tiles_across = ((width + TILE_WIDTH - 1) / TILE_WIDTH + 1) & ~1u;
-	const uint32_t target_tiles = tiles_across * ((height + TILE_HEIGHT - 1) / TILE_HEIGHT);
-	assert(2 * target_tiles <= EDRAM_TILES);
-	const uint32_t edram_pitch = tiles_across * TILE_WIDTH;
 	const uint32_t vertices = xsdk_gpu_rectangle(width, height);
-	const uint32_t surface[] = { edram_pitch | edram_pitch << 18, target_tiles, 0 };
 	const uint32_t viewport[] = { 0x44000000, 0x44000000, 0xC3B40000, 0x43B40000, 0x3F800000, 0 };
 	const uint32_t copy[] = { COPY_CONTROL_CLEAR_COLOR_DEPTH, address, width | height << 16, COPY_DEST_INFO_8888_SWAP };
 	const uint32_t program[] = { PROGRAM_CNTL_RESOLVE, 0 };
@@ -118,7 +108,7 @@ void xsdk_gpu_resolve(uint32_t address, uint32_t width, uint32_t height, uint32_
 	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = RESOLVE_MAX_DWORDS };
 	xsdk_gpu_put_window(&packets, width, height);
 	xsdk_gpu_put_coherency(&packets, COHER_VERTEX_CACHE, vertices, RECTANGLE_INVALIDATE_BYTES);
-	gpu_put_registers(&packets, RB_SURFACE_INFO, surface, 3);
+	xsdk_gpu_put_surface(&packets, width, height);
 	gpu_put_register(&packets, RB_COLOR_MASK, 0xF);
 	gpu_put_registers(&packets, PA_CL_VPORT_XSCALE, viewport, 6);
 	gpu_put_registers(&packets, RB_COPY_CONTROL, copy, 4);

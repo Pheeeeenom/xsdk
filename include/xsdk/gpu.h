@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "xsdk/kernel.h"
+#include "xsdk/shader.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,6 +15,11 @@ extern "C" {
 // Type-3 packet opcodes (xenia:src/xenia/gpu/xenos.h:1572-1622).
 enum {
 	PM4_NOP = 0x10,
+};
+
+// Primitive types (xenia:src/xenia/gpu/xenos.h:44-49).
+enum {
+	XSDK_PRIMITIVE_TRIANGLE_LIST = 4,
 };
 
 // The header of a type-3 packet with payload_dwords dwords after it (xenia:src/xenia/gpu/xenos.h:1657-1664).
@@ -40,6 +46,15 @@ void xsdk_gpu_free(volatile uint32_t *memory);
 uint32_t xsdk_gpu_address(volatile const uint32_t *memory);
 // Queues copying the eDRAM colour target to address as tiled k_8_8_8_8, then clearing it; width a multiple of 32.
 void xsdk_gpu_resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t clear_argb);
+
+// Sets the eDRAM colour target and a viewport, no depth, blending or culling (libxenon); a resolve undoes it.
+void xsdk_gpu_set_target(uint32_t width, uint32_t height);
+// Loads both shaders with IM_LOAD and sets the program registers; a resolve replaces the vertex shader.
+void xsdk_gpu_set_shaders(const XsdkShader *vertex, const XsdkShader *pixel);
+// Points vertex stream 0 at vertices in memory from xsdk_gpu_alloc.
+void xsdk_gpu_set_vertices(uint32_t address, uint32_t size_bytes);
+// Draws vertex_count auto-indexed vertices as a list of primitive_type.
+void xsdk_gpu_draw(uint32_t primitive_type, uint32_t vertex_count);
 
 #ifdef __cplusplus
 }
