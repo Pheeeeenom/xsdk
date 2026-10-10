@@ -398,3 +398,22 @@ the surface directly (log: `results/2026-10-10-probe-display-2/xsdk.log`, xbWats
 - **The LUT looks ordinary:** 0x64C0 to 0x64DC read 0, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF, 0, black offsets 0 and white
   offsets at the maximum if they follow libxenon's `DC_LUTA_CONTROL` at 0x64C0. 0x6080 to 0x60BC, a range libxenon
   doesn't use, read all zeros.
+
+## How XAM switches the display (2026-10-10)
+
+`tests/probe_guide.c` left the GPU with XAM and logged every change to the display registers around libxenon's names
+for 15 seconds while the user opened and closed the Guide (log: `results/2026-10-10-probe-guide/xsdk.log`).
+
+- **XAM switched the display to its own surface twice and back,** at 1021 and 6701 ms, back at 4890 and 9654 ms. Each
+  time it changed only these registers, all of them back afterwards:
+  - 0x6110 `D1GRPH_PRIMARY_SURFACE_ADDRESS`: 0 to 0x01C10000;
+  - 0x6120 `D1GRPH_PITCH` and 0x6134 `D1GRPH_X_END`: 640 to 864;
+  - 0x6584 `AVIVO_D1MODE_VIEWPORT_SIZE`: 640x480 to 852x480;
+  - 0x65B4: 0x00800000 to 0x00AA6660, the ratio 852/640 if 0x00800000 is 1.0, and 0x65B8: 0x0005C000 to 0x0005D600;
+  - 0x65E8: 0x9F to 0xD4, the viewport width / 4 - 1, as libxenon writes it (libxenon:drivers/xenos/xenos.c:390);
+  - 0x60EC, libxenon's `D1CRTC_DOUBLE_BUFFER_CONTROL`: 1 in the sample where the new values appeared, 0 by the next.
+- **Nothing else changed:** no blanking or LUT register. Several registers count or toggle every frame (0x6024, 0x6054,
+  0x6058 to 0x6068, 0x6530, 0x6554, 0x6578, 0x657C), and 0x6144 `D1GRPH_UPDATE` read 2 for a sample every so often,
+  with 0x6534 and 0x6544 going to 0x1000 and 0x10 at the same moments.
+
+So XAM shows its surface the way the probes tried, plus 0x60EC, which the probes never wrote.
