@@ -10,15 +10,14 @@
 #include "xsdk/shader.h"
 #include "xsdk/thread.h"
 
-// Draws milestone 6's triangle with libxenon's whole frame, then with one of its differences from the SDK undone at a
-// time, logging how many pixels each draw covered.
+// Draws the SDK's triangle with one of libxenon's fetch constant habits at a time, then libxenon's frame as a check.
 
 enum {
 	WIDTH = 640,
 	HEIGHT = 480,
 	PIXELS = WIDTH * HEIGHT,
 	FENCE_TIMEOUT_MS = 1000,
-	HOLD_MS = 3000,
+	HOLD_MS = 2000,
 	CLEAR_ARGB = 0xFF202020,
 	// The display's magenta as a word in memory; a resolve that writes nothing leaves it.
 	MAGENTA = 0xFF00FFFF,
@@ -26,6 +25,8 @@ enum {
 	STRIDE_BYTES = VERTEX_FLOATS * 4,
 	COLOR_OFFSET_BYTES = 16,
 	VERTEX_FETCH_CONSTANT = 95,
+	// Vertex fetch constants go in threes (xenia:src/xenia/gpu/xenos.h:1288-1315).
+	VERTEX_FETCH_GROUP_FIRST = VERTEX_FETCH_CONSTANT / 3 * 3,
 	ALU_CONSTANT_DWORDS = 512 * 4,
 	ALU_CONSTANTS_A_PACKET = 512,
 	FETCH_CONSTANT_DWORDS = 96 * 2,
@@ -59,9 +60,11 @@ enum {
 	PM4_IM_LOAD = 0x27,
 	PM4_WAIT_REG_MEM = 0x3C,
 	PREDICATED = 1,
+	// A type-2 packet, one dword that does nothing (xenia:src/xenia/gpu/command_processor.cc:677-683).
+	TYPE2_NOP = 0x80000000,
 };
 
-// libxenon's values (libxenon:drivers/xenos/xe.c:1181-1185, 1403-1416, 1688-1744).
+// libxenon's values (libxenon:drivers/xenos/xe.c:1181-1185, 1217-1221, 1403-1416, 1688-1744).
 enum {
 	DEPTH_LEQUAL_WRITE = 0x007007B6,
 	BLEND_ONE_ZERO = 0x00010001,
@@ -82,26 +85,57 @@ enum {
 	TRIANGLE_LIST_AUTO_INDEX_3 = 4 | 2 << 6 | 3 << 16,
 	COHER_VERTEX_CACHE = 1 << 24,
 	COHER_BUSY = 0x80000000,
+	// Xe_pAlign pads until a packet's data starts on 16 bytes (xe.c:1217-1221).
+	ALIGN_DWORDS = 4,
 };
+
+typedef enum {
+	FETCH_TWO_DWORDS,
+	FETCH_GROUP,
+	FETCH_ALL,
+} FetchWrite;
 
 typedef struct {
 	const char *name;
-	bool sdk;
+	// libxenon's frame, with these of its settings; otherwise the SDK's draw.
+	bool libxenon;
 	bool size_in_bytes;
 	bool depth_test;
 	bool predicated_draw_indx;
 	bool zero_bool_and_loop;
 	bool zero_alu;
+	// The SDK's draw with xsdk_gpu_set_vertices; otherwise with the vertices set up as below.
+	bool sdk_vertices;
+	FetchWrite fetch;
+	bool fetch_aligned;
+	uint32_t flush_fetch_1;
+	bool fetch_size_in_bytes;
+	bool coherency;
+	bool target_last;
 } Variant;
 
+static const Variant control = { .name = "libxenon's frame",
+	.libxenon = true,
+	.size_in_bytes = true,
+	.depth_test = true,
+	.predicated_draw_indx = true,
+	.zero_bool_and_loop = true,
+	.zero_alu = true };
+
 static const Variant variants[] = {
-	{ "as libxenon draws", false, true, true, true, true, true },
-	{ "as libxenon, but IM_LOAD's size in dwords", false, false, true, true, true, true },
-	{ "as libxenon, but no depth test", false, true, false, true, true, true },
-	{ "as libxenon, but DRAW_INDX_2", false, true, true, false, true, true },
-	{ "as libxenon, but the bool and loop constants left alone", false, true, true, true, false, true },
-	{ "as libxenon, but the ALU constants left alone", false, true, true, true, true, false },
-	{ "as the SDK draws", true, false, false, false, false, false },
+	{ .name = "the SDK's draw, writing fetch constant 95 with the two before it",
+		.fetch = FETCH_GROUP,
+		.coherency = true },
+	{ .name = "the SDK's draw, writing every fetch constant", .fetch = FETCH_ALL, .coherency = true },
+	{ .name = "the SDK's draw, the fetch constant's data on 16 bytes in the ring",
+		.fetch_aligned = true,
+		.coherency = true },
+	{ .name = "the SDK's draw, FLUSH_FETCH_1 0x00025000", .flush_fetch_1 = FLUSH_FETCH_1_VALUE, .coherency = true },
+	{ .name = "the SDK's draw, the fetch size in bytes", .fetch_size_in_bytes = true, .coherency = true },
+	{ .name = "the SDK's draw, without its vertex cache invalidate" },
+	{ .name = "the SDK's draw, the target set after the vertices", .coherency = true, .target_last = true },
+	{ .name = "libxenon's frame with the SDK's five settings", .libxenon = true },
+	{ .name = "as the SDK draws", .sdk_vertices = true },
 };
 
 // Position in clip space, then colour: red at the top, green bottom left, blue bottom right.
@@ -121,6 +155,21 @@ static uint32_t float_bits(float value)
 	uint32_t bits;
 	memcpy(&bits, &value, sizeof bits);
 	return bits;
+}
+
+// Pads with NOPs around the packet so its values start on 16 bytes; the ring is page-aligned.
+static void put_registers_aligned(uint32_t index, const uint32_t *values, uint32_t count)
+{
+	volatile uint32_t *const space = xsdk_gpu_reserve(ALIGN_DWORDS + count);
+	const uint32_t padding = (ALIGN_DWORDS - 1 - (uint32_t)(uintptr_t)space / 4 % ALIGN_DWORDS) % ALIGN_DWORDS;
+	for (uint32_t i = 0; i < padding; i++)
+		space[i] = TYPE2_NOP;
+	volatile uint32_t *const packet = space + padding;
+	packet[0] = (count - 1) << 16 | index;
+	for (uint32_t i = 0; i < count; i++)
+		packet[1 + i] = values[i];
+	for (uint32_t i = padding + 1 + count; i < ALIGN_DWORDS + count; i++)
+		space[i] = TYPE2_NOP;
 }
 
 static void put_registers(uint32_t index, const uint32_t *values, uint32_t count)
@@ -167,12 +216,11 @@ static void invalidate_vertices(uint32_t address, uint32_t size_bytes)
 	packet[5] = 8;
 }
 
-// libxenon's frame: Xe_pStuff, then Xe_pSetState with everything dirty, then Xe_DrawPrimitive (xe.c:1688-1744,
-// 1943-1957).
+// Xe_pStuff, Xe_pSetState with everything dirty, then Xe_DrawPrimitive (xe.c:1688-1744, 1943-1957).
 static void draw_as_libxenon(
 	const Variant *variant, const XsdkShader *vertex, const XsdkShader *pixel, uint32_t vertices)
 {
-	const uint32_t control[] = { variant->depth_test ? DEPTH_LEQUAL_WRITE : 0, BLEND_ONE_ZERO, COLOR_CONTROL, 0,
+	const uint32_t control_state[] = { variant->depth_test ? DEPTH_LEQUAL_WRITE : 0, BLEND_ONE_ZERO, COLOR_CONTROL, 0,
 		CLIP_D3D_SPACE, SC_MODE_WINDOW_OFFSET_NO_CULL, VTE_VIEWPORT_AND_W0, 0, EDRAM_MODE_COLOR_DEPTH };
 	const uint32_t program[] = { vertex->program_control | pixel->program_control,
 		vertex->context_misc | pixel->context_misc, INTERPOLATE_ALL_AT_CENTERS };
@@ -186,7 +234,7 @@ static void draw_as_libxenon(
 	fetch[VERTEX_FETCH_CONSTANT * 2] = vertices | VERTEX_FETCH_TYPE;
 	fetch[VERTEX_FETCH_CONSTANT * 2 + 1] = VERTEX_FETCH_8IN32 | (uint32_t)sizeof triangle << 2;
 	put_zeros(PA_SU_POLY_OFFSET_FRONT_SCALE, 8);
-	put_registers(RB_DEPTHCONTROL, control, 9);
+	put_registers(RB_DEPTHCONTROL, control_state, 9);
 	put_im_load(pixel, variant->size_in_bytes);
 	put_im_load(vertex, variant->size_in_bytes);
 	put_registers(SQ_PROGRAM_CNTL, program, 3);
@@ -217,6 +265,42 @@ static void draw_as_libxenon(
 	packet[2] = TRIANGLE_LIST_AUTO_INDEX_3;
 }
 
+// xsdk_gpu_set_vertices's packets, with the variant's changes; with none it writes the same dwords.
+static void put_vertices(const Variant *variant, uint32_t vertices)
+{
+	const uint32_t size = variant->fetch_size_in_bytes ? sizeof triangle : sizeof triangle / 4;
+	const uint32_t flush_fetch[] = { 0, variant->flush_fetch_1, 0 };
+	uint32_t fetch[FETCH_CONSTANT_DWORDS] = { 0 };
+	fetch[VERTEX_FETCH_CONSTANT * 2] = vertices | VERTEX_FETCH_TYPE;
+	fetch[VERTEX_FETCH_CONSTANT * 2 + 1] = VERTEX_FETCH_8IN32 | size << 2;
+	uint32_t first = VERTEX_FETCH_CONSTANT * 2;
+	if (variant->fetch == FETCH_GROUP)
+		first = VERTEX_FETCH_GROUP_FIRST * 2;
+	else if (variant->fetch == FETCH_ALL)
+		first = 0;
+	if (variant->coherency)
+		invalidate_vertices(vertices, sizeof triangle);
+	if (variant->fetch_aligned)
+		put_registers_aligned(SHADER_CONSTANT_FETCH_00_0 + first, fetch + first, FETCH_CONSTANT_DWORDS - first);
+	else
+		put_registers(SHADER_CONSTANT_FETCH_00_0 + first, fetch + first, FETCH_CONSTANT_DWORDS - first);
+	put_registers(SHADER_CONSTANT_FLUSH_FETCH_0, flush_fetch, 3);
+}
+
+static void draw_as_sdk(const Variant *variant, const XsdkShader *vertex, const XsdkShader *pixel, uint32_t vertices)
+{
+	if (!variant->target_last)
+		xsdk_gpu_set_target(WIDTH, HEIGHT);
+	xsdk_gpu_set_shaders(vertex, pixel);
+	if (variant->sdk_vertices)
+		xsdk_gpu_set_vertices(vertices, sizeof triangle);
+	else
+		put_vertices(variant, vertices);
+	if (variant->target_last)
+		xsdk_gpu_set_target(WIDTH, HEIGHT);
+	xsdk_gpu_draw(XSDK_PRIMITIVE_TRIANGLE_LIST, 3);
+}
+
 static void count(volatile const uint32_t *pixels, uint32_t *drawn, uint32_t *unwritten, uint32_t *first)
 {
 	const uint32_t clear = __builtin_bswap32(CLEAR_ARGB);
@@ -235,40 +319,44 @@ static void count(volatile const uint32_t *pixels, uint32_t *drawn, uint32_t *un
 	}
 }
 
-static void draw_variant(const Variant *variant, const XsdkShader *vertex, const XsdkShader *pixel, uint32_t vertices,
-	volatile uint32_t *buffer, uint32_t scratch, bool has_display)
+typedef struct {
+	const XsdkShader *vertex;
+	const XsdkShader *pixel;
+	uint32_t vertices;
+	volatile uint32_t *buffer;
+	uint32_t scratch;
+	bool has_display;
+} Frame;
+
+static void draw_variant(const Variant *variant, const Frame *frame, bool show)
 {
 	for (uint32_t i = 0; i < PIXELS; i++)
-		buffer[i] = MAGENTA;
+		frame->buffer[i] = MAGENTA;
 	__asm__ volatile("sync" ::: "memory");
-	const uint32_t address = xsdk_gpu_address(buffer);
+	const uint32_t address = xsdk_gpu_address(frame->buffer);
 	// A resolve and a fence first, so eDRAM holds the clear colour and far depth, and the GPU is idle.
-	xsdk_gpu_resolve(scratch, WIDTH, HEIGHT, CLEAR_ARGB);
-	invalidate_vertices(vertices, sizeof triangle);
+	xsdk_gpu_resolve(frame->scratch, WIDTH, HEIGHT, CLEAR_ARGB);
+	invalidate_vertices(frame->vertices, sizeof triangle);
 	const NTSTATUS cleared = xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS);
-	if (variant->sdk) {
-		xsdk_gpu_set_target(WIDTH, HEIGHT);
-		xsdk_gpu_set_shaders(vertex, pixel);
-		xsdk_gpu_set_vertices(vertices, sizeof triangle);
-		xsdk_gpu_draw(XSDK_PRIMITIVE_TRIANGLE_LIST, 3);
-	} else {
-		draw_as_libxenon(variant, vertex, pixel, vertices);
-	}
+	if (variant->libxenon)
+		draw_as_libxenon(variant, frame->vertex, frame->pixel, frame->vertices);
+	else
+		draw_as_sdk(variant, frame->vertex, frame->pixel, frame->vertices);
 	const NTSTATUS drawn_status = xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS);
 	xsdk_gpu_resolve(address, WIDTH, HEIGHT, CLEAR_ARGB);
 	const NTSTATUS resolved = xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS);
 	uint32_t drawn = 0;
 	uint32_t unwritten = 0;
 	uint32_t first = 0;
-	count(buffer, &drawn, &unwritten, &first);
-	xsdk_log_write("triangle: %s: fences 0x%08X 0x%08X 0x%08X; drew %u pixels, the first %08X; %u left magenta",
-		variant->name, (unsigned)cleared, (unsigned)drawn_status, (unsigned)resolved, (unsigned)drawn, (unsigned)first,
-		(unsigned)unwritten);
-	if (!has_display)
-		return;
-	const NTSTATUS shown = xsdk_display_show(address, WIDTH);
-	xsdk_log_write("triangle: showing it for %u ms: 0x%08X", (unsigned)HOLD_MS, (unsigned)shown);
-	(void)xsdk_thread_sleep(HOLD_MS);
+	count(frame->buffer, &drawn, &unwritten, &first);
+	xsdk_log_write("triangle: %s%s: fences 0x%08X 0x%08X 0x%08X; drew %u pixels, the first %08X; %u left magenta",
+		show ? "" : "  ", variant->name, (unsigned)cleared, (unsigned)drawn_status, (unsigned)resolved, (unsigned)drawn,
+		(unsigned)first, (unsigned)unwritten);
+	if (show && frame->has_display) {
+		const NTSTATUS shown = xsdk_display_show(address, WIDTH);
+		xsdk_log_write("triangle: showing it for %u ms: 0x%08X", (unsigned)HOLD_MS, (unsigned)shown);
+		(void)xsdk_thread_sleep(HOLD_MS);
+	}
 }
 
 static volatile uint32_t *upload_triangle(void)
@@ -307,9 +395,17 @@ int main(void)
 		!NT_SUCCESS(xsdk_shader_set_vertex_layout(&vertex, layout, sizeof layout / sizeof layout[0], STRIDE_BYTES)) ||
 		!vertices || !buffer || !scratch)
 		return 1;
-	for (uint32_t i = 0; i < sizeof variants / sizeof variants[0]; i++)
-		draw_variant(
-			&variants[i], &vertex, &pixel, xsdk_gpu_address(vertices), buffer, xsdk_gpu_address(scratch), has_display);
+	const Frame frame = { .vertex = &vertex,
+		.pixel = &pixel,
+		.vertices = xsdk_gpu_address(vertices),
+		.buffer = buffer,
+		.scratch = xsdk_gpu_address(scratch),
+		.has_display = has_display };
+	draw_variant(&control, &frame, false);
+	for (uint32_t i = 0; i < sizeof variants / sizeof variants[0]; i++) {
+		draw_variant(&variants[i], &frame, true);
+		draw_variant(&control, &frame, false);
+	}
 	xsdk_display_close();
 	xsdk_log_write("triangle: done; the GPU goes back at exit");
 	return 0;

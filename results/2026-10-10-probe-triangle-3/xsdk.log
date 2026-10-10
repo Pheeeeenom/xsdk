@@ -1,0 +1,19 @@
+log: game:\xsdk.log
+triangle probe
+triangle: display 0x00000000, 640x480
+triangle: as libxenon draws: fences 0x00000000 0x00000000 0x00000000; drew 86160 pixels, the first 0001FEFF; 0 left magenta
+triangle: showing it for 3000 ms: 0x00000000
+triangle: as libxenon, but IM_LOAD's size in dwords: fences 0x00000000 0x00000000 0x00000000; drew 86160 pixels, the first 0001FEFF; 0 left magenta
+triangle: showing it for 3000 ms: 0x00000000
+triangle: as libxenon, but no depth test: fences 0x00000000 0x00000000 0x00000000; drew 86160 pixels, the first 0001FEFF; 0 left magenta
+triangle: showing it for 3000 ms: 0x00000000
+triangle: as libxenon, but DRAW_INDX_2: fences 0x00000000 0x00000000 0x00000000; drew 86160 pixels, the first 0001FEFF; 0 left magenta
+triangle: showing it for 3000 ms: 0x00000000
+triangle: as libxenon, but the bool and loop constants left alone: fences 0x00000000 0x00000000 0x00000000; drew 86160 pixels, the first 0001FEFF; 0 left magenta
+triangle: showing it for 3000 ms: 0x00000000
+triangle: as libxenon, but the ALU constants left alone: fences 0x00000000 0x00000000 0x00000000; drew 86160 pixels, the first 0001FEFF; 0 left magenta
+triangle: showing it for 3000 ms: 0x00000000
+triangle: as the SDK draws: fences 0x00000000 0x00000000 0x00000000; drew 0 pixels, the first 00000000; 307200 left magenta
+triangle: showing it for 3000 ms: 0x00000000
+triangle: done; the GPU goes back at exit
+exit: status 0
