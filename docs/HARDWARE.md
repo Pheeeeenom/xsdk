@@ -362,3 +362,17 @@ the first engines run's length, and the second swap run's at 1454 bytes, the fir
 title rewrites `xsdk.log` with `FILE_OVERWRITE_IF`, the new text reaches the disk but the file's size stays the old
 one, even after `NtClose` in `_exit`, and a longer log loses its tail. The log now calls `NtFlushBuffersFile` after
 every line; whether that keeps the size current is for the next run to show.
+
+## The kernel doesn't flip on VdSwap (2026-10-10)
+
+`tests/probe_swap.c` registered the swap fence's address with `VdSetSystemCommandBufferGpuIdentifierAddress`, passed
+the value from `VdGetSystemCommandBuffer` as `VdSwap`'s fifth argument, and swapped first to a red 1280x720 buffer,
+then to a blue 640x480 one, reading the display controller's registers (libxenon:drivers/xenos/xenos.h:26-44) along
+the way (log: `results/2026-10-10-probe-swap-3/xsdk.log`).
+
+- **At title start the display shows a 640x480 surface at address 0, scaled up.** `D1GRPH_ENABLE` 1,
+  `D1GRPH_CONTROL` 2, `D1GRPH_PRIMARY_SURFACE_ADDRESS` 0, pitch and end 640x480, viewport size 640x480, scaler on.
+  That matches the 640x480 front buffer `VdGetCurrentDisplayInformation` reports.
+- **Neither swap changed the display.** Each `VdSwap` wrote the same fence, now with the value from
+  `VdGetSystemCommandBuffer`, and it landed, but the surface address stayed 0 and the display information stayed
+  640x480, so the screen stayed black. So the kernel doesn't flip on `VdSwap` and its fence alone.

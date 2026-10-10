@@ -1,0 +1,27 @@
+log: game:\xsdk.log
+swap probe
+swap: at start: front buffer 640x480, colour format 0, pixel format 0; display 1280x720
+swap: video mode 1280x720, 59.94 Hz
+swap: VdGetSystemCommandBuffer gave 0001C6F1
+swap: reading the display registers
+swap: at start: D1GRPH enable 00000001, control 00000002, surface 00000000, pitch 00000280, end 00000280 x 000001E0
+swap: at start: D1GRPH update 00000000, flip control 00000001; viewport size 028001E0, scaler enable 00000001
+swap: after xsdk_gpu_open: D1GRPH enable 00000001, control 00000002, surface 00000000, pitch 00000280, end 00000280 x 000001E0
+swap: after xsdk_gpu_open: D1GRPH update 00000000, flip control 00000001; viewport size 028001E0, scaler enable 00000001
+swap: red 1280x720: 1280x720 at BF890000 (physical 1F890000), fetch constant 0A000002 BF890086 0059E4FF
+swap: red 1280x720: ring C0025800 00000003 1FC20042 0001C6F1 C03A1000 A5A5A5A5
+swap: red 1280x720: fence 0x00000000, system writeback 0001C6F1
+swap: red 1280x720: D1GRPH enable 00000001, control 00000002, surface 00000000, pitch 00000280, end 00000280 x 000001E0
+swap: red 1280x720: D1GRPH update 00000000, flip control 00000001; viewport size 028001E0, scaler enable 00000001
+swap: red 1280x720: front buffer 640x480, colour format 0, pixel format 0; display 1280x720
+swap: red 1280x720: D1GRPH enable 00000001, control 00000002, surface 00000000, pitch 00000280, end 00000280 x 000001E0
+swap: red 1280x720: D1GRPH update 00000000, flip control 00000001; viewport size 028001E0, scaler enable 00000001
+swap: blue front-buffer size: 640x480 at BF760000 (physical 1F760000), fetch constant 05000002 BF760086 003BE27F
+swap: blue front-buffer size: ring C0025800 00000003 1FC20042 0001C6F1 C03A1000 A5A5A5A5
+swap: blue front-buffer size: fence 0x00000000, system writeback 0001C6F1
+swap: blue front-buffer size: D1GRPH enable 00000001, control 00000002, surface 00000000, pitch 00000280, end 00000280 x 000001E0
+swap: blue front-buffer size: D1GRPH update 00000000, flip control 00000001; viewport size 028001E0, scaler enable 00000001
+swap: blue front-buffer size: front buffer 640x480, colour format 0, pixel format 0; display 1280x720
+swap: blue front-buffer size: D1GRPH enable 00000001, control 00000002, surface 00000000, pitch 00000280, end 00000280 x 000001E0
+swap: blue front-buffer size: D1GRPH update 00000000, flip control 00000001; viewport size 028001E0, scaler enable 00000001
+exit: status 0
