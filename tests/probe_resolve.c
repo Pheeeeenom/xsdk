@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "probe_gpu.h"
 #include "xsdk/gpu.h"
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
@@ -53,23 +54,6 @@ enum {
 	RB_COLOR_CLEAR = 0x231E,
 	SHADER_CONSTANT_FETCH_00_0 = 0x4800,
 	SHADER_CONSTANT_FLUSH_FETCH_0 = 0x5000,
-};
-
-// Display registers by index; libxenon's names, and Xenia's style for the pair it doesn't name
-// (libxenon:xenos.h:11-54).
-enum {
-	UNKNOWN_0A10 = 0x0A10,
-	UNKNOWN_0A11 = 0x0A11,
-	D1CRTC_DOUBLE_BUFFER_CONTROL = 0x183B,
-	D1GRPH_PRIMARY_SURFACE_ADDRESS = 0x1844,
-	D1GRPH_PITCH = 0x1848,
-	D1GRPH_X_END = 0x184D,
-	D1GRPH_Y_END = 0x184E,
-	DC_LUT_RW_MODE = 0x1921,
-	DC_LUT_RW_INDEX = 0x1922,
-	DC_LUT_WRITE_EN_MASK = 0x1927,
-	DC_LUT_AUTOFILL = 0x1928,
-	DC_LUTA_CONTROL = 0x1930,
 };
 
 // Type-3 opcodes and the cache flush event (xenia:src/xenia/gpu/xenos.h:1548, 1572-1622).
@@ -154,9 +138,6 @@ typedef struct {
 	uint32_t dwords[MAX_STAGE_DWORDS];
 	uint32_t count;
 } Stage;
-
-// GPU registers as titles see them (xenia:src/xenia/gpu/graphics_system.cc:92-95).
-static volatile uint32_t *const gpu_registers = (volatile uint32_t *)0x7FC80000;
 
 static void put(Stage *stage, uint32_t value)
 {
@@ -298,27 +279,28 @@ static bool resolve_once(
 // Sets 0x60EC after the surface registers, as XAM does, and waits for the display to clear it (docs/HARDWARE.md).
 static void set_surface(uint32_t physical_address, uint32_t pitch)
 {
-	gpu_registers[UNKNOWN_0A10] = physical_address;
-	gpu_registers[UNKNOWN_0A11] = pitch;
-	gpu_registers[D1GRPH_PRIMARY_SURFACE_ADDRESS] = physical_address;
-	gpu_registers[D1GRPH_PITCH] = pitch;
-	gpu_registers[D1GRPH_X_END] = pitch;
-	gpu_registers[D1CRTC_DOUBLE_BUFFER_CONTROL] = 1;
-	for (uint32_t waited_ms = 0; gpu_registers[D1CRTC_DOUBLE_BUFFER_CONTROL] && waited_ms < APPLY_TIMEOUT_MS;
+	probe_gpu_registers[UNKNOWN_0A10] = physical_address;
+	probe_gpu_registers[UNKNOWN_0A11] = pitch;
+	probe_gpu_registers[D1GRPH_PRIMARY_SURFACE_ADDRESS] = physical_address;
+	probe_gpu_registers[D1GRPH_PITCH] = pitch;
+	probe_gpu_registers[D1GRPH_X_END] = pitch;
+	probe_gpu_registers[D1CRTC_DOUBLE_BUFFER_CONTROL] = 1;
+	for (uint32_t waited_ms = 0; probe_gpu_registers[D1CRTC_DOUBLE_BUFFER_CONTROL] && waited_ms < APPLY_TIMEOUT_MS;
 		waited_ms++)
 		(void)xsdk_thread_sleep(1);
-	gpu_registers[D1CRTC_DOUBLE_BUFFER_CONTROL] = 0;
+	probe_gpu_registers[D1CRTC_DOUBLE_BUFFER_CONTROL] = 0;
 }
 
 // libxenon's LUT autofill; a title's display stays black without it (libxenon:drivers/xenos/xenos.c:419-424).
 static void fill_lut(void)
 {
-	gpu_registers[DC_LUTA_CONTROL] = 0;
-	gpu_registers[DC_LUT_RW_INDEX] = 0;
-	gpu_registers[DC_LUT_RW_MODE] = 0;
-	gpu_registers[DC_LUT_WRITE_EN_MASK] = 7;
-	gpu_registers[DC_LUT_AUTOFILL] = 1;
-	for (uint32_t waited_ms = 0; !(gpu_registers[DC_LUT_AUTOFILL] & 2) && waited_ms < AUTOFILL_TIMEOUT_MS; waited_ms++)
+	probe_gpu_registers[DC_LUTA_CONTROL] = 0;
+	probe_gpu_registers[DC_LUT_RW_INDEX] = 0;
+	probe_gpu_registers[DC_LUT_RW_MODE] = 0;
+	probe_gpu_registers[DC_LUT_WRITE_EN_MASK] = 7;
+	probe_gpu_registers[DC_LUT_AUTOFILL] = 1;
+	for (uint32_t waited_ms = 0; !(probe_gpu_registers[DC_LUT_AUTOFILL] & 2) && waited_ms < AUTOFILL_TIMEOUT_MS;
+		waited_ms++)
 		(void)xsdk_thread_sleep(1);
 }
 
@@ -417,11 +399,11 @@ static void hold(const char *what)
 int main(void)
 {
 	xsdk_log_write("resolve probe");
-	const uint32_t old_surface = gpu_registers[D1GRPH_PRIMARY_SURFACE_ADDRESS];
+	const uint32_t old_surface = probe_gpu_registers[D1GRPH_PRIMARY_SURFACE_ADDRESS];
 	// Xenia has no display registers; there the probe still resolves, and the read-back pixels show the result.
-	const bool has_display = gpu_registers[D1GRPH_PITCH] != 0;
-	const uint32_t width = has_display ? gpu_registers[D1GRPH_PITCH] : 640;
-	const uint32_t height = has_display ? gpu_registers[D1GRPH_Y_END] : 480;
+	const bool has_display = probe_gpu_registers[D1GRPH_PITCH] != 0;
+	const uint32_t width = has_display ? probe_gpu_registers[D1GRPH_PITCH] : 640;
+	const uint32_t height = has_display ? probe_gpu_registers[D1GRPH_Y_END] : 480;
 	const uint32_t pixel_count = width * ((height + TILE_PIXELS - 1) & ~(TILE_PIXELS - 1));
 	volatile uint32_t *const pixels = allocate(pixel_count * 4, PAGE_WRITECOMBINE);
 	volatile uint32_t *const vertices = allocate(PAGE_BYTES, PAGE_NOCACHE);

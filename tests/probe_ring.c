@@ -1,6 +1,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "probe_gpu.h"
+#include "xsdk/gpu.h"
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
 #include "xsdk/thread.h"
@@ -23,19 +25,19 @@ enum {
 	MEM_WRITE_VALUE = 0x4D454D57,
 	SCRATCH_VALUE = 0x53435230,
 	EVENT_VALUE = 0x45564E54,
-	// 0x07D8 bit 28 halts the command processor (xe.c:305-318).
+	// UNKNOWN_01F6 bit 28 halts the command processor (xe.c:305-318).
 	CP_HALTED = 0x10000000,
-	// RBBM_STATUS bit 31: the GPU is busy (xe.c:258).
-	GPU_BUSY = 0x80000000,
+	// libxenon's ring set-up writes these two as well (xe.c:211, 221).
+	UNKNOWN_005F = 0x005F,
+	UNKNOWN_01C6 = 0x01C6,
 };
 
-// Register byte offsets, written through the ring as libxenon's Xe_pWriteReg does (xe.c:28-38); the names are Xenia's
-// (xenia:src/xenia/gpu/register_table.inc:39-65).
+// Register indices (xenia:src/xenia/gpu/register_table.inc), written through the ring as libxenon does (xe.c:28-38).
 enum {
-	SCRATCH_UMSK = 0x0770,
-	SCRATCH_ADDR = 0x0774,
-	SCRATCH_REG0 = 0x15E0,
-	WAIT_UNTIL = 0x1720,
+	SCRATCH_UMSK = 0x01DC,
+	SCRATCH_ADDR = 0x01DD,
+	SCRATCH_REG0 = 0x0578,
+	WAIT_UNTIL = 0x05C8,
 	// libxenon's values: write back scratch registers 0, 1, 4 and 5 (xe.c:986), and wait for idle (xe.c:1223-1226).
 	SCRATCH_UMSK_VALUE = 0x20033,
 	WAIT_UNTIL_IDLE = 0x20000,
@@ -43,7 +45,6 @@ enum {
 
 // Type-3 packets and events (xenia:src/xenia/gpu/xenos.h:1541-1622, 1657-1663).
 enum {
-	PM4_NOP = 0x10,
 	PM4_MEM_WRITE = 0x3D,
 	PM4_EVENT_WRITE_SHD = 0x58,
 	CACHE_FLUSH_AND_INV_TS_EVENT = 20,
@@ -66,33 +67,20 @@ typedef struct {
 	uint32_t write_index;
 } Ring;
 
-// GPU registers as titles see them (xenia:src/xenia/gpu/graphics_system.cc:92-95); offsets are in bytes, as libxenon's.
-static volatile uint32_t *const gpu_registers = (volatile uint32_t *)0x7FC80000;
-
-static uint32_t read_register(uint32_t offset)
-{
-	return gpu_registers[offset / 4];
-}
-
-static void write_register(uint32_t offset, uint32_t value)
-{
-	gpu_registers[offset / 4] = value;
-}
-
 static void put(Ring *ring, uint32_t value)
 {
 	ring->ring[ring->write_index++] = value;
 }
 
-static void put_register(Ring *ring, uint32_t register_offset, uint32_t value)
+static void put_register(Ring *ring, uint32_t index, uint32_t value)
 {
-	put(ring, register_offset >> 2);
+	put(ring, index);
 	put(ring, value);
 }
 
 static void put_type3(Ring *ring, uint32_t opcode, uint32_t payload_dwords)
 {
-	put(ring, 3u << 30 | (payload_dwords - 1) << 16 | opcode << 8);
+	put(ring, xsdk_gpu_type3(opcode, payload_dwords));
 }
 
 // The ring is write-combined: drain the CPU's writes before the command processor may read them (libxenon:
@@ -100,17 +88,7 @@ static void put_type3(Ring *ring, uint32_t opcode, uint32_t payload_dwords)
 static void kick(const Ring *ring)
 {
 	__asm__ volatile("sync" ::: "memory");
-	write_register(0x0714, ring->write_index);
-}
-
-// D3D's GPU hang report names 0x1740 RBBM_STATUS and 0x0700-0x0714 CP_RB_BASE to CP_RB_WPTR (docs/HARDWARE.md).
-static void report_state(const char *when)
-{
-	xsdk_log_write("ring: %s: 0x07D8 %08X (bit 28: halted), RBBM_STATUS %08X (bit 31: busy)", when,
-		(unsigned)read_register(0x07D8), (unsigned)read_register(0x1740));
-	xsdk_log_write("ring: %s: base %08X, control %08X, read pointer write-back %08X, read %08X, write %08X", when,
-		(unsigned)read_register(0x0700), (unsigned)read_register(0x0704), (unsigned)read_register(0x070C),
-		(unsigned)read_register(0x0710), (unsigned)read_register(0x0714));
+	probe_gpu_registers[CP_RB_WPTR] = ring->write_index;
 }
 
 static const char *describe(uint32_t seen, uint32_t expected)
@@ -137,7 +115,7 @@ static uint32_t wait_for_write(volatile const uint32_t *slot)
 static bool wait_until_idle(void)
 {
 	for (uint32_t waited_ms = 0; waited_ms < FENCE_TIMEOUT_MS; waited_ms++) {
-		if (!(read_register(0x1740) & GPU_BUSY))
+		if (!(probe_gpu_registers[RBBM_STATUS] & GPU_BUSY))
 			return true;
 		(void)xsdk_thread_sleep(1);
 	}
@@ -147,31 +125,32 @@ static bool wait_until_idle(void)
 // libxenon's ring set-up, with the command processor halted as libxenon has it then (xe.c:208-222, 340-346, 387-396).
 static void set_up_ring(uint32_t ring_physical, uint32_t rptr_physical)
 {
-	const uint32_t control = read_register(0x07D8);
-	write_register(0x07D8, control | CP_HALTED);
+	volatile uint32_t *const registers = probe_gpu_registers;
+	const uint32_t control = registers[UNKNOWN_01F6];
+	registers[UNKNOWN_01F6] = control | CP_HALTED;
 	(void)xsdk_thread_sleep(2);
 
-	write_register(0x0704, read_register(0x0704) | 0x80000000);
-	write_register(0x017C, 0);
-	write_register(0x0714, 0);
-	write_register(0x0704, read_register(0x0704) & ~0x80000000);
-	write_register(0x0704, RING_SIZE_LOG2 | 0x8020000);
-	write_register(0x0700, ring_physical);
-	write_register(0x0718, 0x10);
+	registers[CP_RB_CNTL] |= 0x80000000;
+	registers[UNKNOWN_005F] = 0;
+	registers[CP_RB_WPTR] = 0;
+	registers[CP_RB_CNTL] &= ~0x80000000;
+	registers[CP_RB_CNTL] = RING_SIZE_LOG2 | 0x8020000;
+	registers[CP_RB_BASE] = ring_physical;
+	registers[UNKNOWN_01C6] = 0x10;
 
-	const uint32_t ring_control = read_register(0x0704) & ~0x8003F00;
-	write_register(0x0704, ring_control);
-	write_register(0x070C, rptr_physical | SWAP_8IN32);
-	write_register(0x0704, ring_control | RPTR_BLOCK_SIZE_LOG2 << 8);
+	const uint32_t ring_control = registers[CP_RB_CNTL] & ~0x8003F00;
+	registers[CP_RB_CNTL] = ring_control;
+	registers[CP_RB_RPTR_ADDR] = rptr_physical | SWAP_8IN32;
+	registers[CP_RB_CNTL] = ring_control | RPTR_BLOCK_SIZE_LOG2 << 8;
 
-	write_register(0x07D8, control);
+	registers[UNKNOWN_01F6] = control;
 	(void)xsdk_thread_sleep(2);
 }
 
 int main(void)
 {
 	xsdk_log_write("ring probe");
-	report_state("at start");
+	probe_report_cp("ring", "at start");
 
 	// The ring is write-combined, as titles allocate it (xboxkrnl_video.cc:235-238); the write-back page is uncached,
 	// so the CPU sees what the GPU writes.
@@ -201,7 +180,7 @@ int main(void)
 	}
 	xsdk_log_write("ring: setting up the ring through the registers");
 	set_up_ring(ring_physical, writeback_physical + RPTR_SLOT);
-	report_state("after set-up");
+	probe_report_cp("ring", "after set-up");
 
 	Ring ring = { .ring = ring_memory, .write_index = 0 };
 
@@ -222,7 +201,7 @@ int main(void)
 	xsdk_log_write("ring: phase A after %u ms: MEM_WRITE %08X (%s), scratch %08X (%s), read pointer write-back %08X",
 		(unsigned)waited_ms, (unsigned)mem_write_seen, describe(mem_write_seen, MEM_WRITE_VALUE),
 		(unsigned)scratch_seen, describe(scratch_seen, SCRATCH_VALUE), (unsigned)writeback[RPTR_SLOT / 4]);
-	report_state("after phase A");
+	probe_report_cp("ring", "after phase A");
 
 	put_type3(&ring, PM4_EVENT_WRITE_SHD, 3);
 	put(&ring, CACHE_FLUSH_AND_INV_TS_EVENT);
@@ -235,6 +214,6 @@ int main(void)
 	xsdk_log_write("ring: phase B after %u ms: EVENT_WRITE_SHD %08X (%s), read pointer write-back %08X",
 		(unsigned)waited_ms, (unsigned)event_seen, describe(event_seen, EVENT_VALUE),
 		(unsigned)writeback[RPTR_SLOT / 4]);
-	report_state("at end");
+	probe_report_cp("ring", "at end");
 	return 0;
 }

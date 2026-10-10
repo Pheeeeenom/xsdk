@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <time.h>
 
+#include "probe_gpu.h"
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
 #include "xsdk/thread.h"
@@ -25,16 +26,8 @@ typedef struct {
 	uint32_t last_write;
 } Watch;
 
-// GPU registers as titles see them (xenia:src/xenia/gpu/graphics_system.cc:92-95); offsets are in bytes, as libxenon's.
-static volatile uint32_t *const gpu_registers = (volatile uint32_t *)0x7FC80000;
-
 // Written only by the callback.
 static volatile uint32_t interrupt_counts[SOURCE_OTHER + 1];
-
-static uint32_t read_register(uint32_t offset)
-{
-	return gpu_registers[offset / 4];
-}
 
 // Runs in the kernel's interrupt handling, so it only counts.
 static void count_interrupt(uint32_t source, void *context)
@@ -43,22 +36,14 @@ static void count_interrupt(uint32_t source, void *context)
 	interrupt_counts[source < SOURCE_OTHER ? source : SOURCE_OTHER]++;
 }
 
-static uint32_t elapsed_ms(const struct timespec *start)
-{
-	struct timespec now;
-	(void)clock_gettime(CLOCK_MONOTONIC, &now);
-	return (uint32_t)((now.tv_sec - start->tv_sec) * 1000 + (now.tv_nsec - start->tv_nsec) / 1000000);
-}
-
-// 0x0714 is the ring's write pointer (libxenon:drivers/xenos/xe.c:104).
 static Watch watch_write_pointer(void)
 {
 	struct timespec start;
 	(void)clock_gettime(CLOCK_MONOTONIC, &start);
-	uint32_t last = read_register(0x0714);
+	uint32_t last = probe_gpu_registers[CP_RB_WPTR];
 	Watch watch = { .moves = 0, .first_write = last, .last_write = last };
-	while (elapsed_ms(&start) < WATCH_MS) {
-		const uint32_t write = read_register(0x0714);
+	while (probe_elapsed_ms(&start) < WATCH_MS) {
+		const uint32_t write = probe_gpu_registers[CP_RB_WPTR];
 		if (write != last) {
 			watch.moves++;
 			last = write;
@@ -84,18 +69,10 @@ static void watch_and_report(const char *phase)
 		(unsigned)(interrupt_counts[SOURCE_OTHER] - before[SOURCE_OTHER]));
 }
 
-// What each register means comes from how libxenon uses it (drivers/xenos/xe.c:104, 210-221, 258, 305-330).
-static void report_state(const char *when)
-{
-	xsdk_log_write("interrupt: %s: 0x07D8 %08X, 0x1740 %08X (bit 31: busy), ring base %08X, read %08X, write %08X",
-		when, (unsigned)read_register(0x07D8), (unsigned)read_register(0x1740), (unsigned)read_register(0x0700),
-		(unsigned)read_register(0x0710), (unsigned)read_register(0x0714));
-}
-
 int main(void)
 {
 	xsdk_log_write("interrupt probe");
-	report_state("at start");
+	probe_report_cp("interrupt", "at start");
 	watch_and_report("with XAM's callback");
 
 	VdSetGraphicsInterruptCallback(count_interrupt, 0);
@@ -103,6 +80,6 @@ int main(void)
 
 	VdSetGraphicsInterruptCallback(0, 0);
 	watch_and_report("with no callback");
-	report_state("at end");
+	probe_report_cp("interrupt", "at end");
 	return 0;
 }

@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <time.h>
 
+#include "probe_gpu.h"
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
 #include "xsdk/thread.h"
@@ -13,8 +14,8 @@
 enum {
 	WATCH_MS = 5000,
 	MAX_CHANGES_KEPT = 64,
-	// RBBM_STATUS bit 31: the GPU is busy (libxenon:drivers/xenos/xe.c:258).
-	GPU_BUSY = 0x80000000,
+	// libxenon checks its bits 8-11 before taking the GPU (libxenon:drivers/xenos/xe.c:363).
+	UNKNOWN_039B = 0x039B,
 };
 
 typedef struct {
@@ -31,24 +32,12 @@ typedef struct {
 	RingState state;
 } RingChange;
 
-// GPU registers as titles see them (xenia:src/xenia/gpu/graphics_system.cc:92-95); offsets are in bytes, as libxenon's.
-static volatile uint32_t *const gpu_registers = (volatile uint32_t *)0x7FC80000;
-
 static RingChange changes[MAX_CHANGES_KEPT];
 
-static uint32_t read_register(uint32_t offset)
-{
-	return gpu_registers[offset / 4];
-}
-
-// What each register means comes from how libxenon uses it (drivers/xenos/xe.c:104, 210-221, 258, 305-330, 389-395).
 static void report_state(const char *when)
 {
-	xsdk_log_write("cp: %s: 0x07D8 %08X (bit 28: halted), 0x1740 %08X (bit 31: busy), 0x0E6C %08X", when,
-		(unsigned)read_register(0x07D8), (unsigned)read_register(0x1740), (unsigned)read_register(0x0E6C));
-	xsdk_log_write("cp: %s: ring: base %08X, control %08X, read pointer write-back %08X, read %08X, write %08X", when,
-		(unsigned)read_register(0x0700), (unsigned)read_register(0x0704), (unsigned)read_register(0x070C),
-		(unsigned)read_register(0x0710), (unsigned)read_register(0x0714));
+	probe_report_cp("cp", when);
+	xsdk_log_write("cp: %s: 0x0E6C %08X", when, (unsigned)probe_gpu_registers[UNKNOWN_039B]);
 }
 
 // D3D's GPU hang report names the device it came from; these say whether that is XAM's.
@@ -61,13 +50,14 @@ static void report_devices(void)
 
 static RingState sample_ring(void)
 {
+	volatile const uint32_t *const registers = probe_gpu_registers;
 	return (RingState){
-		.base = read_register(0x0700),
-		.read = read_register(0x0710),
-		.write = read_register(0x0714),
-		.read_writeback = read_register(0x070C),
-		.me_control = read_register(0x07D8),
-		.busy = (read_register(0x1740) & GPU_BUSY) != 0,
+		.base = registers[CP_RB_BASE],
+		.read = registers[CP_RB_RPTR],
+		.write = registers[CP_RB_WPTR],
+		.read_writeback = registers[CP_RB_RPTR_ADDR],
+		.me_control = registers[UNKNOWN_01F6],
+		.busy = (registers[RBBM_STATUS] & GPU_BUSY) != 0,
 	};
 }
 
@@ -75,13 +65,6 @@ static bool same_state(const RingState *a, const RingState *b)
 {
 	return a->base == b->base && a->read == b->read && a->write == b->write && a->read_writeback == b->read_writeback &&
 		a->me_control == b->me_control && a->busy == b->busy;
-}
-
-static uint32_t elapsed_ms(const struct timespec *start)
-{
-	struct timespec now;
-	(void)clock_gettime(CLOCK_MONOTONIC, &now);
-	return (uint32_t)((now.tv_sec - start->tv_sec) * 1000 + (now.tv_nsec - start->tv_nsec) / 1000000);
 }
 
 // Samples about once a millisecond and keeps each change, logging them afterwards so the log's writes don't slow the
@@ -94,7 +77,7 @@ static void watch_ring(void)
 	uint32_t change_count = 0;
 	uint32_t samples = 0;
 	uint32_t busy_samples = 0;
-	for (uint32_t now_ms = 0; now_ms < WATCH_MS; now_ms = elapsed_ms(&start)) {
+	for (uint32_t now_ms = 0; now_ms < WATCH_MS; now_ms = probe_elapsed_ms(&start)) {
 		const RingState state = sample_ring();
 		samples++;
 		busy_samples += state.busy;

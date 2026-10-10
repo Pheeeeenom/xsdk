@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "probe_gpu.h"
 #include "xsdk/gpu.h"
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
@@ -35,20 +36,6 @@ enum {
 	DIMENSION_2D = 1,
 };
 
-// Display controller registers, in bytes from the register base (libxenon:drivers/xenos/xenos.h:26-44).
-enum {
-	D1GRPH_ENABLE = 0x6100,
-	D1GRPH_CONTROL = 0x6104,
-	D1GRPH_PRIMARY_SURFACE_ADDRESS = 0x6110,
-	D1GRPH_PITCH = 0x6120,
-	D1GRPH_X_END = 0x6134,
-	D1GRPH_Y_END = 0x6138,
-	D1GRPH_UPDATE = 0x6144,
-	D1GRPH_FLIP_CONTROL = 0x6148,
-	AVIVO_D1MODE_VIEWPORT_SIZE = 0x6584,
-	AVIVO_D1SCL_SCALER_ENABLE = 0x6590,
-};
-
 typedef struct {
 	const char *name;
 	volatile uint32_t *pixels;
@@ -56,26 +43,19 @@ typedef struct {
 	uint32_t height;
 } FrontBuffer;
 
-// GPU registers as titles see them (xenia:src/xenia/gpu/graphics_system.cc:92-95); libxenon's base is the same block.
-static volatile uint32_t *const gpu_registers = (volatile uint32_t *)0x7FC80000;
-
 static uint32_t system_buffer[SYSTEM_BUFFER_DWORDS];
 static uint32_t system_value;
 
-static uint32_t read_register(uint32_t offset)
-{
-	return gpu_registers[offset / 4];
-}
-
 static void report_registers(const char *when)
 {
+	volatile const uint32_t *const registers = probe_gpu_registers;
 	xsdk_log_write("swap: %s: D1GRPH enable %08X, control %08X, surface %08X, pitch %08X, end %08X x %08X", when,
-		(unsigned)read_register(D1GRPH_ENABLE), (unsigned)read_register(D1GRPH_CONTROL),
-		(unsigned)read_register(D1GRPH_PRIMARY_SURFACE_ADDRESS), (unsigned)read_register(D1GRPH_PITCH),
-		(unsigned)read_register(D1GRPH_X_END), (unsigned)read_register(D1GRPH_Y_END));
+		(unsigned)registers[D1GRPH_ENABLE], (unsigned)registers[D1GRPH_CONTROL],
+		(unsigned)registers[D1GRPH_PRIMARY_SURFACE_ADDRESS], (unsigned)registers[D1GRPH_PITCH],
+		(unsigned)registers[D1GRPH_X_END], (unsigned)registers[D1GRPH_Y_END]);
 	xsdk_log_write("swap: %s: D1GRPH update %08X, flip control %08X; viewport size %08X, scaler enable %08X", when,
-		(unsigned)read_register(D1GRPH_UPDATE), (unsigned)read_register(D1GRPH_FLIP_CONTROL),
-		(unsigned)read_register(AVIVO_D1MODE_VIEWPORT_SIZE), (unsigned)read_register(AVIVO_D1SCL_SCALER_ENABLE));
+		(unsigned)registers[D1GRPH_UPDATE], (unsigned)registers[D1GRPH_FLIP_CONTROL],
+		(unsigned)registers[AVIVO_D1MODE_VIEWPORT_SIZE], (unsigned)registers[AVIVO_D1SCL_SCALER_ENABLE]);
 }
 
 static DISPLAY_INFO report_display_information(const char *when)

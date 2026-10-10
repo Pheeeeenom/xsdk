@@ -1,5 +1,6 @@
 #include <stdint.h>
 
+#include "probe_gpu.h"
 #include "xsdk/gpu.h"
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
@@ -22,23 +23,6 @@ enum {
 	WHITE = 0xFFFFFFFF,
 };
 
-// Display controller registers, in bytes from the register base (libxenon:drivers/xenos/xenos.h:11-54,
-// xenos.c:384-386).
-enum {
-	SURFACE_ADDRESS = 0x2840,
-	SURFACE_PITCH = 0x2844,
-	D1CRTC_DOUBLE_BUFFER_CONTROL = 0x60EC,
-	D1GRPH_PRIMARY_SURFACE_ADDRESS = 0x6110,
-	D1GRPH_PITCH = 0x6120,
-	D1GRPH_X_END = 0x6134,
-	D1GRPH_Y_END = 0x6138,
-	DC_LUT_RW_MODE = 0x6484,
-	DC_LUT_RW_INDEX = 0x6488,
-	DC_LUT_WRITE_EN_MASK = 0x649C,
-	DC_LUT_AUTOFILL = 0x64A0,
-	DC_LUTA_CONTROL = 0x64C0,
-};
-
 typedef struct {
 	const char *name;
 	uint32_t pixel;
@@ -52,65 +36,55 @@ static const Colour colours[] = {
 	{ "blue", 0xFF0000FF },
 };
 
-// GPU registers as titles see them (xenia:src/xenia/gpu/graphics_system.cc:92-95); libxenon's base is the same block.
-static volatile uint32_t *const gpu_registers = (volatile uint32_t *)0x7FC80000;
-
-static uint32_t read_register(uint32_t offset)
-{
-	return gpu_registers[offset / 4];
-}
-
-static void write_register(uint32_t offset, uint32_t value)
-{
-	gpu_registers[offset / 4] = value;
-}
-
 static void report(const char *when)
 {
+	volatile const uint32_t *const registers = probe_gpu_registers;
 	xsdk_log_write(
 		"display: %s: 2840 %08X, 2844 %08X, surface %08X, pitch %08X, x end %08X, y end %08X, LUT autofill "
 		"%08X, 60EC %08X",
-		when, (unsigned)read_register(SURFACE_ADDRESS), (unsigned)read_register(SURFACE_PITCH),
-		(unsigned)read_register(D1GRPH_PRIMARY_SURFACE_ADDRESS), (unsigned)read_register(D1GRPH_PITCH),
-		(unsigned)read_register(D1GRPH_X_END), (unsigned)read_register(D1GRPH_Y_END),
-		(unsigned)read_register(DC_LUT_AUTOFILL), (unsigned)read_register(D1CRTC_DOUBLE_BUFFER_CONTROL));
+		when, (unsigned)registers[UNKNOWN_0A10], (unsigned)registers[UNKNOWN_0A11],
+		(unsigned)registers[D1GRPH_PRIMARY_SURFACE_ADDRESS], (unsigned)registers[D1GRPH_PITCH],
+		(unsigned)registers[D1GRPH_X_END], (unsigned)registers[D1GRPH_Y_END], (unsigned)registers[DC_LUT_AUTOFILL],
+		(unsigned)registers[D1CRTC_DOUBLE_BUFFER_CONTROL]);
 }
 
 // Sets 0x60EC after the registers, as XAM's change showed, and waits for the display to clear it.
 static void apply(void)
 {
-	write_register(D1CRTC_DOUBLE_BUFFER_CONTROL, 1);
-	for (uint32_t waited_ms = 0; read_register(D1CRTC_DOUBLE_BUFFER_CONTROL) && waited_ms < APPLY_TIMEOUT_MS;
-		waited_ms++)
+	volatile uint32_t *const registers = probe_gpu_registers;
+	registers[D1CRTC_DOUBLE_BUFFER_CONTROL] = 1;
+	for (uint32_t waited_ms = 0; registers[D1CRTC_DOUBLE_BUFFER_CONTROL] && waited_ms < APPLY_TIMEOUT_MS; waited_ms++)
 		(void)xsdk_thread_sleep(1);
-	write_register(D1CRTC_DOUBLE_BUFFER_CONTROL, 0);
+	registers[D1CRTC_DOUBLE_BUFFER_CONTROL] = 0;
 }
 
 // XAM writes the address and pitch to both 0x2840 and D1GRPH (docs/HARDWARE.md).
 static void set_surface(uint32_t physical_address, uint32_t pitch)
 {
-	write_register(SURFACE_ADDRESS, physical_address);
-	write_register(SURFACE_PITCH, pitch);
-	write_register(D1GRPH_PRIMARY_SURFACE_ADDRESS, physical_address);
-	write_register(D1GRPH_PITCH, pitch);
-	write_register(D1GRPH_X_END, pitch);
+	volatile uint32_t *const registers = probe_gpu_registers;
+	registers[UNKNOWN_0A10] = physical_address;
+	registers[UNKNOWN_0A11] = pitch;
+	registers[D1GRPH_PRIMARY_SURFACE_ADDRESS] = physical_address;
+	registers[D1GRPH_PITCH] = pitch;
+	registers[D1GRPH_X_END] = pitch;
 	apply();
 }
 
 // libxenon's LUT set-up: autofill writes a linear ramp (libxenon:drivers/xenos/xenos.c:419-424).
 static void fill_lut(void)
 {
-	write_register(DC_LUTA_CONTROL, 0);
-	write_register(DC_LUT_RW_INDEX, 0);
-	write_register(DC_LUT_RW_MODE, 0);
-	write_register(DC_LUT_WRITE_EN_MASK, 7);
-	write_register(DC_LUT_AUTOFILL, 1);
+	volatile uint32_t *const registers = probe_gpu_registers;
+	registers[DC_LUTA_CONTROL] = 0;
+	registers[DC_LUT_RW_INDEX] = 0;
+	registers[DC_LUT_RW_MODE] = 0;
+	registers[DC_LUT_WRITE_EN_MASK] = 7;
+	registers[DC_LUT_AUTOFILL] = 1;
 	uint32_t waited_ms = 0;
-	while (!(read_register(DC_LUT_AUTOFILL) & 2) && waited_ms < AUTOFILL_TIMEOUT_MS) {
+	while (!(registers[DC_LUT_AUTOFILL] & 2) && waited_ms < AUTOFILL_TIMEOUT_MS) {
 		(void)xsdk_thread_sleep(1);
 		waited_ms++;
 	}
-	xsdk_log_write("display: LUT autofill %s after %u ms", read_register(DC_LUT_AUTOFILL) & 2 ? "done" : "not done",
+	xsdk_log_write("display: LUT autofill %s after %u ms", registers[DC_LUT_AUTOFILL] & 2 ? "done" : "not done",
 		(unsigned)waited_ms);
 }
 
@@ -179,9 +153,9 @@ int main(void)
 {
 	xsdk_log_write("display probe");
 	report("at start");
-	const uint32_t old_surface = read_register(D1GRPH_PRIMARY_SURFACE_ADDRESS);
-	const uint32_t width = read_register(D1GRPH_PITCH);
-	const uint32_t height = read_register(D1GRPH_Y_END);
+	const uint32_t old_surface = probe_gpu_registers[D1GRPH_PRIMARY_SURFACE_ADDRESS];
+	const uint32_t width = probe_gpu_registers[D1GRPH_PITCH];
+	const uint32_t height = probe_gpu_registers[D1GRPH_Y_END];
 	const uint32_t pixel_count = width * ((height + TILE_PIXELS - 1) & ~(TILE_PIXELS - 1));
 	const uint32_t bytes = (pixel_count * 4 + PAGE_BYTES - 1) & ~(PAGE_BYTES - 1);
 	volatile uint32_t *const pixels = MmAllocatePhysicalMemoryEx(

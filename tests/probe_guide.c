@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <time.h>
 
+#include "probe_gpu.h"
 #include "xsdk/gpu.h"
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
@@ -44,17 +45,15 @@ static const Range ranges[] = {
 	{ 0x7900, 64 },
 };
 
-// GPU registers as titles see them (xenia:src/xenia/gpu/graphics_system.cc:92-95); libxenon's base is the same block.
-static volatile uint32_t *const gpu_registers = (volatile uint32_t *)0x7FC80000;
-
 static uint32_t values[REGISTER_COUNT];
 static uint32_t change_counts[REGISTER_COUNT];
 static uint32_t before[REGISTER_COUNT];
 static Change changes[MAX_CHANGES_KEPT];
 
+// The watch logs registers in bytes, as libxenon names them.
 static uint32_t read_register(uint32_t offset)
 {
-	return gpu_registers[offset / 4];
+	return probe_gpu_registers[offset / 4];
 }
 
 static uint32_t offset_of(uint32_t index)
@@ -65,13 +64,6 @@ static uint32_t offset_of(uint32_t index)
 		index -= ranges[r].count;
 	}
 	return 0;
-}
-
-static uint32_t elapsed_ms(const struct timespec *start)
-{
-	struct timespec now;
-	(void)clock_gettime(CLOCK_MONOTONIC, &now);
-	return (uint32_t)((now.tv_sec - start->tv_sec) * 1000 + (now.tv_nsec - start->tv_nsec) / 1000000);
 }
 
 static void snapshot(uint32_t *into)
@@ -115,7 +107,7 @@ static void watch_guide(void)
 	struct timespec start;
 	(void)clock_gettime(CLOCK_MONOTONIC, &start);
 	uint32_t kept = 0;
-	for (uint32_t now_ms = 0; now_ms < WATCH_MS; now_ms = elapsed_ms(&start)) {
+	for (uint32_t now_ms = 0; now_ms < WATCH_MS; now_ms = probe_elapsed_ms(&start)) {
 		kept = sample(now_ms, kept);
 		(void)xsdk_thread_sleep(SAMPLE_MS);
 	}

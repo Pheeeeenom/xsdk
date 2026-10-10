@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include <time.h>
 
+#include "probe_gpu.h"
+#include "xsdk/gpu.h"
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
 #include "xsdk/thread.h"
@@ -30,17 +32,14 @@ enum {
 	MEM_WRITE_VALUE = 0x4D454D57,
 	SCRATCH_VALUE = 0x53435230,
 	EVENT_VALUE = 0x45564E54,
-	// RBBM_STATUS bit 31: the GPU is busy (libxenon:drivers/xenos/xe.c:258).
-	GPU_BUSY = 0x80000000,
 };
 
-// Register byte offsets, written through the ring as libxenon's Xe_pWriteReg does (xe.c:28-38); the names are Xenia's
-// (xenia:src/xenia/gpu/register_table.inc:39-65).
+// Register indices (xenia:src/xenia/gpu/register_table.inc), written through the ring as libxenon does (xe.c:28-38).
 enum {
-	SCRATCH_UMSK = 0x0770,
-	SCRATCH_ADDR = 0x0774,
-	SCRATCH_REG0 = 0x15E0,
-	WAIT_UNTIL = 0x1720,
+	SCRATCH_UMSK = 0x01DC,
+	SCRATCH_ADDR = 0x01DD,
+	SCRATCH_REG0 = 0x0578,
+	WAIT_UNTIL = 0x05C8,
 	// libxenon's values: write back scratch registers 0, 1, 4 and 5 (xe.c:986), and wait for idle (xe.c:1223-1226).
 	SCRATCH_UMSK_VALUE = 0x20033,
 	WAIT_UNTIL_IDLE = 0x20000,
@@ -48,7 +47,6 @@ enum {
 
 // Type-3 packets (xenia:src/xenia/gpu/xenos.h:1572-1622, 1657-1663).
 enum {
-	PM4_NOP = 0x10,
 	PM4_MEM_WRITE = 0x3D,
 	PM4_EVENT_WRITE_SHD = 0x58,
 	// A packet address's low bits pick a byte swap; 2 swaps the bytes of each dword (xenos.h:193-197).
@@ -82,20 +80,7 @@ typedef struct {
 	uint32_t write_index;
 } Ring;
 
-// GPU registers as titles see them (xenia:src/xenia/gpu/graphics_system.cc:92-95); offsets are in bytes, as libxenon's.
-static volatile uint32_t *const gpu_registers = (volatile uint32_t *)0x7FC80000;
-
 static volatile uint32_t engines_callback_calls;
-
-static uint32_t read_register(uint32_t offset)
-{
-	return gpu_registers[offset / 4];
-}
-
-static void write_register(uint32_t offset, uint32_t value)
-{
-	gpu_registers[offset / 4] = value;
-}
 
 // Its signature isn't known, so it takes nothing and only counts.
 static void count_engines_callback(void)
@@ -108,15 +93,15 @@ static void put(Ring *ring, uint32_t value)
 	ring->ring[ring->write_index++] = value;
 }
 
-static void put_register(Ring *ring, uint32_t register_offset, uint32_t value)
+static void put_register(Ring *ring, uint32_t index, uint32_t value)
 {
-	put(ring, register_offset >> 2);
+	put(ring, index);
 	put(ring, value);
 }
 
 static void put_type3(Ring *ring, uint32_t opcode, uint32_t payload_dwords)
 {
-	put(ring, 3u << 30 | (payload_dwords - 1) << 16 | opcode << 8);
+	put(ring, xsdk_gpu_type3(opcode, payload_dwords));
 }
 
 // The ring is write-combined: drain the CPU's writes before the command processor may read them (libxenon:
@@ -124,17 +109,7 @@ static void put_type3(Ring *ring, uint32_t opcode, uint32_t payload_dwords)
 static void kick(const Ring *ring)
 {
 	__asm__ volatile("sync" ::: "memory");
-	write_register(0x0714, ring->write_index);
-}
-
-// D3D's GPU hang report names 0x1740 RBBM_STATUS and 0x0700-0x0714 CP_RB_BASE to CP_RB_WPTR (docs/HARDWARE.md).
-static void report_state(const char *when)
-{
-	xsdk_log_write("engines: %s: 0x07D8 %08X (bit 28: halted), RBBM_STATUS %08X (bit 31: busy)", when,
-		(unsigned)read_register(0x07D8), (unsigned)read_register(0x1740));
-	xsdk_log_write("engines: %s: base %08X, control %08X, read pointer write-back %08X, read %08X, write %08X", when,
-		(unsigned)read_register(0x0700), (unsigned)read_register(0x0704), (unsigned)read_register(0x070C),
-		(unsigned)read_register(0x0710), (unsigned)read_register(0x0714));
+	probe_gpu_registers[CP_RB_WPTR] = ring->write_index;
 }
 
 static void report_devices(const char *when)
@@ -143,22 +118,15 @@ static void report_devices(const char *when)
 		(unsigned)*VdGlobalDevice, (unsigned)*VdGlobalXamDevice);
 }
 
-static uint32_t elapsed_ms(const struct timespec *start)
-{
-	struct timespec now;
-	(void)clock_gettime(CLOCK_MONOTONIC, &now);
-	return (uint32_t)((now.tv_sec - start->tv_sec) * 1000 + (now.tv_nsec - start->tv_nsec) / 1000000);
-}
-
 // Returns how often the write pointer moved: XAM's device moves it every vblank while it runs.
 static uint32_t count_write_pointer_moves(void)
 {
 	struct timespec start;
 	(void)clock_gettime(CLOCK_MONOTONIC, &start);
-	uint32_t last = read_register(0x0714);
+	uint32_t last = probe_gpu_registers[CP_RB_WPTR];
 	uint32_t moves = 0;
-	while (elapsed_ms(&start) < WATCH_MS) {
-		const uint32_t write = read_register(0x0714);
+	while (probe_elapsed_ms(&start) < WATCH_MS) {
+		const uint32_t write = probe_gpu_registers[CP_RB_WPTR];
 		moves += write != last;
 		last = write;
 		(void)xsdk_thread_sleep(1);
@@ -238,24 +206,24 @@ static bool submit_event_fence(Ring *ring, volatile uint32_t *writeback, uint32_
 static bool submit_fences(volatile uint32_t *ring_memory, volatile uint32_t *writeback, uint32_t writeback_physical)
 {
 	// Append after whatever the kernel left in the ring.
-	Ring ring = { .ring = ring_memory, .write_index = read_register(0x0714) };
+	Ring ring = { .ring = ring_memory, .write_index = probe_gpu_registers[CP_RB_WPTR] };
 	put_register(&ring, SCRATCH_ADDR, writeback_physical + SCRATCH_SLOT);
 	put_register(&ring, SCRATCH_UMSK, SCRATCH_UMSK_VALUE);
 	for (uint32_t sequence = 0; sequence < FENCES; sequence++)
 		submit_fence(&ring, writeback, writeback_physical, sequence);
-	report_state("after the scratch fences");
+	probe_report_cp("engines", "after the scratch fences");
 	for (uint32_t i = 0; i < sizeof fence_events / sizeof fence_events[0]; i++) {
 		if (!submit_event_fence(&ring, writeback, writeback_physical, fence_events[i]))
 			break;
 	}
-	report_state("after the event fences");
-	return !(read_register(0x1740) & GPU_BUSY);
+	probe_report_cp("engines", "after the event fences");
+	return !(probe_gpu_registers[RBBM_STATUS] & GPU_BUSY);
 }
 
 int main(void)
 {
 	xsdk_log_write("engines probe");
-	report_state("at start");
+	probe_report_cp("engines", "at start");
 	report_devices("at start");
 
 	// The ring is write-combined, as titles allocate it (xboxkrnl_video.cc:235-238); the write-back page is uncached,
@@ -283,7 +251,7 @@ int main(void)
 	const uint32_t result = VdInitializeEngines(ENGINES_FLAGS, (void *)count_engines_callback, 0, 0, 0);
 	xsdk_log_write("engines: VdInitializeEngines returned %08X; its callback ran %u times", (unsigned)result,
 		(unsigned)engines_callback_calls);
-	report_state("after VdInitializeEngines");
+	probe_report_cp("engines", "after VdInitializeEngines");
 	report_devices("after VdInitializeEngines");
 	const uint32_t moves = count_write_pointer_moves();
 	xsdk_log_write("engines: the write pointer moved %u times in %u ms after VdInitializeEngines", (unsigned)moves,
@@ -293,7 +261,7 @@ int main(void)
 	if (moves == 0) {
 		VdInitializeRingBuffer(ring_physical, RING_SIZE_LOG2);
 		VdEnableRingBufferRPtrWriteBack(writeback_physical + RPTR_SLOT, RPTR_BLOCK_SIZE_LOG2);
-		report_state("after the kernel's ring set-up");
+		probe_report_cp("engines", "after the kernel's ring set-up");
 		idle = submit_fences(ring_memory, writeback, writeback_physical);
 	} else {
 		xsdk_log_write("engines: XAM's device is still submitting; not using the ring");
@@ -305,7 +273,7 @@ int main(void)
 
 	xsdk_log_write("engines: calling VdShutdownEngines");
 	VdShutdownEngines();
-	report_state("after VdShutdownEngines");
+	probe_report_cp("engines", "after VdShutdownEngines");
 	report_devices("after VdShutdownEngines");
 	xsdk_log_write(
 		"engines: the write pointer moved %u times in %u ms after VdShutdownEngines; the callback ran %u times",
