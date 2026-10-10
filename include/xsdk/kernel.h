@@ -121,7 +121,7 @@ typedef struct {
 	uint32_t context;
 } XAUDIO_RENDER_DRIVER_CLIENT;
 
-// xenia:src/xenia/xbox.h:39-67
+// xenia:src/xenia/xbox.h:39-68
 enum {
 	STATUS_SUCCESS = 0x00000000,
 	STATUS_TIMEOUT = 0x00000102,
@@ -138,6 +138,7 @@ enum {
 	STATUS_OBJECT_NAME_NOT_FOUND = (int32_t)0xC0000034,
 	STATUS_OBJECT_NAME_COLLISION = (int32_t)0xC0000035,
 	STATUS_FILE_IS_A_DIRECTORY = (int32_t)0xC00000BA,
+	STATUS_NOT_SUPPORTED = (int32_t)0xC00000BB,
 };
 
 // File statuses Xenia doesn't list; the values are NT's.

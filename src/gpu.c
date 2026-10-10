@@ -3,7 +3,9 @@
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
+#include "gpu_private.h"
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
 #include "xsdk/thread.h"
@@ -19,28 +21,25 @@ enum {
 	// What D3D passes first (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:196).
 	ENGINES_FLAGS = 0x4F810000,
 	CLOSE_TIMEOUT_MS = 1000,
+	SET_UP_TIMEOUT_MS = 1000,
 	// A NOP with one dword after it, the smallest packet that can fill the end of the ring.
 	FILLER_DWORDS = 2,
+	RECTANGLE_FLOATS = 6,
 };
 
 // Byte offsets in the write-back page.
 enum {
 	RPTR_OFFSET = 0x00,
 	FENCE_OFFSET = 0x20,
+	RECTANGLE_OFFSET = 0x40,
 };
 
 enum {
-	PM4_EVENT_WRITE_SHD = 0x58,
 	// The cache-flush events wedge the GPU before render state is set; this one lands (docs/HARDWARE.md).
 	PS_DONE_TS = 3,
 	// An address's low bits pick a byte swap; 2 swaps each dword's bytes (xenia:src/xenia/gpu/xenos.h:193-197).
 	SWAP_8IN32 = 2,
-	// Register index (xenia:src/xenia/gpu/graphics_system.cc:208-213).
-	CP_RB_WPTR = 0x01C5,
 };
-
-// GPU registers as titles see them (xenia:src/xenia/gpu/graphics_system.cc:92-95).
-static volatile uint32_t *const gpu_registers = (volatile uint32_t *)0x7FC80000;
 
 // Volatile, so every store stays 32 bits: a merged 64-bit one can fault here (docs/HARDWARE.md).
 static volatile uint32_t *ring;
@@ -48,18 +47,28 @@ static volatile uint32_t *writeback;
 static uint32_t writeback_physical;
 static uint32_t write_index;
 static uint32_t last_fence;
+static uint32_t rectangle_width;
+static uint32_t rectangle_height;
 
 // VdShutdownEngines calls it (docs/HARDWARE.md); the SDK has nothing to clean up there.
 static void engines_shut_down(void)
 {
 }
 
+static volatile uint32_t *allocate(uint32_t size_bytes, uint32_t protect)
+{
+	const uint32_t rounded = (size_bytes + PAGE_BYTES - 1) & ~(PAGE_BYTES - 1);
+	volatile uint32_t *const memory =
+		MmAllocatePhysicalMemoryEx(0, rounded, PAGE_READWRITE | protect | MEM_LARGE_PAGES, 0, UINT32_MAX, PAGE_BYTES);
+	if (!memory)
+		xsdk_log_write("gpu: MmAllocatePhysicalMemoryEx(%u bytes) failed", (unsigned)rounded);
+	return memory;
+}
+
 static void free_memory(void)
 {
-	if (writeback)
-		MmFreePhysicalMemory(0, (void *)writeback);
-	if (ring)
-		MmFreePhysicalMemory(0, (void *)ring);
+	xsdk_gpu_free(writeback);
+	xsdk_gpu_free(ring);
 	writeback = NULL;
 	ring = NULL;
 }
@@ -86,17 +95,37 @@ static void wait_for_room(uint32_t dword_count)
 		(void)xsdk_thread_sleep(1);
 }
 
+static uint32_t float_bits(float value)
+{
+	uint32_t bits;
+	memcpy(&bits, &value, sizeof bits);
+	return bits;
+}
+
+volatile uint32_t *xsdk_gpu_alloc(uint32_t size_bytes)
+{
+	return allocate(size_bytes, PAGE_WRITECOMBINE);
+}
+
+void xsdk_gpu_free(volatile uint32_t *memory)
+{
+	if (memory)
+		MmFreePhysicalMemory(0, (void *)memory);
+}
+
+uint32_t xsdk_gpu_address(volatile const uint32_t *memory)
+{
+	return MmGetPhysicalAddress((const void *)memory);
+}
+
 NTSTATUS xsdk_gpu_open(void)
 {
 	assert(!ring);
 	// Write-combined, as titles allocate the ring (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:235-238).
-	ring = MmAllocatePhysicalMemoryEx(
-		0, RING_BYTES, PAGE_READWRITE | PAGE_WRITECOMBINE | MEM_LARGE_PAGES, 0, UINT32_MAX, PAGE_BYTES);
+	ring = allocate(RING_BYTES, PAGE_WRITECOMBINE);
 	// Uncached, so the CPU sees what the GPU writes back.
-	writeback =
-		MmAllocatePhysicalMemoryEx(0, PAGE_BYTES, PAGE_READWRITE | PAGE_NOCACHE | MEM_LARGE_PAGES, 0, UINT32_MAX, 0);
+	writeback = allocate(PAGE_BYTES, PAGE_NOCACHE);
 	if (!ring || !writeback) {
-		xsdk_log_write("gpu: MmAllocatePhysicalMemoryEx failed");
 		free_memory();
 		return STATUS_NO_MEMORY;
 	}
@@ -105,6 +134,8 @@ NTSTATUS xsdk_gpu_open(void)
 	writeback[FENCE_OFFSET / 4] = 0;
 	write_index = 0;
 	last_fence = 0;
+	rectangle_width = 0;
+	rectangle_height = 0;
 
 	// No microcode: the kernel keeps the command processor's own (docs/HARDWARE.md).
 	const uint32_t engines = VdInitializeEngines(ENGINES_FLAGS, (void *)engines_shut_down, NULL, NULL, NULL);
@@ -115,13 +146,20 @@ NTSTATUS xsdk_gpu_open(void)
 	}
 	VdInitializeRingBuffer(MmGetPhysicalAddress((const void *)ring), RING_SIZE_LOG2);
 	VdEnableRingBufferRPtrWriteBack(writeback_physical + RPTR_OFFSET, RPTR_BLOCK_SIZE_LOG2);
-	return STATUS_SUCCESS;
+
+	// Without libxenon's set-up, only every third resolve writes (docs/HARDWARE.md).
+	xsdk_gpu_set_up();
+	const NTSTATUS status = xsdk_gpu_wait(xsdk_gpu_fence(), SET_UP_TIMEOUT_MS);
+	if (!NT_SUCCESS(status))
+		xsdk_log_write("gpu: the set-up didn't finish: 0x%08X", (unsigned)status);
+	return status;
 }
 
 NTSTATUS xsdk_gpu_close(void)
 {
 	if (!ring)
 		return STATUS_SUCCESS;
+	xsdk_gpu_put_back();
 	const NTSTATUS status = xsdk_gpu_wait(xsdk_gpu_fence(), CLOSE_TIMEOUT_MS);
 	if (!NT_SUCCESS(status)) {
 		// VdShutdownEngines never returns while the GPU is wedged, and the GPU may still read the ring.
@@ -149,6 +187,28 @@ volatile uint32_t *xsdk_gpu_reserve(uint32_t dword_count)
 	volatile uint32_t *const packets = &ring[write_index];
 	write_index += dword_count;
 	return packets;
+}
+
+void xsdk_gpu_write(const GpuPackets *packets)
+{
+	volatile uint32_t *const space = xsdk_gpu_reserve(packets->count);
+	for (uint32_t i = 0; i < packets->count; i++)
+		space[i] = packets->dwords[i];
+}
+
+uint32_t xsdk_gpu_rectangle(uint32_t width, uint32_t height)
+{
+	if (width != rectangle_width || height != rectangle_height) {
+		// A resolve may still be reading the old corners.
+		(void)xsdk_gpu_wait(xsdk_gpu_fence(), CLOSE_TIMEOUT_MS);
+		// libxenon's three corners, half a pixel up and left (libxenon:drivers/xenos/xe.c:1074-1081).
+		const float corners[RECTANGLE_FLOATS] = { -0.5f, -0.5f, width - 0.5f, 0, width - 0.5f, height - 0.5f };
+		for (uint32_t i = 0; i < RECTANGLE_FLOATS; i++)
+			writeback[RECTANGLE_OFFSET / 4 + i] = float_bits(corners[i]);
+		rectangle_width = width;
+		rectangle_height = height;
+	}
+	return writeback_physical + RECTANGLE_OFFSET;
 }
 
 uint32_t xsdk_gpu_fence(void)

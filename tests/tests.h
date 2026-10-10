@@ -27,6 +27,9 @@ void test_cpp_format(void);
 // The command processor (milestone 4).
 void test_gpu(void);
 
+// A cleared screen (milestone 5).
+void test_present(void);
+
 #ifdef __cplusplus
 }
 #endif
