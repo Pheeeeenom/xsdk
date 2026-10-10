@@ -1,0 +1,36 @@
+--- a/libstdc++-v3/acinclude.m4
++++ b/libstdc++-v3/acinclude.m4
+@@ -1792,6 +1792,15 @@
+         ac_has_nanosleep=yes
+         ac_has_sched_yield=yes
+         ;;
++      # The Xbox 360 SDK supplies these on the retail kernel.
++      elf*)
++        if test x"$target_vendor" = xxsdk; then
++          ac_has_clock_monotonic=yes
++          ac_has_clock_realtime=yes
++          ac_has_nanosleep=yes
++          ac_has_sched_yield=yes
++        fi
++        ;;
+       freebsd*|netbsd*|dragonfly*|rtems*)
+         ac_has_clock_monotonic=yes
+         ac_has_clock_realtime=yes
+--- a/libstdc++-v3/configure
++++ b/libstdc++-v3/configure
+@@ -21377,6 +21377,15 @@
+         ac_has_nanosleep=yes
+         ac_has_sched_yield=yes
+         ;;
++      # The Xbox 360 SDK supplies these on the retail kernel.
++      elf*)
++        if test x"$target_vendor" = xxsdk; then
++          ac_has_clock_monotonic=yes
++          ac_has_clock_realtime=yes
++          ac_has_nanosleep=yes
++          ac_has_sched_yield=yes
++        fi
++        ;;
+       freebsd*|netbsd*|dragonfly*|rtems*)
+         ac_has_clock_monotonic=yes
+         ac_has_clock_realtime=yes
