@@ -4,6 +4,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Types, constants and imports as xenia:src/xenia/xbox.h and the shims in src/xenia/kernel/ define them.
 
 typedef int32_t NTSTATUS;
@@ -225,9 +229,14 @@ uint32_t RtlTryEnterCriticalSection(RTL_CRITICAL_SECTION *section);
 uint32_t XAudioRegisterRenderDriverClient(const XAUDIO_RENDER_DRIVER_CLIENT *client, uint32_t *driver);
 uint32_t XAudioSubmitRenderDriverFrame(uint32_t driver, const float *samples);
 uint32_t XAudioUnregisterRenderDriverClient(uint32_t driver);
+void XeCryptRandom(void *buffer, uint32_t length_bytes);
 
 // xam.xex
 uint32_t XamInputGetState(uint32_t user_index, uint32_t flags, INPUT_STATE *state);
 void XamLoaderTerminateTitle(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

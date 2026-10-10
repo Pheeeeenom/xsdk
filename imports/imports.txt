@@ -34,6 +34,7 @@ xboxkrnl.exe  0x152  KeTlsAlloc                          0
 xboxkrnl.exe  0x153  KeTlsFree                           1
 xboxkrnl.exe  0x154  KeTlsGetValue                       1
 xboxkrnl.exe  0x155  KeTlsSetValue                       2
+xboxkrnl.exe  0x18A  XeCryptRandom                       2
 xboxkrnl.exe  0x1F3  XAudioRegisterRenderDriverClient    2
 xboxkrnl.exe  0x1F4  XAudioUnregisterRenderDriverClient  1
 xboxkrnl.exe  0x1F5  XAudioSubmitRenderDriverFrame       2

@@ -20,8 +20,16 @@ int main(void)
 	test_image();
 	test_threads();
 	test_files();
+	test_cpp_objects();
+	test_cpp_threads();
+	test_cpp_atomics();
+	test_cpp_chrono();
+	test_cpp_filesystem();
+	test_cpp_format();
 	test_input();
 	test_audio();
+	// Last: unwinding hangs in Xenia and is unverified on the console, so a hang here costs no other result.
+	test_cpp_exceptions();
 	xsdk_log_write("tests: %d passed, %d failed", passed_count, failed_count);
 	return failed_count;
 }

@@ -5,10 +5,18 @@
 
 #include "xsdk/kernel.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 NTSTATUS xsdk_log_open(void);
 void xsdk_log_write(const char *format, ...) __attribute__((format(printf, 1, 2)));
 // Writes bytes as they are, without adding a newline; stdout and stderr end up here.
 void xsdk_log_write_bytes(const char *bytes, size_t length_bytes);
 void xsdk_log_close(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
