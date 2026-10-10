@@ -1,0 +1,15 @@
+log: game:\xsdk.log
+triangle probe
+triangle: display 0x00000000, 640x480
+triangle: patched fetch in slot 3: 05F81000 00262688 00000008
+triangle: patched fetch in slot 4: 05F82000 00262688 00000408
+triangle: IM_LOAD, size in dwords: fences 0x00000000 0x00000000; drew 307200 pixels, the first 00000000
+triangle: showing it for 3000 ms: 0x00000000
+triangle: IM_LOAD, size in bytes: fences 0x00000000 0x00000000; drew 307200 pixels, the first 00000000
+triangle: showing it for 3000 ms: 0x00000000
+triangle: IM_LOAD, size in bytes, a fence before the resolve: fences 0x00000000 0x00000000; drew 0 pixels, the first 202020FF
+triangle: showing it for 3000 ms: 0x00000000
+triangle: IM_LOAD_IMMEDIATE, a fence before the resolve: fences 0x00000000 0x00000000; drew 0 pixels, the first 202020FF
+triangle: showing it for 3000 ms: 0x00000000
+triangle: done; the GPU goes back at exit
+exit: status 0

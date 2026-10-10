@@ -623,3 +623,16 @@ it into a front buffer (log: `results/2026-10-10-milestone-6/xsdk.log`, xbWatson
 - **The vertex shader matches xost's passthrough,** which xost has drawn on hardware through libxenon: the same control
   flow, `SQ_PROGRAM_CNTL` and fetch encoding, apart from its registers and the fields the patch rewrites. libxenon
   gives `IM_LOAD` the shader's size in bytes (libxenon:drivers/xenos/xe.c:1210-1215, 1383), where the SDK gave dwords.
+
+## The triangle doesn't draw however its shaders load (2026-10-10)
+
+`tests/probe_triangle.c` drew the triangle four ways into the same front buffer, each after a resolve that cleared eDRAM
+to grey, and counted the pixels other than grey (log: `results/2026-10-10-probe-triangle/xsdk.log`).
+
+- **With a fence before the resolve, every pixel came out grey,** whether `IM_LOAD` was given the size in bytes or the
+  shaders were loaded inline with `IM_LOAD_IMMEDIATE`, as the resolve loads its own. So the draw writes nothing, and
+  how the shaders are loaded isn't why.
+- **Without that fence, every pixel held zero,** with `IM_LOAD`'s size in dwords and in bytes. The buffer was never
+  filled by the CPU, so the resolve after the draw most likely wrote nothing.
+- **The patched vertex fetches read back as written.**
+- **The console froze after returning to Aurora,** as it did before the probe gave back the registers it changed.
