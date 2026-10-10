@@ -819,3 +819,13 @@ mode, the GPU open throughout and the bar's vertex buffer allocated anew for eac
   bytes each draw read. The first mode followed `xsdk_gpu_open`'s invalidate of all memory and came out right.
 - **libxenon never invalidates less than a page:** it rounds a lock up to 4096 bytes and adds a page to its vertex
   pool's range (libxenon:drivers/xenos/xe.c:766, 1871). So the SDK now rounds every invalidate out to whole 4 KB pages.
+
+## Whole-page invalidates keep vertices fresh (2026-10-10)
+
+With `xsdk_gpu_put_coherency` rounding every range out to whole 4 KB pages, the test title passed all 103 checks and
+exited with status 0 (log: `results/2026-10-10-milestone-9-3/xsdk.log`).
+
+- **Every pacing mode drew every frame's own bar:** no reused buffer held the wrong frame in any of the four modes,
+  where the yellow, cyan and magenta modes had 40 each before.
+- **The pacing held as before:** 120 flips over 120 vblanks at interval 1 and over 240 at interval 2, none missed or
+  late, in all four modes.

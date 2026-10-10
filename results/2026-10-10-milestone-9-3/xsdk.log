@@ -1,0 +1,133 @@
+log: game:\xsdk.log
+xsdk test title
+PASS: read-only data
+PASS: initialised data
+PASS: zeroed data
+PASS: data is writable
+threads: producer queued 100 items
+threads: consumer summed 100 items
+threads: done event 0x00000000, sum 5050
+PASS: threads hand work over
+PASS: threads exit
+files: game:\xsdk_file_test.txt
+PASS: file written
+PASS: file read back
+PASS: file size from seek
+PASS: file append
+PASS: static constructors run before main
+PASS: aligned and over-aligned allocation
+PASS: jthreads share a mutex and condition variable
+PASS: thread_local differs per thread
+PASS: 32-bit atomic count
+PASS: 64-bit atomic count
+atomics: over a 200 ms wait the waiter yielded 16 times and blocked 1 times
+PASS: atomic wait sleeps until notified
+PASS: exception thrown and caught
+PASS: exception passed between threads
+PASS: dynamic_cast and typeid
+chrono: a 250 ms sleep took 250 ms on steady_clock
+PASS: steady_clock times a known delay
+chrono: system_clock reads 2026-10-10 21:43:39 UTC
+PASS: system_clock gives a plausible date
+open: NtCreateFile(game:\xsdk_fs_test) failed: 0xC0000034
+PASS: filesystem creates a directory
+PASS: filesystem lists a directory
+PASS: filesystem removes a directory
+PASS: std::format
+PASS: std::expected
+println: std::println reaches the log through stdout
+PASS: std::println
+input: polling controller 1 for 3 seconds; press some buttons
+input: packet 3 buttons 0x0000 triggers 0 0 left -2390 -488 right -1034 416
+PASS: controller state read
+audio: playing a 375 Hz tone for 2000 ms
+audio: 375 frames submitted from callbacks
+PASS: audio tone
+PASS: gpu: open
+PASS: gpu: NOP and fence
+PASS: gpu: fences as the ring wraps
+PASS: gpu: close
+PASS: present: GPU open
+PASS: present: display open in a 640x480 mode
+PASS: present: front buffers
+PASS: present: every resolve's fence landed
+PASS: present: every frame held the colour cleared before it
+PASS: present: every frame shown
+PASS: present: GPU close
+PASS: triangle: GPU open
+PASS: triangle: display open in a 640x480 mode
+PASS: triangle: shaders load
+PASS: triangle: vertex fetches patched for the layout
+PASS: triangle: vertex and front buffers
+triangle: the last frame drew 86160 pixels
+PASS: triangle: every frame's fence landed
+PASS: triangle: every frame has red, green and blue corners on the clear colour
+PASS: triangle: the last frame covers the triangle's area
+PASS: triangle: every frame shown
+PASS: triangle: GPU close
+PASS: texture: GPU open
+PASS: texture: display open in a 640x480 mode
+PASS: texture: shaders load
+PASS: texture: vertex fetches patched for a float4 position and float2 coordinates
+PASS: texture: linear and tiled textures made
+PASS: texture: vertex and front buffers
+PASS: texture: every frame's fence landed
+texture: linear: the last frame had 0 wrong pixels
+PASS: texture: linear: every frame's corner and middle texels in place
+PASS: texture: linear: the last frame holds every texel, one to a pixel
+texture: tiled: the last frame had 0 wrong pixels
+PASS: texture: tiled: every frame's corner and middle texels in place
+PASS: texture: tiled: the last frame holds every texel, one to a pixel
+PASS: texture: every frame shown
+PASS: texture: GPU close
+PASS: render: GPU open
+PASS: render: display open in a 640x480 mode
+PASS: render: shaders load
+PASS: render: vertex fetches patched
+PASS: render: source texture and render target made
+PASS: render: vertex and front buffers
+PASS: render: every frame's fence landed
+render: source: the last frame of each half had 0 wrong pixels
+PASS: render: source: every frame's corner and middle texels in place
+PASS: render: source: the last frame of each half holds every texel
+render: rendered: the last frame of each half had 0 wrong pixels
+PASS: render: rendered: every frame's corner and middle texels in place
+PASS: render: rendered: the last frame of each half holds every texel
+PASS: render: every frame shown
+PASS: render: GPU close
+PASS: pacing: GPU open
+PASS: pacing: 3 buffers, every vblank: scene and present open
+pacing: 3 buffers, every vblank: 0 reused buffers held the wrong frame
+pacing: 3 buffers, every vblank: 120 frames, 120 flips over 121 vblanks (first 2, last 121), 0 missed, 0 late; longest wait 17949 us
+PASS: pacing: 3 buffers, every vblank: every frame shown
+PASS: pacing: 3 buffers, every vblank: no vblank missed
+PASS: pacing: 3 buffers, every vblank: a flip every swap interval
+PASS: pacing: 3 buffers, every vblank: every flip inside vblank
+PASS: pacing: 3 buffers, every vblank: every frame resolved with its bar
+PASS: pacing: 2 buffers, every vblank: scene and present open
+pacing: 2 buffers, every vblank: 0 reused buffers held the wrong frame
+pacing: 2 buffers, every vblank: 120 frames, 120 flips over 121 vblanks (first 2, last 121), 0 missed, 0 late; longest wait 17949 us
+PASS: pacing: 2 buffers, every vblank: every frame shown
+PASS: pacing: 2 buffers, every vblank: no vblank missed
+PASS: pacing: 2 buffers, every vblank: a flip every swap interval
+PASS: pacing: 2 buffers, every vblank: every flip inside vblank
+PASS: pacing: 2 buffers, every vblank: every frame resolved with its bar
+PASS: pacing: 3 buffers, every second vblank: scene and present open
+pacing: 3 buffers, every second vblank: 0 reused buffers held the wrong frame
+pacing: 3 buffers, every second vblank: 120 frames, 120 flips over 240 vblanks (first 2, last 240), 0 missed, 0 late; longest wait 33908 us
+PASS: pacing: 3 buffers, every second vblank: every frame shown
+PASS: pacing: 3 buffers, every second vblank: no vblank missed
+PASS: pacing: 3 buffers, every second vblank: a flip every swap interval
+PASS: pacing: 3 buffers, every second vblank: every flip inside vblank
+PASS: pacing: 3 buffers, every second vblank: every frame resolved with its bar
+PASS: pacing: 2 buffers, every second vblank: scene and present open
+pacing: 2 buffers, every second vblank: 0 reused buffers held the wrong frame
+pacing: 2 buffers, every second vblank: 120 frames, 120 flips over 240 vblanks (first 2, last 240), 0 missed, 0 late; longest wait 33910 us
+PASS: pacing: 2 buffers, every second vblank: every frame shown
+PASS: pacing: 2 buffers, every second vblank: no vblank missed
+PASS: pacing: 2 buffers, every second vblank: a flip every swap interval
+PASS: pacing: 2 buffers, every second vblank: every flip inside vblank
+PASS: pacing: 2 buffers, every second vblank: every frame resolved with its bar
+PASS: pacing: GPU close
+tests: 103 passed, 0 failed
+exit: status 0
