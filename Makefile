@@ -32,7 +32,7 @@ TEST_OBJECTS := $(patsubst tests/%,$(BUILD)/tests/%.o,$(basename $(TEST_SOURCES)
 AUDIO_CHECK_SOURCES := tests/audio_check.c tests/audio_check_entry.S tests/audio_frame.c
 AUDIO_CHECK_OBJECTS := $(patsubst tests/%,$(BUILD)/tests/%.o,$(basename $(AUDIO_CHECK_SOURCES)))
 # Bring-up probes: titles that each answer one question on the console.
-PROBES := probe_spin probe_print probe_cp probe_ring probe_interrupt probe_exports probe_engines probe_swap probe_display
+PROBES := probe_spin probe_print probe_cp probe_ring probe_interrupt probe_exports probe_engines probe_swap probe_display probe_guide
 
 .PHONY: all clean
 # Keep the ELFs and objects that pattern rules build on the way to a .xex.
