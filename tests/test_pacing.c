@@ -57,8 +57,8 @@ static void run_mode(const Mode *mode)
 	for (; presented < FRAMES; presented++) {
 		if (!NT_SUCCESS(xsdk_present_begin(&last_address, BEGIN_TIMEOUT_MS)))
 			break;
-		// The buffer last held the frame mode->buffers before, shown and off screen now.
-		if (presented >= mode->buffers &&
+		// The buffer last held the frame mode->buffers before; frame 0's background is whatever eDRAM held.
+		if (presented > mode->buffers &&
 			!bar_scene_holds(&scene, xsdk_present_pixels(last_address), presented - mode->buffers)) {
 			if (wrong < MAX_WRONG_LOGGED)
 				bar_scene_log_miss(&scene, xsdk_present_pixels(last_address), presented - mode->buffers, mode->name);

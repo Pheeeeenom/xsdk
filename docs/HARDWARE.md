@@ -829,3 +829,15 @@ exited with status 0 (log: `results/2026-10-10-milestone-9-3/xsdk.log`).
   where the yellow, cyan and magenta modes had 40 each before.
 - **The pacing held as before:** 120 flips over 120 vblanks at interval 1 and over 240 at interval 2, none missed or
   late, in all four modes.
+
+## Ten minutes of paced frames, milestone 9 (2026-10-10)
+
+`tests/pacing.c` presented the moving bar for 10 minutes with three front buffers and a flip every vblank, checking
+each frame's bar as its buffer came back (log: `results/2026-10-10-milestone-9-4/xsdk.log`).
+
+- **Every frame flipped on its own vblank for the whole run:** 36093 frames, 36093 flips over 36094 vblanks, no vblank
+  missed and no flip late, the minute-by-minute counts rising by 3609 each minute. The longest wait for a buffer was
+  17950 us, one vblank, as the pacing throttles the title.
+- **Every frame after the first held its bar.** Frame 0 didn't, and the title didn't log its pixels. Its background is
+  whatever eDRAM held before the first resolve cleared it, which is why the other tests skip frame 0; the pacing checks
+  now skip it too and log the pixels of any miss.

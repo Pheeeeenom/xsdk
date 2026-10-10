@@ -74,10 +74,10 @@ int main(void)
 			kept_up = false;
 			break;
 		}
-		// The buffer last held frame - BUFFERS, which has been shown and is off screen now.
-		if (frame >= BUFFERS && !bar_scene_holds(&scene, xsdk_present_pixels(address), frame - BUFFERS)) {
+		// The buffer last held frame - BUFFERS, shown and off screen now; frame 0's background is whatever eDRAM held.
+		if (frame > BUFFERS && !bar_scene_holds(&scene, xsdk_present_pixels(address), frame - BUFFERS)) {
 			if (wrong < MAX_WRONG_LOGGED)
-				xsdk_log_write("pacing: frame %u didn't show its bar", (unsigned)(frame - BUFFERS));
+				bar_scene_log_miss(&scene, xsdk_present_pixels(address), frame - BUFFERS, "pacing");
 			wrong++;
 		}
 		bar_scene_draw(&scene, frame, address);
