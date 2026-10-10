@@ -288,12 +288,15 @@ void VdQueryVideoMode(VIDEO_MODE *mode);
 // command_processor.cc:907-911).
 typedef void (*VdGraphicsInterruptCallback)(uint32_t source, void *context);
 void VdSetGraphicsInterruptCallback(VdGraphicsInterruptCallback callback, void *context);
+// D3D passes an address in its device (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:259-261).
+void VdSetSystemCommandBufferGpuIdentifierAddress(volatile uint32_t *address);
 void VdShutdownEngines(void);
-// Writes the packets that show the front buffer into 64 dwords the caller reserved in the ring. The fetch constant
-// holds the front buffer's virtual address >> 12 (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:352-409).
-void VdSwap(volatile uint32_t *ring_space, const uint32_t *fetch_constant, void *system_writeback, void *system_buffer,
-	uint32_t *system_value, const uint32_t *front_buffer, const uint32_t *texture_format, const uint32_t *color_space,
-	const uint32_t *width, const uint32_t *height);
+// Writes a fence into 64 dwords the caller reserved in the ring, which writes system_value to system_writeback once the
+// GPU passes it (docs/HARDWARE.md). The fetch constant holds the front buffer's virtual address >> 12
+// (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:352-409).
+void VdSwap(volatile uint32_t *ring_space, const uint32_t *fetch_constant, volatile uint32_t *system_writeback,
+	void *system_buffer, uint32_t system_value, const uint32_t *front_buffer, const uint32_t *texture_format,
+	const uint32_t *color_space, const uint32_t *width, const uint32_t *height);
 void XeCryptRandom(void *buffer, uint32_t length_bytes);
 // Return 0 on success; module names a loaded module, such as "xboxkrnl.exe"
 // (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_modules.cc:42-62, 142-186).

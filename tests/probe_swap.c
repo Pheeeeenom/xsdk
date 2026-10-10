@@ -7,9 +7,10 @@
 #include "xsdk/thread.h"
 
 // Milestone 5's first question: does VdSwap show a front buffer the title made? This fills one with a colour from the
-// CPU, so no eDRAM is involved and tiling can't matter, swaps to it, logs the 64 dwords the kernel wrote into the ring,
-// then rewrites the colour every few seconds: if the screen follows, the swap worked, and the order of the colours
-// shows the channel order.
+// CPU, so no eDRAM is involved and tiling can't matter, and swaps to it, then rewrites the colour every few seconds: if
+// the screen follows, the swap worked, and the order of the colours shows the channel order. The kernel's VdSwap only
+// writes a fence into the ring (docs/HARDWARE.md), so this registers the fence's address first, as D3D seems to, and
+// logs the display controller's registers to see whether the kernel points it at the front buffer.
 
 enum {
 	PAGE_BYTES = 0x10000,
@@ -44,8 +45,49 @@ static const Colour colours[] = {
 	{ "white", 0xFFFFFFFF },
 };
 
+// Display controller registers, in bytes from the register base (libxenon:drivers/xenos/xenos.h:26-44).
+enum {
+	D1GRPH_ENABLE = 0x6100,
+	D1GRPH_CONTROL = 0x6104,
+	D1GRPH_PRIMARY_SURFACE_ADDRESS = 0x6110,
+	D1GRPH_PITCH = 0x6120,
+	D1GRPH_X_END = 0x6134,
+	D1GRPH_Y_END = 0x6138,
+	D1GRPH_UPDATE = 0x6144,
+	D1GRPH_FLIP_CONTROL = 0x6148,
+	AVIVO_D1MODE_VIEWPORT_SIZE = 0x6584,
+	AVIVO_D1SCL_SCALER_ENABLE = 0x6590,
+};
+
+// GPU registers as titles see them (xenia:src/xenia/gpu/graphics_system.cc:92-95); libxenon's base is the same block.
+static volatile uint32_t *const gpu_registers = (volatile uint32_t *)0x7FC80000;
+
 static uint32_t system_buffer[SYSTEM_BUFFER_DWORDS];
 static uint32_t system_value;
+
+static uint32_t read_register(uint32_t offset)
+{
+	return gpu_registers[offset / 4];
+}
+
+static void report_display(const char *when)
+{
+	xsdk_log_write("swap: %s: D1GRPH enable %08X, control %08X, surface %08X, pitch %08X, end %08X x %08X", when,
+		(unsigned)read_register(D1GRPH_ENABLE), (unsigned)read_register(D1GRPH_CONTROL),
+		(unsigned)read_register(D1GRPH_PRIMARY_SURFACE_ADDRESS), (unsigned)read_register(D1GRPH_PITCH),
+		(unsigned)read_register(D1GRPH_X_END), (unsigned)read_register(D1GRPH_Y_END));
+	xsdk_log_write("swap: %s: D1GRPH update %08X, flip control %08X; viewport size %08X, scaler enable %08X", when,
+		(unsigned)read_register(D1GRPH_UPDATE), (unsigned)read_register(D1GRPH_FLIP_CONTROL),
+		(unsigned)read_register(AVIVO_D1MODE_VIEWPORT_SIZE), (unsigned)read_register(AVIVO_D1SCL_SCALER_ENABLE));
+}
+
+static void log_system_buffer(const char *when)
+{
+	for (uint32_t i = 0; i < SYSTEM_BUFFER_DWORDS; i++) {
+		if (system_buffer[i] && system_buffer[i] != PATTERN)
+			xsdk_log_write("swap: %s: system buffer dword %u: %08X", when, (unsigned)i, (unsigned)system_buffer[i]);
+	}
+}
 
 static void fill(volatile uint32_t *front_buffer, uint32_t pixel_count, uint32_t value)
 {
@@ -104,6 +146,8 @@ int main(void)
 	xsdk_log_write("swap probe");
 	log_display();
 	log_system_command_buffer();
+	xsdk_log_write("swap: reading the display registers");
+	report_display("at start");
 
 	VIDEO_MODE mode;
 	memset(&mode, 0, sizeof mode);
@@ -118,6 +162,7 @@ int main(void)
 		xsdk_log_write("swap: xsdk_gpu_open returned 0x%08X", (unsigned)status);
 		return 1;
 	}
+	report_display("after xsdk_gpu_open");
 	volatile uint32_t *const front_buffer = MmAllocatePhysicalMemoryEx(
 		0, front_buffer_bytes, PAGE_READWRITE | PAGE_WRITECOMBINE | MEM_LARGE_PAGES, 0, UINT32_MAX, PAGE_BYTES);
 	volatile uint32_t *const page =
@@ -152,13 +197,19 @@ int main(void)
 	volatile uint32_t *const ring_space = xsdk_gpu_reserve(SWAP_DWORDS);
 	for (uint32_t i = 0; i < SWAP_DWORDS; i++)
 		ring_space[i] = PATTERN;
-	xsdk_log_write("swap: calling VdSwap");
-	VdSwap(ring_space, fetch_constant, (void *)system_writeback, system_buffer, &system_value, &front_buffer_address,
+	VdSetSystemCommandBufferGpuIdentifierAddress(system_writeback);
+	xsdk_log_write("swap: calling VdSwap with the value %08X", (unsigned)system_value);
+	VdSwap(ring_space, fetch_constant, system_writeback, system_buffer, system_value, &front_buffer_address,
 		&texture_format, &color_space, &width, &height);
 	log_dwords("ring", ring_space, SWAP_DWORDS);
+	log_system_buffer("after VdSwap");
 	const NTSTATUS waited = xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS);
 	xsdk_log_write(
 		"swap: the swap's fence: 0x%08X; system writeback %08X", (unsigned)waited, (unsigned)*system_writeback);
+	report_display("after the swap");
+	(void)xsdk_thread_sleep(100);
+	report_display("100 ms later");
+	log_system_buffer("100 ms later");
 
 	for (uint32_t i = 0; i < sizeof colours / sizeof colours[0]; i++) {
 		fill(front_buffer, pixel_count, colours[i].value);
@@ -167,5 +218,6 @@ int main(void)
 		(void)xsdk_thread_sleep(COLOUR_MS);
 	}
 	xsdk_log_write("swap: system writeback %08X", (unsigned)*system_writeback);
+	report_display("at end");
 	return 0;
 }

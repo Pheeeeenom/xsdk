@@ -48,6 +48,7 @@ xboxkrnl.exe  0x1C2  VdInitializeEngines                 5
 xboxkrnl.exe  0x1C3  VdInitializeRingBuffer              2
 xboxkrnl.exe  0x1CA  VdQueryVideoMode                    1
 xboxkrnl.exe  0x1D5  VdSetGraphicsInterruptCallback      2
+xboxkrnl.exe  0x1D9  VdSetSystemCommandBufferGpuIdentifierAddress 1
 xboxkrnl.exe  0x1DC  VdShutdownEngines                   0
 xboxkrnl.exe  0x1F3  XAudioRegisterRenderDriverClient    2
 xboxkrnl.exe  0x1F4  XAudioUnregisterRenderDriverClient  1
