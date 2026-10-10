@@ -376,3 +376,14 @@ the way (log: `results/2026-10-10-probe-swap-3/xsdk.log`).
 - **Neither swap changed the display.** Each `VdSwap` wrote the same fence, now with the value from
   `VdGetSystemCommandBuffer`, and it landed, but the surface address stayed 0 and the display information stayed
   640x480, so the screen stayed black. So the kernel doesn't flip on `VdSwap` and its fence alone.
+
+## The display takes a title's surface but stays black (2026-10-10)
+
+`tests/probe_display.c` kept the kernel's 640x480 mode and wrote only `D1GRPH_PRIMARY_SURFACE_ADDRESS`, inside
+libxenon's update lock (`D1GRPH_UPDATE` 1, then 0; libxenon:drivers/xenos/xenos.c:366-379), pointing it at a buffer the
+CPU filled (log: `results/2026-10-10-probe-display/xsdk.log`).
+
+- **The display controller takes the address.** The register read back as the buffer's physical address, 0x1FB00000,
+  with `D1GRPH_UPDATE` reading 4 just after the write and 0 by the end, and the old address went back the same way.
+- **The screen stayed black** through red, green and blue in libxenon's pixel layout and the tiled stripe pattern. So
+  something after the surface keeps the output black while a title runs.

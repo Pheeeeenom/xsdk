@@ -284,6 +284,9 @@ uint32_t VdInitializeEngines(
 // (xenia:src/xenia/gpu/command_processor.cc:312).
 void VdInitializeRingBuffer(uint32_t physical_address, uint32_t size_log2);
 void VdQueryVideoMode(VIDEO_MODE *mode);
+// Often 0x40000000: bit 30 always set, bits 28-29 colour space, bit 27 a 2_10_10_10 front buffer, bit 1 a 720x480 or
+// 720x576 mode (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:166-183, a stub).
+uint32_t VdSetDisplayMode(uint32_t flags);
 // The kernel keeps one graphics interrupt callback, and setting one replaces it. It calls callback(source, context)
 // with source 0 at vblank and 1 for the command processor (xenia:src/xenia/gpu/graphics_system.cc:234-272,
 // command_processor.cc:907-911).

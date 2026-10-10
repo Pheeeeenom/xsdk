@@ -1,0 +1,12 @@
+log: game:\xsdk.log
+display probe
+display: at start: enable 00000001, control 00000002, surface 00000000, pitch 00000280, end 00000280 x 000001E0, update 00000000, flip control 00000001
+display: 640x480 buffer at 0xbfb00000 (physical 1FB00000)
+display: after setting the surface: enable 00000001, control 00000002, surface 1FB00000, pitch 00000280, end 00000280 x 000001E0, update 00000004, flip control 00000001
+display: showing red (0000FF00) for 3000 ms
+display: showing green (00FF0000) for 3000 ms
+display: showing blue (FF000000) for 3000 ms
+display: showing 64-pixel red and blue stripes and a white diagonal for 5000 ms
+display: before restoring: enable 00000001, control 00000002, surface 1FB00000, pitch 00000280, end 00000280 x 000001E0, update 00000000, flip control 00000001
+display: after restoring: enable 00000001, control 00000002, surface 00000000, pitch 00000280, end 00000280 x 000001E0, update 00000004, flip control 00000001
+exit: status 0
