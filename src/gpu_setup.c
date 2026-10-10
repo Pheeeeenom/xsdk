@@ -41,6 +41,7 @@ enum {
 	WAIT_REG_MEM_INTERVAL = 8,
 	COHER_BUSY = 0x80000000,
 	ALL_MEMORY_BYTES = 0x20000000,
+	COHER_PAGE_BYTES = 0x1000,
 	POINT_DRAWS = 24,
 	// One point, auto-indexed (xenia:src/xenia/gpu/registers.h:311).
 	POINT_LIST_AUTO_INDEX_1 = 1 | 2 << 6 | 1 << 16,
@@ -151,9 +152,12 @@ void xsdk_gpu_put_window(GpuPackets *packets, uint32_t width, uint32_t height)
 	gpu_put_registers(packets, PA_SC_WINDOW_OFFSET, window, 3);
 }
 
+// Whole pages, as libxenon invalidates (xe.c:766, 1871); 192 bytes left the vertex cache stale (docs/HARDWARE.md).
 void xsdk_gpu_put_coherency(GpuPackets *packets, uint32_t actions, uint32_t base, uint32_t size_bytes)
 {
-	const uint32_t range[] = { size_bytes, base };
+	const uint32_t first = base & ~(COHER_PAGE_BYTES - 1);
+	const uint32_t end = (base + size_bytes + COHER_PAGE_BYTES - 1) & ~(COHER_PAGE_BYTES - 1);
+	const uint32_t range[] = { end - first, first };
 	gpu_put_register(packets, COHER_STATUS_HOST, actions);
 	gpu_put_registers(packets, COHER_SIZE_HOST, range, 2);
 	gpu_put_type3(packets, PM4_WAIT_REG_MEM, 5);

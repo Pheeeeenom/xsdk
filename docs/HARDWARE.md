@@ -802,3 +802,20 @@ cleared the callback, gave the GPU back and watched XAM's write pointer (log:
 - **Giving the GPU back with the title's callback cleared lets XAM run again.** After `VdSetGraphicsInterruptCallback(0,
   0)` and `xsdk_gpu_close`, XAM's write pointer moved 15 times in 250 ms, as after a run that never set a callback
   ("Giving the GPU back with VdShutdownEngines").
+
+## The pacing modes pace, but small vertex invalidates don't take (2026-10-10)
+
+The test title ran `tests/test_pacing.c`: each of four present modes for 120 frames, a moving bar its own colour per
+mode, the GPU open throughout and the bar's vertex buffer allocated anew for each mode (logs:
+`results/2026-10-10-milestone-9/xsdk.log`, then `results/2026-10-10-milestone-9-2/xsdk.log` with the misses logged).
+
+- **Every mode paced exactly.** Three and two buffers flipped 120 frames over 120 vblanks, and at a swap interval of 2
+  over 240, with no vblank missed and no flip late; the longest wait for a buffer was 17949 us at interval 1 and 33909
+  us at 2. Every earlier test passed too, now that the SDK's waits return an error when they time out.
+- **After the first mode, the bar came out in the previous mode's colour.** The yellow mode's second frame held white
+  (0xFFFFFFFF), the cyan mode's yellow and the magenta mode's cyan, and the first frame of each a blend between the two;
+  40 of each mode's 118 checked frames were wrong. The new vertex buffer most likely sat in the memory the last mode's
+  had used, and the vertex cache still held it, though `xsdk_gpu_set_vertices` invalidated the vertex cache over the 192
+  bytes each draw read. The first mode followed `xsdk_gpu_open`'s invalidate of all memory and came out right.
+- **libxenon never invalidates less than a page:** it rounds a lock up to 4096 bytes and adds a page to its vertex
+  pool's range (libxenon:drivers/xenos/xe.c:766, 1871). So the SDK now rounds every invalidate out to whole 4 KB pages.
