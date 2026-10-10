@@ -30,6 +30,8 @@ SPECS=(
 	# No tail calls or split-off cold code: Xenia takes the code up to a forward branch's target as one function
 	# (xenia:src/xenia/cpu/ppc/ppc_scanner.cc:204), which breaks or crashes it.
 	-fno-optimize-sibling-calls -fno-reorder-blocks-and-partition
+	# GCC 15.3's RTL PRE miscompiles 32-bit code with -mpowerpc64: it drops a copy and passes a pointer as 0.
+	-fno-gcse
 )
 
 COMMON=(--target="$TARGET" --prefix="$PREFIX" --disable-nls --disable-multilib)
