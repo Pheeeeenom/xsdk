@@ -20,6 +20,9 @@ layer that drives Xenos directly. Scope, sources and milestones are in SCOPE.md.
   `XEINSTRNOTIMPLEMENTED`). GCC emits one of them, `mcrf`; newlib's printf core uses it, so in Xenia every formatted
   conversion gains two NUL bytes. Each link runs `tools/xenia_scan.py`, which lists such instructions by function;
   treat any Xenia result that goes through those functions as unreliable.
+- Xenia finds a function's end by scanning, and a forward `b` makes it take everything up to the target as one function
+  (xenia:src/xenia/cpu/ppc/ppc_scanner.cc:204). Tail calls into that range then run the wrong code or crash Xenia. The
+  toolchain turns off tail calls and hot/cold splitting, and `src/xsdk.ld` puts import stubs first; keep it that way.
 
 ## Build
 

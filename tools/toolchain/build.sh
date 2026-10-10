@@ -27,6 +27,9 @@ SPECS=(
 	# Only CR0 and CR1 to allocate, so GCC rarely copies fields with mcrf, which Xenia skips; CR0 alone breaks GCC.
 	-ffixed-cr2 -ffixed-cr3 -ffixed-cr4 -ffixed-cr5 -ffixed-cr6 -ffixed-cr7
 	'%{!ftree-vectorize:-fno-tree-vectorize}'   # avoids AltiVec ops Xenon lacks (libxenon's gcc-9.2.0.diff)
+	# No tail calls or split-off cold code: Xenia takes the code up to a forward branch's target as one function
+	# (xenia:src/xenia/cpu/ppc/ppc_scanner.cc:204), which breaks or crashes it.
+	-fno-optimize-sibling-calls -fno-reorder-blocks-and-partition
 )
 
 COMMON=(--target="$TARGET" --prefix="$PREFIX" --disable-nls --disable-multilib)

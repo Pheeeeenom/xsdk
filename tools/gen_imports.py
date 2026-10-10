@@ -83,7 +83,7 @@ def generate(entry):
         "\tmtctr\tr11",
         "\tbctr",
         "",
-        f"\t.section .text.{name}, \"ax\"",
+        f"\t.section .text.xsdk_stub_{name}, \"ax\"",
         "\t.balign 4",
         f"\t.globl\t{name}",
         f"\t.type\t{name}, @function",

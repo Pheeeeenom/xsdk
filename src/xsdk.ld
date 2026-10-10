@@ -17,6 +17,8 @@ SECTIONS
 
 	. = ALIGN(0x10000);
 	.text : {
+		/* Imports first: Xenia runs a forward tail call's target as the caller (xenia:src/xenia/cpu/ppc/ppc_scanner.cc:204). */
+		*(.text.xsdk_stub_* .text.xsdk_thunk_*)
 		*(.text .text.*)
 	}
 
