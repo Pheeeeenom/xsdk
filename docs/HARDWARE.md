@@ -596,3 +596,9 @@ front buffer and showed it (log: `results/2026-10-10-probe-resolve-6/xsdk.log`).
 
 So the copy and the display carry a colour through unchanged, and only the clear value needs red and blue swapped
 from 0xAARRGGBB. What a shader draws isn't covered yet.
+
+## The packed clear shows red (2026-10-10)
+
+With `xsdk_gpu_resolve` swapping red and blue in the clear colour, the same probe's red clear stored 0x0000FFFF in all
+307200 pixels, the word the display shows as red (log: `results/2026-10-10-probe-resolve-7/xsdk.log`). The user didn't
+report the screen in this run; the log names the colour the stored word shows.
