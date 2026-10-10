@@ -1,0 +1,33 @@
+log: game:\xsdk.log
+triangle probe
+triangle: display 0x00000000, 640x480
+triangle:   libxenon's frame: fences 0x00000000 0x00000000 0x00000000; drew 86160 pixels, the first 0001FEFF; 0 left magenta
+triangle: the SDK's draw, writing fetch constant 95 with the two before it: fences 0x00000000 0x00000000 0x00000000; drew 86160 pixels, the first 0001FEFF; 0 left magenta
+triangle: showing it for 2000 ms: 0x00000000
+triangle:   libxenon's frame: fences 0x00000000 0x00000000 0x00000000; drew 86160 pixels, the first 0001FEFF; 0 left magenta
+triangle: the SDK's draw, writing every fetch constant: fences 0x00000000 0x00000000 0x00000000; drew 86160 pixels, the first 0001FEFF; 0 left magenta
+triangle: showing it for 2000 ms: 0x00000000
+triangle:   libxenon's frame: fences 0x00000000 0x00000000 0x00000000; drew 86160 pixels, the first 0001FEFF; 0 left magenta
+triangle: the SDK's draw, the fetch constant's data on 16 bytes in the ring: fences 0x00000000 0x00000000 0x00000000; drew 0 pixels, the first 00000000; 307200 left magenta
+triangle: showing it for 2000 ms: 0x00000000
+triangle:   libxenon's frame: fences 0x00000000 0x00000000 0x00000000; drew 0 pixels, the first 00000000; 307200 left magenta
+triangle: the SDK's draw, FLUSH_FETCH_1 0x00025000: fences 0x00000000 0x00000000 0x00000000; drew 0 pixels, the first 00000000; 307200 left magenta
+triangle: showing it for 2000 ms: 0x00000000
+triangle:   libxenon's frame: fences 0x00000000 0x00000000 0x00000000; drew 0 pixels, the first 00000000; 307200 left magenta
+triangle: the SDK's draw, the fetch size in bytes: fences 0x00000000 0x00000000 0x00000000; drew 0 pixels, the first 00000000; 0 left magenta
+triangle: showing it for 2000 ms: 0x00000000
+triangle:   libxenon's frame: fences 0x00000000 0x00000000 0x00000000; drew 86160 pixels, the first 0001FEFF; 0 left magenta
+triangle: the SDK's draw, without its vertex cache invalidate: fences 0x00000000 0x00000000 0x00000000; drew 0 pixels, the first 00000000; 307200 left magenta
+triangle: showing it for 2000 ms: 0x00000000
+triangle:   libxenon's frame: fences 0x00000000 0x00000000 0x00000000; drew 0 pixels, the first 00000000; 307200 left magenta
+triangle: the SDK's draw, the target set after the vertices: fences 0x00000000 0x00000000 0x00000000; drew 0 pixels, the first 00000000; 307200 left magenta
+triangle: showing it for 2000 ms: 0x00000000
+triangle:   libxenon's frame: fences 0x00000000 0x00000000 0x00000000; drew 0 pixels, the first 00000000; 307200 left magenta
+triangle: libxenon's frame with the SDK's five settings: fences 0x00000000 0x00000000 0x00000000; drew 0 pixels, the first 00000000; 307200 left magenta
+triangle: showing it for 2000 ms: 0x00000000
+triangle:   libxenon's frame: fences 0x00000000 0x00000000 0x00000000; drew 0 pixels, the first 00000000; 307200 left magenta
+triangle: as the SDK draws: fences 0x00000000 0x00000000 0x00000000; drew 0 pixels, the first 00000000; 0 left magenta
+triangle: showing it for 2000 ms: 0x00000000
+triangle:   libxenon's frame: fences 0x00000000 0x00000000 0x00000000; drew 86160 pixels, the first 0001FEFF; 0 left magenta
+triangle: done; the GPU goes back at exit
+exit: status 0

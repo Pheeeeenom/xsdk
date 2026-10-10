@@ -663,3 +663,23 @@ builds it on the host, then with one of its differences from the SDK's draw undo
   its size in dwords, 0 in `SHADER_CONSTANT_FLUSH_FETCH_1` where libxenon writes 0x00025000, its own vertex cache
   invalidate, and the order of its packets.
 - **The console froze after returning to Aurora.**
+
+## Fetch constants go in whole groups (2026-10-10)
+
+`tests/probe_triangle.c` drew the triangle the SDK's way with one of libxenon's ways of setting the vertex fetch
+constant at a time, each followed by libxenon's whole frame as a check (log:
+`results/2026-10-10-probe-triangle-4/xsdk.log`).
+
+- **The SDK's draw drew the triangle, all 86160 pixels, when fetch constant 95 went with the two before it,** the six
+  dwords from `0x48BA`, or with every fetch constant. libxenon writes fetch constants in such groups of three
+  (libxenon:drivers/xenos/xe.c:1334-1355), and the resolve writes fetch constant 0 with its group.
+- **Written alone, its two dwords from `0x48BE` drew nothing:** with its data on 16 bytes in the ring, with 0x00025000
+  in `SHADER_CONSTANT_FLUSH_FETCH_1`, with its size in bytes, without the vertex cache invalidate, with the target set
+  after it, and as the SDK drew.
+- **Lone writes broke drawing in threes.** After the first, no resolve wrote anything and libxenon's frame drew nothing,
+  until the third, whose own triangle didn't draw but whose resolve wrote; libxenon's frame drew again after it. It
+  went the same way twice, and the whole-group writes in between, libxenon's frame with the SDK's five settings among
+  them, didn't change it. So the GPU seems to take fetch constants six dwords at a time, whatever their address.
+- **That fits the earlier runs:** the previous one's single lone write, last, left the resolve writing nothing and
+  Aurora frozen, and in the one before (`results/2026-10-10-probe-triangle-2/xsdk.log`) it fits five of the six
+  resolves; the first wrote though it came after a lone write.

@@ -265,7 +265,7 @@ static void draw_as_libxenon(
 	packet[2] = TRIANGLE_LIST_AUTO_INDEX_3;
 }
 
-// xsdk_gpu_set_vertices's packets, with the variant's changes; with none it writes the same dwords.
+// The SDK's vertex packets from before it wrote whole fetch groups, with the variant's changes.
 static void put_vertices(const Variant *variant, uint32_t vertices)
 {
 	const uint32_t size = variant->fetch_size_in_bytes ? sizeof triangle : sizeof triangle / 4;

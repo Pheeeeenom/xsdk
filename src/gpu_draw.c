@@ -55,6 +55,9 @@ enum {
 	MAX_VERTEX_INDEX = 0x00FFFFFF,
 	// Stream 0's vertex fetch constant and libxenon's fetch word: type 3, k8in32, bit 28 (xe.c:1181-1185, 1965).
 	VERTEX_FETCH_CONSTANT = 95,
+	// Vertex fetch constants go in threes (xenia:src/xenia/gpu/xenos.h:1288-1315).
+	VERTEX_FETCH_GROUP_FIRST = VERTEX_FETCH_CONSTANT / 3 * 3,
+	FETCH_GROUP_DWORDS = 6,
 	VERTEX_FETCH_TYPE = 3,
 	VERTEX_FETCH_8IN32 = 1 << 28 | 2,
 	VERTEX_FETCH_SIZE_SHIFT = 2,
@@ -130,14 +133,17 @@ void xsdk_gpu_set_shaders(const XsdkShader *vertex, const XsdkShader *pixel)
 
 void xsdk_gpu_set_vertices(uint32_t address, uint32_t size_bytes)
 {
-	const uint32_t fetch[] = { address | VERTEX_FETCH_TYPE,
-		VERTEX_FETCH_8IN32 | size_bytes / 4 << VERTEX_FETCH_SIZE_SHIFT };
+	uint32_t group[FETCH_GROUP_DWORDS] = { 0 };
+	group[(VERTEX_FETCH_CONSTANT - VERTEX_FETCH_GROUP_FIRST) * 2] = address | VERTEX_FETCH_TYPE;
+	group[(VERTEX_FETCH_CONSTANT - VERTEX_FETCH_GROUP_FIRST) * 2 + 1] =
+		VERTEX_FETCH_8IN32 | size_bytes / 4 << VERTEX_FETCH_SIZE_SHIFT;
 	const uint32_t flush_fetch[] = { 0, 0, 0 };
 	uint32_t dwords[DRAW_MAX_DWORDS];
 	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
 	// libxenon invalidates vertices the CPU wrote and flushes the fetch constants it set (xe.c:759, 1146).
 	xsdk_gpu_put_coherency(&packets, COHER_VERTEX_CACHE, address, size_bytes);
-	gpu_put_registers(&packets, SHADER_CONSTANT_FETCH_00_0 + VERTEX_FETCH_CONSTANT * 2, fetch, 2);
+	// Written alone, a fetch constant breaks drawing (docs/HARDWARE.md, "Fetch constants go in whole groups").
+	gpu_put_registers(&packets, SHADER_CONSTANT_FETCH_00_0 + VERTEX_FETCH_GROUP_FIRST * 2, group, FETCH_GROUP_DWORDS);
 	gpu_put_registers(&packets, SHADER_CONSTANT_FLUSH_FETCH_0, flush_fetch, 3);
 	xsdk_gpu_write(&packets);
 }
