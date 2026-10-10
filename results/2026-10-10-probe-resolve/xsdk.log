@@ -1,0 +1,29 @@
+log: game:\xsdk.log
+resolve probe
+resolve: front buffer at physical 1FB20000, vertices at 1FB10000
+resolve: showing magenta from the CPU for 3000 ms
+resolve: white: state and shader: fence 0x00000000
+resolve: white: draw: fence 0x00000000
+resolve: white: cache flush: fence 0x00000000
+resolve: white: coherency wait: fence 0x00000000
+resolve: after clearing to white: pixel 0 FF00FFFF, pixel 100000 FF00FFFF
+resolve: showing eDRAM as it was for 3000 ms
+resolve: red: state and shader: fence 0x00000000
+resolve: red: draw: fence 0x00000000
+resolve: red: cache flush: fence 0x00000000
+resolve: red: coherency wait: fence 0x00000000
+resolve: after clearing to red: pixel 0 FF00FFFF, pixel 100000 FF00FFFF
+resolve: showing white for 3000 ms
+resolve: green: state and shader: fence 0x00000000
+resolve: green: draw: fence 0x00000000
+resolve: green: cache flush: fence 0x00000000
+resolve: green: coherency wait: fence 0x00000000
+resolve: after clearing to green: pixel 0 00000000, pixel 100000 00000000
+resolve: showing red for 3000 ms
+resolve: black: state and shader: fence 0x00000000
+resolve: black: draw: fence 0x00000000
+resolve: black: cache flush: fence 0x00000000
+resolve: black: coherency wait: fence 0x00000000
+resolve: after clearing to black: pixel 0 00000000, pixel 100000 00000000
+resolve: showing green for 3000 ms
+exit: status 0

@@ -476,3 +476,17 @@ So a surface shows when 0x2840 and 0x2844 match D1GRPH, and the LUT may be holdi
   drawn with it showed as stripes, with the white diagonal in place.
 
 Whether 0x2840 and 0x2844 are needed as well as D1GRPH isn't settled, since the surface was set in both throughout.
+
+## A first resolve runs but copies only parts (2026-10-10)
+
+`tests/probe_resolve.c` showed a CPU-filled magenta 640x480 front buffer, then resolved four times in libxenon's way,
+each clearing eDRAM to the next colour (white, red, green, black) while copying the previous one into the front buffer
+(log: `results/2026-10-10-probe-resolve/xsdk.log`).
+
+- **Every stage finished:** state and the inline vertex shader, the rectangle draw in copy mode, `EVENT_WRITE`
+  `CACHE_FLUSH` and the coherency wait all let their fences land. So with render-target state set, the cache flush
+  doesn't wedge the GPU.
+- **The copies landed only in parts.** Pixels 0 and 100000 stayed magenta through the first two resolves and read 0
+  after the third and fourth. The user saw no white, red or blue, and at one point magenta and green in stripes.
+- **The console froze when Aurora came back.** The probe left `RB_MODECONTROL` at 6 (copy) and had loaded its shader at
+  instruction address 0, either of which could have upset XAM's device.
