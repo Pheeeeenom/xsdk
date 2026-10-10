@@ -783,3 +783,22 @@ The test title passed all 77 checks on the console and exited with status 0; the
 - **The captures show both halves as written:** first the right quad mirrored left to right, magenta at its top left
   and its seam from about texel 32 at the top to 127 at the bottom; then mirrored top to bottom, navy at its bottom
   left and its seam from texel 33 at the top to 128 at the bottom.
+
+## The vblank callback, flips and giving the callback back (2026-10-10)
+
+`tests/probe_vblank.c` took the GPU, set its own graphics interrupt callback, recorded each call for about a second
+with the time base and the display registers that change each frame, flipped between two greys ten times, then
+cleared the callback, gave the GPU back and watched XAM's write pointer (log:
+`results/2026-10-10-probe-vblank/xsdk.log`).
+
+- **The callback comes twice a frame, 930 us apart, always with source 0.** The first of each pair read 0x6530 452,
+  0x6534 0 and 0x6544 0x00110000; the second read 0x6530 480, 0x6534 0x1001 and 0x6544 0x11. Each pair started 16624
+  us after the last. Exactly half the calls, 67 of 134, had 0x6534's bit 12 set, which libxenon reads as vblank
+  (libxenon:drivers/xenos/xe.c:2141-2145). 0x6530 looks like the current line: 480 is the mode's height, where vblank
+  starts, so the first call comes 28 lines before vblank and the second as it starts.
+- **Nothing shows a flip waiting for vblank.** After each address write, 0x60EC read 0 again at once, at any point in
+  the frame, and `D1GRPH_UPDATE` read 0, so nothing held the flip for vblank. The user saw the greys alternate. So a
+  flip that mustn't tear has to be written during vblank.
+- **Giving the GPU back with the title's callback cleared lets XAM run again.** After `VdSetGraphicsInterruptCallback(0,
+  0)` and `xsdk_gpu_close`, XAM's write pointer moved 15 times in 250 ms, as after a run that never set a callback
+  ("Giving the GPU back with VdShutdownEngines").

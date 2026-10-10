@@ -1,0 +1,41 @@
+log: game:\xsdk.log
+vblank probe
+vblank: time base 50000000 Hz; GPU 0x00000000, display 0x00000000 640x480
+vblank: 134 callbacks, 67 with 0x6534 bit 12 set; gaps 930 to 15694 us
+vblank:  0 +    0 us source 0: 6530 000001C4 6534 00000000 6544 00110000 update 00000001 60EC 00000000
+vblank:  1 +  930 us source 0: 6530 000001E0 6534 00001001 6544 00000011 update 00000001 60EC 00000000
+vblank:  2 +15693 us source 0: 6530 000001C4 6534 00000000 6544 00110000 update 00000000 60EC 00000000
+vblank:  3 +  931 us source 0: 6530 000001E0 6534 00001001 6544 00000011 update 00000000 60EC 00000000
+vblank:  4 +15694 us source 0: 6530 000001C4 6534 00000000 6544 00110000 update 00000000 60EC 00000000
+vblank:  5 +  930 us source 0: 6530 000001E0 6534 00001001 6544 00000011 update 00000000 60EC 00000000
+vblank:  6 +15694 us source 0: 6530 000001C4 6534 00000000 6544 00110000 update 00000000 60EC 00000000
+vblank:  7 +  930 us source 0: 6530 000001E0 6534 00001001 6544 00000011 update 00000000 60EC 00000000
+vblank:  8 +15694 us source 0: 6530 000001C4 6534 00000000 6544 00110000 update 00000000 60EC 00000000
+vblank:  9 +  931 us source 0: 6530 000001E0 6534 00001001 6544 00000011 update 00000000 60EC 00000000
+vblank: 10 +15693 us source 0: 6530 000001C4 6534 00000000 6544 00110000 update 00000000 60EC 00000000
+vblank: 11 +  931 us source 0: 6530 000001E0 6534 00001001 6544 00000011 update 00000000 60EC 00000000
+vblank: 12 +15694 us source 0: 6530 000001C4 6534 00000000 6544 00110000 update 00000000 60EC 00000000
+vblank: 13 +  930 us source 0: 6530 000001E0 6534 00001001 6544 00000011 update 00000000 60EC 00000000
+vblank: 14 +15693 us source 0: 6530 000001C4 6534 00000000 6544 00110000 update 00000000 60EC 00000000
+vblank: 15 +  930 us source 0: 6530 000001E0 6534 00001001 6544 00000011 update 00000000 60EC 00000000
+vblank: 16 +15694 us source 0: 6530 000001C4 6534 00000000 6544 00110000 update 00000000 60EC 00000000
+vblank: 17 +  930 us source 0: 6530 000001E0 6534 00001001 6544 00000011 update 00000000 60EC 00000000
+vblank: 18 +15694 us source 0: 6530 000001C4 6534 00000000 6544 00110000 update 00000000 60EC 00000000
+vblank: 19 +  930 us source 0: 6530 000001E0 6534 00001001 6544 00000011 update 00000000 60EC 00000000
+vblank: 20 +15693 us source 0: 6530 000001C4 6534 00000000 6544 00110000 update 00000000 60EC 00000000
+vblank: 21 +  931 us source 0: 6530 000001E0 6534 00001001 6544 00000011 update 00000000 60EC 00000000
+vblank: 22 +15693 us source 0: 6530 000001C4 6534 00000000 6544 00110000 update 00000000 60EC 00000000
+vblank: 23 +  931 us source 0: 6530 000001E0 6534 00001001 6544 00000011 update 00000000 60EC 00000000
+vblank: flip 0: 0x60EC cleared 0 us after the write, update 00000000 after the write; the callbacks around it 10900 us before (6534 00001001) and 4794 us after
+vblank: flip 1: 0x60EC cleared 0 us after the write, update 00000000 after the write; the callbacks around it 11896 us before (6534 00001001) and 3796 us after
+vblank: flip 2: 0x60EC cleared 0 us after the write, update 00000000 after the write; the callbacks around it 12894 us before (6534 00001001) and 2799 us after
+vblank: flip 3: 0x60EC cleared 0 us after the write, update 00000000 after the write; the callbacks around it 13892 us before (6534 00001001) and 1801 us after
+vblank: flip 4: 0x60EC cleared 0 us after the write, update 00000000 after the write; the callbacks around it 14890 us before (6534 00001001) and 803 us after
+vblank: flip 5: 0x60EC cleared 0 us after the write, update 00000000 after the write; the callbacks around it 192 us before (6534 00000000) and 738 us after
+vblank: flip 6: 0x60EC cleared 0 us after the write, update 00000000 after the write; the callbacks around it 258 us before (6534 00001001) and 15435 us after
+vblank: flip 7: 0x60EC cleared 0 us after the write, update 00000000 after the write; the callbacks around it 1256 us before (6534 00001001) and 14437 us after
+vblank: flip 8: 0x60EC cleared 0 us after the write, update 00000000 after the write; the callbacks around it 2254 us before (6534 00001001) and 13439 us after
+vblank: flip 9: 0x60EC cleared 0 us after the write, update 00000000 after the write; the callbacks around it 3251 us before (6534 00001001) and 12442 us after
+vblank: GPU close 0x00000000
+vblank: after giving the GPU back, XAM's write pointer moved 15 times in 250 ms (00000019 to 0000008B)
+exit: status 0
