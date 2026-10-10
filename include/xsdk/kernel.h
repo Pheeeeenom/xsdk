@@ -87,6 +87,34 @@ typedef struct {
 	INPUT_GAMEPAD gamepad;
 } INPUT_STATE;
 
+// xenia:src/xenia/xbox.h:257-269
+typedef struct {
+	uint32_t display_width;
+	uint32_t display_height;
+	uint32_t is_interlaced;
+	uint32_t is_widescreen;
+	uint32_t is_hi_def;
+	float refresh_rate;
+	uint32_t video_standard;
+	uint32_t reserved[5];
+} VIDEO_MODE;
+
+// xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:88-105
+typedef struct {
+	uint16_t front_buffer_width;
+	uint16_t front_buffer_height;
+	uint8_t front_buffer_color_format;
+	uint8_t front_buffer_pixel_format;
+	uint32_t scaler_parameters[14];
+	uint16_t display_window_overscan[4];
+	uint16_t display_width;
+	uint16_t display_height;
+	float display_refresh_rate;
+	uint32_t display_interlaced;
+	uint8_t display_color_format;
+	uint16_t actual_display_width;
+} DISPLAY_INFO;
+
 // The kernel calls back with a pointer to a word holding context (xenia:src/xenia/apu/audio_system.cc:189-192).
 typedef struct {
 	void (*callback)(const uint32_t *context);
@@ -239,6 +267,9 @@ uint32_t XAudioUnregisterRenderDriverClient(uint32_t driver);
 // The command processor writes its ring read pointer, a dword index, to this physical address
 // (xenia:src/xenia/gpu/command_processor.cc:243-246).
 void VdEnableRingBufferRPtrWriteBack(uint32_t physical_address, uint32_t block_size_log2);
+void VdGetCurrentDisplayInformation(DISPLAY_INFO *info);
+// Xenia fills 0x94 bytes of buffer and one dword of value (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:252-256).
+void VdGetSystemCommandBuffer(void *buffer, uint32_t *value);
 // Exported variables, each a pointer to the kernel's variable (xenia:src/xenia/cpu/xex_module.cc:1173-1178). They
 // hold the title's D3D device and XAM's (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:442-457).
 extern uint32_t *const VdGlobalDevice;
@@ -251,12 +282,18 @@ uint32_t VdInitializeEngines(
 // Takes MmGetPhysicalAddress's result and log2 of the size in 8-byte units
 // (xenia:src/xenia/gpu/command_processor.cc:312).
 void VdInitializeRingBuffer(uint32_t physical_address, uint32_t size_log2);
+void VdQueryVideoMode(VIDEO_MODE *mode);
 // The kernel keeps one graphics interrupt callback, and setting one replaces it. It calls callback(source, context)
 // with source 0 at vblank and 1 for the command processor (xenia:src/xenia/gpu/graphics_system.cc:234-272,
 // command_processor.cc:907-911).
 typedef void (*VdGraphicsInterruptCallback)(uint32_t source, void *context);
 void VdSetGraphicsInterruptCallback(VdGraphicsInterruptCallback callback, void *context);
 void VdShutdownEngines(void);
+// Writes the packets that show the front buffer into 64 dwords the caller reserved in the ring. The fetch constant
+// holds the front buffer's virtual address >> 12 (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:352-409).
+void VdSwap(volatile uint32_t *ring_space, const uint32_t *fetch_constant, void *system_writeback, void *system_buffer,
+	uint32_t *system_value, const uint32_t *front_buffer, const uint32_t *texture_format, const uint32_t *color_space,
+	const uint32_t *width, const uint32_t *height);
 void XeCryptRandom(void *buffer, uint32_t length_bytes);
 // Return 0 on success; module names a loaded module, such as "xboxkrnl.exe"
 // (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_modules.cc:42-62, 142-186).
