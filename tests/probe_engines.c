@@ -8,12 +8,7 @@
 #include "xsdk/log.h"
 #include "xsdk/thread.h"
 
-// Milestone 4 by SCOPE.md section 3.2's option 2, through the call that takes the GPU from XAM: D3D titles call
-// VdInitializeEngines, which has XAM's D3D device give up the GPU (docs/HARDWARE.md). This calls it with no microcode,
-// to see whether the kernel hands the GPU over and keeps the microcode already running. It leaves XAM's interrupt
-// callback alone, sets the ring up with the kernel's calls, and submits a few of libxenon's scratch fences, each with a
-// MEM_WRITE, then EVENT_WRITE_SHD fences. It then gives the GPU back with VdShutdownEngines and watches for XAM's
-// device to resume, unless a fence wedged the GPU: VdShutdownEngines then never returns (docs/HARDWARE.md).
+// Takes the GPU with VdInitializeEngines and no microcode, submits fences, and gives it back (docs/HARDWARE.md).
 
 enum {
 	RING_BYTES = 0x8000,
@@ -68,13 +63,10 @@ enum {
 	CACHE_FLUSH_TS = 4,
 };
 
-// EVENT_WRITE_SHD writes its value once its event has passed through the pipeline; Xenia calls it "a VS|PS_done event"
-// (xenia:src/xenia/gpu/xenos.h:1595). CACHE_FLUSH_AND_INV_TS_EVENT wedged the GPU (docs/HARDWARE.md), so this tries the
-// shader-done events first, then the plain cache-flush timestamp, stopping at the first that doesn't land.
+// Shader-done events first, since a cache-flush event wedged the GPU (docs/HARDWARE.md); stops at the first to fail.
 static const uint32_t fence_events[] = { VS_DONE_TS, PS_DONE_TS, CACHE_FLUSH_TS };
 
-// Volatile, so each put is one 32-bit store: GCC merges plain ones into 64-bit stores, and one at an address that isn't
-// 8-byte aligned faults in write-combined memory (docs/HARDWARE.md).
+// Volatile, so every put is one 32-bit store: a merged 64-bit one can fault here (docs/HARDWARE.md).
 typedef struct {
 	volatile uint32_t *ring;
 	uint32_t write_index;
@@ -104,8 +96,7 @@ static void put_type3(Ring *ring, uint32_t opcode, uint32_t payload_dwords)
 	put(ring, xsdk_gpu_type3(opcode, payload_dwords));
 }
 
-// The ring is write-combined: drain the CPU's writes before the command processor may read them (libxenon:
-// xe.c:97-106 syncs before the write pointer).
+// Drain the write-combined stores before the GPU reads them (libxenon:drivers/xenos/xe.c:97-106).
 static void kick(const Ring *ring)
 {
 	__asm__ volatile("sync" ::: "memory");
@@ -155,8 +146,7 @@ static uint32_t wait_for_write(volatile const uint32_t *slot)
 	return waited_ms;
 }
 
-// A NOP, a MEM_WRITE, then libxenon's scratch fence: write scratch register 0, which the GPU copies to memory, and wait
-// for idle (xe.c:985-988, 1218-1226). Each fence writes its own values.
+// A NOP, a MEM_WRITE and libxenon's scratch fence, each with this fence's values (xe.c:985-988, 1218-1226).
 static void submit_fence(Ring *ring, volatile uint32_t *writeback, uint32_t writeback_physical, uint32_t sequence)
 {
 	writeback[MEM_WRITE_SLOT / 4] = POISON;
@@ -226,10 +216,10 @@ int main(void)
 	probe_report_cp("engines", "at start");
 	report_devices("at start");
 
-	// The ring is write-combined, as titles allocate it (xboxkrnl_video.cc:235-238); the write-back page is uncached,
-	// so the CPU sees what the GPU writes.
+	// Write-combined, as titles allocate the ring (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:235-238).
 	volatile uint32_t *const ring_memory = MmAllocatePhysicalMemoryEx(
 		0, RING_BYTES, PAGE_READWRITE | PAGE_WRITECOMBINE | MEM_LARGE_PAGES, 0, UINT32_MAX, PAGE_BYTES);
+	// Uncached, so the CPU sees what the GPU writes back.
 	volatile uint32_t *const writeback =
 		MmAllocatePhysicalMemoryEx(0, PAGE_BYTES, PAGE_READWRITE | PAGE_NOCACHE | MEM_LARGE_PAGES, 0, UINT32_MAX, 0);
 	if (!ring_memory || !writeback) {

@@ -75,8 +75,7 @@ def import_record(slot, thunk, entry):
     ]
 
 
-# A variable has no thunk; the loader replaces its record with the variable's address
-# (xenia:src/xenia/cpu/xex_module.cc:1173-1178).
+# A variable gets no thunk: the loader writes its address into the record (xenia:src/xenia/cpu/xex_module.cc:1173).
 def generate_variable(entry):
     name = entry["name"]
     ordinal = entry["ordinal"]

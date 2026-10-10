@@ -28,8 +28,7 @@ WRITE_XYZW = 0xF
 INDEX_REGISTER = 0
 POSITION_REGISTER = 0
 STRIDE_DWORDS = 2
-# One bit a fetch, as libxenon's one-fetch resolve shader sets 1 and xost's two-fetch passthrough 0b11
-# (xenos-toolchain/examples/author_passthrough.py); Xenia only guesses "Vertex cache?" (ucode.h:243).
+# One bit a fetch, as in libxenon's resolve shader and xost (xenos-toolchain/examples/author_passthrough.py).
 VERTEX_CACHE_ONE_FETCH = 1
 # Instruction slots follow the two control-flow pairs, three dwords each.
 FETCH_SLOT = 2

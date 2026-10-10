@@ -7,10 +7,7 @@
 #include "xsdk/log.h"
 #include "xsdk/thread.h"
 
-// Nothing a title gives the display shows (docs/HARDWARE.md), while XAM's Guide does. Part one leaves the GPU with XAM
-// and logs every change in the display's register blocks while the user opens and closes the Guide. Part two
-// snapshots the same blocks around VdInitializeEngines and VdShutdownEngines and logs what they change. It only reads
-// display registers.
+// Watches the display registers while the Guide opens, then around taking and giving back the GPU; only reads them.
 
 enum {
 	WATCH_MS = 15000,
@@ -34,8 +31,7 @@ typedef struct {
 	uint32_t new_value;
 } Change;
 
-// Byte offsets around the display registers libxenon uses: 0x2840, the CRTC and D1GRPH, the LUT, D1MODE and the
-// scaler, and 0x79xx, where it talks to the video encoder (libxenon:drivers/xenos/xenos.h:11-54, xenos.c:40-160, 384).
+// Byte offsets around the display registers libxenon uses (libxenon:drivers/xenos/xenos.h:11-54, xenos.c:40-160, 384).
 static const Range ranges[] = {
 	{ 0x2800, 64 },
 	{ 0x6000, 64 },

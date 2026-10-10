@@ -14,8 +14,7 @@
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
 
-// Path calls on the kernel's file calls. Kernel paths are "game:\dir\file", relative to the drive-letter links, or
-// absolute, "\Device\Harddisk0\Partition1\dir"; POSIX paths may use '/' and are relative to the current directory.
+// POSIX paths, with '/' and relative to the current directory, become kernel paths such as "game:\dir\file".
 
 static pthread_mutex_t current_directory_lock = PTHREAD_MUTEX_INITIALIZER;
 // game: is the folder the title was launched from (docs/HARDWARE.md).
@@ -239,8 +238,7 @@ int unlinkat(int dir_fd, const char *path, int flags)
 	NTSTATUS status = open_resolved(resolved, DELETE, FILE_OPEN, options, &handle);
 	if (!NT_SUCCESS(status))
 		return fail_with_status("unlink: NtCreateFile", resolved, status);
-	// The kernel deletes the file when its last handle closes; Xenia ignores this
-	// (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_io_info.cc:203-210).
+	// Deleted at the last close; Xenia ignores this (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_io_info.cc:203-210).
 	const FILE_DISPOSITION_INFORMATION disposition = { .delete_file = 1 };
 	IO_STATUS_BLOCK io_status;
 	status =

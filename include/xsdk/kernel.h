@@ -264,45 +264,34 @@ uint32_t RtlTryEnterCriticalSection(RTL_CRITICAL_SECTION *section);
 uint32_t XAudioRegisterRenderDriverClient(const XAUDIO_RENDER_DRIVER_CLIENT *client, uint32_t *driver);
 uint32_t XAudioSubmitRenderDriverFrame(uint32_t driver, const float *samples);
 uint32_t XAudioUnregisterRenderDriverClient(uint32_t driver);
-// The command processor writes its ring read pointer, a dword index, to this physical address
-// (xenia:src/xenia/gpu/command_processor.cc:243-246).
+// The GPU writes its read pointer, in dwords, to this address (xenia:src/xenia/gpu/command_processor.cc:243-246).
 void VdEnableRingBufferRPtrWriteBack(uint32_t physical_address, uint32_t block_size_log2);
 void VdGetCurrentDisplayInformation(DISPLAY_INFO *info);
 // Xenia fills 0x94 bytes of buffer and one dword of value (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:252-256).
 void VdGetSystemCommandBuffer(void *buffer, uint32_t *value);
-// Exported variables, each a pointer to the kernel's variable (xenia:src/xenia/cpu/xex_module.cc:1173-1178). They
-// hold the title's D3D device and XAM's (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:442-457).
+// Each points to a kernel variable holding a D3D device (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:442-457).
 extern uint32_t *const VdGlobalDevice;
 extern uint32_t *const VdGlobalXamDevice;
-// D3D passes 0x4F810000, a callback and its argument, then the PFP and ME microcode; the callback's signature isn't
-// known (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:193-201, a stub). It runs the graphics notification
-// routines, through which XAM's D3D device gives up the GPU (docs/HARDWARE.md).
+// Runs the graphics notification routines, through which XAM's D3D device gives up the GPU (docs/HARDWARE.md).
 uint32_t VdInitializeEngines(
 	uint32_t flags, void *callback, void *context, const uint32_t *pfp_microcode, const uint32_t *me_microcode);
-// Takes MmGetPhysicalAddress's result and log2 of the size in 8-byte units
-// (xenia:src/xenia/gpu/command_processor.cc:312).
+// size_log2 is log2 of the ring's size in 8-byte units (xenia:src/xenia/gpu/command_processor.cc:312).
 void VdInitializeRingBuffer(uint32_t physical_address, uint32_t size_log2);
 void VdQueryVideoMode(VIDEO_MODE *mode);
-// Often 0x40000000: bit 30 always set, bits 28-29 colour space, bit 27 a 2_10_10_10 front buffer, bit 1 a 720x480 or
-// 720x576 mode (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:166-183, a stub).
+// Bit 30 always set, bits 28-29 the colour space (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:166-183).
 uint32_t VdSetDisplayMode(uint32_t flags);
-// The kernel keeps one graphics interrupt callback, and setting one replaces it. It calls callback(source, context)
-// with source 0 at vblank and 1 for the command processor (xenia:src/xenia/gpu/graphics_system.cc:234-272,
-// command_processor.cc:907-911).
+// The kernel keeps one callback and calls it with source 0 at vblank (xenia:src/xenia/gpu/graphics_system.cc:234-272).
 typedef void (*VdGraphicsInterruptCallback)(uint32_t source, void *context);
 void VdSetGraphicsInterruptCallback(VdGraphicsInterruptCallback callback, void *context);
 // D3D passes an address in its device (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:259-261).
 void VdSetSystemCommandBufferGpuIdentifierAddress(volatile uint32_t *address);
 void VdShutdownEngines(void);
-// Writes a fence into 64 dwords the caller reserved in the ring, which writes system_value to system_writeback once the
-// GPU passes it (docs/HARDWARE.md). The fetch constant holds the front buffer's virtual address >> 12
-// (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:352-409).
+// Writes only a fence, of system_value to system_writeback, into 64 dwords reserved in the ring (docs/HARDWARE.md).
 void VdSwap(volatile uint32_t *ring_space, const uint32_t *fetch_constant, volatile uint32_t *system_writeback,
 	void *system_buffer, uint32_t system_value, const uint32_t *front_buffer, const uint32_t *texture_format,
 	const uint32_t *color_space, const uint32_t *width, const uint32_t *height);
 void XeCryptRandom(void *buffer, uint32_t length_bytes);
-// Return 0 on success; module names a loaded module, such as "xboxkrnl.exe"
-// (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_modules.cc:42-62, 142-186).
+// Returns 0 if a module like "xboxkrnl.exe" is loaded (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_modules.cc:42-62).
 uint32_t XexGetModuleHandle(const char *module_name, HANDLE *module);
 NTSTATUS XexGetProcedureAddress(HANDLE module, uint32_t ordinal, void **address);
 

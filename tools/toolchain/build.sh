@@ -27,8 +27,7 @@ SPECS=(
 	# Only CR0 and CR1 to allocate, so GCC rarely copies fields with mcrf, which Xenia skips; CR0 alone breaks GCC.
 	-ffixed-cr2 -ffixed-cr3 -ffixed-cr4 -ffixed-cr5 -ffixed-cr6 -ffixed-cr7
 	'%{!ftree-vectorize:-fno-tree-vectorize}'   # avoids AltiVec ops Xenon lacks (libxenon's gcc-9.2.0.diff)
-	# No tail calls or split-off cold code: Xenia takes the code up to a forward branch's target as one function
-	# (xenia:src/xenia/cpu/ppc/ppc_scanner.cc:204), which breaks or crashes it.
+	# Xenia misreads where tail-calling or split functions end (xenia:src/xenia/cpu/ppc/ppc_scanner.cc:204).
 	-fno-optimize-sibling-calls -fno-reorder-blocks-and-partition
 	# GCC 15.3's RTL PRE miscompiles 32-bit code with -mpowerpc64: it drops a copy and passes a pointer as 0.
 	-fno-gcse
@@ -72,9 +71,7 @@ fetch() {
 	unpack "$GCC" gcc-xsdk.patch
 }
 
-# configure_and_make <name> <source dir> <make targets> <install targets> -- <configure arguments>
-# A finished stage leaves a stamp and is skipped next time; delete $WORK/build and $PREFIX after changing a patch or
-# an option.
+# Builds a stage unless its stamp exists; delete $WORK/build and $PREFIX after changing a patch or an option.
 configure_and_make() {
 	local name=$1 source=$2 targets=$3 installs=$4
 	shift 5

@@ -6,10 +6,7 @@
 #include "xsdk/log.h"
 #include "xsdk/thread.h"
 
-// When XAM shows the Guide it writes its surface to 0x2840 and 0x2844 as well as D1GRPH, and loads the LUT
-// (docs/HARDWARE.md, "What XAM writes to show the Guide"). After taking the GPU, this shows white with the full surface
-// set, then again after filling the LUT as libxenon does, then red, green and blue as little-endian ARGB with full
-// alpha, then stripes and a diagonal in libxenon's tile layout. It puts the surface back before exiting.
+// Shows CPU-filled colours through the registers XAM sets for the Guide, before and after filling the LUT.
 
 enum {
 	PAGE_BYTES = 0x10000,
@@ -28,8 +25,7 @@ typedef struct {
 	uint32_t pixel;
 } Colour;
 
-// 0xAARRGGBB with full alpha, stored little-endian, as libxenon's console says the display reads it
-// (libxenon:drivers/console/console.c:67-70).
+// 0xAARRGGBB stored little-endian, as the display reads it (libxenon:drivers/console/console.c:67-70).
 static const Colour colours[] = {
 	{ "red", 0x0000FFFF },
 	{ "green", 0x00FF00FF },

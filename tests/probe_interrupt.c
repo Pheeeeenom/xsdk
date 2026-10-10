@@ -6,15 +6,11 @@
 #include "xsdk/log.h"
 #include "xsdk/thread.h"
 
-// XAM's D3D device submits to its ring every vblank while a title runs (docs/HARDWARE.md, "XAM's D3D device shares the
-// command processor"). This tests whether it does so from the graphics interrupt callback: it watches XAM's write
-// pointer, sets a callback of its own that only counts, and watches again. It writes no GPU registers. It clears the
-// callback before exiting, so the kernel doesn't call into an unloaded title; XAM's callback can't be put back.
+// Tests whether XAM's device submits from the graphics interrupt callback; writes no GPU registers (docs/HARDWARE.md).
 
 enum {
 	WATCH_MS = 2000,
-	// Sources the kernel passes: 0 at vblank, 1 for the command processor (xenia:src/xenia/gpu/graphics_system.cc:272,
-	// command_processor.cc:909).
+	// The kernel passes 0 at vblank and 1 for the command processor (xenia:src/xenia/gpu/graphics_system.cc:272).
 	SOURCE_VBLANK = 0,
 	SOURCE_COMMAND_PROCESSOR = 1,
 	SOURCE_OTHER = 2,
@@ -78,6 +74,7 @@ int main(void)
 	VdSetGraphicsInterruptCallback(count_interrupt, 0);
 	watch_and_report("with the title's callback");
 
+	// So the kernel doesn't call into the title once it unloads; XAM's callback can't be put back.
 	VdSetGraphicsInterruptCallback(0, 0);
 	watch_and_report("with no callback");
 	probe_report_cp("interrupt", "at end");

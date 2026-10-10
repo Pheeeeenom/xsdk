@@ -7,11 +7,7 @@
 #include "xsdk/log.h"
 #include "xsdk/thread.h"
 
-// Milestone 4 by SCOPE.md section 3.2's option 2: drive the command processor as the dashboard leaves it, without
-// VdInitializeEngines. The kernel's ring set-up stalls the command processor without it (docs/HARDWARE.md), so this
-// sets the ring up through the registers as libxenon does, then submits in two phases and logs what lands: libxenon's
-// scratch register fence with a MEM_WRITE, then an EVENT_WRITE_SHD fence. Xenia only honours VdInitializeRingBuffer, so
-// this runs on the console only.
+// Sets the ring up through registers as libxenon does, without VdInitializeEngines; console only (docs/HARDWARE.md).
 
 enum {
 	RING_BYTES = 0x8000,
@@ -60,8 +56,7 @@ enum {
 	SCRATCH_SLOT = 0x100,
 };
 
-// Volatile, so each put is one 32-bit store: GCC merges plain ones into 64-bit stores, and one at an address that isn't
-// 8-byte aligned faults in write-combined memory (docs/HARDWARE.md).
+// Volatile, so every put is one 32-bit store: a merged 64-bit one can fault here (docs/HARDWARE.md).
 typedef struct {
 	volatile uint32_t *ring;
 	uint32_t write_index;
@@ -83,8 +78,7 @@ static void put_type3(Ring *ring, uint32_t opcode, uint32_t payload_dwords)
 	put(ring, xsdk_gpu_type3(opcode, payload_dwords));
 }
 
-// The ring is write-combined: drain the CPU's writes before the command processor may read them (libxenon:
-// xe.c:97-106 syncs before the write pointer).
+// Drain the write-combined stores before the GPU reads them (libxenon:drivers/xenos/xe.c:97-106).
 static void kick(const Ring *ring)
 {
 	__asm__ volatile("sync" ::: "memory");
@@ -152,10 +146,10 @@ int main(void)
 	xsdk_log_write("ring probe");
 	probe_report_cp("ring", "at start");
 
-	// The ring is write-combined, as titles allocate it (xboxkrnl_video.cc:235-238); the write-back page is uncached,
-	// so the CPU sees what the GPU writes.
+	// Write-combined, as titles allocate the ring (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:235-238).
 	volatile uint32_t *const ring_memory = MmAllocatePhysicalMemoryEx(
 		0, RING_BYTES, PAGE_READWRITE | PAGE_WRITECOMBINE | MEM_LARGE_PAGES, 0, UINT32_MAX, PAGE_BYTES);
+	// Uncached, so the CPU sees what the GPU writes back.
 	volatile uint32_t *const writeback =
 		MmAllocatePhysicalMemoryEx(0, PAGE_BYTES, PAGE_READWRITE | PAGE_NOCACHE | MEM_LARGE_PAGES, 0, UINT32_MAX, 0);
 	if (!ring_memory || !writeback) {

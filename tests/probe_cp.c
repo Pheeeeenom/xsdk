@@ -7,9 +7,7 @@
 #include "xsdk/log.h"
 #include "xsdk/thread.h"
 
-// Logs the command processor's state as a title finds it, which D3D devices the kernel holds, and every change to the
-// ring registers over a few seconds. It only reads registers. Don't read the microcode RAM (0x07E4 and 0x07E8 for the
-// ME, 0x117C and 0x1180 for the PFP): it hangs the GPU (docs/HARDWARE.md).
+// Watches the ring registers at title start; it never reads microcode RAM, which hangs the GPU (docs/HARDWARE.md).
 
 enum {
 	WATCH_MS = 5000,
@@ -67,8 +65,7 @@ static bool same_state(const RingState *a, const RingState *b)
 		a->me_control == b->me_control && a->busy == b->busy;
 }
 
-// Samples about once a millisecond and keeps each change, logging them afterwards so the log's writes don't slow the
-// sampling.
+// Logs the changes afterwards, so writing the log doesn't slow the sampling.
 static void watch_ring(void)
 {
 	struct timespec start;

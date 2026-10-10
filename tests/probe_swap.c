@@ -7,11 +7,7 @@
 #include "xsdk/log.h"
 #include "xsdk/thread.h"
 
-// Milestone 5's first question: does VdSwap show a front buffer the title made? The front buffers are filled from the
-// CPU, so no eDRAM is involved and tiling can't matter. The kernel's VdSwap only writes a fence into the ring
-// (docs/HARDWARE.md), so this registers the fence's address first, as D3D seems to. At title start the display scans
-// a 640x480 surface, so it swaps to a red 1280x720 buffer, then to a blue one the size the kernel reports, logging the
-// display controller's registers after each: the colour on screen shows which swap took.
+// Swaps to two CPU-filled front buffers with VdSwap, logging the display registers after each (docs/HARDWARE.md).
 
 enum {
 	PAGE_BYTES = 0x10000,

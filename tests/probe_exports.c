@@ -3,8 +3,7 @@
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
 
-// Finds which kernel exports hold the return addresses of Aurora's blocked start-up (docs/HARDWARE.md, "A title's
-// interrupt callback stops XAM's device") by asking the kernel for every export's address. It touches no hardware.
+// Finds the kernel exports that hold Aurora's blocked return addresses (docs/HARDWARE.md); touches no hardware.
 
 enum {
 	// Past the highest ordinal Xenia lists (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_table.inc).
