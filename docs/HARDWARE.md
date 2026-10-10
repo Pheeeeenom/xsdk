@@ -694,3 +694,20 @@ The test title ran `tests/test_triangle.c` with `xsdk_gpu_set_vertices` writing 
 - **The present test failed, though it passed in the first triangle run and nothing it runs has changed since.** In the
   four frames logged, the first pixel held the colour the resolve before had cleared to, so the middle or the last pixel
   didn't; the test logged only the first.
+
+## Resolves without draws miss the last pixel (2026-10-10)
+
+The test title ran again, the present test now logging the three pixels it checks (log:
+`results/2026-10-10-milestone-6-3/xsdk.log`, xbWatson's copy).
+
+- **The triangle drew and passed again;** the user saw it, and the console went back to Aurora without freezing.
+- **Every present frame missed its last pixel,** (639, 479), which still held the zero the buffer was allocated with,
+  while the first and middle pixels held the colour cleared before. The present test passed in the runs before the
+  last two.
+- **The triangle's resolves in the same run wrote that pixel:** unwritten, it would have counted as drawn, and the last
+  frame drew 86160 pixels, as in Xenia. The triangle sets its draw state before resolving, where the present test only
+  resolves.
+- **A missing last row and column is what the other pixel centre would give.** The resolve's corners sit half a pixel
+  up and left (libxenon:drivers/xenos/xe.c:1074-1081); Xenia adds that half pixel back for Direct3D centres, which the
+  set-up selects, and without it coverage stops one pixel short of the right and bottom
+  (xenia:src/xenia/gpu/draw_util.cc:837-867).
