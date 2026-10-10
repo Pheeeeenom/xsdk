@@ -1,0 +1,162 @@
+log: game:\xsdk.log
+resolve probe
+resolve: front buffer at physical 1FB20000, vertices at 1FB10000
+resolve: showing magenta from the CPU for 3000 ms
+resolve: white: state and shader: fence 0x00000000
+resolve: white: draw: fence 0x00000000
+resolve: white: cache flush: fence 0x00000000
+resolve: white: coherency wait: fence 0x00000000
+resolve: white:
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve: flushing again: cache flush: fence 0x00000000
+resolve: flushing again: coherency wait: fence 0x00000000
+resolve: after flushing again:
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve: holding for 2000 ms
+resolve: white again: state and shader: fence 0x00000000
+resolve: white again: draw: fence 0x00000000
+resolve: white again: cache flush: fence 0x00000000
+resolve: white again: coherency wait: fence 0x00000000
+resolve: white again:
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve: flushing again: cache flush: fence 0x00000000
+resolve: flushing again: coherency wait: fence 0x00000000
+resolve: after flushing again:
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve: holding for 2000 ms
+resolve: green: state and shader: fence 0x00000000
+resolve: green: draw: fence 0x00000000
+resolve: green: cache flush: fence 0x00000000
+resolve: green: coherency wait: fence 0x00000000
+resolve: green:
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve: flushing again: cache flush: fence 0x00000000
+resolve: flushing again: coherency wait: fence 0x00000000
+resolve: after flushing again:
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve:   ********************
+resolve: holding for 2000 ms
+resolve: green again: state and shader: fence 0x00000000
+resolve: green again: draw: fence 0x00000000
+resolve: green again: cache flush: fence 0x00000000
+resolve: green again: coherency wait: fence 0x00000000
+resolve: green again:
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve: flushing again: cache flush: fence 0x00000000
+resolve: flushing again: coherency wait: fence 0x00000000
+resolve: after flushing again:
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve: holding for 2000 ms
+resolve: exit: drawing mode back: fence 0x00000000
+exit: status 0

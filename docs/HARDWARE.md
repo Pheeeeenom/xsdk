@@ -500,3 +500,16 @@ each one and half a second later (log: `results/2026-10-10-probe-resolve-2/xsdk.
 - **The third wrote zero over the whole frame,** not the white or red the earlier clears should have left in eDRAM, so
   when a copy does land its rectangle covers the screen. After the fourth every tile still read zero.
 - **Nothing changed in the half second after each map,** so the writes don't arrive late in time.
+
+## Only the third resolve writes (2026-10-10)
+
+`tests/probe_resolve.c` refilled the front buffer with magenta before each of four resolves, cleared white, white, green
+and green, and mapped the buffer after each resolve and again after a second cache flush and coherency wait (log:
+`results/2026-10-10-probe-resolve-3/xsdk.log`, xbWatson's copy).
+
+- **The first, second and fourth resolves wrote nothing:** every tile stayed magenta, though all their fences landed.
+- **The third changed every tile, but not to one value:** each tile held more than one value, and none started with a
+  value outside the probe's colours and zero. The map can't tell part-white, part-magenta tiles from others.
+- **The second flush changed nothing,** so the missing writes aren't held in a cache.
+- **The third resolve was also the only one to write in the previous run,** whose holds and stages differed, so the
+  pattern follows the resolve's position in the sequence, not the time or the ring position.
