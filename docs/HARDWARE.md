@@ -459,3 +459,20 @@ So the display is held on the kernel's placeholder while XAM has the GPU, and sh
   a 1280x720 surface at 0x1FC59000 in both 0x2840 and 0x6110, with 1280 in 0x2844, 0x6120 and 0x6134 and 720 in 0x6138.
 
 So a surface shows when 0x2840 and 0x2844 match D1GRPH, and the LUT may be holding the screen black in between.
+
+## A title's buffer on screen (2026-10-10)
+
+`tests/probe_display.c` took the GPU, then set the surface address and pitch in both 0x2840/0x2844 and D1GRPH and set
+0x60EC, keeping the kernel's 640x480 mode, and showed a buffer the CPU filled. The user reported what the screen showed.
+
+- **White didn't show with the surface set alone.**
+- **White showed once the LUT was filled** with libxenon's autofill: `DC_LUTA_CONTROL` 0, `DC_LUT_RW_INDEX` 0,
+  `DC_LUT_RW_MODE` 0, `DC_LUT_WRITE_EN_MASK` 7, `DC_LUT_AUTOFILL` 1, then waiting for its bit 1
+  (libxenon:drivers/xenos/xenos.c:419-424). So the LUT holds the screen black while a title runs, and every earlier
+  test was black because of it.
+- **Pixels are 0xAARRGGBB stored little-endian.** The words 0x0000FFFF, 0x00FF00FF and 0xFF0000FF, written by the
+  CPU, showed red, green and blue.
+- **The display reads libxenon's 32x32 tile layout** (libxenon:drivers/console/console.c:60-61): red and blue stripes
+  drawn with it showed as stripes, with the white diagonal in place.
+
+Whether 0x2840 and 0x2844 are needed as well as D1GRPH isn't settled, since the surface was set in both throughout.
