@@ -34,3 +34,40 @@
        freebsd*|netbsd*|dragonfly*|rtems*)
          ac_has_clock_monotonic=yes
          ac_has_clock_realtime=yes
+--- a/gcc/config/rs6000/rs6000.cc
++++ b/gcc/config/rs6000/rs6000.cc
+@@ -17044,22 +17044,25 @@
+       emit_unlikely_jump (x, label1);
+     }
+ 
+-  if (!is_mm_relaxed (mod_f))
+-    emit_label (XEXP (label2, 0));
++  /* Xbox 360 SDK: the Xbox 360 needs every load-locked paired with a
++     store-conditional to the same address before the next reservation.  On
++     failure, store back the word just loaded, which leaves memory as it was.
++     Each path sets BOOLVAL itself, so no condition register crosses the join;
++     copying one would take an mcrf, which the Xenia emulator skips.  */
++  emit_insn (gen_rtx_SET (boolval, gen_rtx_EQ (SImode, cond, const0_rtx)));
++  rtx_code_label *label3 = gen_label_rtx ();
++  emit_jump (label3);
++  emit_label (XEXP (label2, 0));
++  emit_store_conditional (orig_mode, gen_reg_rtx (CCmode), mem, retval);
++  emit_move_insn (boolval, const0_rtx);
++  emit_label (label3);
+ 
+   rs6000_post_atomic_barrier (mod_s);
+ 
+-  if (is_mm_relaxed (mod_f))
+-    emit_label (XEXP (label2, 0));
+-
+   if (shift)
+     rs6000_finish_atomic_subword (operands[1], retval, shift);
+   else if (mode != GET_MODE (operands[1]))
+     convert_move (operands[1], retval, 1);
+-
+-  /* In all cases, CR0 contains EQ on success, and NE on failure.  */
+-  x = gen_rtx_EQ (SImode, cond, const0_rtx);
+-  emit_insn (gen_rtx_SET (boolval, x));
+ }
+ 
+ /* Expand an atomic exchange operation.  */
