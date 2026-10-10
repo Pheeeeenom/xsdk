@@ -103,6 +103,8 @@ enum {
 	VERTEX_FETCH_SIZE_6_8IN32 = 1 << 28 | 6 << 2 | 2,
 	RECTANGLE_LIST_AUTO_INDEX_3 = 8 | 2 << 6 | 3 << 16,
 	COHER_RESOLVE_ACTIONS = 0x03000100,
+	// COHER_STATUS_HOST's vc_action_ena (xenia:src/xenia/gpu/registers.h:84).
+	COHER_VERTEX_CACHE = 1 << 24,
 	WAIT_REG_MEM_EQUAL = 3,
 	COHER_BUSY = 0x80000000,
 	WAIT_REG_MEM_INTERVAL = 8,
@@ -237,6 +239,27 @@ static void put_state(
 	put_registers(stage, SHADER_CONSTANT_FLUSH_FETCH_0, flush_fetch, 3);
 }
 
+static void put_coherency_wait(Stage *stage, uint32_t actions, uint32_t base, uint32_t size_bytes)
+{
+	const uint32_t range[] = { size_bytes, base };
+	put_register(stage, COHER_STATUS_HOST, actions);
+	put_registers(stage, COHER_SIZE_HOST, range, 2);
+	put_type3(stage, PM4_WAIT_REG_MEM, 5);
+	put(stage, WAIT_REG_MEM_EQUAL);
+	put(stage, COHER_STATUS_HOST);
+	put(stage, 0);
+	put(stage, COHER_BUSY);
+	put(stage, WAIT_REG_MEM_INTERVAL);
+}
+
+// libxenon invalidates the vertex cache after the CPU writes vertices (libxenon:drivers/xenos/xe.c:732-740, 759).
+static bool invalidate_vertex_cache(uint32_t vertices, uint32_t size_bytes)
+{
+	Stage stage = { .count = 0 };
+	put_coherency_wait(&stage, COHER_VERTEX_CACHE, vertices, size_bytes);
+	return submit(&stage, "vertices", "vertex cache");
+}
+
 // A cache flush, then the coherency wait for the front buffer, in two fenced stages.
 static bool flush(const char *name, uint32_t destination, uint32_t width, uint32_t height)
 {
@@ -248,15 +271,7 @@ static bool flush(const char *name, uint32_t destination, uint32_t width, uint32
 		return false;
 
 	stage.count = 0;
-	const uint32_t coherency[] = { width * height * 4, destination };
-	put_register(&stage, COHER_STATUS_HOST, COHER_RESOLVE_ACTIONS);
-	put_registers(&stage, COHER_SIZE_HOST, coherency, 2);
-	put_type3(&stage, PM4_WAIT_REG_MEM, 5);
-	put(&stage, WAIT_REG_MEM_EQUAL);
-	put(&stage, COHER_STATUS_HOST);
-	put(&stage, 0);
-	put(&stage, COHER_BUSY);
-	put(&stage, WAIT_REG_MEM_INTERVAL);
+	put_coherency_wait(&stage, COHER_RESOLVE_ACTIONS, destination, width * height * 4);
 	put_register(&stage, RB_COPY_CONTROL, 0);
 	put_register(&stage, RB_COPY_DEST_INFO, 0);
 	return submit(&stage, name, "coherency wait");
@@ -431,6 +446,8 @@ int main(void)
 		xsdk_log_write("resolve: xsdk_gpu_open returned 0x%08X", (unsigned)status);
 		return 1;
 	}
+	if (!invalidate_vertex_cache(vertices_physical, PAGE_BYTES))
+		return 1;
 	if (has_display) {
 		fill_lut();
 		set_surface(pixels_physical, width);
