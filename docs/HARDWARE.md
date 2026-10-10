@@ -740,3 +740,15 @@ log is in `results/2026-10-10-milestone-6-4/xsdk.log`.
   pixels, as in Xenia. The user saw the triangle in the run before.
 - **The present test passed again** with the resolve setting `PA_SC_AA_CONFIG` to 0: every frame held the colour
   cleared before it.
+
+## A textured quad, milestone 7 (2026-10-10)
+
+The test title passed all 66 checks on the console and exited with status 0; the log is in
+`results/2026-10-10-milestone-7/xsdk.log`, and `capture.png` beside it is the user's capture of one frame.
+
+- **A texture the SDK uploaded sampled correctly, linear and then tiled.** A 160x96 ARGB texture whose texels all
+  differ, drawn one texel to a pixel at (64, 48), held every texel in place in the last of 60 frames each way, with the
+  pixels around it the clear colour, and five texels checked in every frame. So the fetch constant, the ARGB swizzle,
+  the 256-byte linear pitch, `xsdk_tiled_2d` and the float2 texture coordinates all hold on the console.
+- **The capture shows the texture as written:** navy at the top left, red rising to the right and green downwards, and
+  blue wrapping from 255 to 128 along x + y = 128, from texel 128 on the top edge to about texel 33 on the bottom.
