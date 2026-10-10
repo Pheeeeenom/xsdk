@@ -238,6 +238,10 @@ uint32_t XAudioUnregisterRenderDriverClient(uint32_t driver);
 // The command processor writes its ring read pointer, a dword index, to this physical address
 // (xenia:src/xenia/gpu/command_processor.cc:243-246).
 void VdEnableRingBufferRPtrWriteBack(uint32_t physical_address, uint32_t block_size_log2);
+// Exported variables, each a pointer to the kernel's variable (xenia:src/xenia/cpu/xex_module.cc:1173-1178). They
+// hold the title's D3D device and XAM's (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:442-457).
+extern uint32_t *const VdGlobalDevice;
+extern uint32_t *const VdGlobalXamDevice;
 // Takes MmGetPhysicalAddress's result and log2 of the size in 8-byte units
 // (xenia:src/xenia/gpu/command_processor.cc:312).
 void VdInitializeRingBuffer(uint32_t physical_address, uint32_t size_log2);

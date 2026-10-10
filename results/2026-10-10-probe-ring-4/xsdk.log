@@ -1,0 +1,13 @@
+log: game:\xsdk.log
+ring probe
+ring: at start: 0x07D8 00007FFF (bit 28: halted), RBBM_STATUS 00040110 (bit 31: busy)
+ring: at start: base 01B9D000, control 00020309, read pointer write-back 01B9F03E, read 000000D3, write 000000D3
+ring: ring at 0xbfc40000 (physical 1FC40000), write-back page at 0xbfc30000 (physical 1FC30000)
+ring: setting up the ring through the registers
+ring: after set-up: 0x07D8 20007FFF (bit 28: halted), RBBM_STATUS 80050110 (bit 31: busy)
+ring: after set-up: base 1FC40000, control 0002060C, read pointer write-back 1FC30002, read 000000EB, write 000000EB
+ring: phase A: submitting up to dword 13
+ring: phase A after 1000 ms: MEM_WRITE DEADBEEF (not written), scratch DEADBEEF (not written), read pointer write-back 0000000D
+ring: after phase A: 0x07D8 22007FFF (bit 28: halted), RBBM_STATUS 80050110 (bit 31: busy)
+ring: after phase A: base 1FC40000, control 0002060C, read pointer write-back 1FC30002, read 0000000D, write 0000000D
+ring: phase B: submitting up to dword 17

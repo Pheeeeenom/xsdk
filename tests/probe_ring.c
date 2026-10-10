@@ -1,6 +1,5 @@
 #include <stdbool.h>
 #include <stdint.h>
-#include <string.h>
 
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
@@ -60,8 +59,10 @@ enum {
 	SCRATCH_SLOT = 0x100,
 };
 
+// Volatile, so each put is one 32-bit store: GCC merges plain ones into 64-bit stores, and one at an address that isn't
+// 8-byte aligned faults in write-combined memory (docs/HARDWARE.md).
 typedef struct {
-	uint32_t *ring;
+	volatile uint32_t *ring;
 	uint32_t write_index;
 } Ring;
 
@@ -174,7 +175,7 @@ int main(void)
 
 	// The ring is write-combined, as titles allocate it (xboxkrnl_video.cc:235-238); the write-back page is uncached,
 	// so the CPU sees what the GPU writes.
-	uint32_t *const ring_memory = MmAllocatePhysicalMemoryEx(
+	volatile uint32_t *const ring_memory = MmAllocatePhysicalMemoryEx(
 		0, RING_BYTES, PAGE_READWRITE | PAGE_WRITECOMBINE | MEM_LARGE_PAGES, 0, UINT32_MAX, PAGE_BYTES);
 	volatile uint32_t *const writeback =
 		MmAllocatePhysicalMemoryEx(0, PAGE_BYTES, PAGE_READWRITE | PAGE_NOCACHE | MEM_LARGE_PAGES, 0, UINT32_MAX, 0);
@@ -182,11 +183,12 @@ int main(void)
 		xsdk_log_write("ring: MmAllocatePhysicalMemoryEx failed");
 		return 1;
 	}
-	const uint32_t ring_physical = MmGetPhysicalAddress(ring_memory);
+	const uint32_t ring_physical = MmGetPhysicalAddress((const void *)ring_memory);
 	const uint32_t writeback_physical = MmGetPhysicalAddress((const void *)writeback);
 	xsdk_log_write("ring: ring at %p (physical %08X), write-back page at %p (physical %08X)", (void *)ring_memory,
 		(unsigned)ring_physical, (void *)writeback, (unsigned)writeback_physical);
-	memset(ring_memory, 0, RING_BYTES);
+	for (uint32_t i = 0; i < RING_BYTES / 4; i++)
+		ring_memory[i] = 0;
 	writeback[RPTR_SLOT / 4] = POISON;
 	writeback[MEM_WRITE_SLOT / 4] = POISON;
 	writeback[EVENT_SLOT / 4] = POISON;

@@ -177,3 +177,28 @@ a `MEM_WRITE` before the `EVENT_WRITE_SHD` (log: `results/2026-10-10-probe-ring-
 
 So without `VdInitializeEngines` the kernel's ring set-up stalls the command processor (two runs of three; in the
 first, one `MEM_WRITE` landed). The probe now sets the ring up through the registers as libxenon does.
+
+A fourth run set the ring up through the registers, as libxenon does, and didn't call the kernel's ring functions (log:
+`results/2026-10-10-probe-ring-4/xsdk.log`, from xbWatson's copy).
+
+- **Register set-up ends the same way as the kernel's.** Afterwards 0x0700, 0x0704 and 0x070C held the probe's values,
+  but the read and write pointers were both 0xEB, though the probe had written 0 to the write pointer during the
+  reset (0xD3 at start). The GPU was busy and 0x07D8 had bit 29 set. So the stall doesn't come from the kernel's ring
+  functions. In all four runs something other than the title moved the write pointer during set-up, by 24 to 42
+  dwords.
+- **Phase A didn't land.** The read pointer write-back reached 13 at the new address, but neither the `MEM_WRITE` nor
+  the scratch write-back landed within 1000 ms.
+- **The probe crashed on its next packet, through its own fault.** GCC merged two 32-bit ring stores into one `std` at
+  0xBFC40034, which isn't 8-byte aligned, and that raised an alignment exception in write-combined memory (xbWatson:
+  EADDR 0x82010A04, `std r10,52(r28)`, r10 = 0xC0025800_00000014, the packet's header and event). Code that writes
+  write-combined memory the GPU reads must use volatile 32-bit stores. The title carried on and submitted phase B.
+- **D3D's hang reports came after the title had exited,** so they are presumably Aurora's device starting again, as in
+  the second run. The first had the probe's ring at both pointers 0x11 and the `EVENT_WRITE_SHD` packet's value and
+  address in the CP debug words. The later ones (frames 18 to 20) had `CP_RB_BASE` 0, `CP_RB_RPTR` 0 and
+  `CP_RB_WPTR` climbing from 0xFD to 0x11B, so that device kept submitting to a command processor that no longer
+  fetched.
+
+Across six runs the ring a title finds at start sat at 0xC7, 0xC7, 0xD3, 0xDF, 0xEB and 0xEB, so it doesn't advance
+steadily while titles load. What moves it during set-up may be reacting to the set-up rather than submitting on a
+schedule. `tests/probe_cp.c` now watches the ring registers for five seconds without writing to them, and logs
+`VdGlobalDevice` and `VdGlobalXamDevice` to see whether XAM holds a D3D device while a title runs.

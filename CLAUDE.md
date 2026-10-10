@@ -23,6 +23,9 @@ layer that drives Xenos directly. Scope, sources and milestones are in SCOPE.md.
 - Xenia finds a function's end by scanning, and a forward `b` makes it take everything up to the target as one function
   (xenia:src/xenia/cpu/ppc/ppc_scanner.cc:204). Tail calls into that range then run the wrong code or crash Xenia. The
   toolchain turns off tail calls and hot/cold splitting, and `src/xsdk.ld` puts import stubs first; keep it that way.
+- Write memory the GPU reads (write-combined or uncached) through `volatile` 32-bit stores. GCC merges plain stores
+  into 64-bit `std`, and on the console one that isn't 8-byte aligned raises an alignment exception there
+  (docs/HARDWARE.md, "A ring without VdInitializeEngines").
 
 ## Build
 
