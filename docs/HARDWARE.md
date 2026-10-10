@@ -164,3 +164,16 @@ A second run, after a cold boot, appended its packets at the write pointer the k
 - **Aurora's D3D printed a GPU hang report** when it started again. It names 0x1740 `RBBM_STATUS` (0x80050110) and the
   ring registers `CP_RB_BASE` (the probe's ring), `CP_RB_RPTR` and `CP_RB_WPTR` (both 0x11E). Its CP debug words held
   the `EVENT_WRITE_SHD` packet's value and address, so the command processor was stuck in that fence.
+
+A third run synced after zeroing the ring, before `VdInitializeRingBuffer`, and submitted libxenon's scratch fence with
+a `MEM_WRITE` before the `EVENT_WRITE_SHD` (log: `results/2026-10-10-probe-ring-3/xsdk.log`).
+
+- **The kernel doesn't put packets in the title's ring.** Every dword before the write pointer it left (229, up from
+  0xC7) read back as zero.
+- **The command processor stalls during the kernel's set-up.** The GPU was busy right after
+  `VdEnableRingBufferRPtrWriteBack`, with 0x07D8 bit 29 set. None of the fences landed (`MEM_WRITE`, scratch write-back,
+  `EVENT_WRITE_SHD`), though the read pointer followed the write pointer each time. D3D's hang report again showed the
+  `EVENT_WRITE_SHD` packet in the command processor's debug words.
+
+So without `VdInitializeEngines` the kernel's ring set-up stalls the command processor (two runs of three; in the
+first, one `MEM_WRITE` landed). The probe now sets the ring up through the registers as libxenon does.

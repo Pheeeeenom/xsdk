@@ -7,14 +7,16 @@
 #include "xsdk/thread.h"
 
 // Milestone 4 by SCOPE.md section 3.2's option 2: drive the command processor as the dashboard leaves it, without
-// VdInitializeEngines. Sets up a ring through the kernel, then submits in two phases and logs what lands: libxenon's
-// scratch register fence with a MEM_WRITE, then an EVENT_WRITE_SHD fence.
+// VdInitializeEngines. The kernel's ring set-up stalls the command processor without it (docs/HARDWARE.md), so this
+// sets the ring up through the registers as libxenon does, then submits in two phases and logs what lands: libxenon's
+// scratch register fence with a MEM_WRITE, then an EVENT_WRITE_SHD fence. Xenia only honours VdInitializeRingBuffer, so
+// this runs on the console only.
 
 enum {
 	RING_BYTES = 0x8000,
-	// log2 of RING_BYTES in 8-byte units, as VdInitializeRingBuffer counts (libxenon:drivers/xenos/xe.c:21, 366).
+	// log2 of RING_BYTES in 8-byte units (libxenon:drivers/xenos/xe.c:21, 366).
 	RING_SIZE_LOG2 = 12,
-	// What titles pass (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:244-248).
+	// libxenon's read pointer write-back block size (xe.c:981).
 	RPTR_BLOCK_SIZE_LOG2 = 6,
 	PAGE_BYTES = 0x10000,
 	FENCE_TIMEOUT_MS = 1000,
@@ -22,6 +24,10 @@ enum {
 	MEM_WRITE_VALUE = 0x4D454D57,
 	SCRATCH_VALUE = 0x53435230,
 	EVENT_VALUE = 0x45564E54,
+	// 0x07D8 bit 28 halts the command processor (xe.c:305-318).
+	CP_HALTED = 0x10000000,
+	// RBBM_STATUS bit 31: the GPU is busy (xe.c:258).
+	GPU_BUSY = 0x80000000,
 };
 
 // Register byte offsets, written through the ring as libxenon's Xe_pWriteReg does (xe.c:28-38); the names are Xenia's
@@ -127,21 +133,38 @@ static uint32_t wait_for_write(volatile const uint32_t *slot)
 	return waited_ms;
 }
 
-static void log_kernel_packets(const uint32_t *ring, uint32_t start)
+static bool wait_until_idle(void)
 {
-	uint32_t nonzero = 0;
-	uint32_t first = UINT32_MAX;
-	uint32_t last = 0;
-	for (uint32_t i = 0; i < start && i < RING_BYTES / 4; i++) {
-		if (!ring[i])
-			continue;
-		nonzero++;
-		if (first == UINT32_MAX)
-			first = i;
-		last = i;
+	for (uint32_t waited_ms = 0; waited_ms < FENCE_TIMEOUT_MS; waited_ms++) {
+		if (!(read_register(0x1740) & GPU_BUSY))
+			return true;
+		(void)xsdk_thread_sleep(1);
 	}
-	xsdk_log_write("ring: the kernel left the write pointer at %u; %u dwords before it are non-zero (%u to %u)",
-		(unsigned)start, (unsigned)nonzero, (unsigned)(nonzero ? first : 0), (unsigned)last);
+	return false;
+}
+
+// libxenon's ring set-up, with the command processor halted as libxenon has it then (xe.c:208-222, 340-346, 387-396).
+static void set_up_ring(uint32_t ring_physical, uint32_t rptr_physical)
+{
+	const uint32_t control = read_register(0x07D8);
+	write_register(0x07D8, control | CP_HALTED);
+	(void)xsdk_thread_sleep(2);
+
+	write_register(0x0704, read_register(0x0704) | 0x80000000);
+	write_register(0x017C, 0);
+	write_register(0x0714, 0);
+	write_register(0x0704, read_register(0x0704) & ~0x80000000);
+	write_register(0x0704, RING_SIZE_LOG2 | 0x8020000);
+	write_register(0x0700, ring_physical);
+	write_register(0x0718, 0x10);
+
+	const uint32_t ring_control = read_register(0x0704) & ~0x8003F00;
+	write_register(0x0704, ring_control);
+	write_register(0x070C, rptr_physical | SWAP_8IN32);
+	write_register(0x0704, ring_control | RPTR_BLOCK_SIZE_LOG2 << 8);
+
+	write_register(0x07D8, control);
+	(void)xsdk_thread_sleep(2);
 }
 
 int main(void)
@@ -168,19 +191,17 @@ int main(void)
 	writeback[MEM_WRITE_SLOT / 4] = POISON;
 	writeback[EVENT_SLOT / 4] = POISON;
 	writeback[SCRATCH_SLOT / 4] = POISON;
-	// The zeroing must reach memory before the kernel writes into the ring, or it may land on top of the kernel's
-	// packets.
 	__asm__ volatile("sync" ::: "memory");
 
-	xsdk_log_write("ring: VdInitializeRingBuffer");
-	VdInitializeRingBuffer(ring_physical, RING_SIZE_LOG2);
-	xsdk_log_write("ring: VdEnableRingBufferRPtrWriteBack");
-	VdEnableRingBufferRPtrWriteBack(writeback_physical + RPTR_SLOT, RPTR_BLOCK_SIZE_LOG2);
+	if (!wait_until_idle()) {
+		xsdk_log_write("ring: the GPU stayed busy; not touching it");
+		return 1;
+	}
+	xsdk_log_write("ring: setting up the ring through the registers");
+	set_up_ring(ring_physical, writeback_physical + RPTR_SLOT);
 	report_state("after set-up");
 
-	// VdInitializeRingBuffer leaves the write pointer past packets of its own (docs/HARDWARE.md); append after them.
-	Ring ring = { .ring = ring_memory, .write_index = read_register(0x0714) };
-	log_kernel_packets(ring_memory, ring.write_index);
+	Ring ring = { .ring = ring_memory, .write_index = 0 };
 
 	put_register(&ring, SCRATCH_ADDR, writeback_physical + SCRATCH_SLOT);
 	put_register(&ring, SCRATCH_UMSK, SCRATCH_UMSK_VALUE);

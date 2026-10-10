@@ -1,0 +1,19 @@
+log: game:\xsdk.log
+ring probe
+ring: at start: 0x07D8 00007FFF (bit 28: halted), RBBM_STATUS 00040110 (bit 31: busy)
+ring: at start: base 01B9D000, control 00020309, read pointer write-back 01B9F03E, read 000000C7, write 000000C7
+ring: ring at 0xbfc40000 (physical 1FC40000), write-back page at 0xbfc30000 (physical 1FC30000)
+ring: VdInitializeRingBuffer
+ring: VdEnableRingBufferRPtrWriteBack
+ring: after set-up: 0x07D8 20007FFF (bit 28: halted), RBBM_STATUS 80050110 (bit 31: busy)
+ring: after set-up: base 1FC40000, control 0002060C, read pointer write-back 1FC30002, read 000000E5, write 000000E5
+ring: the kernel left the write pointer at 229; 0 dwords before it are non-zero (0 to 0)
+ring: phase A: submitting up to dword 242
+ring: phase A after 1000 ms: MEM_WRITE DEADBEEF (not written), scratch DEADBEEF (not written), read pointer write-back 000000F2
+ring: after phase A: 0x07D8 20007FFF (bit 28: halted), RBBM_STATUS 80050110 (bit 31: busy)
+ring: after phase A: base 1FC40000, control 0002060C, read pointer write-back 1FC30002, read 000000F2, write 000000F2
+ring: phase B: submitting up to dword 246
+ring: phase B after 1000 ms: EVENT_WRITE_SHD DEADBEEF (not written), read pointer write-back 000000F6
+ring: at end: 0x07D8 20007FFF (bit 28: halted), RBBM_STATUS 80050110 (bit 31: busy)
+ring: at end: base 1FC40000, control 0002060C, read pointer write-back 1FC30002, read 000000F6, write 000000F6
+exit: status 0
