@@ -1,0 +1,74 @@
+log: game:\xsdk.log
+cp probe
+cp: at start: 0x07D8 00007FFF (bit 28: halted), 0x1740 00040110 (bit 31: busy), 0x0E6C 00FE0F0C
+cp: at start: ring: base 01B9D000, control 00020309, read pointer write-back 01B9F03E, read 000000DF, write 000000DF
+cp: VdGlobalDevice at 0x80186254 holds 00000000, VdGlobalXamDevice at 0x80186258 holds 7882FA00
+cp: watched 5000 ms: 2507 samples, 13 busy, 313 changes
+cp: at 7 ms: base 01B9D000, read 000000F7, write 000000F7, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 23 ms: base 01B9D000, read 00000103, write 00000103, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 41 ms: base 01B9D000, read 0000010F, write 0000010F, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 57 ms: base 01B9D000, read 0000011B, write 0000011B, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 73 ms: base 01B9D000, read 00000127, write 00000127, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 91 ms: base 01B9D000, read 00000133, write 00000133, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 107 ms: base 01B9D000, read 0000013F, write 0000013F, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 123 ms: base 01B9D000, read 0000014B, write 0000014B, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 140 ms: base 01B9D000, read 00000157, write 00000157, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 156 ms: base 01B9D000, read 00000163, write 00000163, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 172 ms: base 01B9D000, read 0000016F, write 0000016F, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 190 ms: base 01B9D000, read 0000017B, write 0000017B, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 206 ms: base 01B9D000, read 00000187, write 00000187, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 222 ms: base 01B9D000, read 00000193, write 00000193, read pointer write-back 01B9F03E, 0x07D8 20007FFF, busy
+cp: at 224 ms: base 01B9D000, read 00000193, write 00000193, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 240 ms: base 01B9D000, read 0000019F, write 0000019F, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 256 ms: base 01B9D000, read 000001AB, write 000001AB, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 272 ms: base 01B9D000, read 000001AE, write 000001AE, read pointer write-back 01B9F03E, 0x07D8 00007FFF, busy
+cp: at 274 ms: base 01B9D000, read 000001B7, write 000001B7, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 290 ms: base 01B9D000, read 000001C3, write 000001C3, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 306 ms: base 01B9D000, read 000001CF, write 000001CF, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 324 ms: base 01B9D000, read 000001DB, write 000001DB, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 340 ms: base 01B9D000, read 000001E7, write 000001E7, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 356 ms: base 01B9D000, read 000001F3, write 000001F3, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 374 ms: base 01B9D000, read 000001FF, write 000001FF, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 390 ms: base 01B9D000, read 0000020B, write 0000020B, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 406 ms: base 01B9D000, read 00000217, write 00000217, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 424 ms: base 01B9D000, read 00000223, write 00000223, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 440 ms: base 01B9D000, read 0000022F, write 0000022F, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 456 ms: base 01B9D000, read 0000023B, write 0000023B, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 474 ms: base 01B9D000, read 00000247, write 00000247, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 490 ms: base 01B9D000, read 00000253, write 00000253, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 506 ms: base 01B9D000, read 0000025F, write 0000025F, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 524 ms: base 01B9D000, read 0000026B, write 0000026B, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 539 ms: base 01B9D000, read 00000277, write 00000277, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 555 ms: base 01B9D000, read 00000283, write 00000283, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 573 ms: base 01B9D000, read 0000028F, write 0000028F, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 589 ms: base 01B9D000, read 0000029B, write 0000029B, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 605 ms: base 01B9D000, read 000002A7, write 000002A7, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 623 ms: base 01B9D000, read 000002B3, write 000002B3, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 639 ms: base 01B9D000, read 000002BF, write 000002BF, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 655 ms: base 01B9D000, read 000002CB, write 000002CB, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 673 ms: base 01B9D000, read 000002D7, write 000002D7, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 689 ms: base 01B9D000, read 000002E3, write 000002E3, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 705 ms: base 01B9D000, read 000002EF, write 000002EF, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 723 ms: base 01B9D000, read 000002FB, write 000002FB, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 739 ms: base 01B9D000, read 00000307, write 00000307, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 755 ms: base 01B9D000, read 00000313, write 00000313, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 773 ms: base 01B9D000, read 0000031F, write 0000031F, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 789 ms: base 01B9D000, read 0000032B, write 0000032B, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 805 ms: base 01B9D000, read 00000337, write 00000337, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 823 ms: base 01B9D000, read 00000343, write 00000343, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 839 ms: base 01B9D000, read 0000034F, write 0000034F, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 855 ms: base 01B9D000, read 0000035B, write 0000035B, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 873 ms: base 01B9D000, read 00000367, write 00000367, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 889 ms: base 01B9D000, read 00000373, write 00000373, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 905 ms: base 01B9D000, read 0000037F, write 0000037F, read pointer write-back 01B9F03E, 0x07D8 20007FFF, busy
+cp: at 907 ms: base 01B9D000, read 0000037F, write 0000037F, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 922 ms: base 01B9D000, read 0000038B, write 0000038B, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 938 ms: base 01B9D000, read 00000397, write 00000397, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 956 ms: base 01B9D000, read 000003A3, write 000003A3, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 973 ms: base 01B9D000, read 000003AF, write 000003AF, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 989 ms: base 01B9D000, read 000003BB, write 000003BB, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: at 1006 ms: base 01B9D000, read 000003C7, write 000003C7, read pointer write-back 01B9F03E, 0x07D8 00007FFF, idle
+cp: after watching: 0x07D8 00007FFF (bit 28: halted), 0x1740 00040110 (bit 31: busy), 0x0E6C 00FE0F0C
+cp: after watching: ring: base 01B9D000, control 00020309, read pointer write-back 01B9F03E, read 0000012F, write 0000012F
+cp: ME RAM: 2304 words, 1100 non-zero, crc32 7A8E8248
+exit: status 0

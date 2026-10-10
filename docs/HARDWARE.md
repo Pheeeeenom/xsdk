@@ -29,7 +29,7 @@ Launched from Aurora, logs read through xbWatson and `xsdk.log`.
 | Page digest (a byte nothing reads, in page 0) | Launches and passes every test, so not enforced |
 | Import table digest (security info +0x12C) | Refused, so enforced |
 
-An xbWatson minidump's system information reports build 21256, but Aurora's D3D hang report on the same console says
+An xbWatson minidump's system information reports build 21256, but XAM's D3D hang report on the same console says
 kernel 17559 (both 2026-10-10), so which number is the kernel's isn't settled. The minidump's module list names the
 kernel `xboxkrnld.exe` and XAM `xamd.dll`, with `Xbdm.xex` loaded. The patch set isn't recorded; another patch set may
 differ.
@@ -112,9 +112,9 @@ stays unverified.
 (log: `results/2026-10-10-probe-cp/xsdk.log`). Register meanings come from libxenon:drivers/xenos/xe.c.
 
 - **Titles can read the GPU registers** at 0x7FC80000 under this kernel.
-- **Aurora leaves the command processor running and idle.** 0x07D8 is 0x00007FFF, so bit 28 (halted) is clear, and the
-  busy bit of 0x1740 is clear. The ring registers still describe Aurora's ring: base 0x01B9D000, control 0x00020309,
-  read pointer write-back at 0x01B9F03C, read and write pointers both 0xEB.
+- **The command processor is running and idle at title start.** 0x07D8 is 0x00007FFF, so bit 28 (halted) is clear,
+  and the busy bit of 0x1740 is clear. The ring registers describe XAM's ring, as a later run showed: base
+  0x01B9D000, control 0x00020309, read pointer write-back at 0x01B9F03C, read and write pointers both 0xEB.
 - **The ME microcode reads back** through 0x07E4 and 0x07E8 while the command processor runs: 1100 of 2304 words are
   non-zero, and two reads give the same CRC-32, 7A8E8248. libxenon's copy differs (1178 non-zero words, CRC-32
   4D1AD8C0), so the console's microcode is a different version.
@@ -134,11 +134,12 @@ reading, then wrote back the original value (log: `results/2026-10-10-probe-cp-h
   0x22... (the log ends mid-line), the GPU hung, and XAM again asked for a cold boot.
 
 So SCOPE.md section 3.2's option 1 fails: there's no way to read back the PFP microcode that `VdInitializeEngines`
-needs. The probe now reads only the ME RAM, which is safe.
+needs. Reading the ME RAM while the command processor runs turned out to hang the GPU too (see "XAM's D3D device
+shares the command processor"), so the probe no longer reads either.
 
 ## A ring without VdInitializeEngines (2026-10-10)
 
-`tests/probe_ring.c` skipped `VdInitializeEngines` and used the command processor as Aurora left it, running with its
+`tests/probe_ring.c` skipped `VdInitializeEngines` and used the command processor as it runs under a title, with its
 microcode (log: `results/2026-10-10-probe-ring/xsdk.log`).
 
 - **The kernel's ring set-up works on the running command processor.** After `VdInitializeRingBuffer(physical, 12)`
@@ -161,7 +162,7 @@ A second run, after a cold boot, appended its packets at the write pointer the k
   ring and called `VdInitializeRingBuffer` without a `sync`, so the zeroing may have landed on top of packets the
   kernel wrote, which would explain both runs.
 - **Neither fence landed,** though the read pointer reached the end of the probe's packets.
-- **Aurora's D3D printed a GPU hang report** when it started again. It names 0x1740 `RBBM_STATUS` (0x80050110) and the
+- **XAM's D3D printed a GPU hang report** after the title exited. It names 0x1740 `RBBM_STATUS` (0x80050110) and the
   ring registers `CP_RB_BASE` (the probe's ring), `CP_RB_RPTR` and `CP_RB_WPTR` (both 0x11E). Its CP debug words held
   the `EVENT_WRITE_SHD` packet's value and address, so the command processor was stuck in that fence.
 
@@ -192,13 +193,37 @@ A fourth run set the ring up through the registers, as libxenon does, and didn't
   0xBFC40034, which isn't 8-byte aligned, and that raised an alignment exception in write-combined memory (xbWatson:
   EADDR 0x82010A04, `std r10,52(r28)`, r10 = 0xC0025800_00000014, the packet's header and event). Code that writes
   write-combined memory the GPU reads must use volatile 32-bit stores. The title carried on and submitted phase B.
-- **D3D's hang reports came after the title had exited,** so they are presumably Aurora's device starting again, as in
-  the second run. The first had the probe's ring at both pointers 0x11 and the `EVENT_WRITE_SHD` packet's value and
-  address in the CP debug words. The later ones (frames 18 to 20) had `CP_RB_BASE` 0, `CP_RB_RPTR` 0 and
-  `CP_RB_WPTR` climbing from 0xFD to 0x11B, so that device kept submitting to a command processor that no longer
-  fetched.
+- **XAM's D3D printed hang reports after the title exited.** The first had the probe's ring at both pointers 0x11 and
+  the `EVENT_WRITE_SHD` packet's value and address in the CP debug words. The later ones (frames 18 to 20) had
+  `CP_RB_BASE` 0, `CP_RB_RPTR` 0 and `CP_RB_WPTR` climbing from 0xFD to 0x11B, so that device kept submitting to a
+  command processor that no longer fetched.
 
-Across six runs the ring a title finds at start sat at 0xC7, 0xC7, 0xD3, 0xDF, 0xEB and 0xEB, so it doesn't advance
-steadily while titles load. What moves it during set-up may be reacting to the set-up rather than submitting on a
-schedule. `tests/probe_cp.c` now watches the ring registers for five seconds without writing to them, and logs
-`VdGlobalDevice` and `VdGlobalXamDevice` to see whether XAM holds a D3D device while a title runs.
+What moved the write pointer during set-up was XAM's D3D device, which keeps submitting while a title runs (next
+section).
+
+## XAM's D3D device shares the command processor (2026-10-10)
+
+`tests/probe_cp.c` watched the ring registers for five seconds without writing to them, sampling about every 2 ms (log:
+`results/2026-10-10-probe-cp-watch/xsdk.log`).
+
+- **XAM holds a D3D device while a title runs, and the title has none.** `VdGlobalXamDevice` holds 0x7882FA00 and
+  `VdGlobalDevice` holds 0. 0x7882FA00 is the device every GPU hang report in these runs names. Its non-snooped
+  block, 0xE1B9D000, matches the ring base titles find, 0x01B9D000.
+- **XAM submits to that ring every vblank.** The read and write pointers moved together by 12 dwords every 16 to 18 ms,
+  wrapping at 0x400 (the control value's size, 9, is 2^9 8-byte units). The GPU was busy in 13 of 2507 samples, each
+  time with 0x07D8 bit 29 set, so bit 29 comes with ordinary work and doesn't by itself mean a stall.
+- **This explains the ring runs.** Once a title points 0x0700 at its own ring, XAM's next vblank submission writes
+  XAM's write pointer to 0x0714. The command processor then runs whatever that index covers in the title's ring, and
+  XAM's fences never complete. The 24 to 42 dwords the write pointer gained during set-up are two or three of those
+  submissions.
+- **XAM checks its device for hangs on its own thread.** In an xbWatson minidump of the break that follows each hang
+  report, the breaking thread was created by XAM (start 0x816B9668), every frame is in `xamd.dll` or the kernel, r29
+  and r31 hold 0x7882FA00, and r3 points at "The GPU is hung and can't be recovered without doing a cold boot."
+- **Reading the ME microcode while the command processor runs hangs the GPU.** The GPU was healthy through the watch
+  and afterwards, then the probe read the ME RAM through 0x07E4 and 0x07E8 (CRC-32 7A8E8248 again) and exited, and
+  XAM broke on a hung GPU. That read was the probe's only write to the GPU.
+
+So a title that wants the command processor has to stop XAM's device from submitting first. Xenia keeps a single
+graphics interrupt callback that `VdSetGraphicsInterruptCallback` replaces and that vblank calls with source 0
+(xenia:src/xenia/gpu/graphics_system.cc:234-272), so if XAM's vblank submissions run from that callback, a title that
+sets its own stops them.

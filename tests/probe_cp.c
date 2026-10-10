@@ -6,14 +6,11 @@
 #include "xsdk/log.h"
 #include "xsdk/thread.h"
 
-// Logs the command processor's state as a title finds it, which D3D devices the kernel holds, every change to the ring
-// registers over a few seconds, and a checksum of the ME microcode, never the microcode. The ring probe found
-// something else writing the ring's write pointer while a title runs (docs/HARDWARE.md); this watches for it without
-// writing to the GPU, apart from the ME RAM read address at the end.
-// Don't touch the PFP microcode RAM (0x117C, 0x1180): it doesn't read back and it hangs the GPU (docs/HARDWARE.md).
+// Logs the command processor's state as a title finds it, which D3D devices the kernel holds, and every change to the
+// ring registers over a few seconds. It only reads registers. Don't read the microcode RAM (0x07E4 and 0x07E8 for the
+// ME, 0x117C and 0x1180 for the PFP): it hangs the GPU (docs/HARDWARE.md).
 
 enum {
-	ME_WORDS = 0x900,
 	WATCH_MS = 5000,
 	MAX_CHANGES_KEPT = 64,
 	// RBBM_STATUS bit 31: the GPU is busy (libxenon:drivers/xenos/xe.c:258).
@@ -42,37 +39,6 @@ static RingChange changes[MAX_CHANGES_KEPT];
 static uint32_t read_register(uint32_t offset)
 {
 	return gpu_registers[offset / 4];
-}
-
-static void write_register(uint32_t offset, uint32_t value)
-{
-	gpu_registers[offset / 4] = value;
-}
-
-// CRC-32 over each word's big-endian bytes, so a host can compare it with zlib.crc32.
-static uint32_t crc32_word(uint32_t crc, uint32_t word)
-{
-	for (int shift = 24; shift >= 0; shift -= 8) {
-		crc ^= (word >> shift) & 0xFF;
-		for (int bit = 0; bit < 8; bit++)
-			crc = (crc >> 1) ^ (0xEDB88320 & -(crc & 1));
-	}
-	return crc;
-}
-
-// Reads the ME microcode RAM from word 0, as libxenon's loader checks it (libxenon:drivers/xenos/xe.c:243-247).
-static void report_me_ram(void)
-{
-	write_register(0x07E4, 0);
-	uint32_t crc = 0xFFFFFFFF;
-	uint32_t nonzero_words = 0;
-	for (uint32_t i = 0; i < ME_WORDS; i++) {
-		const uint32_t word = read_register(0x07E8);
-		nonzero_words += word != 0;
-		crc = crc32_word(crc, word);
-	}
-	xsdk_log_write(
-		"cp: ME RAM: %u words, %u non-zero, crc32 %08X", (unsigned)ME_WORDS, (unsigned)nonzero_words, (unsigned)~crc);
 }
 
 // What each register means comes from how libxenon uses it (drivers/xenos/xe.c:104, 210-221, 258, 305-330, 389-395).
@@ -159,6 +125,5 @@ int main(void)
 	report_devices();
 	watch_ring();
 	report_state("after watching");
-	report_me_ram();
 	return 0;
 }
