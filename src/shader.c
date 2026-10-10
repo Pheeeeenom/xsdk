@@ -141,7 +141,7 @@ NTSTATUS xsdk_shader_load(XsdkShader *shader, const uint32_t *container, uint32_
 	return STATUS_SUCCESS;
 }
 
-// Xe_ShaderApplyVFetchPatches for one-dword prefetches and float4 elements (xe.c:788-933).
+// Xe_ShaderApplyVFetchPatches for one-dword prefetches and float2 or float4 elements (xe.c:788-933).
 NTSTATUS xsdk_shader_set_vertex_layout(
 	XsdkShader *shader, const XsdkVertexElement *elements, uint32_t element_count, uint32_t stride_bytes)
 {
@@ -155,7 +155,7 @@ NTSTATUS xsdk_shader_set_vertex_layout(
 			patch >> PATCH_USAGE_SHIFT & PATCH_FIELD_MASK, patch >> PATCH_INDEX_SHIFT & PATCH_FIELD_MASK);
 		if (!element)
 			return reject("the vertex layout lacks an input the shader fetches");
-		if (element->format != XSDK_VERTEX_FLOAT4)
+		if (element->format != XSDK_VERTEX_FLOAT2 && element->format != XSDK_VERTEX_FLOAT4)
 			return STATUS_NOT_IMPLEMENTED;
 		if (element->offset_bytes % 4 || (slot + 1) * SLOT_DWORDS > shader->dword_count)
 			return reject("vertex element or fetch slot out of range");

@@ -33,6 +33,9 @@ void test_present(void);
 // A triangle (milestone 6).
 void test_triangle(void);
 
+// A textured quad (milestone 7).
+void test_texture(void);
+
 #ifdef __cplusplus
 }
 #endif

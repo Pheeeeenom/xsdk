@@ -87,8 +87,9 @@ enum {
 	WAIT_3D_IDLE_CLEAN = 1 << 17,
 	SHADER_TYPE_VERTEX = 0,
 	SHADER_TYPE_PIXEL = 1,
-	// COHER_STATUS_HOST's vc_action_ena (xenia:src/xenia/gpu/registers.h:84).
+	// COHER_STATUS_HOST's vc_action_ena and tc_action_ena (xenia:src/xenia/gpu/registers.h:84-85).
 	COHER_VERTEX_CACHE = 1 << 24,
+	COHER_TEXTURE_CACHE = 1 << 25,
 };
 
 // Packets built in memory, then copied into the ring with xsdk_gpu_write.
@@ -145,5 +146,7 @@ void xsdk_gpu_put_window(GpuPackets *packets, uint32_t width, uint32_t height);
 void xsdk_gpu_put_coherency(GpuPackets *packets, uint32_t actions, uint32_t base, uint32_t size_bytes);
 // The eDRAM layout for a colour and depth target of this size.
 void xsdk_gpu_put_surface(GpuPackets *packets, uint32_t width, uint32_t height);
+// A texel's byte offset in Xenos's tiled layout, the pitch a multiple of 32.
+uint32_t xsdk_tiled_2d(uint32_t x, uint32_t y, uint32_t pitch_texels, uint32_t bytes_per_texel_log2);
 
 #endif

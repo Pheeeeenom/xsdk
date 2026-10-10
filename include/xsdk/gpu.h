@@ -5,6 +5,7 @@
 
 #include "xsdk/kernel.h"
 #include "xsdk/shader.h"
+#include "xsdk/texture.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,6 +54,8 @@ void xsdk_gpu_set_target(uint32_t width, uint32_t height);
 void xsdk_gpu_set_shaders(const XsdkShader *vertex, const XsdkShader *pixel);
 // Points vertex stream 0 at vertices from xsdk_gpu_alloc, clearing fetch constants 93 and 94, which share its group.
 void xsdk_gpu_set_vertices(uint32_t address, uint32_t size_bytes);
+// Points texture fetch constant slot, 0 to 31, at the texture; a resolve overwrites slot 0, xsdk_gpu_set_vertices 31.
+void xsdk_gpu_set_texture(uint32_t slot, const XsdkTexture *texture);
 // Draws vertex_count auto-indexed vertices as a list of primitive_type.
 void xsdk_gpu_draw(uint32_t primitive_type, uint32_t vertex_count);
 

@@ -16,8 +16,10 @@ enum {
 	XSDK_SHADER_PIXEL = 1,
 	// Declaration usages, numbered as D3D does (libxenon:drivers/xenos/xe.h:159-169).
 	XSDK_USAGE_POSITION = 0,
+	XSDK_USAGE_TEXCOORD = 5,
 	XSDK_USAGE_COLOR = 10,
 	// Vertex data formats (xenia:src/xenia/gpu/xenos.h:602-617).
+	XSDK_VERTEX_FLOAT2 = 37,
 	XSDK_VERTEX_FLOAT4 = 38,
 };
 

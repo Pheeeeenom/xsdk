@@ -32,6 +32,7 @@ int main(void)
 	test_gpu();
 	test_present();
 	test_triangle();
+	test_texture();
 	xsdk_log_write("tests: %d passed, %d failed", passed_count, failed_count);
 	return failed_count;
 }
