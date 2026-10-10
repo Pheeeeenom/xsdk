@@ -33,7 +33,6 @@ HEADER_IMAGE_BASE_ADDRESS = 0x00010201
 HEADER_IMPORT_LIBRARIES = 0x000103FF
 HEADER_TLS_INFO = 0x00020104
 HEADER_DEFAULT_STACK_SIZE = 0x00020200
-HEADER_DEFAULT_HEAP_SIZE = 0x00020401
 HEADER_SYSTEM_FLAGS = 0x00030000
 HEADER_EXECUTION_INFO = 0x00040006
 
@@ -78,9 +77,9 @@ def version(major, minor, build, qfe):
 # Per-library import IDs; how they're derived is unknown (SynthXEX aee2b8c6 src/setdata/optheaders.c:159-167).
 LIBRARY_IDS = {"xboxkrnl.exe": 0x45DC17E0, "xam.xex": 0xFCA15C76}
 
-# The imports claim the final kernel, 2.0.17559.0; unverified on hardware.
-IMPORT_VERSION = version(2, 0, 17559, 0)
-IMPORT_VERSION_MIN = version(2, 0, 17559, 0)
+# The versions a working XDK-built homebrew title carries (XexTool listing on the user's console files).
+IMPORT_VERSION = version(2, 0, 21256, 0)
+IMPORT_VERSION_MIN = version(2, 0, 1861, 0)
 
 
 def fail(message):
@@ -223,7 +222,7 @@ def align_bytes(data, alignment):
     return data + bytes(align(len(data), alignment) - len(data))
 
 
-def pe_headers(image, runs, entry, stack_bytes, heap_bytes):
+def pe_headers(image, runs, entry, stack_bytes):
     sections = [run for run in runs if run["start"] is not None]
     code = [run for run in sections if run["type"] == SECTION_CODE]
     data = [run for run in sections if run["type"] != SECTION_CODE]
@@ -238,7 +237,7 @@ def pe_headers(image, runs, entry, stack_bytes, heap_bytes):
         data[0]["start"] if data else 0,
         IMAGE_BASE)
     optional += struct.pack("<IIHHHHHHIIIIHHIIIIII", PE_HEADER_BYTES, PE_HEADER_BYTES, 0, 0, 0, 0, 0, 0, 0, len(image),
-        PE_HEADER_BYTES, 0, PE_SUBSYSTEM_XBOX, 0, stack_bytes, stack_bytes, heap_bytes, heap_bytes, 0, 16)
+        PE_HEADER_BYTES, 0, PE_SUBSYSTEM_XBOX, 0, stack_bytes, stack_bytes, 0, 0, 0, 16)
     optional += bytes(16 * 8)
 
     section_headers = b""
@@ -294,7 +293,6 @@ def build_xex(image, runs, entry, libraries, args):
         HEADER_ENTRY_POINT: entry,
         HEADER_IMAGE_BASE_ADDRESS: IMAGE_BASE,
         HEADER_DEFAULT_STACK_SIZE: args.stack_size,
-        HEADER_DEFAULT_HEAP_SIZE: args.heap_size,
         HEADER_SYSTEM_FLAGS: SYSTEM_NO_FORCED_REBOOT | SYSTEM_HANDLE_GAMEPAD_DISCONNECT,
     }
     blocks = {
@@ -347,14 +345,13 @@ def main():
     parser.add_argument("xex", type=Path)
     parser.add_argument("--title-id", type=lambda text: int(text, 16), default=0x5853444B)
     parser.add_argument("--stack-size", type=lambda text: int(text, 0), default=1024 * 1024)
-    parser.add_argument("--heap-size", type=lambda text: int(text, 0), default=1024 * 1024)
     args = parser.parse_args()
 
     entry, sections = read_elf(args.elf.read_bytes())
     image, runs = build_image(sections)
     libraries = read_imports(sections, image)
     patch_import_records(image, libraries)
-    pe_headers(image, runs, entry, args.stack_size, args.heap_size)
+    pe_headers(image, runs, entry, args.stack_size)
     args.xex.write_bytes(build_xex(image, runs, entry, libraries, args))
 
 
