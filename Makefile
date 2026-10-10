@@ -14,12 +14,12 @@ ASFLAGS := -m32 -mcpu=cell -Wa,-mregnames -Iinclude -MMD -MP
 LDFLAGS := -m32 -static -nostdlib -T src/xsdk.ld -L$(dir $(TOOLCHAIN))../xenon/lib/32
 LIBS := -Wl,--start-group $(BUILD)/libxsdk.a -lc -lm -lgcc -Wl,--end-group
 
-SDK_SOURCES := src/start.c src/log.c src/sbrk.c src/thread.c src/thread_entry.S src/malloc_lock.c
+SDK_SOURCES := src/start.c src/log.c src/sbrk.c src/thread.c src/thread_entry.S src/file.c src/malloc_lock.c
 IMPORT_NAMES := $(shell $(PYTHON) tools/gen_imports.py --list imports/imports.txt)
 IMPORT_SOURCES := $(IMPORT_NAMES:%=$(BUILD)/imports/%.S)
 SDK_OBJECTS := $(patsubst src/%,$(BUILD)/sdk/%.o,$(basename $(SDK_SOURCES))) $(IMPORT_NAMES:%=$(BUILD)/imports/%.o)
 
-TEST_SOURCES := tests/main.c tests/test_image.c tests/test_threads.c
+TEST_SOURCES := tests/main.c tests/test_image.c tests/test_threads.c tests/test_files.c
 TEST_OBJECTS := $(patsubst tests/%,$(BUILD)/tests/%.o,$(basename $(TEST_SOURCES)))
 # Bring-up probes: titles that each answer one question on the console.
 PROBES := probe_spin probe_print

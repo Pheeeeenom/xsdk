@@ -7,5 +7,6 @@ void check(const char *name, bool passed);
 
 void test_image(void);
 void test_threads(void);
+void test_files(void);
 
 #endif
