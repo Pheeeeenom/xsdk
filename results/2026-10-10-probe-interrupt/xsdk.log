@@ -1,0 +1,8 @@
+log: game:\xsdk.log
+interrupt probe
+interrupt: at start: 0x07D8 00007FFF, 0x1740 00040110 (bit 31: busy), ring base 01B9D000, read 000000DF, write 000000DF
+interrupt: with XAM's callback: in 2000 ms the write pointer moved 121 times (000000DF to 0000027F); the title's callback ran 0 times for vblank, 0 for the command processor, 0 for other sources
+interrupt: with the title's callback: in 2000 ms the write pointer moved 0 times (0000028B to 0000028B); the title's callback ran 241 times for vblank, 0 for the command processor, 0 for other sources
+interrupt: with no callback: in 2000 ms the write pointer moved 0 times (0000028B to 0000028B); the title's callback ran 0 times for vblank, 0 for the command processor, 0 for other sources
+interrupt: at end: 0x07D8 00007FFF, 0x1740 00040110 (bit 31: busy), ring base 01B9D000, read 0000028B, write 0000028B
+exit: status 0

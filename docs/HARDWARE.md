@@ -227,3 +227,20 @@ So a title that wants the command processor has to stop XAM's device from submit
 graphics interrupt callback that `VdSetGraphicsInterruptCallback` replaces and that vblank calls with source 0
 (xenia:src/xenia/gpu/graphics_system.cc:234-272), so if XAM's vblank submissions run from that callback, a title that
 sets its own stops them.
+
+## A title's interrupt callback stops XAM's device (2026-10-10)
+
+`tests/probe_interrupt.c` watched XAM's write pointer for 2 seconds at a time, without writing GPU registers (log:
+`results/2026-10-10-probe-interrupt/xsdk.log`).
+
+- **XAM submits from its graphics interrupt callback.** With XAM's callback in place the write pointer moved 121 times
+  in 2000 ms (0xDF to 0x27F). After `VdSetGraphicsInterruptCallback` set the title's callback it didn't move at all,
+  and it stayed at 0x28B after the title cleared the callback with `VdSetGraphicsInterruptCallback(0, 0)`. Nothing put
+  XAM's callback back while the title ran.
+- **The callback's vblank source fires twice per frame.** The title's callback ran 241 times in 2000 ms, every time
+  with source 0, twice the rate XAM submitted at. Xenia calls it once per vsync (120 times in 2000 ms,
+  xenia:src/xenia/gpu/graphics_system.cc:272).
+- **The GPU stayed idle,** and the ring registers kept XAM's ring.
+
+So a title can stop XAM's device by setting its own callback, then take the command processor once XAM's last packets
+have run.
