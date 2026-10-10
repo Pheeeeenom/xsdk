@@ -636,3 +636,13 @@ to grey, and counted the pixels other than grey (log: `results/2026-10-10-probe-
   filled by the CPU, so the resolve after the draw most likely wrote nothing.
 - **The patched vertex fetches read back as written.**
 - **The console froze after returning to Aurora,** as it did before the probe gave back the registers it changed.
+
+## No single draw setting makes the triangle draw (2026-10-10)
+
+`tests/probe_triangle.c` drew the triangle six ways, each from an idle GPU with eDRAM cleared to grey, its shaders loaded
+inline, a fence after the draw, and a magenta front buffer (log: `results/2026-10-10-probe-triangle-2/xsdk.log`).
+
+- **None drew a pixel:** not as the SDK draws, nor with z 0.5, clipping off, `DRAW_INDX` with a viz query token,
+  vertex fetch constant 0, or screen-space corners with no viewport transform or clipping, as the resolve draws.
+- **After three of them the resolve wrote nothing,** leaving every pixel magenta, though a fence came between the draw
+  and the resolve: z 0.5, `DRAW_INDX` and fetch constant 0. After the other three it wrote grey.

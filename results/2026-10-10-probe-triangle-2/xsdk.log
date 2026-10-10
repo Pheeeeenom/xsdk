@@ -1,0 +1,17 @@
+log: game:\xsdk.log
+triangle probe
+triangle: display 0x00000000, 640x480
+triangle: as the SDK draws: fences 0x00000000 0x00000000 0x00000000; drew 0 pixels, the first 00000000; 0 left magenta
+triangle: showing it for 3000 ms: 0x00000000
+triangle: z 0.5: fences 0x00000000 0x00000000 0x00000000; drew 0 pixels, the first 00000000; 307200 left magenta
+triangle: showing it for 3000 ms: 0x00000000
+triangle: clipping off: fences 0x00000000 0x00000000 0x00000000; drew 0 pixels, the first 00000000; 0 left magenta
+triangle: showing it for 3000 ms: 0x00000000
+triangle: DRAW_INDX with a viz query token: fences 0x00000000 0x00000000 0x00000000; drew 0 pixels, the first 00000000; 307200 left magenta
+triangle: showing it for 3000 ms: 0x00000000
+triangle: vertex fetch constant 0: fences 0x00000000 0x00000000 0x00000000; drew 0 pixels, the first 00000000; 307200 left magenta
+triangle: showing it for 3000 ms: 0x00000000
+triangle: screen-space corners, no viewport transform or clipping, as the resolve draws: fences 0x00000000 0x00000000 0x00000000; drew 0 pixels, the first 00000000; 0 left magenta
+triangle: showing it for 3000 ms: 0x00000000
+triangle: done; the GPU goes back at exit
+exit: status 0
