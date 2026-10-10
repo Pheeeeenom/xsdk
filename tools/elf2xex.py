@@ -258,15 +258,15 @@ def pe_headers(image, runs, entry, stack_bytes):
 
 
 def page_descriptors(image, runs):
-    # Each descriptor's digest covers the next run and its descriptor; the security info's digest covers the first.
+    # One descriptor per page, as a working XDK-built title has (user's console files).
+    page_types = [run["type"] for run in runs for _ in range(run["pages"])]
+    # Each descriptor's digest covers the next page and its descriptor; the security info's digest covers the first.
     next_digest = bytes(20)
     descriptors = []
-    for run in reversed(runs):
-        value = struct.pack(">I", run["pages"] << 4 | run["type"])
-        start = run["first_page"] * PAGE_BYTES
-        descriptor = value + next_digest
+    for page in reversed(range(len(page_types))):
+        descriptor = struct.pack(">I", 1 << 4 | page_types[page]) + next_digest
         descriptors.append(descriptor)
-        next_digest = sha1(image[start:start + run["pages"] * PAGE_BYTES], descriptor)
+        next_digest = sha1(image[page * PAGE_BYTES:(page + 1) * PAGE_BYTES], descriptor)
     descriptors.reverse()
     return b"".join(descriptors), next_digest
 
@@ -316,7 +316,7 @@ def build_xex(image, runs, entry, libraries, args):
     struct.pack_into(">II", security, 0, security_bytes, len(image))
     struct.pack_into(">III20sI20s", security, 0x108, IMAGE_INFO_BYTES, 0, IMAGE_BASE, image_digest, len(libraries),
         import_digest)
-    struct.pack_into(">III", security, 0x178, REGION_ALL, MEDIA_ALL, len(runs))
+    struct.pack_into(">III", security, 0x178, REGION_ALL, MEDIA_ALL, len(descriptors) // PAGE_DESCRIPTOR_BYTES)
 
     header = bytearray(header_size)
     struct.pack_into(">4sIIIII", header, 0, b"XEX2", MODULE_TITLE, header_size, 0, security_offset, header_count)
