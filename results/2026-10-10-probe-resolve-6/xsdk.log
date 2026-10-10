@@ -1,0 +1,6 @@
+log: game:\xsdk.log
+resolve probe
+resolve: fence 0x00000000; a red clear stored FF0000FF, which the display shows as blue
+resolve: 307200 of 307200 pixels hold it
+resolve: showing it for 10000 ms: 0x00000000
+exit: status 0

@@ -80,6 +80,12 @@ static const uint32_t resolve_vertex_shader[] = {
 	0xC2000000,
 };
 
+// RB_COLOR_CLEAR wants the packed colour, red low (xenia:src/xenia/gpu/shaders/pixel_formats.xesli:113-116).
+static uint32_t packed_8888(uint32_t argb)
+{
+	return (argb & 0xFF00FF00) | (argb >> 16 & 0xFF) | (argb & 0xFF) << 16;
+}
+
 static void put_shader(GpuPackets *packets)
 {
 	const uint32_t dword_count = sizeof resolve_vertex_shader / 4 + SHADER_PADDING_DWORDS;
@@ -117,8 +123,8 @@ void xsdk_gpu_resolve(uint32_t address, uint32_t width, uint32_t height, uint32_
 	gpu_put_registers(&packets, PA_CL_VPORT_XSCALE, viewport, 6);
 	gpu_put_registers(&packets, RB_COPY_CONTROL, copy, 4);
 	gpu_put_register(&packets, RB_DEPTH_CLEAR, DEPTH_CLEAR_FAR);
-	gpu_put_register(&packets, RB_COLOR_CLEAR, clear_argb);
-	gpu_put_register(&packets, RB_COLOR_CLEAR_LO, clear_argb);
+	gpu_put_register(&packets, RB_COLOR_CLEAR, packed_8888(clear_argb));
+	gpu_put_register(&packets, RB_COLOR_CLEAR_LO, packed_8888(clear_argb));
 	gpu_put_register(&packets, RB_MODECONTROL, EDRAM_MODE_COPY);
 	gpu_put_register(&packets, RB_MODECONTROL, EDRAM_MODE_COPY);
 	gpu_put_register(&packets, RB_DEPTHCONTROL, DEPTH_STENCIL_ALWAYS_WRITE);

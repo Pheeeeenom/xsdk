@@ -20,12 +20,12 @@ enum {
 	FADE_STEP = 4,
 };
 
-// Fades between magenta and green; red and blue stay equal, so either byte order the copy uses checks the same.
+// Fades between red and blue, so a resolve that swapped them fails the check.
 static uint32_t colour_at(uint32_t frame)
 {
 	const uint32_t phase = frame * FADE_STEP % 512;
 	const uint32_t level = phase < 256 ? phase : 511 - phase;
-	return 0xFF000000 | level << 16 | (255 - level) << 8 | level;
+	return 0xFF000000 | level << 16 | (255 - level);
 }
 
 // A resolve stores the colour's bytes B, G, R, A, as the display reads them (docs/HARDWARE.md).

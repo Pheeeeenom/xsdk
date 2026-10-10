@@ -582,3 +582,17 @@ The test title passed all 41 checks on the console and exited with status 0; the
 
 The user didn't report what the screen showed in this run; earlier runs showed CPU-filled buffers through the same
 registers ("A title's buffer on screen").
+
+## A resolve keeps colours; the clear colour is packed red-low (2026-10-10)
+
+`tests/probe_resolve.c` cleared eDRAM through the SDK with `RB_COLOR_CLEAR` 0xFFFF0000, resolved it into a magenta
+front buffer and showed it (log: `results/2026-10-10-probe-resolve-6/xsdk.log`).
+
+- **Every pixel held 0xFF0000FF, and the user saw blue,** as the CPU's 0xFF0000FF shows ("A title's buffer on screen").
+- **Xenia's model gives the same:** a `k_8_8_8_8` target packs red into the low byte (xenia:
+  src/xenia/gpu/shaders/pixel_formats.xesli:113-116, 289-292), the clear writes `RB_COLOR_CLEAR` as that packed value,
+  and the copy's swap bit, which libxenon sets, swaps red and blue on the way out (shaders/resolve.xesli:632-635). By
+  that model 0xFFFF0000 is a blue clear, and the green run's 0x00FF00FF comes out too.
+
+So the copy and the display carry a colour through unchanged, and only the clear value needs red and blue swapped
+from 0xAARRGGBB. What a shader draws isn't covered yet.
