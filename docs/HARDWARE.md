@@ -608,3 +608,18 @@ report the screen in this run; the log names the colour the stored word shows.
 The test title, with the present test fading between red and blue, passed all 41 checks, exited with status 0 and
 returned to Aurora (log: `results/2026-10-10-milestone-5-3/xsdk.log`). Every frame held the colour cleared before it,
 red and blue in the right places, so `xsdk_gpu_resolve`'s packing of the clear colour holds across 240 frames.
+
+## The first triangle draws nothing (2026-10-10)
+
+The test title ran `tests/test_triangle.c`: shaders from `tools/gen_triangle_shaders.py` loaded with `IM_LOAD`, its
+size given in dwords, the vertex fetches patched, and 120 frames each drawing a triangle with `DRAW_INDX_2` and resolving
+it into a front buffer (log: `results/2026-10-10-milestone-6/xsdk.log`, xbWatson's copy).
+
+- **Every frame's fence landed, but nothing was drawn:** the pixels inside the three corners held the clear colour in
+  every frame checked, and the last frame had no pixel other than the clear colour. The same commands draw the triangle
+  in Xenia, all 86160 pixels of it.
+- **The log ended after the triangle test's last check,** before the GPU was closed and before the test count and exit
+  lines, so the title seems to have stopped there.
+- **The vertex shader matches xost's passthrough,** which xost has drawn on hardware through libxenon: the same control
+  flow, `SQ_PROGRAM_CNTL` and fetch encoding, apart from its registers and the fields the patch rewrites. libxenon
+  gives `IM_LOAD` the shader's size in bytes (libxenon:drivers/xenos/xe.c:1210-1215, 1383), where the SDK gave dwords.
