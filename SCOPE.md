@@ -255,8 +255,9 @@ buffer and uses the kernel's `Vd*` exports for setup, interrupts and the swap.
      in the ring for it, the front buffer's texture fetch constant as a D3D-style texture header keeps it, a write-back
      pointer, the system command buffer from `VdGetSystemCommandBuffer` (0x1BD), the front buffer's address, format
      (`k_8_8_8_8` or a 2-10-10-10 format), colour space, width and height.
-   - Xenia fills the reserved region itself (xboxkrnl_video.cc:405-420). What the real kernel writes there is
-     unverified, so the SDK should reserve it exactly as a title does and let the kernel fill it.
+   - Xenia fills the reserved region itself (xboxkrnl_video.cc:405-420). On the user's console the kernel writes only a
+     fence there and doesn't flip. The SDK presents by setting the display controller's surface registers and filling
+     its LUT instead (docs/HARDWARE.md).
    - Other `Vd*` calls appear at engine setup in titles: `VdSetSystemCommandBufferGpuIdentifierAddress` (0x1D9),
      `VdInitializeScalerCommandBuffer` (0x1C5), `VdRetrainEDRAM` (0x269), `VdShutdownEngines` (0x1DC). Milestone 4
      needed only `VdShutdownEngines` of these: `VdInitializeEngines`, the two ring calls and `VdShutdownEngines` are
@@ -312,7 +313,8 @@ buffer and uses the kernel's `Vd*` exports for setup, interrupts and the swap.
   and `RB_COPY_DEST_BASE`, `_PITCH` and `_INFO` 0x2319-0x231B (register_table.inc:595-598). Xenia derives a resolve
   from these in `GetResolveInfo` (xenia:src/xenia/gpu/draw_util.h:481, 599-604), the reference for the exact
   register values.
-- **Presenting.** The front buffer `VdSwap` shows is such a resolve target in memory.
+- **Presenting.** The front buffer the display controller shows is such a resolve target in memory, in the
+  display's 32x32 tile layout (docs/HARDWARE.md).
 - **The tiling decision:** whether the frame fits in eDRAM at once or needs Xenos's predicated tiling decides early
   complexity.
   - 1280x720 with 32-bit colour and 32-bit depth, no MSAA, is about 7 MB and fits.
@@ -381,7 +383,9 @@ Each is proven on the user's console, as xost's milestones were.
    - it submits `NOP` and an `EVENT_WRITE` fence and sees the fence value land in memory;
    - the microcode question (section 3.2) is answered.
 5. **A cleared screen.** Done when the title clears an eDRAM colour target, resolves it to a front buffer in memory,
-   and presents it with `VdSwap`, every frame, in a colour that changes over time.
+   and presents it through the display controller, every frame, in a colour that changes over time. The kernel's
+   `VdSwap` doesn't flip on the user's console (docs/HARDWARE.md). The front buffer is 640x480 for now, the kernel's
+   mode scaled to 720p; 1280x720 is a later item.
 6. **A triangle.** Done when a xost vertex and pixel shader, loaded by the SDK's own loader with `IM_LOAD`, draw a
    coloured triangle from a vertex buffer, with the vertex format set by fetch constants.
 7. **A textured quad.** Done when a texture uploaded by the SDK samples correctly: linear first, then tiled through the
