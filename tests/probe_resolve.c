@@ -17,8 +17,15 @@ enum {
 	AUTOFILL_TIMEOUT_MS = 100,
 	TILE_PIXELS = 32,
 	MAX_STAGE_DWORDS = 64,
-	// Opaque magenta as the display reads it, bytes B, G, R, A (docs/HARDWARE.md).
+	MAP_SETTLE_MS = 500,
+	TILE_BYTES = 4096,
+	MAX_OTHER_VALUES = 4,
+	// The display's colours as words in memory, bytes B, G, R, A (docs/HARDWARE.md).
 	MAGENTA = 0xFF00FFFF,
+	WHITE = 0xFFFFFFFF,
+	RED = 0x0000FFFF,
+	GREEN = 0x00FF00FF,
+	BLUE = 0xFF0000FF,
 };
 
 // Register indices (xenia:src/xenia/gpu/register_table.inc).
@@ -79,6 +86,8 @@ enum {
 	COPY_CONVERT_CLEAR_COLOR = 1 << 20 | 1 << 8,
 	COPY_DEST_INFO_8888_SWAP = 1 << 24 | 6 << 7,
 	EDRAM_MODE_COPY = 6,
+	// What libxenon's set-up leaves for drawing (libxenon:drivers/xenos/xe.c:398-441).
+	EDRAM_MODE_COLOR_DEPTH = 4,
 	WAIT_3D_IDLE_CLEAN = 1 << 17,
 	INVALIDATE_VERTEX_SHADER = 1 << 8,
 	PROGRAM_CNTL_RESOLVE = 2 | 1 << 16,
@@ -282,6 +291,56 @@ static volatile uint32_t *allocate(uint32_t bytes, uint32_t protect)
 		0, rounded, PAGE_READWRITE | protect | MEM_LARGE_PAGES, 0, UINT32_MAX, PAGE_BYTES);
 }
 
+static char classify(uint32_t pixel)
+{
+	switch (pixel) {
+	case MAGENTA:
+		return 'M';
+	case WHITE:
+		return 'W';
+	case RED:
+		return 'R';
+	case GREEN:
+		return 'G';
+	case BLUE:
+		return 'B';
+	case 0:
+		return '0';
+	default:
+		return '?';
+	}
+}
+
+// One character a 4 KB tile, 20 to a row: the tile's first pixel's colour, or '*' if the tile isn't all one value.
+static void log_map(const char *when, volatile const uint32_t *pixels, uint32_t pixel_count)
+{
+	const uint32_t tile_pixels = TILE_BYTES / 4;
+	const uint32_t tiles_per_row = 640 / TILE_PIXELS;
+	char row[640 / TILE_PIXELS + 1];
+	uint32_t other_values[MAX_OTHER_VALUES];
+	uint32_t other_count = 0;
+	xsdk_log_write("resolve: %s:", when);
+	for (uint32_t tile = 0; tile < pixel_count / tile_pixels; tile++) {
+		volatile const uint32_t *const first = &pixels[tile * tile_pixels];
+		char mark = classify(first[0]);
+		for (uint32_t i = 1; i < tile_pixels; i++) {
+			if (first[i] != first[0]) {
+				mark = '*';
+				break;
+			}
+		}
+		if (classify(first[0]) == '?' && other_count < MAX_OTHER_VALUES)
+			other_values[other_count++] = first[0];
+		row[tile % tiles_per_row] = mark;
+		if (tile % tiles_per_row == tiles_per_row - 1) {
+			row[tiles_per_row] = '\0';
+			xsdk_log_write("resolve:   %s", row);
+		}
+	}
+	for (uint32_t i = 0; i < other_count; i++)
+		xsdk_log_write("resolve:   other value %08X", (unsigned)other_values[i]);
+}
+
 static void hold(const char *what)
 {
 	xsdk_log_write("resolve: showing %s for %u ms", what, (unsigned)HOLD_MS);
@@ -328,8 +387,9 @@ int main(void)
 
 	for (uint32_t i = 0; i < sizeof resolves / sizeof resolves[0]; i++) {
 		const bool finished = resolve_once(&resolves[i], pixels_physical, vertices_physical, width, height);
-		xsdk_log_write("resolve: after clearing to %s: pixel 0 %08X, pixel 100000 %08X", resolves[i].name,
-			(unsigned)pixels[0], (unsigned)pixels[100000]);
+		log_map(resolves[i].name, pixels, pixel_count);
+		(void)xsdk_thread_sleep(MAP_SETTLE_MS);
+		log_map("half a second later", pixels, pixel_count);
 		if (!finished) {
 			xsdk_log_write("resolve: a stage didn't finish; stopping");
 			break;
@@ -337,6 +397,10 @@ int main(void)
 		hold(i ? resolves[i - 1].name : "eDRAM as it was");
 	}
 
+	// XAM's device draws after the title exits, so copy mode mustn't outlive the probe (docs/HARDWARE.md).
+	Stage stage = { .count = 0 };
+	put_register(&stage, RB_MODECONTROL, EDRAM_MODE_COLOR_DEPTH);
+	(void)submit(&stage, "exit", "drawing mode back");
 	if (has_display)
 		set_surface(old_surface, width);
 	return 0;
