@@ -1,0 +1,154 @@
+log: game:\xsdk.log
+resolve probe
+resolve: front buffer at physical 1FB20000, vertices at 1FB10000
+resolve: showing magenta from the CPU for 3000 ms
+resolve: white: state and shader: fence 0x00000000
+resolve: white: draw: fence 0x00000000
+resolve: white: cache flush: fence 0x00000000
+resolve: white: coherency wait: fence 0x00000000
+resolve: white:
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve: half a second later:
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve: showing eDRAM as it was for 3000 ms
+resolve: red: state and shader: fence 0x00000000
+resolve: red: draw: fence 0x00000000
+resolve: red: cache flush: fence 0x00000000
+resolve: red: coherency wait: fence 0x00000000
+resolve: red:
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve: half a second later:
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve:   MMMMMMMMMMMMMMMMMMMM
+resolve: showing white for 3000 ms
+resolve: green: state and shader: fence 0x00000000
+resolve: green: draw: fence 0x00000000
+resolve: green: cache flush: fence 0x00000000
+resolve: green: coherency wait: fence 0x00000000
+resolve: green:
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve: half a second later:
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve: showing red for 3000 ms
+resolve: black: state and shader: fence 0x00000000
+resolve: black: draw: fence 0x00000000
+resolve: black: cache flush: fence 0x00000000
+resolve: black: coherency wait: fence 0x00000000
+resolve: black:
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve: half a second later:
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve:   00000000000000000000
+resolve: showing green for 3000 ms
+resolve: exit: drawing mode back: fence 0x00000000
+exit: status 0

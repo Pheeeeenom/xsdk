@@ -490,3 +490,13 @@ each clearing eDRAM to the next colour (white, red, green, black) while copying 
   after the third and fourth. The user saw no white, red or blue, and at one point magenta and green in stripes.
 - **The console froze when Aurora came back.** The probe left `RB_MODECONTROL` at 6 (copy) and had loaded its shader at
   instruction address 0, either of which could have upset XAM's device.
+
+## The resolve's tile map (2026-10-10)
+
+`tests/probe_resolve.c` repeated the four resolves and mapped the front buffer, one character per 4 KB tile, after
+each one and half a second later (log: `results/2026-10-10-probe-resolve-2/xsdk.log`, xbWatson's copy).
+
+- **The first two resolves wrote nothing:** every tile stayed magenta, though all their stages' fences landed.
+- **The third wrote zero over the whole frame,** not the white or red the earlier clears should have left in eDRAM, so
+  when a copy does land its rectangle covers the screen. After the fourth every tile still read zero.
+- **Nothing changed in the half second after each map,** so the writes don't arrive late in time.
