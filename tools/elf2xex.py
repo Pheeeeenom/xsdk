@@ -271,16 +271,18 @@ def page_descriptors(image, runs):
     return b"".join(descriptors), next_digest
 
 
-def optional_header_table(inline, blocks, data_offset):
-    keys = sorted(list(inline) + list(blocks))
+def optional_header_table(inline, blocks, data_offset, placed):
+    keys = sorted(list(inline) + list(blocks) + list(placed))
     table = b""
     data = b""
     for key in keys:
         if key in inline:
             table += struct.pack(">II", key, inline[key])
-            continue
-        table += struct.pack(">II", key, data_offset + len(data))
-        data += align_bytes(blocks[key], 8)
+        elif key in placed:
+            table += struct.pack(">II", key, placed[key])
+        else:
+            table += struct.pack(">II", key, data_offset + len(data))
+            data += align_bytes(blocks[key], 8)
     return table, data
 
 
@@ -297,17 +299,19 @@ def build_xex(image, runs, entry, libraries, args):
     }
     blocks = {
         HEADER_FILE_FORMAT_INFO: struct.pack(">IHHII", 16, ENCRYPTION_NONE, COMPRESSION_BASIC, len(image), 0),
-        HEADER_IMPORT_LIBRARIES: imports,
         HEADER_TLS_INFO: struct.pack(">IIII", TLS_SLOTS, 0, 0, 0),
         HEADER_EXECUTION_INFO: struct.pack(">IIIIBBBBI", 0, 0, 0, args.title_id, 0, 0, 1, 1, 0),
     }
 
-    header_count = len(inline) + len(blocks)
+    header_count = len(inline) + len(blocks) + 1
     security_offset = align(0x18 + 8 * header_count, 8)
     security_bytes = SECURITY_INFO_BYTES + len(descriptors)
     data_offset = align(security_offset + security_bytes, 8)
-    table, data = optional_header_table(inline, blocks, data_offset)
-    header_size = align(data_offset + len(data), HEADER_ALIGN_BYTES)
+    data_bytes = sum(align(len(block), 8) for block in blocks.values())
+    header_size = align(data_offset + data_bytes + len(imports), HEADER_ALIGN_BYTES)
+    # The import libraries end the headers exactly, as XexTool and SynthXEX (placer.c:72-106) place them.
+    import_offset = header_size - len(imports)
+    table, data = optional_header_table(inline, blocks, data_offset, {HEADER_IMPORT_LIBRARIES: import_offset})
 
     security = bytearray(SECURITY_INFO_BYTES)
     struct.pack_into(">II", security, 0, security_bytes, len(image))
@@ -321,6 +325,7 @@ def build_xex(image, runs, entry, libraries, args):
     header[security_offset:security_offset + SECURITY_INFO_BYTES] = security
     header[security_offset + SECURITY_INFO_BYTES:security_offset + security_bytes] = descriptors
     header[data_offset:data_offset + len(data)] = data
+    header[import_offset:] = imports
 
     # The header digest covers everything the signature doesn't.
     header_digest = sha1(header[security_offset + 0x17C:], header[:security_offset + 8])
