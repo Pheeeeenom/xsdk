@@ -123,6 +123,8 @@ static NTSTATUS open_log(HANDLE *handle, const char *path)
   has no locks, no logging except when returning an error, and no heap allocation. Allocate at creation; per-frame
   data comes from preallocated rings or pools.
 - Physical memory goes through one module. Every allocation has a matching free.
+- One exception: while the GPU is wedged, `xsdk_gpu_close` keeps the ring and its write-back page, since the GPU may
+  still use them.
 - Every object that owns memory has a destroy function that releases it in reverse creation order.
 - Fixed limits are named constants. If a number's origin isn't obvious, give it in one line.
 
