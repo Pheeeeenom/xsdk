@@ -36,7 +36,18 @@
          ac_has_clock_realtime=yes
 --- a/gcc/config/rs6000/rs6000.cc
 +++ b/gcc/config/rs6000/rs6000.cc
-@@ -17044,22 +17044,25 @@
+@@ -1701,6 +1701,10 @@
+ #undef TARGET_UNWIND_WORD_MODE
+ #define TARGET_UNWIND_WORD_MODE rs6000_abi_word_mode
+ 
++static machine_mode rs6000_dwarf_frame_reg_mode (int);
++#undef TARGET_DWARF_FRAME_REG_MODE
++#define TARGET_DWARF_FRAME_REG_MODE rs6000_dwarf_frame_reg_mode
++
+ #undef TARGET_OFFLOAD_OPTIONS
+ #define TARGET_OFFLOAD_OPTIONS rs6000_offload_options
+ 
+@@ -17044,22 +17048,25 @@
        emit_unlikely_jump (x, label1);
      }
  
@@ -71,3 +82,25 @@
  }
  
  /* Expand an atomic exchange operation.  */
+@@ -17276,6 +17283,21 @@
+   return TARGET_32BIT ? SImode : DImode;
+ }
+ 
++/* Xbox 360 SDK: 32-bit frames save GPRs, LR, CTR and VRSAVE as words even
++   with -mpowerpc64.  The default sizes those registers for the unwinder as
++   8 bytes, or as 0 for call-clobbered GPRs, so installing a handler's
++   context copied the wrong amount and C++ exceptions crashed.  */
++
++static machine_mode
++rs6000_dwarf_frame_reg_mode (int regno)
++{
++  if (TARGET_32BIT
++      && (INT_REGNO_P (regno) || regno == LR_REGNO || regno == CTR_REGNO
++	  || regno == VRSAVE_REGNO))
++    return SImode;
++  return default_dwarf_frame_reg_mode (regno);
++}
++
+ /* Implement the TARGET_OFFLOAD_OPTIONS hook.  */
+ static char *
+ rs6000_offload_options (void)
