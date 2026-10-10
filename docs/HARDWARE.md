@@ -550,3 +550,18 @@ the second resolve). The user reported that the run went perfectly and the conso
   registers is that XAM-like state.
 
 Which part of the set-up makes every resolve write, and which write-back stops the freeze, isn't isolated.
+
+## The SDK resolves every frame; the display's size is the viewport (2026-10-10)
+
+The test title ran `tests/test_present.c` after `tests/test_gpu.c` had opened and closed the GPU: it opened the GPU
+again through the SDK, which now sends libxenon's set-up, and resolved 240 frames into two front buffers in turn,
+fading the clear colour (log: `results/2026-10-10-milestone-5/xsdk.log`).
+
+- **Every resolve landed:** all 240 fences, and every frame after the first held the colour the resolve before it
+  cleared to, at its first, middle and last pixel. So the set-up works from `xsdk_gpu_open`, also on a second open.
+- **The display check failed.** `xsdk_display_open` took the size from `D1GRPH_PITCH` and `D1GRPH_Y_END`, which XAM
+  sets to 1280x720 when `VdShutdownEngines` hands the GPU back ("What XAM writes to show the Guide"). Through that
+  hand-back `AVIVO_D1MODE_VIEWPORT_SIZE` (0x6584) stayed 0x028001E0, 640 wide in its high half and 480 high
+  (`results/2026-10-10-probe-guide-2/xsdk.log`), so the display still scaled up a 640x480 surface. With the size
+  wrong, the test showed nothing.
+- **The other 39 checks passed.**
