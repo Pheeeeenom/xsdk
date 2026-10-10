@@ -24,6 +24,9 @@ void test_cpp_chrono(void);
 void test_cpp_filesystem(void);
 void test_cpp_format(void);
 
+// The command processor (milestone 4).
+void test_gpu(void);
+
 #ifdef __cplusplus
 }
 #endif
