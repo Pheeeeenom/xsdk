@@ -932,3 +932,37 @@ scaler registers (log: `results/2026-10-10-probe-720p-4/xsdk.log`, with one capt
   The two runs that called `VdInitializeScalerCommandBuffer` both failed to return to Aurora, and the one that didn't
   call it returned, so the call itself may change the kernel's display state, perhaps from arguments it reads
   differently from Xenia's guess; that isn't shown. The SDK won't call it.
+
+## What AMD's code says about the scaler (2026-10-10)
+
+Not a hardware run: what public AMD sources say about this display block, to read the probes against. AMD's register
+guides for the M56 and RV630 (x.org/docs/AMD/old) give the CRTC, graphics and LUT registers at the same offsets as
+here (`D1CRTC_H_TOTAL` 0x6000, `D1GRPH_*` 0x6100-0x614C, `D1MODE_MASTER_UPDATE_LOCK` 0x60E0) but leave out
+0x6500-0x65FF, the viewport and the scaler.
+
+- **radeonhd scales on R5xx without scale factors or phases** (xf86-video-radeonhd:src/rhd_crtc.c:767-786,
+  `DxScaleSet`): 0x65A4 0x00010001, tap control 0x101, and 0x00030100 in both 0x65B0 and 0x65C0. Its names for those
+  registers are marked as guesses (rhd_regs.h:205-213). Its scaler update lock is bit 16 of 0x65CC (rhd_regs.h:412-413).
+- **AMD's later display code names the fields** (linux:drivers/gpu/drm/amd/include/asic_reg/dce/dce_8_0_sh_mask.h,
+  `SCL_*`). Tap control holds the taps less one, vertical in bits 0-2 and horizontal in 8-11. A filter control's bit 8
+  selects a built-in 2-tap filter, and bit 0 nearest. The automatic mode control's bits 0 and 16 make the hardware work
+  out the scale factors. The coefficient select takes the tap pair in bits 0-3, the phase in 8-11 and the filter type
+  in 16-18. The update lock is bit 16, and bit 0 is the pending flag, which libxenon and these probes write. Read that
+  way, radeonhd asks for 2 taps each way with the built-in filter and automatic scale factors, and the kernel's 0x505
+  is 6 taps each way.
+- **The same code starts each filter at (scale + taps + 1) / 2** (linux:drivers/gpu/drm/amd/display/dc/dce/
+  dce_transform.c, `calculate_inits`). That is the formula that fit the kernel's and libxenon's phases, with the taps
+  one more than the field. It loads coefficients by filter type, phase and tap pair through `SCL_COEF_RAM_SELECT` and
+  `SCL_COEF_RAM_TAP_DATA` (`program_multi_taps_filter`). It also refuses vertical taps that aren't fewer than the lines
+  the line buffer holds, which is the buffer's size over the source width (`dce_transform_get_optimal_number_of_taps`).
+  A 1280-wide source fits half as many lines as the kernel's 640-wide one.
+- **The kernel's six trailing dwords read as coefficient loads.** xenon-emu names 0x6578 `D1SCL_COEF_RAM_SELECT` and
+  0x657C `D1SCL_COEF_RAM_TAP_DATA` (XenosRegisters.h:919-920). The tail selects filter type 0, then type 2
+  (0x00020000). After each selection comes a header for 0x657C with bit 15 set, which writes every dword to the one
+  register (xenia:src/xenia/gpu/command_processor.cc:651-656), and with its count bits all set. xenon-emu names 0x65BC
+  `D1SCL_HORZ_FILTER_INIT_CHROMA` (XenosRegisters.h:929), which fits it not mattering for RGB.
+- **The scrambled capture fits source lines landing in the wrong place.** Read again (`results/2026-10-10-probe-720p-2/
+  capture.png`), each output line in the corner squares' rows shows either the red square at the left edge, about the
+  right size, or the green one about a sixth of the way across, never both. So the horizontal source position changes
+  from line to line, which a filter or a scale factor alone wouldn't do. Too many vertical taps for the line buffer
+  would, as lines overwrite each other.

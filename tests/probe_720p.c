@@ -9,7 +9,7 @@
 #include "xsdk/log.h"
 #include "xsdk/thread.h"
 
-// Scales a 1280x720 image with the scaler on at 1:1, then to the output with fewer and fewer taps, each its own tint.
+// Scales a 1280x720 image with fewer and fewer vertical taps, then with the 2-tap built-in filter, each its own tint.
 
 enum {
 	WIDTH = 1280,
@@ -26,17 +26,34 @@ enum {
 	BLUE = 0xFF0000FF,
 	YELLOW = 0xFFFFFF00,
 	SCALE_ONE_LOG2 = 24,
+	// SCL_H/V_2TAP_HARDCODE_COEF_EN (linux:drivers/gpu/drm/amd/include/asic_reg/dce/dce_8_0_sh_mask.h).
+	TWO_TAP_BUILT_IN = 0x100,
 };
 
 // Display registers by index: libxenon's names (libxenon:drivers/xenos/xenos.h:11-60), else Xenia's style.
 enum {
+	UNKNOWN_1948 = 0x1948,
+	UNKNOWN_1949 = 0x1949,
+	UNKNOWN_1952 = 0x1952,
+	UNKNOWN_1954 = 0x1954,
 	AVIVO_D1SCL_SCALER_TAP_CONTROL = 0x1965,
+	UNKNOWN_1968 = 0x1968,
+	UNKNOWN_1969 = 0x1969,
+	UNKNOWN_196C = 0x196C,
 	UNKNOWN_196D = 0x196D,
 	UNKNOWN_196E = 0x196E,
+	UNKNOWN_196F = 0x196F,
+	UNKNOWN_1970 = 0x1970,
 	UNKNOWN_1971 = 0x1971,
 	UNKNOWN_1972 = 0x1972,
 	AVIVO_D1SCL_UPDATE = 0x1973,
+	UNKNOWN_1974 = 0x1974,
+	UNKNOWN_1977 = 0x1977,
+	UNKNOWN_1978 = 0x1978,
+	UNKNOWN_1979 = 0x1979,
 	UNKNOWN_197A = 0x197A,
+	UNKNOWN_1B2F = 0x1B2F,
+	UNKNOWN_1C46 = 0x1C46,
 };
 
 enum {
@@ -44,34 +61,46 @@ enum {
 	SCALER_TAP_CONTROL,
 	VIEWPORT_SIZE,
 	VIEWPORT_WIDTH_QUARTER,
+	HORIZONTAL_FILTER,
 	HORIZONTAL_SCALE,
 	HORIZONTAL_PHASE,
+	VERTICAL_FILTER,
 	VERTICAL_SCALE,
 	VERTICAL_PHASE,
 	WRITTEN,
 };
 
-// Only the scaler registers the hand-set scaling wrote, which gave the display back (docs/HARDWARE.md).
+// The hand-set scaling's registers, which gave the display back, and the filter controls (docs/HARDWARE.md).
 static const uint32_t written[WRITTEN] = { AVIVO_D1SCL_SCALER_ENABLE, AVIVO_D1SCL_SCALER_TAP_CONTROL,
-	AVIVO_D1MODE_VIEWPORT_SIZE, UNKNOWN_197A, UNKNOWN_196D, UNKNOWN_196E, UNKNOWN_1971, UNKNOWN_1972 };
+	AVIVO_D1MODE_VIEWPORT_SIZE, UNKNOWN_197A, UNKNOWN_196C, UNKNOWN_196D, UNKNOWN_196E, UNKNOWN_1970, UNKNOWN_1971,
+	UNKNOWN_1972 };
+
+// Read only: line buffer, underflow and filter registers (xenon-emu:XenosRegisters.h:906-952), with 0x1948 and 0x1969.
+static const uint32_t logged[] = { UNKNOWN_1948, UNKNOWN_1949, UNKNOWN_1952, UNKNOWN_1954, UNKNOWN_1968, UNKNOWN_1969,
+	UNKNOWN_196C, UNKNOWN_196F, UNKNOWN_1970, AVIVO_D1SCL_UPDATE, UNKNOWN_1974, UNKNOWN_1977, UNKNOWN_1978,
+	UNKNOWN_1979, UNKNOWN_197A, UNKNOWN_1B2F, UNKNOWN_1C46 };
+
+// The status registers among them, read again after each variant.
+static const uint32_t statuses[] = { UNKNOWN_1949, AVIVO_D1SCL_UPDATE, UNKNOWN_1974, UNKNOWN_1978 };
 
 typedef struct {
 	const char *name;
 	// Each variant's background, so a capture shows which one is on screen.
 	uint32_t background_argb;
 	bool to_output;
-	// Horizontal taps in bits 8-11, vertical in bits 0-3, as the phases that fit read them (docs/HARDWARE.md).
+	// Horizontal taps less one in bits 8-11, vertical in bits 0-2 (dce_8_0_sh_mask.h, dce_transform.c).
 	uint32_t tap_control;
+	bool built_in;
 } Variant;
 
 static const Variant variants[] = {
-	{ "grey: scaler on at 1:1, taps 0x505", 0xFF404040, false, 0x505 },
-	{ "blue: scaled to the output, taps 0x505 as before", 0xFF202060, true, 0x505 },
-	{ "green: scaled, 4 vertical taps", 0xFF206020, true, 0x504 },
-	{ "red: scaled, 3 vertical taps", 0xFF602020, true, 0x503 },
-	{ "olive: scaled, 2 vertical taps", 0xFF606020, true, 0x502 },
-	{ "teal: scaled, 2 horizontal taps", 0xFF206060, true, 0x205 },
-	{ "purple: scaled, 2 taps each way", 0xFF602060, true, 0x202 },
+	{ "grey: 1:1, 6 taps each way", 0xFF404040, false, 0x505, false },
+	{ "blue: scaled, 6 taps each way, as before", 0xFF202060, true, 0x505, false },
+	{ "green: scaled, 6 horizontal and 4 vertical taps", 0xFF206020, true, 0x503, false },
+	{ "red: scaled, 6 horizontal and 3 vertical taps", 0xFF602020, true, 0x502, false },
+	{ "olive: scaled, 6 horizontal and 2 vertical taps", 0xFF606020, true, 0x501, false },
+	{ "teal: scaled, 2 horizontal and 6 vertical taps", 0xFF206060, true, 0x105, false },
+	{ "purple: scaled, the built-in 2-tap filter each way", 0xFF602060, true, 0x101, true },
 };
 
 // The display reads a word's bytes as B, G, R, A (docs/HARDWARE.md, "A title's buffer on screen").
@@ -108,15 +137,21 @@ static void draw_image(volatile uint32_t *pixels, uint32_t background_argb)
 	__asm__ volatile("sync" ::: "memory");
 }
 
-// Source over output in 8.24, and (taps + 2) / 2 + scale / 2 in 16.16 (docs/HARDWARE.md, "Scaling 1280x720 by hand").
+// Source over output in 8.24 (docs/HARDWARE.md, "Scaling 1280x720 by hand").
 static uint32_t scale(uint32_t source, uint32_t output)
 {
 	return (uint32_t)(((uint64_t)source << SCALE_ONE_LOG2) / output);
 }
 
-static uint32_t phase(uint32_t taps, uint32_t scale_8_24)
+// (scale + taps + 1) / 2 in 16.16 (dce_transform.c, calculate_inits), the field being the taps less one.
+static uint32_t phase(uint32_t tap_field, uint32_t scale_8_24)
 {
-	return ((taps + 2) << 15) + (scale_8_24 >> 9);
+	return ((tap_field + 2) << 15) + (scale_8_24 >> 9);
+}
+
+static uint32_t filter_control(uint32_t start, bool built_in)
+{
+	return (start & ~(uint32_t)TWO_TAP_BUILT_IN) | (built_in ? TWO_TAP_BUILT_IN : 0);
 }
 
 static void write_scaler(const uint32_t *values)
@@ -126,6 +161,14 @@ static void write_scaler(const uint32_t *values)
 	for (uint32_t i = 0; i < WRITTEN; i++)
 		r[written[i]] = values[i];
 	r[AVIVO_D1SCL_UPDATE] = 0;
+}
+
+// The log names each register by index and by byte offset, as the earlier logs did.
+static void log_registers(const char *when, const uint32_t *list, uint32_t count)
+{
+	for (uint32_t i = 0; i < count; i++)
+		xsdk_log_write("720p: %s: %04X (byte %04X) %08X", when, (unsigned)list[i], (unsigned)(list[i] * 4),
+			(unsigned)probe_gpu_registers[list[i]]);
 }
 
 // xsdk_display_show's writes for a WIDTH by HEIGHT surface, then 0x60EC.
@@ -144,7 +187,8 @@ static void show(uint32_t address)
 	r[D1CRTC_DOUBLE_BUFFER_CONTROL] = 0;
 }
 
-static void run_variant(const Variant *variant, const VIDEO_MODE *mode, volatile uint32_t *pixels)
+static void run_variant(
+	const Variant *variant, const VIDEO_MODE *mode, const uint32_t *start, volatile uint32_t *pixels)
 {
 	const uint32_t output_width = variant->to_output ? mode->display_width : WIDTH;
 	const uint32_t output_height = variant->to_output ? mode->display_height : HEIGHT;
@@ -153,23 +197,30 @@ static void run_variant(const Variant *variant, const VIDEO_MODE *mode, volatile
 	values[SCALER_TAP_CONTROL] = variant->tap_control;
 	values[VIEWPORT_SIZE] = WIDTH << 16 | HEIGHT;
 	values[VIEWPORT_WIDTH_QUARTER] = WIDTH / 4 - 1;
+	values[HORIZONTAL_FILTER] = filter_control(start[HORIZONTAL_FILTER], variant->built_in);
+	values[VERTICAL_FILTER] = filter_control(start[VERTICAL_FILTER], variant->built_in);
 	values[HORIZONTAL_SCALE] = scale(WIDTH, output_width);
 	values[VERTICAL_SCALE] = scale(HEIGHT, output_height);
 	values[HORIZONTAL_PHASE] = phase(variant->tap_control >> 8 & 0xF, values[HORIZONTAL_SCALE]);
-	values[VERTICAL_PHASE] = phase(variant->tap_control & 0xF, values[VERTICAL_SCALE]);
+	values[VERTICAL_PHASE] = phase(variant->tap_control & 0x7, values[VERTICAL_SCALE]);
 	draw_image(pixels, variant->background_argb);
 	write_scaler(values);
-	xsdk_log_write("720p: %s: scale %08X by %08X, phases %08X and %08X, read back %08X %08X %08X %08X; %u ms",
-		variant->name, (unsigned)values[HORIZONTAL_SCALE], (unsigned)values[VERTICAL_SCALE],
-		(unsigned)values[HORIZONTAL_PHASE], (unsigned)values[VERTICAL_PHASE],
-		(unsigned)probe_gpu_registers[UNKNOWN_196D], (unsigned)probe_gpu_registers[UNKNOWN_1971],
-		(unsigned)probe_gpu_registers[UNKNOWN_196E], (unsigned)probe_gpu_registers[UNKNOWN_1972], (unsigned)VARIANT_MS);
+	xsdk_log_write("720p: %s: taps %03X, filters %08X %08X, scale %08X by %08X, phases %08X and %08X; %u ms",
+		variant->name, (unsigned)values[SCALER_TAP_CONTROL], (unsigned)values[HORIZONTAL_FILTER],
+		(unsigned)values[VERTICAL_FILTER], (unsigned)values[HORIZONTAL_SCALE], (unsigned)values[VERTICAL_SCALE],
+		(unsigned)values[HORIZONTAL_PHASE], (unsigned)values[VERTICAL_PHASE], (unsigned)VARIANT_MS);
+	xsdk_log_write("720p: read back: taps %03X, filters %08X %08X, scale %08X by %08X, phases %08X and %08X",
+		(unsigned)probe_gpu_registers[AVIVO_D1SCL_SCALER_TAP_CONTROL], (unsigned)probe_gpu_registers[UNKNOWN_196C],
+		(unsigned)probe_gpu_registers[UNKNOWN_1970], (unsigned)probe_gpu_registers[UNKNOWN_196D],
+		(unsigned)probe_gpu_registers[UNKNOWN_1971], (unsigned)probe_gpu_registers[UNKNOWN_196E],
+		(unsigned)probe_gpu_registers[UNKNOWN_1972]);
 	(void)xsdk_thread_sleep(VARIANT_MS);
+	log_registers("after it", statuses, sizeof statuses / sizeof statuses[0]);
 }
 
 int main(void)
 {
-	xsdk_log_write("720p taps probe");
+	xsdk_log_write("720p line buffer probe");
 	const NTSTATUS status = xsdk_gpu_open();
 	uint32_t width = 0;
 	uint32_t height = 0;
@@ -181,14 +232,16 @@ int main(void)
 		(unsigned)width, (unsigned)height, (unsigned)mode.display_width, (unsigned)mode.display_height);
 	if (!NT_SUCCESS(display_status) || !pixels || !mode.display_width || !mode.display_height)
 		return 1;
+	log_registers("at start", logged, sizeof logged / sizeof logged[0]);
 	uint32_t start[WRITTEN];
 	for (uint32_t i = 0; i < WRITTEN; i++)
 		start[i] = probe_gpu_registers[written[i]];
 	draw_image(pixels, variants[0].background_argb);
 	show(xsdk_gpu_address(pixels));
 	for (uint32_t i = 0; i < sizeof variants / sizeof variants[0]; i++)
-		run_variant(&variants[i], &mode, pixels);
+		run_variant(&variants[i], &mode, start, pixels);
 	write_scaler(start);
+	log_registers("put back", written, WRITTEN);
 	xsdk_display_close();
 	xsdk_gpu_free(pixels);
 	xsdk_log_write("720p: the scaler put back; the GPU goes back at exit");
