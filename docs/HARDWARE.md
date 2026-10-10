@@ -513,3 +513,17 @@ and green, and mapped the buffer after each resolve and again after a second cac
 - **The second flush changed nothing,** so the missing writes aren't held in a cache.
 - **The third resolve was also the only one to write in the previous run,** whose holds and stages differed, so the
   pattern follows the resolve's position in the sequence, not the time or the ring position.
+
+## Every third resolve writes (2026-10-10)
+
+`tests/probe_resolve.c` flushed the fetch constants after setting them, as libxenon does
+(libxenon:drivers/xenos/xe.c:1146), then ran eight resolves, clearing white, white, green, green, blue, blue, white and
+white, with the front buffer refilled with magenta before each (log: `results/2026-10-10-probe-resolve-4/xsdk.log`).
+
+- **Only the third and sixth resolves wrote.** The third wrote 0 to all 307200 pixels, the sixth 0x00FF00FF (green) to
+  all of them. Every other resolve left every pixel magenta, though all fences landed.
+- **A skipped resolve skips its clear too.** The sixth copied the green the third cleared to, not the blue the fifth
+  should have left, so the skipped resolves did nothing in eDRAM.
+- **The green clear value 0xFF00FF00 landed as the word 0x00FF00FF,** the green the display shows.
+- **The fetch constant flush didn't change the pattern.**
+- **The console still froze on the way back to Aurora,** though the probe set `RB_MODECONTROL` back to 4 first.

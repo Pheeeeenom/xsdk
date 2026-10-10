@@ -1,0 +1,62 @@
+log: game:\xsdk.log
+resolve probe
+resolve: front buffer at physical 1FB20000, vertices at 1FB10000
+resolve: showing magenta from the CPU for 3000 ms
+resolve: white 1: state and shader: fence 0x00000000
+resolve: white 1: draw: fence 0x00000000
+resolve: white 1: cache flush: fence 0x00000000
+resolve: white 1: coherency wait: fence 0x00000000
+resolve: white 1: every tile M
+resolve:   FF00FFFF in 307200 pixels
+resolve: holding for 2000 ms
+resolve: white 2: state and shader: fence 0x00000000
+resolve: white 2: draw: fence 0x00000000
+resolve: white 2: cache flush: fence 0x00000000
+resolve: white 2: coherency wait: fence 0x00000000
+resolve: white 2: every tile M
+resolve:   FF00FFFF in 307200 pixels
+resolve: holding for 2000 ms
+resolve: green 1: state and shader: fence 0x00000000
+resolve: green 1: draw: fence 0x00000000
+resolve: green 1: cache flush: fence 0x00000000
+resolve: green 1: coherency wait: fence 0x00000000
+resolve: green 1: every tile 0
+resolve:   00000000 in 307200 pixels
+resolve: holding for 2000 ms
+resolve: green 2: state and shader: fence 0x00000000
+resolve: green 2: draw: fence 0x00000000
+resolve: green 2: cache flush: fence 0x00000000
+resolve: green 2: coherency wait: fence 0x00000000
+resolve: green 2: every tile M
+resolve:   FF00FFFF in 307200 pixels
+resolve: holding for 2000 ms
+resolve: blue 1: state and shader: fence 0x00000000
+resolve: blue 1: draw: fence 0x00000000
+resolve: blue 1: cache flush: fence 0x00000000
+resolve: blue 1: coherency wait: fence 0x00000000
+resolve: blue 1: every tile M
+resolve:   FF00FFFF in 307200 pixels
+resolve: holding for 2000 ms
+resolve: blue 2: state and shader: fence 0x00000000
+resolve: blue 2: draw: fence 0x00000000
+resolve: blue 2: cache flush: fence 0x00000000
+resolve: blue 2: coherency wait: fence 0x00000000
+resolve: blue 2: every tile G
+resolve:   00FF00FF in 307200 pixels
+resolve: holding for 2000 ms
+resolve: white 3: state and shader: fence 0x00000000
+resolve: white 3: draw: fence 0x00000000
+resolve: white 3: cache flush: fence 0x00000000
+resolve: white 3: coherency wait: fence 0x00000000
+resolve: white 3: every tile M
+resolve:   FF00FFFF in 307200 pixels
+resolve: holding for 2000 ms
+resolve: white 4: state and shader: fence 0x00000000
+resolve: white 4: draw: fence 0x00000000
+resolve: white 4: cache flush: fence 0x00000000
+resolve: white 4: coherency wait: fence 0x00000000
+resolve: white 4: every tile M
+resolve:   FF00FFFF in 307200 pixels
+resolve: holding for 2000 ms
+resolve: exit: drawing mode back: fence 0x00000000
+exit: status 0
