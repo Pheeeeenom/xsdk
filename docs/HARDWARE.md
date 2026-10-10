@@ -602,3 +602,9 @@ from 0xAARRGGBB. What a shader draws isn't covered yet.
 With `xsdk_gpu_resolve` swapping red and blue in the clear colour, the same probe's red clear stored 0x0000FFFF in all
 307200 pixels, the word the display shows as red (log: `results/2026-10-10-probe-resolve-7/xsdk.log`). The user didn't
 report the screen in this run; the log names the colour the stored word shows.
+
+## Milestone 5 with a red and blue fade (2026-10-10)
+
+The test title, with the present test fading between red and blue, passed all 41 checks, exited with status 0 and
+returned to Aurora (log: `results/2026-10-10-milestone-5-3/xsdk.log`). Every frame held the colour cleared before it,
+red and blue in the right places, so `xsdk_gpu_resolve`'s packing of the clear colour holds across 240 frames.
