@@ -46,6 +46,8 @@ static void write_line(const char *line, size_t length_bytes)
 		return;
 	IO_STATUS_BLOCK io_status;
 	(void)NtWriteFile(log_file, 0, NULL, NULL, &io_status, line, (uint32_t)length_bytes, NULL);
+	// Without a flush the console keeps the file's old size, cutting off longer logs (docs/HARDWARE.md).
+	(void)NtFlushBuffersFile(log_file, &io_status);
 }
 
 NTSTATUS xsdk_log_open(void)

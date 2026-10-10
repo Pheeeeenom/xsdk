@@ -354,3 +354,11 @@ on it with the arguments Xenia documents (log: `results/2026-10-10-probe-swap/xs
   argument to the third (the "system writeback", with byte swap 2), then a `NOP` over the other 59. The fence landed.
   There were no display registers or front buffer address in the ring, so the flip happens outside it.
 - **The screen stayed black** through the whole run.
+
+## The log file keeps its old size (2026-10-10)
+
+Two logs came back cut off mid-line, each at the length of the run before it: the second engines run's at 2050 bytes,
+the first engines run's length, and the second swap run's at 1454 bytes, the first swap run's length. So when the
+title rewrites `xsdk.log` with `FILE_OVERWRITE_IF`, the new text reaches the disk but the file's size stays the old
+one, even after `NtClose` in `_exit`, and a longer log loses its tail. The log now calls `NtFlushBuffersFile` after
+every line; whether that keeps the size current is for the next run to show.
