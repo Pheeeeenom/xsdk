@@ -29,7 +29,9 @@ Launched from Aurora, logs read through xbWatson and `xsdk.log`.
 | Page digest (a byte nothing reads, in page 0) | Launches and passes every test, so not enforced |
 | Import table digest (security info +0x12C) | Refused, so enforced |
 
-The patch set and dashboard version on this console aren't recorded yet; another patch set may differ.
+The console's kernel is build 21256, from the system information in an xbWatson minidump (2026-10-10). The same
+dump's module list names the kernel `xboxkrnld.exe` and XAM `xamd.dll`, with `Xbdm.xex` loaded. The patch set isn't
+recorded; another patch set may differ.
 
 ## Runtime (2026-10-09)
 
@@ -74,3 +76,31 @@ The test title passed all 12 checks on the console:
     - a 750 Hz tone sounds an octave above 375 Hz.
     So frames are 6 channels of big-endian floats, channel after channel, in Xenia's 5.1 order (front left, front
     right, centre, LFE, back left, back right).
+
+## C++23 runtime, milestone 3 (2026-10-10)
+
+The test title, built with the GCC 15 toolchain, passed all 30 checks on the console; the log is in
+`results/2026-10-10-milestone-3/xsdk.log`.
+
+- **Start-up.** A static constructor in `.init_array` runs before `main`. 64-byte, 16-byte and page-aligned
+  allocations come back aligned.
+- **Threads.** Two `std::jthread`s rally 100 times each through a `std::mutex` and a `std::condition_variable`, and see
+  their own `thread_local` values (emulated TLS on `KeTlsAlloc`/`KeTlsGetValue`/`KeTlsSetValue`).
+- **Atomics.** Four threads counting 10,000 times each give exact 32-bit and 64-bit totals, so the inline
+  `lwarx`/`stwcx.` and `ldarx`/`stdcx.` loops work. Over a 200 ms `std::atomic::wait` the waiter yielded 16 times and
+  blocked once, so it sleeps.
+- **Time.** A 250 ms `sleep_for` measured 249 ms and 250 ms on `steady_clock` in two runs, so
+  `KeQueryPerformanceFrequency` gives the time base's rate to within that. `system_clock` reads the right date from
+  `KeQuerySystemTime`.
+- **File system.** `std::filesystem` creates, lists and removes a directory under `game:`:
+  - `NtCreateFile` with `FILE_CREATE` and `FILE_DIRECTORY_FILE` creates it;
+  - `NtQueryDirectoryFile`, given the pattern `*` on the first call and none after, lists it;
+  - `NtSetInformationFile` with `FileDispositionInformation`, then `NtClose`, deletes the file and then the empty
+    directory. Xenia ignores this, so the console is the first proof.
+- **Formatting.** `std::format`, `std::expected` and `std::println` work; `println` reaches the log through stdout.
+- **Exceptions.** A throw is caught, an `exception_ptr` from another `std::jthread` rethrows, and `dynamic_cast` and
+  `typeid` work. Before the unwinder register-size fix in `tools/toolchain/gcc-xsdk.patch`, the first throw ended in
+  an access violation at a stack address, 0x7010FA4C, repeated as first-chance exceptions in xbWatson.
+
+The rule that every `lwarx` pairs with a `stwcx.` (`tools/toolchain/gcc-xsdk.patch`) isn't observable in this run and
+stays unverified.
