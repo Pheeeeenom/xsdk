@@ -683,3 +683,14 @@ constant at a time, each followed by libxenon's whole frame as a check (log:
 - **That fits the earlier runs:** the previous one's single lone write, last, left the resolve writing nothing and
   Aurora frozen, and in the one before (`results/2026-10-10-probe-triangle-2/xsdk.log`) it fits five of the six
   resolves; the first wrote though it came after a lone write.
+
+## The triangle draws (2026-10-10)
+
+The test title ran `tests/test_triangle.c` with `xsdk_gpu_set_vertices` writing the fetch constant's whole group (log:
+`results/2026-10-10-milestone-6-2/xsdk.log`, xbWatson's copy).
+
+- **Every triangle check passed:** the last frame drew 86160 pixels, as in Xenia, every frame had red, green and blue
+  corners on the clear colour, and the GPU closed.
+- **The present test failed, though it passed in the first triangle run and nothing it runs has changed since.** In the
+  four frames logged, the first pixel held the colour the resolve before had cleared to, so the middle or the last pixel
+  didn't; the test logged only the first.

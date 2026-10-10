@@ -55,14 +55,17 @@ static void present_frames(volatile uint32_t *const *buffers, bool has_display)
 		const uint32_t expected = as_stored(colour_at(frame - 1));
 		if (frame > 0 && fences_landed && !holds(buffer, expected)) {
 			if (misses < MAX_MISSES_LOGGED)
-				xsdk_log_write(
-					"present: frame %u held %08X, not %08X", (unsigned)frame, (unsigned)buffer[0], (unsigned)expected);
+				xsdk_log_write("present: frame %u held %08X %08X %08X at its first, middle and last pixel, not %08X",
+					(unsigned)frame, (unsigned)buffer[0], (unsigned)buffer[PIXELS / 2], (unsigned)buffer[PIXELS - 1],
+					(unsigned)expected);
 			misses++;
 		}
 		if (has_display)
 			shown = shown && NT_SUCCESS(xsdk_display_show(address, WIDTH));
 		(void)xsdk_thread_sleep(FRAME_MS);
 	}
+	if (misses)
+		xsdk_log_write("present: %u frames missed", (unsigned)misses);
 	check("present: every resolve's fence landed", fences_landed);
 	check("present: every frame held the colour cleared before it", fences_landed && misses == 0);
 	if (has_display)
