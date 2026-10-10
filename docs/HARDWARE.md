@@ -46,3 +46,27 @@ The test title (`tests/main.c`) ran and logged:
 - newlib's printf formats correctly. The two stray NUL bytes per conversion seen in Xenia come from Xenia skipping
   `mcrf`.
 - `XamLoaderTerminateTitle` returns to the dashboard and doesn't come back.
+
+## Runtime, milestone 2 (2026-10-09)
+
+The test title passed all 12 checks on the console:
+
+- **Threads.** `ExCreateThread` with an XAPI startup routine calls it with the start address and context, as in
+  Xenia (xthread.cc:518-521). `ExTerminateThread` ends the thread, and `NtWaitForSingleObjectEx` on its handle
+  returns.
+- **Synchronisation.** Two semaphores and a synchronization event hand 100 items from one thread to another (sum 5050).
+  Two threads log through the critical-section-guarded log without corrupting it.
+- **Files through newlib.** `fopen`, `fputs`, `fgets`, `fseek`, `ftell` and append mode work on
+  `game:\xsdk_file_test.txt` through the SDK's `open`, `read`, `write`, `lseek` and `fstat`.
+- **Controller.** `XamInputGetState(0, 0, &state)` returns live state:
+  - the packet number advances only when the state changes;
+  - sticks are signed 16-bit over the full range;
+  - triggers run 0-255;
+  - buttons are a bit mask, for example `0x0200` and `0xA200`.
+- **Audio.**
+  - The render driver calls the client callback 376 times in 2000 ms. That's one call per 256-sample frame at
+    48 kHz, matching Xenia's frame size and rate.
+  - The callback may call `XAudioSubmitRenderDriverFrame` itself.
+  - `MmAllocatePhysicalMemoryEx` returns usable memory for the frame.
+  - Unverified: whether the 6-channel, channel-after-channel float frame plays as a tone. The console had no
+    speakers attached; Xenia plays it audibly.
