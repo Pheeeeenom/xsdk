@@ -752,3 +752,15 @@ The test title passed all 66 checks on the console and exited with status 0; the
   the 256-byte linear pitch, `xsdk_tiled_2d` and the float2 texture coordinates all hold on the console.
 - **The capture shows the texture as written:** navy at the top left, red rising to the right and green downwards, and
   blue wrapping from 255 to 128 along x + y = 128, from texel 128 on the top edge to about texel 33 on the bottom.
+
+## Linear and tiled textures side by side (2026-10-10)
+
+The texture test now draws both textures in every frame, the tiled one with red and green swapped and its blue bands
+slanted the other way, so a capture shows both and a quad sampling the other texture fails. The test title passed all
+64 checks and exited with status 0 (log: `results/2026-10-10-milestone-7-2/xsdk.log`, the user's capture beside it).
+
+- **Each quad held its own texture, every texel in place:** no wrong pixel in either quad or its border in the last of
+  120 frames, with the texture rebound to slot 0 between the two draws of each frame.
+- **The capture shows both as written:** on the left the linear texture as before; on the right green rising to the
+  right and red downwards, a blue seam from the top left corner to texel (95, 95) on the bottom edge, and a teal corner
+  cut off from texel 128 on the top edge to row 31 on the right.
