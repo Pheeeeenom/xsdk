@@ -1,0 +1,19 @@
+log: game:\xsdk.log
+resolve probe
+resolve: inherited RB_SURFACE_INFO 1E020780
+resolve: inherited RB_BLENDCONTROL0 00010001
+resolve: inherited RB_COLORCONTROL 00000000
+resolve: inherited PA_CL_CLIP_CNTL 00010000
+resolve: inherited PA_SU_SC_MODE_CNTL 00010000
+resolve: inherited PA_CL_VTE_CNTL 00000300
+resolve: inherited PA_SC_AA_CONFIG 0000C003
+resolve: inherited PA_SU_VTX_CNTL 00000004
+resolve: inherited PA_SC_AA_MASK 0000FFFF
+resolve: as the present test resolves: fence 0x00000000; 153600 unwritten, the first at (8, 0); 480 in the last column, 320 in the last row
+resolve: again: fence 0x00000000; 153600 unwritten, the first at (8, 0); 480 in the last column, 320 in the last row
+resolve: after PA_SC_AA_CONFIG 0: fence 0x00000000; every pixel written
+resolve: again: fence 0x00000000; every pixel written
+resolve: after the rest of the triangle's target state: fence 0x00000000; every pixel written
+resolve: again: fence 0x00000000; every pixel written
+resolve: done; the GPU goes back at exit
+exit: status 0

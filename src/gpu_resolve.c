@@ -126,6 +126,8 @@ void xsdk_gpu_resolve(uint32_t address, uint32_t width, uint32_t height, uint32_
 	gpu_put_register(&packets, RB_HIZCONTROL, 0);
 	gpu_put_registers(&packets, VGT_MAX_VTX_INDX, indices, 3);
 	gpu_put_registers(&packets, PA_CL_CLIP_CNTL, clip, 3);
+	// XAM may leave multisampling on, halving the copy (docs/HARDWARE.md, "A resolve needs multisampling off").
+	gpu_put_register(&packets, PA_SC_AA_CONFIG, 0);
 	gpu_put_register(&packets, PA_SC_AA_MASK, 0xFFFF);
 	gpu_put_register(&packets, COHER_DEST_BASE_7, 0);
 	gpu_put_registers(&packets, SHADER_CONSTANT_FETCH_00_0, fetch, 6);

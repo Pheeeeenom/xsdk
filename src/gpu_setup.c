@@ -131,6 +131,7 @@ static const uint32_t saved_registers[] = {
 	RB_MODECONTROL,
 	PA_SU_POINT_SIZE,
 	PA_SU_VTX_CNTL,
+	PA_SC_AA_CONFIG,
 	PA_SC_AA_MASK,
 	RB_COPY_CONTROL,
 	RB_COPY_DEST_BASE,

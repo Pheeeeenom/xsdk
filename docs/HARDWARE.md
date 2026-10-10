@@ -711,3 +711,19 @@ The test title ran again, the present test now logging the three pixels it check
   up and left (libxenon:drivers/xenos/xe.c:1074-1081); Xenia adds that half pixel back for Direct3D centres, which the
   set-up selects, and without it coverage stops one pixel short of the right and bottom
   (xenia:src/xenia/gpu/draw_util.cc:837-867).
+
+## A resolve needs multisampling off (2026-10-10)
+
+`tests/probe_resolve.c` read the drawing registers XAM left, resolved as the present test does, then after setting
+`PA_SC_AA_CONFIG` to 0, then after the rest of the triangle's target state (log:
+`results/2026-10-10-probe-resolve-8/xsdk.log`).
+
+- **XAM had left multisampling set up:** `PA_SC_AA_CONFIG` 0x0000C003, next to libxenon's 4x value 0x0000C004
+  (libxenon:drivers/xenos/xe.c:1738-1740), and `RB_SURFACE_INFO` with 4x samples, which the resolve overwrites.
+- **With it, each resolve wrote half the pixels:** 153600 were left unwritten, the first at (8, 0), with 320 of the last
+  row's 640 and all of the last column, as if every other 8-pixel column were skipped. The present test's first and
+  middle pixels, both at x = 0, fell in columns that were written.
+- **With `PA_SC_AA_CONFIG` 0, every resolve wrote every pixel,** and after the triangle's target state too, which sets
+  it to 0 with the rest.
+
+The resolve now sets `PA_SC_AA_CONFIG` to 0, and the SDK gives XAM's value back when it closes the GPU.
