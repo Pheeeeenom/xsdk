@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Generate the vertex shader a resolve draws with: it fetches a float2 position from vertex fetch constant 0 and exports
-it as the position, with z and w 1.
+"""Generate the vertex shader a resolve draws with: it fetches a float2 position from vertex fetch constant 0 and
+exports it as the position, with z and w 1.
 
 Each field comes from Xenia's instruction definitions (xenia:src/xenia/gpu/ucode.h, xenos.h); xost's encoders
 (xenos-toolchain/xasm) pack them, and its decoder prints the result. Nothing is taken from a compiled shader. Prints the

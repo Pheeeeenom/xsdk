@@ -150,14 +150,14 @@ microcode (log: `results/2026-10-10-probe-ring/xsdk.log`).
 - **The command processor runs a title's packets.** The probe wrote its packets at offset 0 and set the write pointer to
   9, so the command processor wrapped through the zeroed ring first. Even so, the `MEM_WRITE` landed, and with
   address bits 1-0 set to 2 the CPU reads the value as written. The read-pointer write-back reached 9.
-- **The `EVENT_WRITE_SHD` fence didn't land** in that run, after about 8,000 zero dwords had each written GPU register 0.
-  The GPU ended busy, 0x07D8 gained bit 29, and XAM reported a hung GPU after the title exited.
+- **The `EVENT_WRITE_SHD` fence didn't land** in that run, after about 8,000 zero dwords had each written GPU register
+  0. The GPU ended busy, 0x07D8 gained bit 29, and XAM reported a hung GPU after the title exited.
 
 A second run, after a cold boot, appended its packets at the write pointer the kernel left (log:
 `results/2026-10-10-probe-ring-2/xsdk.log`).
 
-- **The pointers moved again during set-up,** from 0xEB to 0x115 (the first run went from 0xC7 to 0xEB), and this time the
-  GPU was already busy right after `VdEnableRingBufferRPtrWriteBack`, with 0x07D8 bit 29 set.
+- **The pointers moved again during set-up,** from 0xEB to 0x115 (the first run went from 0xC7 to 0xEB), and this time
+  the GPU was already busy right after `VdEnableRingBufferRPtrWriteBack`, with 0x07D8 bit 29 set.
 - **The CPU read back zeros for every dword before the new write pointer.** The probe had zeroed the write-combined
   ring and called `VdInitializeRingBuffer` without a `sync`, so the zeroing may have landed on top of packets the
   kernel wrote, which would explain both runs.
@@ -455,8 +455,9 @@ So the display is held on the kernel's placeholder while XAM has the GPU, and sh
   through the LUT. At start `DC_LUT_WRITE_EN_MASK` read 7 and `DC_LUT_AUTOFILL` 2.
 - **0x28BC, 0x28C0 and 0x28C4** went from 0x00010000, 0x01B8D000 and 0x01000000 to 0, 0x1000 and 0x10000 while the Guide
   showed, and back after.
-- **`VdInitializeEngines` changed none of these registers.** `VdShutdownEngines` handed the display back to XAM, which set
-  a 1280x720 surface at 0x1FC59000 in both 0x2840 and 0x6110, with 1280 in 0x2844, 0x6120 and 0x6134 and 720 in 0x6138.
+- **`VdInitializeEngines` changed none of these registers.** `VdShutdownEngines` handed the display back to XAM, which
+  set a 1280x720 surface at 0x1FC59000 in both 0x2840 and 0x6110, with 1280 in 0x2844, 0x6120 and 0x6134 and 720 in
+  0x6138.
 
 So a surface shows when 0x2840 and 0x2844 match D1GRPH, and the LUT may be holding the screen black in between.
 
