@@ -121,3 +121,16 @@ stays unverified.
   288 words non-zero (libxenon's PFP has every word non-zero). Afterwards 0x1740's busy bit was set, 0x07D8 had gained
   bit 29, and once the title exited, debug XAM broke into the debugger with "The GPU is hung and can't be recovered
   without doing a cold boot."
+
+A second run halted the command processor first, as libxenon does: it set bit 28 of 0x07D8 and waited 2 ms before
+reading, then wrote back the original value (log: `results/2026-10-10-probe-cp-halted/xsdk.log`).
+
+- **Halting works.** 0x07D8 then reads 0x10007FFF, and the busy bit stays clear.
+- **The PFP microcode can't be read back, halted or not.** Two reads through 0x117C and 0x1180 disagreed again, with
+  250 non-zero words, so a read of 0x1180 doesn't return the microcode.
+- **The ME microcode read the same as in the first run:** 1100 non-zero words, CRC-32 7A8E8248.
+- **Touching the PFP microcode RAM wrecks the command processor either way.** After resuming, 0x07D8 read back as
+  0x22... (the log ends mid-line), the GPU hung, and XAM again asked for a cold boot.
+
+So SCOPE.md section 3.2's option 1 fails: there's no way to read back the PFP microcode that `VdInitializeEngines`
+needs. The probe now reads only the ME RAM, which is safe.
