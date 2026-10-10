@@ -51,6 +51,8 @@ enum {
 	// Copy colour, clear colour and depth, k_8_8_8_8 with the swap bit (xe.c:1104-1108).
 	COPY_CONTROL_CLEAR_COLOR_DEPTH = 1 << 20 | 3 << 8,
 	COPY_DEST_INFO_8888_SWAP = 1 << 24 | 6 << 7,
+	// libxenon's ARGB surfaces also swap each dword's bytes, its BGRA front buffer not (xe.c:968, 1104-1108; xe.h:181).
+	COPY_DEST_ENDIAN_8IN32 = 2,
 	DEPTH_CLEAR_FAR = 0xFFFFFF00,
 	DEPTH_STENCIL_ALWAYS_WRITE = 0x8777,
 	PROGRAM_CNTL_RESOLVE = 2 | 1 << 16,
@@ -93,12 +95,13 @@ static void put_shader(GpuPackets *packets)
 }
 
 // Xe_ResolveInto, less its scratch write, with the layout Xe_SetRenderTarget gives the target (xe.c:998-1165).
-void xsdk_gpu_resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t clear_argb)
+static void resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t pitch, uint32_t dest_info,
+	uint32_t dest_bytes, uint32_t clear_argb)
 {
 	assert(width % 32 == 0);
 	const uint32_t vertices = xsdk_gpu_rectangle(width, height);
 	const uint32_t viewport[] = { 0x44000000, 0x44000000, 0xC3B40000, 0x43B40000, 0x3F800000, 0 };
-	const uint32_t copy[] = { COPY_CONTROL_CLEAR_COLOR_DEPTH, address, width | height << 16, COPY_DEST_INFO_8888_SWAP };
+	const uint32_t copy[] = { COPY_CONTROL_CLEAR_COLOR_DEPTH, address, pitch | height << 16, dest_info };
 	const uint32_t program[] = { PROGRAM_CNTL_RESOLVE, 0 };
 	const uint32_t indices[] = { 0xFFFF, 0, 0 };
 	const uint32_t clip[] = { CLIP_DISABLE, VTX_WINDOW_OFFSET_ENABLE, VTE_XY_Z_ALREADY_TRANSFORMED };
@@ -137,10 +140,23 @@ void xsdk_gpu_resolve(uint32_t address, uint32_t width, uint32_t height, uint32_
 	gpu_put_type3(&packets, PM4_EVENT_WRITE, 1);
 	gpu_put(&packets, CACHE_FLUSH);
 	gpu_put_register(&packets, COHER_DEST_BASE_1, 0);
-	xsdk_gpu_put_coherency(&packets, COHER_RESOLVE_ACTIONS, address, width * height * 4);
+	xsdk_gpu_put_coherency(&packets, COHER_RESOLVE_ACTIONS, address, dest_bytes);
 	gpu_put_register(&packets, RB_COPY_CONTROL, 0);
 	gpu_put_register(&packets, RB_COPY_DEST_INFO, 0);
 	// Xe_Sync's wait for idle (xe.c:1223-1226, 1278-1282).
 	gpu_put_register(&packets, WAIT_UNTIL, WAIT_3D_IDLE_CLEAN);
 	xsdk_gpu_write(&packets);
+}
+
+void xsdk_gpu_resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t clear_argb)
+{
+	resolve(address, width, height, width, COPY_DEST_INFO_8888_SWAP, width * height * 4, clear_argb);
+}
+
+void xsdk_gpu_resolve_texture(const XsdkTexture *texture, uint32_t clear_argb)
+{
+	// Xenia lays out a resolve's destination only as tiled (xenia:src/xenia/gpu/draw_util.cc:1035-1061).
+	assert(texture->tiled);
+	resolve(texture->address, texture->width, texture->height, texture->pitch,
+		COPY_DEST_INFO_8888_SWAP | COPY_DEST_ENDIAN_8IN32, texture->size_bytes, clear_argb);
 }

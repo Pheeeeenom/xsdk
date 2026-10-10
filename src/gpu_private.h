@@ -135,7 +135,7 @@ static inline void gpu_put_type3(GpuPackets *packets, uint32_t opcode, uint32_t 
 
 // Copies the packets into the ring; xsdk_gpu_fence submits them.
 void xsdk_gpu_write(const GpuPackets *packets);
-// The GPU address of a resolve's rectangle for this size; waits for the GPU when the size changes.
+// The GPU address of a resolve's rectangle for this size; waits only to replace one a queued resolve may read.
 uint32_t xsdk_gpu_rectangle(uint32_t width, uint32_t height);
 // Reads the registers the SDK changes, then queues libxenon's set-up.
 void xsdk_gpu_set_up(void);

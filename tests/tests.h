@@ -36,6 +36,9 @@ void test_triangle(void);
 // A textured quad (milestone 7).
 void test_texture(void);
 
+// Render to texture (milestone 8).
+void test_render(void);
+
 #ifdef __cplusplus
 }
 #endif

@@ -1,6 +1,7 @@
 #include "xsdk/gpu.h"
 
 #include <assert.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -25,6 +26,9 @@ enum {
 	// A NOP with one dword after it, the smallest packet that can fill the end of the ring.
 	FILLER_DWORDS = 2,
 	RECTANGLE_FLOATS = 6,
+	// Resolve sizes kept at once, so a frame resolving at a few sizes doesn't wait for the GPU.
+	RECTANGLE_SLOTS = 8,
+	RECTANGLE_STRIDE = 0x20,
 };
 
 // Byte offsets in the write-back page.
@@ -47,8 +51,15 @@ static volatile uint32_t *writeback;
 static uint32_t writeback_physical;
 static uint32_t write_index;
 static uint32_t last_fence;
-static uint32_t rectangle_width;
-static uint32_t rectangle_height;
+
+typedef struct {
+	uint32_t width;
+	uint32_t height;
+	// The fence after which no queued resolve reads the corners.
+	uint32_t fence;
+} Rectangle;
+
+static Rectangle rectangles[RECTANGLE_SLOTS];
 
 // VdShutdownEngines calls it (docs/HARDWARE.md); the SDK has nothing to clean up there.
 static void engines_shut_down(void)
@@ -134,8 +145,7 @@ NTSTATUS xsdk_gpu_open(void)
 	writeback[FENCE_OFFSET / 4] = 0;
 	write_index = 0;
 	last_fence = 0;
-	rectangle_width = 0;
-	rectangle_height = 0;
+	memset(rectangles, 0, sizeof rectangles);
 
 	// No microcode: the kernel keeps the command processor's own (docs/HARDWARE.md).
 	const uint32_t engines = VdInitializeEngines(ENGINES_FLAGS, (void *)engines_shut_down, NULL, NULL, NULL);
@@ -196,19 +206,42 @@ void xsdk_gpu_write(const GpuPackets *packets)
 		space[i] = packets->dwords[i];
 }
 
+static bool fence_before(uint32_t a, uint32_t b)
+{
+	return (int32_t)(a - b) < 0;
+}
+
+// The slot for this size, else the one used longest ago, after the GPU is done with it.
+static uint32_t rectangle_slot(uint32_t width, uint32_t height)
+{
+	uint32_t oldest = 0;
+	for (uint32_t i = 0; i < RECTANGLE_SLOTS; i++) {
+		if (rectangles[i].width == width && rectangles[i].height == height)
+			return i;
+		if (fence_before(rectangles[i].fence, rectangles[oldest].fence))
+			oldest = i;
+	}
+	Rectangle *const rectangle = &rectangles[oldest];
+	if (rectangle->width) {
+		if (fence_before(last_fence, rectangle->fence))
+			(void)xsdk_gpu_fence();
+		(void)xsdk_gpu_wait(rectangle->fence, CLOSE_TIMEOUT_MS);
+	}
+	// libxenon's three corners, half a pixel up and left (libxenon:drivers/xenos/xe.c:1074-1081).
+	const float corners[RECTANGLE_FLOATS] = { -0.5f, -0.5f, width - 0.5f, 0, width - 0.5f, height - 0.5f };
+	for (uint32_t i = 0; i < RECTANGLE_FLOATS; i++)
+		writeback[(RECTANGLE_OFFSET + oldest * RECTANGLE_STRIDE) / 4 + i] = float_bits(corners[i]);
+	rectangle->width = width;
+	rectangle->height = height;
+	return oldest;
+}
+
 uint32_t xsdk_gpu_rectangle(uint32_t width, uint32_t height)
 {
-	if (width != rectangle_width || height != rectangle_height) {
-		// A resolve may still be reading the old corners.
-		(void)xsdk_gpu_wait(xsdk_gpu_fence(), CLOSE_TIMEOUT_MS);
-		// libxenon's three corners, half a pixel up and left (libxenon:drivers/xenos/xe.c:1074-1081).
-		const float corners[RECTANGLE_FLOATS] = { -0.5f, -0.5f, width - 0.5f, 0, width - 0.5f, height - 0.5f };
-		for (uint32_t i = 0; i < RECTANGLE_FLOATS; i++)
-			writeback[RECTANGLE_OFFSET / 4 + i] = float_bits(corners[i]);
-		rectangle_width = width;
-		rectangle_height = height;
-	}
-	return writeback_physical + RECTANGLE_OFFSET;
+	const uint32_t slot = rectangle_slot(width, height);
+	// The resolve about to use it is queued before the next fence.
+	rectangles[slot].fence = last_fence + 1;
+	return writeback_physical + RECTANGLE_OFFSET + slot * RECTANGLE_STRIDE;
 }
 
 uint32_t xsdk_gpu_fence(void)
