@@ -387,3 +387,14 @@ CPU filled (log: `results/2026-10-10-probe-display/xsdk.log`).
   with `D1GRPH_UPDATE` reading 4 just after the write and 0 by the end, and the old address went back the same way.
 - **The screen stayed black** through red, green and blue in libxenon's pixel layout and the tiled stripe pattern. So
   something after the surface keeps the output black while a title runs.
+
+## VdSetDisplayMode doesn't change the display (2026-10-10)
+
+`tests/probe_display.c` called `VdSetDisplayMode(0x40000000)` after taking the GPU, then swapped with `VdSwap`, then set
+the surface directly (log: `results/2026-10-10-probe-display-2/xsdk.log`, xbWatson's copy).
+
+- **`VdSetDisplayMode` returned 0 and changed none of the display registers** or the 640x480 display information.
+- **`VdSwap` again only landed its fence;** setting the surface directly again took, and the screen stayed black.
+- **The LUT looks ordinary:** 0x64C0 to 0x64DC read 0, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF, 0, black offsets 0 and white
+  offsets at the maximum if they follow libxenon's `DC_LUTA_CONTROL` at 0x64C0. 0x6080 to 0x60BC, a range libxenon
+  doesn't use, read all zeros.

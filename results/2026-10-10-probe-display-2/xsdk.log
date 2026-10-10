@@ -1,0 +1,44 @@
+log: game:\xsdk.log
+display probe
+display: at start: enable 00000001, control 00000002, LUT select 00000000, surface 00000000, pitch 00000280, end 00000280 x 000001E0, update 00000002, flip control 00000001
+display: at start: data format 00000000, viewport size 028001E0, scaler enable 00000001
+display: at start: CRTC 6080: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+display: at start: CRTC 60A0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+display: at start: LUT A 64C0: 00000000 00000000 00000000 00000000 0000FFFF 0000FFFF 0000FFFF 00000000
+display: at start: front buffer 640x480; display 1280x720
+display: calling VdSetDisplayMode(0x40000000)
+display: VdSetDisplayMode returned 00000000
+display: after VdSetDisplayMode: enable 00000001, control 00000002, LUT select 00000000, surface 00000000, pitch 00000280, end 00000280 x 000001E0, update 00000000, flip control 00000001
+display: after VdSetDisplayMode: data format 00000000, viewport size 028001E0, scaler enable 00000001
+display: after VdSetDisplayMode: CRTC 6080: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+display: after VdSetDisplayMode: CRTC 60A0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+display: after VdSetDisplayMode: LUT A 64C0: 00000000 00000000 00000000 00000000 0000FFFF 0000FFFF 0000FFFF 00000000
+display: after VdSetDisplayMode: front buffer 640x480; display 1280x720
+display: 640x480 buffer at 0xbfb00000 (physical 1FB00000)
+display: swap fence 0x00000000, system writeback 00029E69
+display: after VdSwap: enable 00000001, control 00000002, LUT select 00000000, surface 00000000, pitch 00000280, end 00000280 x 000001E0, update 00000000, flip control 00000001
+display: after VdSwap: data format 00000000, viewport size 028001E0, scaler enable 00000001
+display: after VdSwap: CRTC 6080: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+display: after VdSwap: CRTC 60A0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+display: after VdSwap: LUT A 64C0: 00000000 00000000 00000000 00000000 0000FFFF 0000FFFF 0000FFFF 00000000
+display: showing red after VdSwap for 3000 ms
+display: after setting the surface: enable 00000001, control 00000002, LUT select 00000000, surface 1FB00000, pitch 00000280, end 00000280 x 000001E0, update 00000000, flip control 00000001
+display: after setting the surface: data format 00000000, viewport size 028001E0, scaler enable 00000001
+display: after setting the surface: CRTC 6080: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+display: after setting the surface: CRTC 60A0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+display: after setting the surface: LUT A 64C0: 00000000 00000000 00000000 00000000 0000FFFF 0000FFFF 0000FFFF 00000000
+display: showing red (0000FF00) for 3000 ms
+display: showing green (00FF0000) for 3000 ms
+display: showing blue (FF000000) for 3000 ms
+display: showing 64-pixel red and blue stripes and a white diagonal for 5000 ms
+display: before restoring: enable 00000001, control 00000002, LUT select 00000000, surface 1FB00000, pitch 00000280, end 00000280 x 000001E0, update 00000000, flip control 00000001
+display: before restoring: data format 00000000, viewport size 028001E0, scaler enable 00000001
+display: before restoring: CRTC 6080: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+display: before restoring: CRTC 60A0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+display: before restoring: LUT A 64C0: 00000000 00000000 00000000 00000000 0000FFFF 0000FFFF 0000FFFF 00000000
+display: after restoring: enable 00000001, control 00000002, LUT select 00000000, surface 00000000, pitch 00000280, end 00000280 x 000001E0, update 00000004, flip control 00000001
+display: after restoring: data format 00000000, viewport size 028001E0, scaler enable 00000001
+display: after restoring: CRTC 6080: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+display: after restoring: CRTC 60A0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+display: after restoring: LUT A 64C0: 00000000 00000000 00000000 00000000 0000FFFF 0000FFFF 0000FFFF 00000000
+exit: status 0
