@@ -854,4 +854,4 @@ each frame's bar as its buffer came back (log: `results/2026-10-10-milestone-9-4
 - **Every frame from frame 1 on held its own bar** when its buffer came back, 3609 more frames each minute, and the
   longest wait for a buffer stayed at 17950 us, one vblank.
 
-The user didn't report how the console came back to Aurora after this run.
+The console went back to Aurora normally afterwards, the user reported.
