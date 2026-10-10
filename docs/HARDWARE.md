@@ -894,3 +894,23 @@ capture whose phase the user didn't say).
   its registers isn't known. The kernel builds the scaler's packets itself in `VdInitializeScalerCommandBuffer`
   (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:270-293), which the next probe asks it for.
 - **Putting the registers back returned the kernel's scaling,** and the console went back to Aurora.
+
+## The kernel's scaler packets name the registers but carry zeros (2026-10-10)
+
+`tests/probe_720p.c` asked `VdInitializeScalerCommandBuffer` for 1280x720 to the reported 1920x1080 with the
+kernel's own filter settings, logged the packets, applied their register writes through MMIO, showed the test image
+for 12 seconds and wrote back what it had read from each register (log: `results/2026-10-10-probe-720p-3/xsdk.log`).
+
+- **The call returned 43 dwords: type-0 headers over the registers libxenon sets, plus more, every value 0.** In
+  order: 0x6590-0x6594 (scaler enable and taps), 0x6528, 0x6580-0x6584 (viewport start and size), 0x6120-0x6138
+  (`D1GRPH` pitch to Y end), 0x6044-0x6050, 0x65E8, 0x65A0, 0x65B0-0x65C8 (taking in 0x65BC, which nothing here had
+  written), 0x65DC and 0x6578. Six dwords followed that don't parse as packets: 0xFFFF995F, 0x195E, 0x00020000,
+  0xFFFF995F, 0x1964, 0. Whether the values come later from elsewhere, or the arguments as Xenia guesses them are
+  wrong, isn't known.
+- **Applying the zeros blanked the screen,** viewport and surface sizes included, and it stayed black from launch to
+  exit. That was the probe's fault: it applied the writes without checking them.
+- **The console didn't come back to Aurora.** Besides the scaler, the probe had written back values it read from
+  0x6044-0x6050 and 0x6578, which libxenon writes as 0 and may not read back what was written; that, or the zeros
+  themselves, most likely left the display unable to recover.
+
+So the scaler set the kernel builds includes 0x65BC and 0x6578, which the hand-set scaling left alone.
