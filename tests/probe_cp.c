@@ -1,6 +1,7 @@
 #include <stdint.h>
 
 #include "xsdk/log.h"
+#include "xsdk/thread.h"
 
 // Milestone 4's first question (SCOPE.md section 3.2, option 1): does the command processor still hold microcode when a
 // title starts, and can the title read it back? Logs checksums only, never the microcode itself.
@@ -8,6 +9,8 @@
 enum {
 	PFP_WORDS = 0x120,
 	ME_WORDS = 0x900,
+	// libxenon sets it before touching the microcode and checks it reads back set (drivers/xenos/xe.c:305-318).
+	CP_HALTED = 0x10000000,
 };
 
 // GPU registers as titles see them (xenia:src/xenia/gpu/graphics_system.cc:92-95); offsets are in bytes, as libxenon's.
@@ -44,6 +47,8 @@ static uint32_t crc32_word(uint32_t crc, uint32_t word)
 static RamSummary summarize_ram(uint32_t address_offset, uint32_t data_offset, uint32_t words)
 {
 	write_register(address_offset, 0);
+	// libxenon waits 100 us after setting the PFP's address; the kernel's shortest sleep is longer.
+	(void)xsdk_thread_sleep(1);
 	uint32_t crc = 0xFFFFFFFF;
 	uint32_t nonzero_words = 0;
 	for (uint32_t i = 0; i < words; i++) {
@@ -77,8 +82,18 @@ int main(void)
 	xsdk_log_write("cp: ring: base %08X, control %08X, read pointer write-back %08X, read %08X, write %08X",
 		(unsigned)read_register(0x0700), (unsigned)read_register(0x0704), (unsigned)read_register(0x070C),
 		(unsigned)read_register(0x0710), (unsigned)read_register(0x0714));
-	report_ram("ME", 0x07E4, 0x07E8, ME_WORDS);
+
+	// Reading the PFP while it runs hung the GPU (docs/HARDWARE.md), so halt first, as libxenon does (xe.c:305-306).
+	const uint32_t control = read_register(0x07D8);
+	write_register(0x07D8, control | CP_HALTED);
+	(void)xsdk_thread_sleep(2);
+	report_state("halted");
+
 	report_ram("PFP", 0x117C, 0x1180, PFP_WORDS);
-	report_state("after reading");
+	report_ram("ME", 0x07E4, 0x07E8, ME_WORDS);
+
+	write_register(0x07D8, control);
+	(void)xsdk_thread_sleep(2);
+	report_state("resumed");
 	return 0;
 }
