@@ -135,7 +135,11 @@ static const HANDLE OB_DOS_DEVICES = 0xFFFFFFFD;
 enum {
 	MEM_COMMIT = 0x00001000,
 	MEM_RESERVE = 0x00002000,
+	// In MmAllocatePhysicalMemoryEx's protection, asks for 64 KB pages (xboxkrnl/xboxkrnl_memory.cc:356-361).
+	MEM_LARGE_PAGES = 0x20000000,
 	PAGE_READWRITE = 0x00000004,
+	PAGE_NOCACHE = 0x00000200,
+	PAGE_WRITECOMBINE = 0x00000400,
 };
 
 // xenia:src/xenia/base/filesystem.h:64-73, src/xenia/vfs/entry.h:47-73, src/xenia/kernel/xboxkrnl/xboxkrnl_io.cc:30-40
@@ -196,6 +200,8 @@ uint32_t KeTlsSetValue(uint32_t slot, void *value);
 void *MmAllocatePhysicalMemoryEx(uint32_t flags, uint32_t size_bytes, uint32_t protect, uint32_t min_address,
 	uint32_t max_address, uint32_t alignment);
 void MmFreePhysicalMemory(uint32_t type, void *base);
+// The address the GPU uses for memory from MmAllocatePhysicalMemoryEx.
+uint32_t MmGetPhysicalAddress(const void *address);
 NTSTATUS NtAllocateVirtualMemory(
 	void **base, uint32_t *size_bytes, uint32_t allocation_type, uint32_t protect, uint32_t debug_memory);
 NTSTATUS NtClose(HANDLE handle);
@@ -229,6 +235,12 @@ uint32_t RtlTryEnterCriticalSection(RTL_CRITICAL_SECTION *section);
 uint32_t XAudioRegisterRenderDriverClient(const XAUDIO_RENDER_DRIVER_CLIENT *client, uint32_t *driver);
 uint32_t XAudioSubmitRenderDriverFrame(uint32_t driver, const float *samples);
 uint32_t XAudioUnregisterRenderDriverClient(uint32_t driver);
+// The command processor writes its ring read pointer, a dword index, to this physical address
+// (xenia:src/xenia/gpu/command_processor.cc:243-246).
+void VdEnableRingBufferRPtrWriteBack(uint32_t physical_address, uint32_t block_size_log2);
+// Takes MmGetPhysicalAddress's result and log2 of the size in 8-byte units
+// (xenia:src/xenia/gpu/command_processor.cc:312).
+void VdInitializeRingBuffer(uint32_t physical_address, uint32_t size_log2);
 void XeCryptRandom(void *buffer, uint32_t length_bytes);
 
 // xam.xex

@@ -11,6 +11,7 @@ xboxkrnl.exe  0x083  KeQueryPerformanceFrequency         0
 xboxkrnl.exe  0x084  KeQuerySystemTime                   1
 xboxkrnl.exe  0x0BA  MmAllocatePhysicalMemoryEx          6
 xboxkrnl.exe  0x0BD  MmFreePhysicalMemory                2
+xboxkrnl.exe  0x0BE  MmGetPhysicalAddress                1
 xboxkrnl.exe  0x0CC  NtAllocateVirtualMemory             5
 xboxkrnl.exe  0x0CF  NtClose                             1
 xboxkrnl.exe  0x0D1  NtCreateEvent                       4
@@ -35,6 +36,8 @@ xboxkrnl.exe  0x153  KeTlsFree                           1
 xboxkrnl.exe  0x154  KeTlsGetValue                       1
 xboxkrnl.exe  0x155  KeTlsSetValue                       2
 xboxkrnl.exe  0x18A  XeCryptRandom                       2
+xboxkrnl.exe  0x1B6  VdEnableRingBufferRPtrWriteBack     2
+xboxkrnl.exe  0x1C3  VdInitializeRingBuffer              2
 xboxkrnl.exe  0x1F3  XAudioRegisterRenderDriverClient    2
 xboxkrnl.exe  0x1F4  XAudioUnregisterRenderDriverClient  1
 xboxkrnl.exe  0x1F5  XAudioSubmitRenderDriverFrame       2
