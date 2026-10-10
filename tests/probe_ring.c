@@ -113,20 +113,28 @@ int main(void)
 	VdEnableRingBufferRPtrWriteBack(writeback_physical + RPTR_SLOT, RPTR_BLOCK_SIZE_LOG2);
 	report_state("after set-up");
 
-	uint32_t length = 0;
-	ring[length++] = type3(PM4_NOP, 1);
-	ring[length++] = 0;
-	ring[length++] = type3(PM4_MEM_WRITE, 2);
-	ring[length++] = (writeback_physical + MEM_WRITE_SLOT) | SWAP_8IN32;
-	ring[length++] = MEM_WRITE_VALUE;
-	ring[length++] = type3(PM4_EVENT_WRITE_SHD, 3);
-	ring[length++] = CACHE_FLUSH_AND_INV_TS_EVENT;
-	ring[length++] = (writeback_physical + EVENT_SLOT) | SWAP_8IN32;
-	ring[length++] = EVENT_VALUE;
+	// VdInitializeRingBuffer leaves the write pointer past packets of its own (docs/HARDWARE.md); append after them.
+	const uint32_t start = read_register(0x0714);
+	uint32_t kernel_nonzero = 0;
+	for (uint32_t i = 0; i < start && i < RING_BYTES / 4; i++)
+		kernel_nonzero += ring[i] != 0;
+	xsdk_log_write("ring: the kernel left the write pointer at %u; %u of the dwords before it are non-zero",
+		(unsigned)start, (unsigned)kernel_nonzero);
+
+	uint32_t end = start;
+	ring[end++] = type3(PM4_NOP, 1);
+	ring[end++] = 0;
+	ring[end++] = type3(PM4_MEM_WRITE, 2);
+	ring[end++] = (writeback_physical + MEM_WRITE_SLOT) | SWAP_8IN32;
+	ring[end++] = MEM_WRITE_VALUE;
+	ring[end++] = type3(PM4_EVENT_WRITE_SHD, 3);
+	ring[end++] = CACHE_FLUSH_AND_INV_TS_EVENT;
+	ring[end++] = (writeback_physical + EVENT_SLOT) | SWAP_8IN32;
+	ring[end++] = EVENT_VALUE;
 	// Drain the write-combine buffers before the command processor may read the ring, as libxenon syncs (xe.c:97-106).
 	__asm__ volatile("sync" ::: "memory");
-	xsdk_log_write("ring: submitting %u dwords", (unsigned)length);
-	write_register(0x0714, length);
+	xsdk_log_write("ring: submitting dwords %u to %u", (unsigned)start, (unsigned)end - 1);
+	write_register(0x0714, end);
 
 	bool landed = false;
 	uint32_t waited_ms = 0;

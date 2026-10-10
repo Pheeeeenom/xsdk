@@ -134,3 +134,19 @@ reading, then wrote back the original value (log: `results/2026-10-10-probe-cp-h
 
 So SCOPE.md section 3.2's option 1 fails: there's no way to read back the PFP microcode that `VdInitializeEngines`
 needs. The probe now reads only the ME RAM, which is safe.
+
+## A ring without VdInitializeEngines (2026-10-10)
+
+`tests/probe_ring.c` skipped `VdInitializeEngines` and used the command processor as Aurora left it, running with its
+microcode (log: `results/2026-10-10-probe-ring/xsdk.log`).
+
+- **The kernel's ring set-up works on the running command processor.** After `VdInitializeRingBuffer(physical, 12)`
+  and `VdEnableRingBufferRPtrWriteBack(physical, 6)`, 0x0700 holds the ring's physical address, 0x0704 reads 0x0002060C
+  (size 12 in the low bits, block size 6 from bit 8), and 0x070C holds the write-back address with 2 ORed in.
+- **`VdInitializeRingBuffer` leaves both ring pointers at 0xEB, not 0,** with the ring zeroed beforehand. The kernel
+  appears to submit 235 dwords of its own; a title must append after the write pointer it finds.
+- **The command processor runs a title's packets.** The probe wrote its packets at offset 0 and set the write pointer to
+  9, so the command processor wrapped through the zeroed ring first. Even so, the `MEM_WRITE` landed, and with
+  address bits 1-0 set to 2 the CPU reads the value as written. The read-pointer write-back reached 9.
+- **The `EVENT_WRITE_SHD` fence didn't land** in that run, after about 8,000 zero dwords had each written GPU register 0.
+  The GPU ended busy, 0x07D8 gained bit 29, and XAM reported a hung GPU after the title exited.
