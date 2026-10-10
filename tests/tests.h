@@ -39,6 +39,9 @@ void test_texture(void);
 // Render to texture (milestone 8).
 void test_render(void);
 
+// Frame pacing (milestone 9), each mode briefly; tests/pacing.c runs one for 10 minutes.
+void test_pacing(void);
+
 #ifdef __cplusplus
 }
 #endif

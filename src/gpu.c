@@ -257,13 +257,18 @@ uint32_t xsdk_gpu_fence(void)
 	return fence;
 }
 
+bool xsdk_gpu_fence_done(uint32_t fence)
+{
+	return (int32_t)(writeback[FENCE_OFFSET / 4] - fence) >= 0;
+}
+
 NTSTATUS xsdk_gpu_wait(uint32_t fence, uint32_t timeout_ms)
 {
 	for (uint32_t waited_ms = 0;; waited_ms++) {
-		if ((int32_t)(writeback[FENCE_OFFSET / 4] - fence) >= 0)
+		if (xsdk_gpu_fence_done(fence))
 			return STATUS_SUCCESS;
 		if (waited_ms == timeout_ms)
-			return STATUS_TIMEOUT;
+			return STATUS_IO_TIMEOUT;
 		(void)xsdk_thread_sleep(1);
 	}
 }

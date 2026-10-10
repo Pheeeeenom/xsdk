@@ -1,6 +1,7 @@
 #ifndef XSDK_GPU_H
 #define XSDK_GPU_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "xsdk/kernel.h"
@@ -37,8 +38,10 @@ NTSTATUS xsdk_gpu_close(void);
 volatile uint32_t *xsdk_gpu_reserve(uint32_t dword_count);
 // Submits everything written so far, then a fence; returns the fence's number.
 uint32_t xsdk_gpu_fence(void);
-// Waits until the GPU has passed the fence, or returns STATUS_TIMEOUT.
+// Waits until the GPU has passed the fence, or returns STATUS_IO_TIMEOUT.
 NTSTATUS xsdk_gpu_wait(uint32_t fence, uint32_t timeout_ms);
+// Whether the GPU has passed the fence, without waiting; safe in the graphics interrupt callback.
+bool xsdk_gpu_fence_done(uint32_t fence);
 
 // Write-combined physical memory for the GPU, in 64 KB pages, or NULL. Write it with volatile 32-bit stores.
 volatile uint32_t *xsdk_gpu_alloc(uint32_t size_bytes);

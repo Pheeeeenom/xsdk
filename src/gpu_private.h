@@ -146,6 +146,8 @@ void xsdk_gpu_put_window(GpuPackets *packets, uint32_t width, uint32_t height);
 void xsdk_gpu_put_coherency(GpuPackets *packets, uint32_t actions, uint32_t base, uint32_t size_bytes);
 // The eDRAM layout for a colour and depth target of this size.
 void xsdk_gpu_put_surface(GpuPackets *packets, uint32_t width, uint32_t height);
+// Points the shown surface at another buffer of its size; for the vblank callback, so it never sleeps.
+void xsdk_display_flip(uint32_t address);
 // A texel's byte offset in Xenos's tiled layout, the pitch a multiple of 32.
 uint32_t xsdk_tiled_2d(uint32_t x, uint32_t y, uint32_t pitch_texels, uint32_t bytes_per_texel_log2);
 

@@ -6,6 +6,7 @@
 #include "xsdk/gpu.h"
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
+#include "xsdk/present.h"
 #include "xsdk/thread.h"
 
 // The title is the only process, with this id.
@@ -14,7 +15,8 @@ enum { TITLE_PID = 1 };
 // newlib's exit() ends here after running atexit handlers and static destructors.
 void _exit(int status)
 {
-	// The display and the GPU go back to XAM before the title ends (docs/HARDWARE.md).
+	// The callback, the display and the GPU go back to XAM before the title ends (docs/HARDWARE.md).
+	xsdk_present_close();
 	xsdk_display_close();
 	(void)xsdk_gpu_close();
 	xsdk_log_write("exit: status %d", status);

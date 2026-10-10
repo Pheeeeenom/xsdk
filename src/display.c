@@ -28,6 +28,8 @@ enum {
 
 enum {
 	APPLY_TIMEOUT_MS = 100,
+	// Reads of 0x60EC a flip from the vblank callback allows before going on.
+	FLIP_POLLS = 1000,
 	AUTOFILL_TIMEOUT_MS = 100,
 	AUTOFILL_DONE = 2,
 	LUT_ALL_CHANNELS = 7,
@@ -54,7 +56,7 @@ static NTSTATUS fill_lut(void)
 	gpu_registers[DC_LUT_AUTOFILL] = 1;
 	for (uint32_t waited_ms = 0; !(gpu_registers[DC_LUT_AUTOFILL] & AUTOFILL_DONE); waited_ms++) {
 		if (waited_ms == AUTOFILL_TIMEOUT_MS)
-			return STATUS_TIMEOUT;
+			return STATUS_IO_TIMEOUT;
 		(void)xsdk_thread_sleep(1);
 	}
 	return STATUS_SUCCESS;
@@ -100,12 +102,23 @@ static NTSTATUS apply(const Surface *surface)
 	for (uint32_t waited_ms = 0; gpu_registers[D1CRTC_DOUBLE_BUFFER_CONTROL]; waited_ms++) {
 		if (waited_ms == APPLY_TIMEOUT_MS) {
 			gpu_registers[D1CRTC_DOUBLE_BUFFER_CONTROL] = 0;
-			return STATUS_TIMEOUT;
+			return STATUS_IO_TIMEOUT;
 		}
 		(void)xsdk_thread_sleep(1);
 	}
 	gpu_registers[D1CRTC_DOUBLE_BUFFER_CONTROL] = 0;
 	return STATUS_SUCCESS;
+}
+
+// The display takes it at once (docs/HARDWARE.md, "The vblank callback, flips and giving the callback back").
+void xsdk_display_flip(uint32_t address)
+{
+	gpu_registers[UNKNOWN_0A10] = address;
+	gpu_registers[D1GRPH_PRIMARY_SURFACE_ADDRESS] = address;
+	gpu_registers[D1CRTC_DOUBLE_BUFFER_CONTROL] = 1;
+	for (uint32_t i = 0; i < FLIP_POLLS && gpu_registers[D1CRTC_DOUBLE_BUFFER_CONTROL]; i++)
+		;
+	gpu_registers[D1CRTC_DOUBLE_BUFFER_CONTROL] = 0;
 }
 
 NTSTATUS xsdk_display_show(uint32_t address, uint32_t pitch_pixels)
