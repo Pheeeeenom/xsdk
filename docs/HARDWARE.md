@@ -841,3 +841,17 @@ each frame's bar as its buffer came back (log: `results/2026-10-10-milestone-9-4
 - **Every frame after the first held its bar.** Frame 0 didn't, and the title didn't log its pixels. Its background is
   whatever eDRAM held before the first resolve cleared it, which is why the other tests skip frame 0; the pacing checks
   now skip it too and log the pixels of any miss.
+
+## Frame pacing, milestone 9 (2026-10-10)
+
+`tests/pacing.c` ran its 10 minutes again with frame 0 left out of the bar check, and passed all 8 checks with status 0
+(log: `results/2026-10-10-milestone-9-5/xsdk.log`).
+
+- **Frames were paced to vsync through the interrupt callback and fences for 10 minutes:** 36094 frames, 36094 flips
+  over 36095 vblanks, a flip every vblank, with three front buffers, so two frames in flight behind the one shown.
+- **No stalls and no tearing, by the run's own counts:** no vblank missed, so no frame shown twice, and no flip still
+  being written once the scan had left vblank.
+- **Every frame from frame 1 on held its own bar** when its buffer came back, 3609 more frames each minute, and the
+  longest wait for a buffer stayed at 17950 us, one vblank.
+
+The user didn't report how the console came back to Aurora after this run.

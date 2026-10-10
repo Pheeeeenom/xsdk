@@ -1,0 +1,24 @@
+log: game:\xsdk.log
+pacing: 10 minutes, 3 buffers, a flip every vblank
+pacing: GPU 0x00000000, display 640x480
+PASS: pacing: GPU, scene and present open
+pacing: minute 1: 3612 frames, 3610 flips over 3611 vblanks, 0 missed, 0 late, 0 frames wrong; longest wait 17950 us
+pacing: minute 2: 7221 frames, 7219 flips over 7220 vblanks, 0 missed, 0 late, 0 frames wrong; longest wait 17950 us
+pacing: minute 3: 10830 frames, 10828 flips over 10829 vblanks, 0 missed, 0 late, 0 frames wrong; longest wait 17950 us
+pacing: minute 4: 14439 frames, 14437 flips over 14438 vblanks, 0 missed, 0 late, 0 frames wrong; longest wait 17950 us
+pacing: minute 5: 18048 frames, 18046 flips over 18047 vblanks, 0 missed, 0 late, 0 frames wrong; longest wait 17950 us
+pacing: minute 6: 21657 frames, 21655 flips over 21656 vblanks, 0 missed, 0 late, 0 frames wrong; longest wait 17950 us
+pacing: minute 7: 25267 frames, 25265 flips over 25266 vblanks, 0 missed, 0 late, 0 frames wrong; longest wait 17950 us
+pacing: minute 8: 28876 frames, 28874 flips over 28875 vblanks, 0 missed, 0 late, 0 frames wrong; longest wait 17950 us
+pacing: minute 9: 32485 frames, 32483 flips over 32484 vblanks, 0 missed, 0 late, 0 frames wrong; longest wait 17950 us
+pacing: minute 10: 36094 frames, 36092 flips over 36093 vblanks, 0 missed, 0 late, 0 frames wrong; longest wait 17950 us
+pacing: done: 36094 frames, 36094 flips over 36095 vblanks, 0 missed, 0 late, 0 frames wrong; longest wait 17950 us
+PASS: pacing: every frame queued in time for 10 minutes
+PASS: pacing: every frame shown
+PASS: pacing: no vblank missed
+PASS: pacing: a flip every vblank
+PASS: pacing: every flip inside vblank
+PASS: pacing: every frame resolved with its bar
+PASS: pacing: GPU close
+pacing: 8 passed, 0 failed
+exit: status 0
