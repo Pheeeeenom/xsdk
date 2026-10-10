@@ -237,8 +237,8 @@ buffer and uses the kernel's `Vd*` exports for setup, interrupts and the swap.
    write-combine is a protection bit (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_memory.cc:37-38). Get the GPU address
    with `MmGetPhysicalAddress` (0x0BE).
 2. **Engines.** `VdInitializeEngines` (0x1C2) takes a callback, its argument, and pointers to **PFP and ME microcode**
-   for the command processor (xboxkrnl_video.cc:193-201; Xenia stubs it). See section 3.2: this is the main open
-   question.
+   for the command processor (xboxkrnl_video.cc:193-201; Xenia stubs it). Section 3.2 has the answer: the SDK passes
+   no microcode.
 3. **Ring buffer.** `VdInitializeRingBuffer` (0x1C3) takes the ring's physical address and log2 of its size
    (xboxkrnl_video.cc:235-241). `VdEnableRingBufferRPtrWriteBack` (0x1B6) takes a memory location for the read
    pointer and a block size, usually log2 6 (xboxkrnl_video.cc:244-249).
@@ -258,8 +258,9 @@ buffer and uses the kernel's `Vd*` exports for setup, interrupts and the swap.
    - Xenia fills the reserved region itself (xboxkrnl_video.cc:405-420). What the real kernel writes there is
      unverified, so the SDK should reserve it exactly as a title does and let the kernel fill it.
    - Other `Vd*` calls appear at engine setup in titles: `VdSetSystemCommandBufferGpuIdentifierAddress` (0x1D9),
-     `VdInitializeScalerCommandBuffer` (0x1C5), `VdRetrainEDRAM` (0x269), `VdShutdownEngines` (0x1DC). Which are
-     required is unverified. Milestone 4 finds the minimal sequence by trying it.
+     `VdInitializeScalerCommandBuffer` (0x1C5), `VdRetrainEDRAM` (0x269), `VdShutdownEngines` (0x1DC). Milestone 4
+     needed only `VdShutdownEngines` of these: `VdInitializeEngines`, the two ring calls and `VdShutdownEngines` are
+     enough to submit packets and fences (docs/HARDWARE.md).
 
 ### 3.2 The command processor microcode: a decision for the user
 

@@ -326,3 +326,18 @@ copy).
 
 So milestone 4's fence is `EVENT_WRITE_SHD` with `PS_DONE_TS` or `VS_DONE_TS`. The cache-flush events wait for the
 render state of milestone 5.
+
+## The command processor, milestone 4 (2026-10-10)
+
+The test title passed all 34 checks on the console, the four `gpu:` checks among them, exited with status 0, and the
+console returned to Aurora (only the summary lines came back from this run).
+
+- **`xsdk_gpu_open` takes the GPU** with `VdInitializeEngines` and no microcode, and sets up the ring and the read
+  pointer write-back with the kernel's calls.
+- **A `NOP` and an `EVENT_WRITE_SHD` fence with `PS_DONE_TS` land.**
+- **The ring wraps.** About 4,000 `NOP`s of 2 to 5 dwords, each followed by a fence, about 30,000 dwords in all, wrapped
+  the 8192-dword ring nearly four times, with a `NOP` filling each wrap, and the last fence landed.
+- **`xsdk_gpu_close` gives the GPU back.** It waited for a final fence, called `VdShutdownEngines`, and freed the ring
+  and the write-back page with `MmFreePhysicalMemory(0, base)`, and the title then exited normally.
+
+So milestone 4 is done, and SCOPE.md section 3.2 has its answer.
