@@ -68,6 +68,7 @@ PE_SECTION_NAMES = {SECTION_CODE: b".text", SECTION_READONLY: b".rdata", SECTION
 
 IMPORT_RECORD = struct.Struct(">IIII16s")
 RECORD_THUNK = 0x01000000
+RECORD_THUNK_SECOND = 0x02000000
 
 
 def version(major, minor, build, qfe):
@@ -334,9 +335,11 @@ def build_xex(image, runs, entry, libraries, args):
 def patch_import_records(image, libraries):
     for index, imports in enumerate(libraries.values()):
         for entry in imports:
-            for address, kind in ((entry["slot"], 0), (entry["thunk"], RECORD_THUNK)):
-                if address:
-                    struct.pack_into(">I", image, address - IMAGE_BASE, kind | index << 16 | entry["ordinal"])
+            records = [(entry["slot"], 0)]
+            if entry["thunk"]:
+                records += [(entry["thunk"], RECORD_THUNK), (entry["thunk"] + 4, RECORD_THUNK_SECOND)]
+            for address, kind in records:
+                struct.pack_into(">I", image, address - IMAGE_BASE, kind | index << 16 | entry["ordinal"])
 
 
 def main():
