@@ -5,25 +5,20 @@
 #include "xsdk/log.h"
 #include "xsdk/thread.h"
 
-// The display took a title's surface address but stayed black, while XAM shows its own surface by also setting 0x60EC
-// (docs/HARDWARE.md, "How XAM switches the display"). This applies the surface the way XAM did: first only the address,
-// on a red 640x480 buffer, then XAM's whole register set, on a blue 852x480 buffer, then the old values, each followed
-// by 0x60EC = 1, which XAM's change showed until the next frame.
+// The display takes a title's surface but stays black, even with XAM's registers and 0x60EC (docs/HARDWARE.md). Every
+// colour so far had a zero low byte, the alpha if the display reads pixels little-endian, as libxenon's console says
+// (libxenon:drivers/console/console.c:67-70). So this shows white, 0xFFFFFFFF, opaque in any byte order: first before
+// taking the GPU, then after, with black between, then red with an opaque alpha if pixels are little-endian ARGB.
 
 enum {
 	PAGE_BYTES = 0x10000,
 	HOLD_MS = 4000,
 	APPLY_TIMEOUT_MS = 100,
 	TILE_PIXELS = 32,
-	// XAM's 852x480 surface (docs/HARDWARE.md).
-	WIDE_WIDTH = 852,
-	WIDE_PITCH = 864,
-	WIDE_HEIGHT = 480,
-	WIDE_SCALE = 0x00AA6660,
-	WIDE_SCALE_PHASE = 0x0005D600,
-	// libxenon's blue << 24 | green << 16 | red << 8 (libxenon:drivers/console/console.c:67-70).
-	RED = 0x0000FF00,
-	BLUE = 0xFF000000,
+	GAP_MS = 1500,
+	WHITE = 0xFFFFFFFF,
+	// Bytes 00 00 FF FF: alpha and red set if the display reads 0xAARRGGBB little-endian.
+	RED_LITTLE_ENDIAN_ARGB = 0x0000FFFF,
 };
 
 // Display controller registers, in bytes from the register base (libxenon:drivers/xenos/xenos.h:11-54).
@@ -130,47 +125,52 @@ static volatile uint32_t *allocate(uint32_t pitch, uint32_t height, uint32_t pix
 	return pixels;
 }
 
+static void show(const Surface *original, uint32_t physical, const char *what)
+{
+	Surface surface = *original;
+	surface.surface = physical;
+	write_surface(&surface);
+	apply();
+	report(what);
+	xsdk_log_write("display: holding %s for %u ms", what, (unsigned)HOLD_MS);
+	(void)xsdk_thread_sleep(HOLD_MS);
+}
+
+static void blank(const Surface *original)
+{
+	write_surface(original);
+	apply();
+	(void)xsdk_thread_sleep(GAP_MS);
+}
+
 int main(void)
 {
 	xsdk_log_write("display probe");
 	report("at start");
 	const Surface original = read_surface();
 	const uint32_t height = read_register(D1GRPH_Y_END);
+	volatile uint32_t *const pixels = allocate(original.pitch, height, WHITE);
+	if (!original.pitch || !height || !pixels) {
+		xsdk_log_write("display: no buffer for a %ux%u mode", (unsigned)original.pitch, (unsigned)height);
+		return 1;
+	}
+	const uint32_t physical = MmGetPhysicalAddress((const void *)pixels);
+	const uint32_t pixel_count = original.pitch * ((height + TILE_PIXELS - 1) & ~(TILE_PIXELS - 1));
+
+	show(&original, physical, "white before taking the GPU");
+	blank(&original);
 
 	const NTSTATUS status = xsdk_gpu_open();
 	if (!NT_SUCCESS(status)) {
 		xsdk_log_write("display: xsdk_gpu_open returned 0x%08X", (unsigned)status);
 		return 1;
 	}
-	volatile uint32_t *const red = allocate(original.pitch, height, RED);
-	volatile uint32_t *const blue = allocate(WIDE_PITCH, WIDE_HEIGHT, BLUE);
-	if (!original.pitch || !height || !red || !blue) {
-		xsdk_log_write("display: no buffers for a %ux%u mode", (unsigned)original.pitch, (unsigned)height);
-		return 1;
-	}
+	show(&original, physical, "white after taking the GPU");
 
-	Surface only_address = original;
-	only_address.surface = MmGetPhysicalAddress((const void *)red);
-	write_surface(&only_address);
-	apply();
-	report("red, address only");
-	xsdk_log_write("display: holding red for %u ms", (unsigned)HOLD_MS);
-	(void)xsdk_thread_sleep(HOLD_MS);
-
-	const Surface wide = {
-		.surface = MmGetPhysicalAddress((const void *)blue),
-		.pitch = WIDE_PITCH,
-		.x_end = WIDE_PITCH,
-		.viewport_size = WIDE_WIDTH << 16 | WIDE_HEIGHT,
-		.scale = WIDE_SCALE,
-		.scale_phase = WIDE_SCALE_PHASE,
-		.line_width = WIDE_WIDTH / 4 - 1,
-	};
-	write_surface(&wide);
-	apply();
-	report("blue, XAM's registers");
-	xsdk_log_write("display: holding blue for %u ms", (unsigned)HOLD_MS);
-	(void)xsdk_thread_sleep(HOLD_MS);
+	for (uint32_t i = 0; i < pixel_count; i++)
+		pixels[i] = RED_LITTLE_ENDIAN_ARGB;
+	__asm__ volatile("sync" ::: "memory");
+	show(&original, physical, "red with alpha, little-endian ARGB");
 
 	write_surface(&original);
 	apply();

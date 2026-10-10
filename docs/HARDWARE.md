@@ -417,3 +417,13 @@ for 15 seconds while the user opened and closed the Guide (log: `results/2026-10
   with 0x6534 and 0x6544 going to 0x1000 and 0x10 at the same moments.
 
 So XAM shows its surface the way the probes tried, plus 0x60EC, which the probes never wrote.
+
+## XAM's display registers don't show a title's buffer either (2026-10-10)
+
+`tests/probe_display.c` took the GPU and applied a surface the way XAM did: the registers, then 0x60EC = 1. First only
+the address of a red buffer in the kernel's 640x480 mode, then XAM's whole set (852x480 at pitch 864, its scaler
+values) on a blue buffer, then the originals (log: `results/2026-10-10-probe-display-3/xsdk.log`).
+
+- **Every register took its value, and 0x60EC read 0 again straight away** each time, where XAM's read 1 for a sample.
+- **The screen stayed black** throughout. Every colour the probes have shown had a zero low byte, which is the alpha if
+  the display reads pixels little-endian, as libxenon's console suggests (libxenon:drivers/console/console.c:67-70).
