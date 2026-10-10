@@ -68,5 +68,9 @@ The test title passed all 12 checks on the console:
     48 kHz, matching Xenia's frame size and rate.
   - The callback may call `XAudioSubmitRenderDriverFrame` itself.
   - `MmAllocatePhysicalMemoryEx` returns usable memory for the frame.
-  - Unverified: whether the 6-channel, channel-after-channel float frame plays as a tone. The console had no
-    speakers attached; Xenia plays it audibly.
+  - The frame layout plays as intended. Checked by ear on a stereo TV with `audio_check.xex`:
+    - channel 0 sounds from the left speaker only, channel 1 from the right only;
+    - the centre and back channels sound as a stereo downmix allows;
+    - a 750 Hz tone sounds an octave above 375 Hz.
+    So frames are 6 channels of big-endian floats, channel after channel, in Xenia's 5.1 order (front left, front
+    right, centre, LFE, back left, back right).
