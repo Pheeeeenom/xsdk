@@ -15,7 +15,9 @@ layer that drives Xenos directly. Scope, sources and milestones are in SCOPE.md.
   log. Ask for a hardware run only when a milestone or a question about the real kernel needs one.
 - Xenia Canary (`C:\Users\Mena\Downloads\xenia_canary\xenia_canary.exe`, which may be moved) is for crash and smoke
   checks only. Launch it with the `.xex` path; it stays open after the title exits, so stop it after a few seconds.
-  The test log lands in its `cache\xsdk.log`, and `DbgPrint` output in its `xenia.log`.
+  The test log lands in its `cache\xsdk.log`, and `DbgPrint` output in its `xenia.log`. For the GPU tests add
+  `--readback_resolve=full`, so the CPU sees what resolves write, and `--async_shader_compilation=false`, or Xenia
+  skips draws while it compiles a new shader. Xenia has no display controller, so the display checks fail there.
 - Xenia skips instructions it doesn't implement, silently (xenia:src/xenia/cpu/ppc/ppc_emit_*.cc,
   `XEINSTRNOTIMPLEMENTED`). GCC emits some of them: `mcrf`, rare now that the toolchain reserves CR2-CR7, and `rldic`
   under `-mpowerpc64`. Each link runs `tools/xenia_scan.py`, which lists such instructions by function; treat any Xenia
