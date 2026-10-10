@@ -46,7 +46,6 @@ xboxkrnl.exe  0x1BE  VdGlobalDevice                      variable
 xboxkrnl.exe  0x1BF  VdGlobalXamDevice                   variable
 xboxkrnl.exe  0x1C2  VdInitializeEngines                 5
 xboxkrnl.exe  0x1C3  VdInitializeRingBuffer              2
-xboxkrnl.exe  0x1C5  VdInitializeScalerCommandBuffer     12
 xboxkrnl.exe  0x1CA  VdQueryVideoMode                    1
 xboxkrnl.exe  0x1D3  VdSetDisplayMode                    1
 xboxkrnl.exe  0x1D5  VdSetGraphicsInterruptCallback      2
