@@ -330,7 +330,7 @@ render state of milestone 5.
 ## The command processor, milestone 4 (2026-10-10)
 
 The test title passed all 34 checks on the console, the four `gpu:` checks among them, exited with status 0, and the
-console returned to Aurora (only the summary lines came back from this run).
+console returned to Aurora; the log is in `results/2026-10-10-milestone-4/xsdk.log`.
 
 - **`xsdk_gpu_open` takes the GPU** with `VdInitializeEngines` and no microcode, and sets up the ring and the read
   pointer write-back with the kernel's calls.
