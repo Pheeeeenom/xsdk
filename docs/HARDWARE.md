@@ -310,3 +310,19 @@ stopped mid-line at 2050 bytes).
 
 So a title drives the command processor with `VdInitializeEngines(0x4F810000, callback, context, 0, 0)`,
 `VdInitializeRingBuffer`, `VdEnableRingBufferRPtrWriteBack`, its packets, and `VdShutdownEngines` before it exits.
+
+## An EVENT_WRITE fence (2026-10-10)
+
+`tests/probe_engines.c` took the GPU and ran the three scratch fences as before, then tried `EVENT_WRITE_SHD` with
+three events, stopping at the first that didn't land (log: `results/2026-10-10-probe-engines-3/xsdk.log`, xbWatson's
+copy).
+
+- **`EVENT_WRITE_SHD` with a shader-done event is a working fence.** With `VS_DONE_TS` (2) and with `PS_DONE_TS` (3)
+  the value landed within 1 ms, and the read pointer write-back reached 0x23 and 0x27.
+- **With `CACHE_FLUSH_TS` (4) it wedged the GPU,** like `CACHE_FLUSH_AND_INV_TS_EVENT` (20) before: the read pointer
+  reached the end of the packet, the value never landed, the GPU stayed busy and 0x07D8 gained bit 29. The cache-flush
+  events presumably need state for the caches they flush, which nothing had set up.
+- **The probe then exited without `VdShutdownEngines`,** which would have waited on the wedged GPU.
+
+So milestone 4's fence is `EVENT_WRITE_SHD` with `PS_DONE_TS` or `VS_DONE_TS`. The cache-flush events wait for the
+render state of milestone 5.

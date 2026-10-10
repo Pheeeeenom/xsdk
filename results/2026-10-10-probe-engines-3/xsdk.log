@@ -1,0 +1,33 @@
+log: game:\xsdk.log
+engines probe
+engines: at start: 0x07D8 00007FFF (bit 28: halted), RBBM_STATUS 00040110 (bit 31: busy)
+engines: at start: base 01B9D000, control 00020309, read pointer write-back 01B9F03E, read 000000EB, write 000000EB
+engines: at start: VdGlobalDevice holds 00000000, VdGlobalXamDevice holds 7882FA00
+engines: ring at 0xbfc40000 (physical 1FC40000), write-back page at 0xbfc30000 (physical 1FC30000)
+engines: XAM's device moved the write pointer 15 times in 250 ms
+engines: calling VdInitializeEngines with no microcode
+engines: VdInitializeEngines returned 00000001; its callback ran 0 times
+engines: after VdInitializeEngines: 0x07D8 06007FFF (bit 28: halted), RBBM_STATUS 00040110 (bit 31: busy)
+engines: after VdInitializeEngines: base 00000000, control 08020000, read pointer write-back 01B9F03E, read 00000000, write 00000000
+engines: after VdInitializeEngines: VdGlobalDevice holds 00000000, VdGlobalXamDevice holds 00000000
+engines: the write pointer moved 0 times in 250 ms after VdInitializeEngines
+engines: after the kernel's ring set-up: 0x07D8 06007FFF (bit 28: halted), RBBM_STATUS 00040110 (bit 31: busy)
+engines: after the kernel's ring set-up: base 1FC40000, control 0002060C, read pointer write-back 1FC30002, read 00000000, write 00000000
+engines: fence 0: appending at dword 4
+engines: fence 0 after 1 ms: MEM_WRITE 4D454D57 (landed), scratch 53435230 (landed), read pointer write-back 0000000D
+engines: fence 1: appending at dword 13
+engines: fence 1 after 1 ms: MEM_WRITE 4D454D58 (landed), scratch 53435231 (landed), read pointer write-back 00000016
+engines: fence 2: appending at dword 22
+engines: fence 2 after 1 ms: MEM_WRITE 4D454D59 (landed), scratch 53435232 (landed), read pointer write-back 0000001F
+engines: after the scratch fences: 0x07D8 06007FFF (bit 28: halted), RBBM_STATUS 00040110 (bit 31: busy)
+engines: after the scratch fences: base 1FC40000, control 0002060C, read pointer write-back 1FC30002, read 0000001F, write 0000001F
+engines: event 2: appending at dword 31
+engines: event 2 after 1 ms: EVENT_WRITE_SHD 45564E56 (landed), read pointer write-back 00000023
+engines: event 3: appending at dword 35
+engines: event 3 after 1 ms: EVENT_WRITE_SHD 45564E57 (landed), read pointer write-back 00000027
+engines: event 4: appending at dword 39
+engines: event 4 after 1000 ms: EVENT_WRITE_SHD DEADBEEF (not written), read pointer write-back 0000002B
+engines: after the event fences: 0x07D8 26007FFF (bit 28: halted), RBBM_STATUS 80050110 (bit 31: busy)
+engines: after the event fences: base 1FC40000, control 0002060C, read pointer write-back 1FC30002, read 0000002B, write 0000002B
+engines: the GPU is wedged; exiting without VdShutdownEngines, which would wait on it
+exit: status 1
