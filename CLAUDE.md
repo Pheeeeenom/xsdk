@@ -17,18 +17,19 @@ layer that drives Xenos directly. Scope, sources and milestones are in SCOPE.md.
   checks only. Launch it with the `.xex` path; it stays open after the title exits, so stop it after a few seconds.
   The test log lands in its `cache\xsdk.log`, and `DbgPrint` output in its `xenia.log`.
 - Xenia skips instructions it doesn't implement, silently (xenia:src/xenia/cpu/ppc/ppc_emit_*.cc,
-  `XEINSTRNOTIMPLEMENTED`). GCC emits one of them, `mcrf`; newlib's printf core uses it, so in Xenia every formatted
-  conversion gains two NUL bytes. Each link runs `tools/xenia_scan.py`, which lists such instructions by function;
-  treat any Xenia result that goes through those functions as unreliable.
+  `XEINSTRNOTIMPLEMENTED`). GCC emits some of them: `mcrf`, rare now that the toolchain reserves CR2-CR7, and `rldic`
+  under `-mpowerpc64`. Each link runs `tools/xenia_scan.py`, which lists such instructions by function; treat any Xenia
+  result that goes through those functions as unreliable.
 - Xenia finds a function's end by scanning, and a forward `b` makes it take everything up to the target as one function
   (xenia:src/xenia/cpu/ppc/ppc_scanner.cc:204). Tail calls into that range then run the wrong code or crash Xenia. The
   toolchain turns off tail calls and hot/cold splitting, and `src/xsdk.ld` puts import stubs first; keep it that way.
 
 ## Build
 
-- The toolchain runs in WSL Debian. Until the planned GCC 13+ toolchain lands, it's the xenon GCC 9.2 at
-  `/usr/local/xenon`. Call it from PowerShell with `wsl.exe -d Debian --exec bash -c '...'`; Git Bash rewrites its
-  absolute paths.
+- The toolchain runs in WSL Debian: GCC 15, binutils and newlib for `powerpc-xsdk-elf`, installed at `~/xsdk-gcc`.
+  `tools/toolchain/build.sh` builds it (`JOBS=32` uses every core); its specs and patches say what differs from a
+  stock build. Call WSL from PowerShell with `wsl.exe -d Debian --exec bash -c '...'`; Git Bash rewrites its absolute
+  paths.
 - clang-format is at `C:\Program Files\LLVM\bin\clang-format.exe`.
 - Build the SDK and the test title (`build/xsdk_test.xex`) from PowerShell:
 

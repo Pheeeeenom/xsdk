@@ -1,5 +1,6 @@
 #include "xsdk/thread.h"
 
+#include "pthread_private.h"
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
 
@@ -8,7 +9,9 @@ void xsdk_thread_run(XsdkThreadEntry entry, void *context);
 
 void xsdk_thread_run(XsdkThreadEntry entry, void *context)
 {
-	ExTerminateThread(entry(context));
+	const uint32_t exit_code = entry(context);
+	xsdk_pthread_thread_end();
+	ExTerminateThread(exit_code);
 }
 
 NTSTATUS xsdk_thread_create(HANDLE *thread, uint32_t stack_bytes, XsdkThreadEntry entry, void *context)

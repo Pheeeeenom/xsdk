@@ -1,6 +1,7 @@
 # Builds the SDK library and the test title. Run inside WSL Debian.
 
-TOOLCHAIN ?= /usr/local/xenon/bin/xenon-
+# The toolchain tools/toolchain/build.sh builds.
+TOOLCHAIN ?= $(HOME)/xsdk-gcc/bin/powerpc-xsdk-elf-
 CC := $(TOOLCHAIN)gcc
 AR := $(TOOLCHAIN)ar
 OBJDUMP := $(TOOLCHAIN)objdump
@@ -8,13 +9,14 @@ PYTHON ?= python3
 
 BUILD := build
 
-CFLAGS := -m32 -mcpu=cell -fno-pic -std=gnu17 -O2 -g -Wall -Wextra -Werror -Iinclude -MMD -MP
-ASFLAGS := -m32 -mcpu=cell -Wa,-mregnames -Iinclude -MMD -MP
-# The driver doesn't search newlib's 32-bit library folder by itself.
-LDFLAGS := -m32 -static -nostdlib -T src/xsdk.ld -L$(dir $(TOOLCHAIN))../xenon/lib/32
+WARNINGS := -Wall -Wextra -Werror
+CFLAGS := -mcpu=cell -fno-pic -std=gnu17 -O2 -g $(WARNINGS) -Iinclude -MMD -MP
+ASFLAGS := -mcpu=cell -Wa,-mregnames -Iinclude -MMD -MP
+LDFLAGS := -static -nostdlib -T src/xsdk.ld
 LIBS := -Wl,--start-group $(BUILD)/libxsdk.a -lc -lm -lgcc -Wl,--end-group
 
-SDK_SOURCES := src/start.c src/log.c src/sbrk.c src/thread.c src/thread_entry.S src/file.c src/malloc_lock.c
+SDK_SOURCES := src/start.c src/log.c src/sbrk.c src/thread.c src/thread_entry.S src/file.c src/pthread.c src/lock.c \
+	src/reent.c src/time.c src/exit.c
 IMPORT_NAMES := $(shell $(PYTHON) tools/gen_imports.py --list imports/imports.txt)
 IMPORT_SOURCES := $(IMPORT_NAMES:%=$(BUILD)/imports/%.S)
 SDK_OBJECTS := $(patsubst src/%,$(BUILD)/sdk/%.o,$(basename $(SDK_SOURCES))) $(IMPORT_NAMES:%=$(BUILD)/imports/%.o)

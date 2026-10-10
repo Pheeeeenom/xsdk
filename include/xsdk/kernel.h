@@ -86,6 +86,9 @@ enum {
 	ERROR_DEVICE_NOT_CONNECTED = 0x48F,
 };
 
+// xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_threading.cc:357
+static const uint32_t TLS_OUT_OF_INDEXES = 0xFFFFFFFF;
+
 // Root directory for paths like "game:\file" (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_io.cc:129).
 static const HANDLE OB_DOS_DEVICES = 0xFFFFFFFD;
 
@@ -132,6 +135,15 @@ NTSTATUS ExCreateThread(HANDLE *thread, uint32_t stack_bytes, uint32_t *thread_i
 	void *start_address, void *start_context, uint32_t creation_flags);
 void ExTerminateThread(uint32_t exit_code);
 NTSTATUS KeDelayExecutionThread(uint32_t processor_mode, uint32_t alertable, const int64_t *interval);
+// Xenia returns it as 32 bits (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_threading.cc:312-315).
+uint32_t KeQueryPerformanceFrequency(void);
+// 100 ns units since 1601, as NT counts.
+void KeQuerySystemTime(uint64_t *time);
+// Returns TLS_OUT_OF_INDEXES when no slot is free.
+uint32_t KeTlsAlloc(void);
+uint32_t KeTlsFree(uint32_t slot);
+void *KeTlsGetValue(uint32_t slot);
+uint32_t KeTlsSetValue(uint32_t slot, void *value);
 void *MmAllocatePhysicalMemoryEx(uint32_t flags, uint32_t size_bytes, uint32_t protect, uint32_t min_address,
 	uint32_t max_address, uint32_t alignment);
 void MmFreePhysicalMemory(uint32_t type, void *base);
@@ -152,9 +164,12 @@ NTSTATUS NtSetEvent(HANDLE event, int32_t *previous_state);
 NTSTATUS NtWaitForSingleObjectEx(HANDLE object, uint32_t wait_mode, uint32_t alertable, const int64_t *timeout);
 NTSTATUS NtWriteFile(HANDLE file, HANDLE event, void *apc_routine, void *apc_context, IO_STATUS_BLOCK *io_status,
 	const void *buffer, uint32_t length_bytes, const uint64_t *byte_offset);
+NTSTATUS NtYieldExecution(void);
 void RtlEnterCriticalSection(RTL_CRITICAL_SECTION *section);
 void RtlInitializeCriticalSection(RTL_CRITICAL_SECTION *section);
 void RtlLeaveCriticalSection(RTL_CRITICAL_SECTION *section);
+// Returns nonzero when it took the section.
+uint32_t RtlTryEnterCriticalSection(RTL_CRITICAL_SECTION *section);
 uint32_t XAudioRegisterRenderDriverClient(const XAUDIO_RENDER_DRIVER_CLIENT *client, uint32_t *driver);
 uint32_t XAudioSubmitRenderDriverFrame(uint32_t driver, const float *samples);
 uint32_t XAudioUnregisterRenderDriverClient(uint32_t driver);
