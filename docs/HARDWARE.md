@@ -855,3 +855,23 @@ each frame's bar as its buffer came back (log: `results/2026-10-10-milestone-9-4
   longest wait for a buffer stayed at 17950 us, one vblank.
 
 The console went back to Aurora normally afterwards, the user reported.
+
+## The console outputs 1920 pixels wide; a 1280x720 surface shows 1:1 (2026-10-10)
+
+`tests/probe_720p.c` showed a 1280x720 image in the kernel's 640x480 viewport, then with libxenon's scaler settings for
+a mode shown 1:1 (libxenon:drivers/xenos/xenos.c:381-417), logging the display's registers, and put them back (log:
+`results/2026-10-10-probe-720p/xsdk.log`, with the user's captures of both phases).
+
+- **The output is 1920 pixels wide, not 1280.** `D1CRTC_H_TOTAL` read 0x897 and `D1CRTC_H_BLANK_START_END` 0x00BF083F,
+  which libxenon writes as the total less one and as the sync offset over the active width plus that offset
+  (xenos.c:344-346): 2200 pixels a line, 1920 of them shown. The kernel's scale factors fit 1920 by 1080: 0x00555560
+  and 0x0071C720 in 0x65B4 and 0x65C4, a third and four ninths if 0x01000000 is 1.0, as libxenon writes it for 1:1,
+  so 640 to 1920 and 480 to 1080. An earlier run's `VdQueryVideoMode` reported 1280x720 ("VdSwap writes only a
+  fence"), so the console's output setting has changed since or differs with the user's capture card.
+- **libxenon's settings show the surface 1:1.** With the scaler off, the viewport at 1280x720, 0x65E8 at 319 and the
+  scale registers at 1.0, the whole image showed unscaled, its one-pixel border and all four corner squares in view,
+  in the top left two thirds of the screen with black around it, as 1280x720 sits in 1920x1080.
+- **The kernel's 640x480 scaling showed the top left 640x480 of the image,** twice as wide and half again as tall.
+- **0x6024, libxenon's `AVIVO_D1CRTC_V_BLANK_START_END`, changed between reads,** and `D1CRTC_V_TOTAL` read 0, which
+  libxenon also writes (xenos.c:340), so neither gives the output's height.
+- **Putting the registers back returned the display to the kernel's mode,** and the console went back to Aurora.
