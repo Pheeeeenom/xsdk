@@ -242,6 +242,11 @@ void VdEnableRingBufferRPtrWriteBack(uint32_t physical_address, uint32_t block_s
 // hold the title's D3D device and XAM's (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:442-457).
 extern uint32_t *const VdGlobalDevice;
 extern uint32_t *const VdGlobalXamDevice;
+// D3D passes 0x4F810000, a callback and its argument, then the PFP and ME microcode; the callback's signature isn't
+// known (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:193-201, a stub). It runs the graphics notification
+// routines, through which XAM's D3D device gives up the GPU (docs/HARDWARE.md).
+uint32_t VdInitializeEngines(
+	uint32_t flags, void *callback, void *context, const uint32_t *pfp_microcode, const uint32_t *me_microcode);
 // Takes MmGetPhysicalAddress's result and log2 of the size in 8-byte units
 // (xenia:src/xenia/gpu/command_processor.cc:312).
 void VdInitializeRingBuffer(uint32_t physical_address, uint32_t size_log2);
@@ -250,6 +255,7 @@ void VdInitializeRingBuffer(uint32_t physical_address, uint32_t size_log2);
 // command_processor.cc:907-911).
 typedef void (*VdGraphicsInterruptCallback)(uint32_t source, void *context);
 void VdSetGraphicsInterruptCallback(VdGraphicsInterruptCallback callback, void *context);
+void VdShutdownEngines(void);
 void XeCryptRandom(void *buffer, uint32_t length_bytes);
 // Return 0 on success; module names a loaded module, such as "xboxkrnl.exe"
 // (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_modules.cc:42-62, 142-186).

@@ -42,8 +42,10 @@ xboxkrnl.exe  0x197  XexGetProcedureAddress              3
 xboxkrnl.exe  0x1B6  VdEnableRingBufferRPtrWriteBack     2
 xboxkrnl.exe  0x1BE  VdGlobalDevice                      variable
 xboxkrnl.exe  0x1BF  VdGlobalXamDevice                   variable
+xboxkrnl.exe  0x1C2  VdInitializeEngines                 5
 xboxkrnl.exe  0x1C3  VdInitializeRingBuffer              2
 xboxkrnl.exe  0x1D5  VdSetGraphicsInterruptCallback      2
+xboxkrnl.exe  0x1DC  VdShutdownEngines                   0
 xboxkrnl.exe  0x1F3  XAudioRegisterRenderDriverClient    2
 xboxkrnl.exe  0x1F4  XAudioUnregisterRenderDriverClient  1
 xboxkrnl.exe  0x1F5  XAudioSubmitRenderDriverFrame       2
