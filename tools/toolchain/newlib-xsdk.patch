@@ -54,3 +54,17 @@
  #ifdef __cplusplus
  }
  #endif
+--- a/newlib/configure.host
++++ b/newlib/configure.host
+@@ -823,6 +823,11 @@
+ 	default_newlib_io_long_long="yes"
+ 	newlib_cflags="${newlib_cflags} -DMISSING_SYSCALL_NAMES"
+ 	;;
++  powerpc*-xsdk-*)
++	# The Xbox 360 SDK links titles at a fixed address, so newlib needn't relocate itself (-mrelocatable-lib).
++	default_newlib_io_long_long="yes"
++	newlib_cflags="${newlib_cflags} -mno-eabi -mstrict-align -DMISSING_SYSCALL_NAMES"
++	;;
+   powerpc*-*-eabi* | \
+   powerpc*-*-elf* | \
+   powerpc*-*-linux* | \

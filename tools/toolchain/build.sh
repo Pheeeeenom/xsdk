@@ -30,7 +30,9 @@ SPECS=(
 )
 
 COMMON=(--target="$TARGET" --prefix="$PREFIX" --disable-nls --disable-multilib)
+# Constructors go in .init_array, which start.c runs; a cross GCC otherwise falls back to .ctors.
 GCC_COMMON=("${COMMON[@]}" --with-cpu=cell --with-newlib --disable-shared --disable-tls --with-specs="${SPECS[*]}"
+	--enable-initfini-array
 	--disable-libssp --disable-libquadmath --disable-libgomp --disable-libitm --disable-libsanitizer --disable-libvtv)
 
 export PATH="$PREFIX/bin:$PATH"
@@ -40,24 +42,34 @@ step() {
 	echo "== $1 ($(date +%H:%M:%S))"
 }
 
+# unpack <source> [patch]: unpacks a source tree and patches it, afresh whenever the patch changes.
+unpack() {
+	local name=$1 patch=${2:-} stamp="$1/.xsdk-patch" want=none
+	[ -z "$patch" ] || want=$(sha256sum <"$HERE/$patch" | cut -d' ' -f1)
+	if [ -d "$name" ] && [ "$(cat "$stamp" 2>/dev/null)" = "$want" ]; then
+		return
+	fi
+	rm -rf "$name"
+	tar xf "$name".tar.*
+	[ -z "$patch" ] || patch -d "$name" -p1 <"$HERE/$patch" >/dev/null
+	echo "$want" >"$stamp"
+}
+
 fetch() {
 	cd "$WORK/src"
 	for source in "${SOURCES[@]}"; do
 		read -r archive url sha256 <<<"$source"
 		[ -f "$archive" ] || curl -sSfL -o "$archive" "$url"
 		echo "$sha256  $archive" | sha256sum -c --quiet
-		[ -d "${archive%.tar.*}" ] || tar xf "$archive"
 	done
-	if ! grep -q __XSDK__ "$NEWLIB/newlib/libc/include/sys/features.h"; then
-		patch -d "$NEWLIB" -p1 <"$HERE/newlib-xsdk.patch"
-	fi
-	if ! grep -q "Xbox 360 SDK" "$GCC/libstdc++-v3/configure"; then
-		patch -d "$GCC" -p1 <"$HERE/gcc-xsdk.patch"
-	fi
+	unpack "$BINUTILS"
+	unpack "$NEWLIB" newlib-xsdk.patch
+	unpack "$GCC" gcc-xsdk.patch
 }
 
 # configure_and_make <name> <source dir> <make targets> <install targets> -- <configure arguments>
-# A finished stage leaves a stamp and is skipped next time; delete $WORK/build to start over.
+# A finished stage leaves a stamp and is skipped next time; delete $WORK/build and $PREFIX after changing a patch or
+# an option.
 configure_and_make() {
 	local name=$1 source=$2 targets=$3 installs=$4
 	shift 5
