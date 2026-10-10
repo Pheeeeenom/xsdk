@@ -20,16 +20,23 @@ IMPORT_SOURCES := $(IMPORT_NAMES:%=$(BUILD)/imports/%.S)
 SDK_OBJECTS := $(SDK_SOURCES:src/%.c=$(BUILD)/sdk/%.o) $(IMPORT_NAMES:%=$(BUILD)/imports/%.o)
 
 TEST_OBJECTS := $(BUILD)/tests/main.o
+# Bring-up probes: titles that each answer one question on the console.
+PROBES := probe_spin probe_print
 
 .PHONY: all clean
-all: $(BUILD)/xsdk_test.xex
+# Keep the ELFs and objects that pattern rules build on the way to a .xex.
+.SECONDARY:
+all: $(BUILD)/xsdk_test.xex $(PROBES:%=$(BUILD)/%.xex)
 
-$(BUILD)/xsdk_test.xex: $(BUILD)/xsdk_test.elf tools/elf2xex.py
+$(BUILD)/%.xex: $(BUILD)/%.elf tools/elf2xex.py
 	$(PYTHON) tools/elf2xex.py $< $@
 
 $(BUILD)/xsdk_test.elf: $(BUILD)/sdk/crt0.o $(TEST_OBJECTS) $(BUILD)/libxsdk.a src/xsdk.ld
 	$(CC) $(LDFLAGS) -Wl,-Map,$(BUILD)/xsdk_test.map -o $@ $(BUILD)/sdk/crt0.o $(TEST_OBJECTS) $(LIBS)
 	$(OBJDUMP) -d $@ | $(PYTHON) tools/xenia_scan.py
+
+$(BUILD)/probe_%.elf: $(BUILD)/sdk/crt0.o $(BUILD)/tests/probe_%.o $(BUILD)/libxsdk.a src/xsdk.ld
+	$(CC) $(LDFLAGS) -o $@ $(BUILD)/sdk/crt0.o $(BUILD)/tests/probe_$*.o $(LIBS)
 
 $(BUILD)/libxsdk.a: $(SDK_OBJECTS)
 	rm -f $@
