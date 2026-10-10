@@ -1,0 +1,23 @@
+log: game:\xsdk.log
+swap probe
+swap: video mode 1280x720, interlaced 0, widescreen 1, hi-def 1, 59.94 Hz, standard 1
+swap: front buffer 640x480, colour format 0, pixel format 0; display 1280x720, actual width 1280
+swap: VdGetSystemCommandBuffer changed 37 of 64 buffer dwords; value 0000471D
+swap: 1280x720 front buffer at BF8A0000 (physical 1F8A0000), system writeback at 0xbf890040
+swap: fetch constant 0A000002 BF8A0086 0059E4FF 00000D10 00000000 00000200
+swap: calling VdSwap
+swap: ring 00: C0025800 00000003 1F890042 820308C8 C03A1000 A5A5A5A5 A5A5A5A5 A5A5A5A5
+swap: ring 08: A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5
+swap: ring 16: A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5
+swap: ring 24: A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5
+swap: ring 32: A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5
+swap: ring 40: A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5
+swap: ring 48: A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5
+swap: ring 56: A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5 A5A5A5A5
+swap: the swap's fence: 0x00000000; system writeback 820308C8
+swap: showing red (FFFF0000) for 3000 ms
+swap: showing green (FF00FF00) for 3000 ms
+swap: showing blue (FF0000FF) for 3000 ms
+swap: showing white (FFFFFFFF) for 3000 ms
+swap: system writeback 820308C8
+exit: status 0

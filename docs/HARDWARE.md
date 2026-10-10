@@ -341,3 +341,16 @@ console returned to Aurora; the log is in `results/2026-10-10-milestone-4/xsdk.l
   and the write-back page with `MmFreePhysicalMemory(0, base)`, and the title then exited normally.
 
 So milestone 4 is done, and SCOPE.md section 3.2 has its answer.
+
+## VdSwap writes only a fence (2026-10-10)
+
+`tests/probe_swap.c` took the GPU, filled a linear 1280x720 `k_8_8_8_8` front buffer from the CPU, and called `VdSwap`
+on it with the arguments Xenia documents (log: `results/2026-10-10-probe-swap/xsdk.log`).
+
+- **The display information differs from Xenia's.** `VdQueryVideoMode` gave 1280x720 at 59.94 Hz, hi-def and
+  widescreen, but `VdGetCurrentDisplayInformation` gave a 640x480 front buffer for a 1280x720 display.
+- **`VdGetSystemCommandBuffer` zeroes 0x94 bytes** of its first argument, as Xenia does, and wrote 0x471D to its second.
+- **`VdSwap` wrote one fence into the 64 reserved dwords:** `EVENT_WRITE_SHD` with `PS_DONE_TS`, writing the fifth
+  argument to the third (the "system writeback", with byte swap 2), then a `NOP` over the other 59. The fence landed.
+  There were no display registers or front buffer address in the ring, so the flip happens outside it.
+- **The screen stayed black** through the whole run.
