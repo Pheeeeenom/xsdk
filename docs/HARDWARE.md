@@ -19,6 +19,18 @@ Launched from Aurora, logs read through xbWatson and `xsdk.log`.
   - It has one page descriptor per 64 KB page.
   - Its import libraries header ends the XEX headers.
 
+## XEX checks the kernel enforces (2026-10-09)
+
+`tests/xex_checks.py` copies the working title with one digest broken by a single flipped byte:
+
+| Broken digest | Result |
+|---|---|
+| Header digest (security info +0x164) | Launches and passes every test, so not enforced |
+| Page digest (a byte nothing reads, in page 0) | Launches and passes every test, so not enforced |
+| Import table digest (security info +0x12C) | Refused, so enforced |
+
+The patch set and dashboard version on this console aren't recorded yet; another patch set may differ.
+
 ## Runtime (2026-10-09)
 
 The test title (`tests/main.c`) ran and logged:
