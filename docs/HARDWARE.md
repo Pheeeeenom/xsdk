@@ -252,3 +252,19 @@ So a title's callback stops XAM's device, but XAM can't recover afterwards. Auro
 kernel, which suggests D3D titles take the GPU from XAM through a kernel call. Xenia lists exports that fit
 (`VdRegisterXamGraphicsNotification`, `VdCallGraphicsNotificationRoutines`, `VdBlockUntilGUIIdle`) but stubs them
 (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_table.inc:446-447, 476; xboxkrnl_video.cc:310-319).
+
+## Aurora takes the GPU from XAM in VdInitializeEngines (2026-10-10)
+
+`tests/probe_exports.c` asked the kernel for every export's address with `XexGetProcedureAddress` (921 of 1023
+ordinals resolve) and placed the kernel return addresses of Aurora's blocked start-up among them (log:
+`results/2026-10-10-probe-exports/xsdk.log`).
+
+- **0x800C7E4C is in `VdInitializeEngines`:** 0x34 past its start at 0x800C7E18, and below `VdShutdownEngines` at
+  0x800C7F60.
+- **0x800BD7E8 is in `VdCallGraphicsNotificationRoutines`:** 0x40 past its start at 0x800BD7A8, and below
+  `VdRegisterGraphicsNotification` at 0x800BD840.
+- **0x800C7DFC is in an unexported function** just below `VdInitializeEngines`.
+
+So Aurora's D3D called `VdInitializeEngines`, which ran the graphics notification routines, and the one in `xamd.dll`
+waited for XAM's device to stop. That device couldn't stop without its callback. A title takes the GPU from XAM in
+the same call that loads the microcode.

@@ -1,0 +1,19 @@
+log: game:\xsdk.log
+exports probe
+exports: 921 of 1023 ordinals resolve
+exports: 1B0 VdBlockUntilGUIIdle at 800BD5F0
+exports: 1B1 VdCallGraphicsNotificationRoutines at 800BD7A8
+exports: 1B6 VdEnableRingBufferRPtrWriteBack at 800BF928
+exports: 1C2 VdInitializeEngines at 800C7E18
+exports: 1C3 VdInitializeRingBuffer at 800BF8D8
+exports: 1C7 VdPersistDisplay at 800CFFB0
+exports: 1CD VdRegisterGraphicsNotification at 800BD840
+exports: 1CE VdRegisterXamGraphicsNotification at 800BD798
+exports: 1D5 VdSetGraphicsInterruptCallback at 800D0340
+exports: 1D9 VdSetSystemCommandBufferGpuIdentifierAddress at 800C8940
+exports: 1DC VdShutdownEngines at 800C7F60
+exports: 25B VdSwap at 800C8B90
+exports: 800C7E4C: export below is 1C2 at 800C7E18 (+0x34), export above is 1DC at 800C7F60
+exports: 800C7DFC: export below is 1D3 at 800C7650 (+0x7AC), export above is 1C2 at 800C7E18
+exports: 800BD7E8: export below is 1B1 at 800BD7A8 (+0x40), export above is 1CD at 800BD840
+exit: status 0
