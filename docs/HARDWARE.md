@@ -29,9 +29,10 @@ Launched from Aurora, logs read through xbWatson and `xsdk.log`.
 | Page digest (a byte nothing reads, in page 0) | Launches and passes every test, so not enforced |
 | Import table digest (security info +0x12C) | Refused, so enforced |
 
-The console's kernel is build 21256, from the system information in an xbWatson minidump (2026-10-10). The same
-dump's module list names the kernel `xboxkrnld.exe` and XAM `xamd.dll`, with `Xbdm.xex` loaded. The patch set isn't
-recorded; another patch set may differ.
+An xbWatson minidump's system information reports build 21256, but Aurora's D3D hang report on the same console says
+kernel 17559 (both 2026-10-10), so which number is the kernel's isn't settled. The minidump's module list names the
+kernel `xboxkrnld.exe` and XAM `xamd.dll`, with `Xbdm.xex` loaded. The patch set isn't recorded; another patch set may
+differ.
 
 ## Runtime (2026-10-09)
 
@@ -150,3 +151,16 @@ microcode (log: `results/2026-10-10-probe-ring/xsdk.log`).
   address bits 1-0 set to 2 the CPU reads the value as written. The read-pointer write-back reached 9.
 - **The `EVENT_WRITE_SHD` fence didn't land** in that run, after about 8,000 zero dwords had each written GPU register 0.
   The GPU ended busy, 0x07D8 gained bit 29, and XAM reported a hung GPU after the title exited.
+
+A second run, after a cold boot, appended its packets at the write pointer the kernel left (log:
+`results/2026-10-10-probe-ring-2/xsdk.log`).
+
+- **The pointers moved again during set-up,** from 0xEB to 0x115 (the first run went from 0xC7 to 0xEB), and this time the
+  GPU was already busy right after `VdEnableRingBufferRPtrWriteBack`, with 0x07D8 bit 29 set.
+- **The CPU read back zeros for every dword before the new write pointer.** The probe had zeroed the write-combined
+  ring and called `VdInitializeRingBuffer` without a `sync`, so the zeroing may have landed on top of packets the
+  kernel wrote, which would explain both runs.
+- **Neither fence landed,** though the read pointer reached the end of the probe's packets.
+- **Aurora's D3D printed a GPU hang report** when it started again. It names 0x1740 `RBBM_STATUS` (0x80050110) and the
+  ring registers `CP_RB_BASE` (the probe's ring), `CP_RB_RPTR` and `CP_RB_WPTR` (both 0x11E). Its CP debug words held
+  the `EVENT_WRITE_SHD` packet's value and address, so the command processor was stuck in that fence.

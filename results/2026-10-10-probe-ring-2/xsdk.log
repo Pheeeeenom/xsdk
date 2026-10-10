@@ -1,0 +1,15 @@
+log: game:\xsdk.log
+ring probe
+ring: at start: 0x07D8 00007FFF (bit 28: halted), 0x1740 00040110 (bit 31: busy)
+ring: at start: base 01B9D000, control 00020309, read pointer write-back 01B9F03E, read 000000EB, write 000000EB
+ring: ring at 0xbfc40000 (physical 1FC40000), write-back page at 0xbfc30000 (physical 1FC30000)
+ring: VdInitializeRingBuffer
+ring: VdEnableRingBufferRPtrWriteBack
+ring: after set-up: 0x07D8 20007FFF (bit 28: halted), 0x1740 80050110 (bit 31: busy)
+ring: after set-up: base 1FC40000, control 0002060C, read pointer write-back 1FC30002, read 00000115, write 00000115
+ring: the kernel left the write pointer at 277; 0 of the dwords before it are non-zero
+ring: submitting dwords 277 to 285
+ring: after 1000 ms: MEM_WRITE DEADBEEF (not written), EVENT_WRITE_SHD DEADBEEF (not written), read pointer write-back 0000011E
+ring: at end: 0x07D8 20007FFF (bit 28: halted), 0x1740 80050110 (bit 31: busy)
+ring: at end: base 1FC40000, control 0002060C, read pointer write-back 1FC30002, read 0000011E, write 0000011E
+exit: status 0
