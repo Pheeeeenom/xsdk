@@ -9,14 +9,14 @@
 #include "xsdk/log.h"
 #include "xsdk/thread.h"
 
-// Shows a 1280x720 test image in today's 640x480 viewport, then 1:1 with libxenon's scaler settings, then restores.
+// Shows a 1280x720 image scaled to the console's output, with start phases from a formula, then zeroed, then restores.
 
 enum {
 	WIDTH = 1280,
 	HEIGHT = 720,
 	PIXELS = WIDTH * HEIGHT,
-	SCALED_MS = 8000,
-	NATIVE_MS = 12000,
+	SCALED_MS = 10000,
+	ZERO_PHASE_MS = 8000,
 	DOUBLE_BUFFER_POLLS = 100000,
 	CORNER = 32,
 	BLOCK = 128,
@@ -27,15 +27,15 @@ enum {
 	GREEN = 0xFF00FF00,
 	BLUE = 0xFF0000FF,
 	YELLOW = 0xFFFFFF00,
+	// The kernel's tap control at a 1920x1080 output (docs/HARDWARE.md, "The console outputs 1920 pixels wide").
+	TAP_CONTROL = 0x505,
+	SCALE_ONE_LOG2 = 24,
 };
 
 // Display registers by index: libxenon's names (libxenon:drivers/xenos/xenos.h:11-60), else Xenia's style.
 enum {
 	D1CRTC_H_TOTAL = 0x1800,
 	D1CRTC_H_BLANK_START_END = 0x1801,
-	D1CRTC_V_TOTAL = 0x1808,
-	AVIVO_D1CRTC_V_BLANK_START_END = 0x1809,
-	UNKNOWN_0A12 = 0x0A12,
 	AVIVO_D1MODE_VIEWPORT_START = 0x1960,
 	AVIVO_D1SCL_SCALER_TAP_CONTROL = 0x1965,
 	UNKNOWN_1968 = 0x1968,
@@ -50,46 +50,65 @@ enum {
 	UNKNOWN_197A = 0x197A,
 };
 
-typedef struct {
+enum {
+	SCALER_ENABLE,
+	SCALER_TAP_CONTROL,
+	VIEWPORT_SIZE,
+	VIEWPORT_WIDTH_QUARTER,
+	VIEWPORT_START,
+	REGISTER_1968,
+	HORIZONTAL_SCALE,
+	VERTICAL_SCALE,
+	REGISTER_196C,
+	REGISTER_1970,
+	HORIZONTAL_PHASE,
+	VERTICAL_PHASE,
+	REGISTER_1977,
+	SCALER_REGISTERS,
+};
+
+// The scaler's registers in libxenon's order under AVIVO_D1SCL_UPDATE (libxenon:drivers/xenos/xenos.c:381-417).
+static const struct {
 	const char *name;
 	uint32_t index;
-	// libxenon's value for a 1:1 mode of WIDTH by HEIGHT (libxenon:drivers/xenos/xenos.c:381-417).
-	uint32_t native;
-} Register;
-
-// The scaler's registers libxenon sets for a mode shown 1:1, written in its order under AVIVO_D1SCL_UPDATE.
-static const Register scaler[] = {
-	{ "AVIVO_D1SCL_SCALER_ENABLE", AVIVO_D1SCL_SCALER_ENABLE, 0 },
-	{ "AVIVO_D1SCL_SCALER_TAP_CONTROL", AVIVO_D1SCL_SCALER_TAP_CONTROL, 0x905 },
-	{ "AVIVO_D1MODE_VIEWPORT_SIZE", AVIVO_D1MODE_VIEWPORT_SIZE, WIDTH << 16 | HEIGHT },
-	{ "UNKNOWN_197A", UNKNOWN_197A, WIDTH / 4 - 1 },
-	{ "AVIVO_D1MODE_VIEWPORT_START", AVIVO_D1MODE_VIEWPORT_START, 0 },
-	{ "UNKNOWN_1968", UNKNOWN_1968, 0 },
-	{ "UNKNOWN_196D", UNKNOWN_196D, 0x01000000 },
-	{ "UNKNOWN_1971", UNKNOWN_1971, 0x01000000 },
-	{ "UNKNOWN_196C", UNKNOWN_196C, 0 },
-	{ "UNKNOWN_1970", UNKNOWN_1970, 0x01000000 },
-	{ "UNKNOWN_196E", UNKNOWN_196E, 0x00060000 },
-	{ "UNKNOWN_1972", UNKNOWN_1972, 0x00040000 },
-	{ "UNKNOWN_1977", UNKNOWN_1977, 0 },
+} scaler[SCALER_REGISTERS] = {
+	{ "AVIVO_D1SCL_SCALER_ENABLE", AVIVO_D1SCL_SCALER_ENABLE },
+	{ "AVIVO_D1SCL_SCALER_TAP_CONTROL", AVIVO_D1SCL_SCALER_TAP_CONTROL },
+	{ "AVIVO_D1MODE_VIEWPORT_SIZE", AVIVO_D1MODE_VIEWPORT_SIZE },
+	{ "UNKNOWN_197A", UNKNOWN_197A },
+	{ "AVIVO_D1MODE_VIEWPORT_START", AVIVO_D1MODE_VIEWPORT_START },
+	{ "UNKNOWN_1968", UNKNOWN_1968 },
+	{ "UNKNOWN_196D", UNKNOWN_196D },
+	{ "UNKNOWN_1971", UNKNOWN_1971 },
+	{ "UNKNOWN_196C", UNKNOWN_196C },
+	{ "UNKNOWN_1970", UNKNOWN_1970 },
+	{ "UNKNOWN_196E", UNKNOWN_196E },
+	{ "UNKNOWN_1972", UNKNOWN_1972 },
+	{ "UNKNOWN_1977", UNKNOWN_1977 },
 };
 
-static const Register timing[] = {
-	{ "D1CRTC_H_TOTAL", D1CRTC_H_TOTAL, 0 },
-	{ "D1CRTC_H_BLANK_START_END", D1CRTC_H_BLANK_START_END, 0 },
-	{ "D1CRTC_V_TOTAL", D1CRTC_V_TOTAL, 0 },
-	{ "AVIVO_D1CRTC_V_BLANK_START_END", AVIVO_D1CRTC_V_BLANK_START_END, 0 },
-	{ "UNKNOWN_0A12", UNKNOWN_0A12, 0 },
-};
-
-static uint32_t saved[sizeof scaler / sizeof scaler[0]];
-
-static void log_registers(const char *when)
+static void log_scaler(const char *when)
 {
-	for (uint32_t i = 0; i < sizeof timing / sizeof timing[0]; i++)
-		xsdk_log_write("720p: %s: %s %08X", when, timing[i].name, (unsigned)probe_gpu_registers[timing[i].index]);
-	for (uint32_t i = 0; i < sizeof scaler / sizeof scaler[0]; i++)
+	for (uint32_t i = 0; i < SCALER_REGISTERS; i++)
 		xsdk_log_write("720p: %s: %s %08X", when, scaler[i].name, (unsigned)probe_gpu_registers[scaler[i].index]);
+}
+
+static void log_display(void)
+{
+	VIDEO_MODE mode;
+	VdQueryVideoMode(&mode);
+	xsdk_log_write("720p: VdQueryVideoMode: %ux%u, interlaced %u, widescreen %u, hi-def %u, standard %u",
+		(unsigned)mode.display_width, (unsigned)mode.display_height, (unsigned)mode.is_interlaced,
+		(unsigned)mode.is_widescreen, (unsigned)mode.is_hi_def, (unsigned)mode.video_standard);
+	DISPLAY_INFO info;
+	VdGetCurrentDisplayInformation(&info);
+	xsdk_log_write("720p: VdGetCurrentDisplayInformation: front buffer %ux%u, display %ux%u, interlaced %u",
+		(unsigned)info.front_buffer_width, (unsigned)info.front_buffer_height, (unsigned)info.display_width,
+		(unsigned)info.display_height, (unsigned)info.display_interlaced);
+	for (uint32_t i = 0; i < sizeof info.scaler_parameters / sizeof info.scaler_parameters[0]; i++)
+		xsdk_log_write("720p: scaler parameter %u: %08X", (unsigned)i, (unsigned)info.scaler_parameters[i]);
+	xsdk_log_write("720p: D1CRTC_H_TOTAL %08X, D1CRTC_H_BLANK_START_END %08X",
+		(unsigned)probe_gpu_registers[D1CRTC_H_TOTAL], (unsigned)probe_gpu_registers[D1CRTC_H_BLANK_START_END]);
 }
 
 // The display reads a word's bytes as B, G, R, A (docs/HARDWARE.md, "A title's buffer on screen").
@@ -126,17 +145,29 @@ static void draw_image(volatile uint32_t *pixels)
 	__asm__ volatile("sync" ::: "memory");
 }
 
+// Source over output in 8.24, as the kernel's factors read: a third for 640 to 1920 (docs/HARDWARE.md).
+static uint32_t scale(uint32_t source, uint32_t output)
+{
+	return (uint32_t)(((uint64_t)source << SCALE_ONE_LOG2) / output);
+}
+
+// (taps + 2) / 2 + scale / 2 in 16.16, which fits the kernel's and libxenon's phases (docs/HARDWARE.md).
+static uint32_t phase(uint32_t taps, uint32_t scale_8_24)
+{
+	return ((taps + 2) << 15) + (scale_8_24 >> 9);
+}
+
 static void write_scaler(const uint32_t *values)
 {
 	volatile uint32_t *const r = probe_gpu_registers;
 	r[AVIVO_D1SCL_UPDATE] = 1;
-	for (uint32_t i = 0; i < sizeof scaler / sizeof scaler[0]; i++)
+	for (uint32_t i = 0; i < SCALER_REGISTERS; i++)
 		r[scaler[i].index] = values[i];
 	r[AVIVO_D1SCL_UPDATE] = 0;
 }
 
 // xsdk_display_show's writes for a WIDTH by HEIGHT surface, then 0x60EC.
-static uint32_t show_native(uint32_t address)
+static void show(uint32_t address)
 {
 	volatile uint32_t *const r = probe_gpu_registers;
 	r[UNKNOWN_0A10] = address;
@@ -146,16 +177,14 @@ static uint32_t show_native(uint32_t address)
 	r[D1GRPH_X_END] = WIDTH;
 	r[D1GRPH_Y_END] = HEIGHT;
 	r[D1CRTC_DOUBLE_BUFFER_CONTROL] = 1;
-	uint32_t polls = 0;
-	while (r[D1CRTC_DOUBLE_BUFFER_CONTROL] && polls < DOUBLE_BUFFER_POLLS)
-		polls++;
+	for (uint32_t polls = 0; r[D1CRTC_DOUBLE_BUFFER_CONTROL] && polls < DOUBLE_BUFFER_POLLS; polls++)
+		;
 	r[D1CRTC_DOUBLE_BUFFER_CONTROL] = 0;
-	return polls;
 }
 
 int main(void)
 {
-	xsdk_log_write("720p probe");
+	xsdk_log_write("720p scaling probe");
 	const NTSTATUS status = xsdk_gpu_open();
 	uint32_t width = 0;
 	uint32_t height = 0;
@@ -165,30 +194,46 @@ int main(void)
 		(unsigned)width, (unsigned)height);
 	if (!NT_SUCCESS(display_status) || !pixels)
 		return 1;
+	log_display();
+	log_scaler("at start");
+	uint32_t saved[SCALER_REGISTERS];
+	for (uint32_t i = 0; i < SCALER_REGISTERS; i++)
+		saved[i] = probe_gpu_registers[scaler[i].index];
+	VIDEO_MODE mode;
+	VdQueryVideoMode(&mode);
+	if (!mode.display_width || !mode.display_height)
+		return 1;
 	draw_image(pixels);
 	const uint32_t address = xsdk_gpu_address(pixels);
-	log_registers("at start");
-	for (uint32_t i = 0; i < sizeof scaler / sizeof scaler[0]; i++)
-		saved[i] = probe_gpu_registers[scaler[i].index];
 
-	const NTSTATUS shown = xsdk_display_show(address, WIDTH);
-	xsdk_log_write("720p: phase A, the image in the %ux%u viewport, scaled: 0x%08X; %u ms", (unsigned)width,
-		(unsigned)height, (unsigned)shown, (unsigned)SCALED_MS);
+	const uint32_t horizontal = scale(WIDTH, mode.display_width);
+	const uint32_t vertical = scale(HEIGHT, mode.display_height);
+	uint32_t values[SCALER_REGISTERS] = { 0 };
+	values[SCALER_ENABLE] = 1;
+	values[SCALER_TAP_CONTROL] = TAP_CONTROL;
+	values[VIEWPORT_SIZE] = WIDTH << 16 | HEIGHT;
+	values[VIEWPORT_WIDTH_QUARTER] = WIDTH / 4 - 1;
+	values[HORIZONTAL_SCALE] = horizontal;
+	values[VERTICAL_SCALE] = vertical;
+	values[REGISTER_1970] = 1 << SCALE_ONE_LOG2;
+	values[HORIZONTAL_PHASE] = phase(TAP_CONTROL >> 8 & 0xF, horizontal);
+	values[VERTICAL_PHASE] = phase(TAP_CONTROL & 0xF, vertical);
+	write_scaler(values);
+	show(address);
+	xsdk_log_write("720p: phase A, 1280x720 scaled to %ux%u with the formula's phases; %u ms",
+		(unsigned)mode.display_width, (unsigned)mode.display_height, (unsigned)SCALED_MS);
+	log_scaler("in phase A");
 	(void)xsdk_thread_sleep(SCALED_MS);
 
-	uint32_t native[sizeof scaler / sizeof scaler[0]];
-	for (uint32_t i = 0; i < sizeof scaler / sizeof scaler[0]; i++)
-		native[i] = scaler[i].native;
-	write_scaler(native);
-	const uint32_t polls = show_native(address);
-	xsdk_log_write("720p: phase B, the image 1:1 with libxenon's scaler settings; 0x60EC cleared after %u reads; %u ms",
-		(unsigned)polls, (unsigned)NATIVE_MS);
-	log_registers("in phase B");
-	(void)xsdk_thread_sleep(NATIVE_MS);
+	values[HORIZONTAL_PHASE] = 0;
+	values[VERTICAL_PHASE] = 0;
+	write_scaler(values);
+	xsdk_log_write("720p: phase B, the same with both phases 0; %u ms", (unsigned)ZERO_PHASE_MS);
+	(void)xsdk_thread_sleep(ZERO_PHASE_MS);
 
 	write_scaler(saved);
 	xsdk_display_close();
-	log_registers("restored");
+	log_scaler("restored");
 	xsdk_gpu_free(pixels);
 	xsdk_log_write("720p: done; the GPU goes back at exit");
 	return 0;
