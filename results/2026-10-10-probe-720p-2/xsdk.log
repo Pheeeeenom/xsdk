@@ -1,0 +1,63 @@
+log: game:\xsdk.log
+720p scaling probe
+720p: GPU 0x00000000, display 0x00000000 640x480
+720p: VdQueryVideoMode: 1920x1080, interlaced 0, widescreen 1, hi-def 1, standard 1
+720p: VdGetCurrentDisplayInformation: front buffer 640x480, display 1920x1080, interlaced 0
+720p: scaler parameter 0: 00000000
+720p: scaler parameter 1: 00000000
+720p: scaler parameter 2: 00000280
+720p: scaler parameter 3: 000001E0
+720p: scaler parameter 4: 00000780
+720p: scaler parameter 5: 00000438
+720p: scaler parameter 6: 00000001
+720p: scaler parameter 7: 00000000
+720p: scaler parameter 8: 00000000
+720p: scaler parameter 9: 00000000
+720p: scaler parameter 10: 00000001
+720p: scaler parameter 11: 00000000
+720p: scaler parameter 12: 00000000
+720p: scaler parameter 13: 00000000
+720p: D1CRTC_H_TOTAL 00000897, D1CRTC_H_BLANK_START_END 00BF083F
+720p: at start: AVIVO_D1SCL_SCALER_ENABLE 00000001
+720p: at start: AVIVO_D1SCL_SCALER_TAP_CONTROL 00000505
+720p: at start: AVIVO_D1MODE_VIEWPORT_SIZE 028001E0
+720p: at start: UNKNOWN_197A 0000009F
+720p: at start: AVIVO_D1MODE_VIEWPORT_START 00000000
+720p: at start: UNKNOWN_1968 00000000
+720p: at start: UNKNOWN_196D 00555560
+720p: at start: UNKNOWN_1971 0071C720
+720p: at start: UNKNOWN_196C 00000000
+720p: at start: UNKNOWN_1970 01000000
+720p: at start: UNKNOWN_196E 0003AA00
+720p: at start: UNKNOWN_1972 0003B800
+720p: at start: UNKNOWN_1977 00000000
+720p: phase A, 1280x720 scaled to 1920x1080 with the formula's phases; 10000 ms
+720p: in phase A: AVIVO_D1SCL_SCALER_ENABLE 00000001
+720p: in phase A: AVIVO_D1SCL_SCALER_TAP_CONTROL 00000505
+720p: in phase A: AVIVO_D1MODE_VIEWPORT_SIZE 050002D0
+720p: in phase A: UNKNOWN_197A 0000013F
+720p: in phase A: AVIVO_D1MODE_VIEWPORT_START 00000000
+720p: in phase A: UNKNOWN_1968 00000000
+720p: in phase A: UNKNOWN_196D 00AAAAA0
+720p: in phase A: UNKNOWN_1971 00AAAAA0
+720p: in phase A: UNKNOWN_196C 00000000
+720p: in phase A: UNKNOWN_1970 01000000
+720p: in phase A: UNKNOWN_196E 0003D400
+720p: in phase A: UNKNOWN_1972 0003D400
+720p: in phase A: UNKNOWN_1977 00000000
+720p: phase B, the same with both phases 0; 8000 ms
+720p: restored: AVIVO_D1SCL_SCALER_ENABLE 00000001
+720p: restored: AVIVO_D1SCL_SCALER_TAP_CONTROL 00000505
+720p: restored: AVIVO_D1MODE_VIEWPORT_SIZE 028001E0
+720p: restored: UNKNOWN_197A 0000009F
+720p: restored: AVIVO_D1MODE_VIEWPORT_START 00000000
+720p: restored: UNKNOWN_1968 00000000
+720p: restored: UNKNOWN_196D 00555560
+720p: restored: UNKNOWN_1971 0071C720
+720p: restored: UNKNOWN_196C 00000000
+720p: restored: UNKNOWN_1970 01000000
+720p: restored: UNKNOWN_196E 0003AA00
+720p: restored: UNKNOWN_1972 0003B800
+720p: restored: UNKNOWN_1977 00000000
+720p: done; the GPU goes back at exit
+exit: status 0

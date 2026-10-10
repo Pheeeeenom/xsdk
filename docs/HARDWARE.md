@@ -875,3 +875,22 @@ a mode shown 1:1 (libxenon:drivers/xenos/xenos.c:381-417), logging the display's
 - **0x6024, libxenon's `AVIVO_D1CRTC_V_BLANK_START_END`, changed between reads,** and `D1CRTC_V_TOTAL` read 0, which
   libxenon also writes (xenos.c:340), so neither gives the output's height.
 - **Putting the registers back returned the display to the kernel's mode,** and the console went back to Aurora.
+
+## Scaling 1280x720 by hand scrambles it (2026-10-10)
+
+`tests/probe_720p.c` showed the 1280x720 test image scaled to the console's output with the scaler on, the kernel's
+tap control 0x505, scale factors of source over output in 8.24, and start phases from a formula that fits the
+kernel's and libxenon's values, then with both phases 0 (log: `results/2026-10-10-probe-720p-2/xsdk.log`, with one
+capture whose phase the user didn't say).
+
+- **The output is 1920x1080 progressive by the kernel's own account:** `VdQueryVideoMode` gave 1920x1080, not
+  interlaced, widescreen and hi-def, and `VdGetCurrentDisplayInformation` a 640x480 front buffer on a 1920x1080
+  display, its scaler parameters a 640x480 source rectangle, a 1920x1080 output and filter type 1 both ways.
+- **The scaler registers drop low bits.** The scale written as 0x00AAAAAA read back 0x00AAAAA0, and the phase written
+  as 0x3D555 read 0x3D400, which fits the kernel's own values ending in zeros.
+- **The image came out scrambled.** The capture shows a narrow copy of the image's frame, its border and all four
+  corner squares striped every other line, across the left sixth of the screen, and the middle blocks larger in the
+  middle. The same surface showed whole at 1:1 the run before, so the scaler, not the surface, is set wrong; which of
+  its registers isn't known. The kernel builds the scaler's packets itself in `VdInitializeScalerCommandBuffer`
+  (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:270-293), which the next probe asks it for.
+- **Putting the registers back returned the kernel's scaling,** and the console went back to Aurora.

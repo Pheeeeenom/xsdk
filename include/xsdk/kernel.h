@@ -280,6 +280,17 @@ uint32_t VdInitializeEngines(
 	uint32_t flags, void *callback, void *context, const uint32_t *pfp_microcode, const uint32_t *me_microcode);
 // size_log2 is log2 of the ring's size in 8-byte units (xenia:src/xenia/gpu/command_processor.cc:312).
 void VdInitializeRingBuffer(uint32_t physical_address, uint32_t size_log2);
+// xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:70-75
+typedef struct {
+	float nyquist;
+	float flicker_filter;
+	float beta;
+} D3DFILTER_PARAMETERS;
+// Writes packets that set the scaler; Xenia writes NOPs (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:270-293).
+uint32_t VdInitializeScalerCommandBuffer(uint32_t source_xy, uint32_t source_wh, uint32_t output_xy, uint32_t output_wh,
+	uint32_t front_buffer_wh, uint32_t vertical_filter_type, const D3DFILTER_PARAMETERS *vertical_filter,
+	uint32_t horizontal_filter_type, const D3DFILTER_PARAMETERS *horizontal_filter, void *unknown, uint32_t *commands,
+	uint32_t command_dwords);
 void VdQueryVideoMode(VIDEO_MODE *mode);
 // Bit 30 always set, bits 28-29 the colour space (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:166-183).
 uint32_t VdSetDisplayMode(uint32_t flags);
