@@ -1,0 +1,29 @@
+log: game:\xsdk.log
+engines probe
+engines: at start: 0x07D8 00007FFF (bit 28: halted), RBBM_STATUS 00040110 (bit 31: busy)
+engines: at start: base 01B9D000, control 00020309, read pointer write-back 01B9F03E, read 000000D3, write 000000D3
+engines: at start: VdGlobalDevice holds 00000000, VdGlobalXamDevice holds 7882FA00
+engines: ring at 0xbfc40000 (physical 1FC40000), write-back page at 0xbfc30000 (physical 1FC30000)
+engines: XAM's device moved the write pointer 15 times in 250 ms
+engines: calling VdInitializeEngines with no microcode
+engines: VdInitializeEngines returned 00000001; its callback ran 0 times
+engines: after VdInitializeEngines: 0x07D8 06007FFF (bit 28: halted), RBBM_STATUS 00040110 (bit 31: busy)
+engines: after VdInitializeEngines: base 00000000, control 08020000, read pointer write-back 01B9F03E, read 00000000, write 00000000
+engines: after VdInitializeEngines: VdGlobalDevice holds 00000000, VdGlobalXamDevice holds 00000000
+engines: the write pointer moved 0 times in 250 ms after VdInitializeEngines
+engines: after the kernel's ring set-up: 0x07D8 06007FFF (bit 28: halted), RBBM_STATUS 00040110 (bit 31: busy)
+engines: after the kernel's ring set-up: base 1FC40000, control 0002060C, read pointer write-back 1FC30002, read 00000000, write 00000000
+engines: fence 0: appending at dword 4
+engines: fence 0 after 1 ms: MEM_WRITE 4D454D57 (landed), scratch 53435230 (landed), read pointer write-back 0000000D
+engines: fence 1: appending at dword 13
+engines: fence 1 after 1 ms: MEM_WRITE 4D454D58 (landed), scratch 53435231 (landed), read pointer write-back 00000016
+engines: fence 2: appending at dword 22
+engines: fence 2 after 1 ms: MEM_WRITE 4D454D59 (landed), scratch 53435232 (landed), read pointer write-back 0000001F
+engines: after the fences: 0x07D8 06007FFF (bit 28: halted), RBBM_STATUS 00040110 (bit 31: busy)
+engines: after the fences: base 1FC40000, control 0002060C, read pointer write-back 1FC30002, read 0000001F, write 0000001F
+engines: calling VdShutdownEngines
+engines: after VdShutdownEngines: 0x07D8 00007FFF (bit 28: halted), RBBM_STATUS 00040110 (bit 31: busy)
+engines: after VdShutdownEngines: base 01B9D000, control 00020309, read pointer write-back 01B9F03E, read 0000003D, write 0000003D
+engines: after VdShutdownEngines: VdGlobalDevice holds 00000000, VdGlobalXamDevice holds 7882FA00
+engines: the write pointer moved 15 times in 250 ms after VdShutdownEngines; the callback ran 1 times
+exit: status 0

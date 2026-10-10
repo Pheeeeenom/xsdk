@@ -292,3 +292,21 @@ interrupt callback alone (log: `results/2026-10-10-probe-engines/xsdk.log`).
 So SCOPE.md section 3.2 has an answer in option 2's spirit: a title takes the command processor with
 `VdInitializeEngines` and no microcode, and the kernel's ring calls work after it. Still open are giving the GPU back
 cleanly and an `EVENT_WRITE` fence.
+
+## Giving the GPU back with VdShutdownEngines (2026-10-10)
+
+`tests/probe_engines.c` took the GPU as before, submitted three scratch fences, and gave the GPU back with
+`VdShutdownEngines` (log: `results/2026-10-10-probe-engines-2/xsdk.log`, xbWatson's copy; the file on the console
+stopped mid-line at 2050 bytes).
+
+- **Fences repeat.** Each of the three fences' `MEM_WRITE` and scratch values landed within 1 ms, and the read pointer
+  write-back reached 0x0D, 0x16 and 0x1F.
+- **`VdShutdownEngines` gives the GPU back to XAM.** Afterwards 0x07D8 read 0x00007FFF again, the ring registers held
+  XAM's ring again (base 0x01B9D000, control 0x00020309, write-back 0x01B9F03E), `VdGlobalXamDevice` held 0x7882FA00
+  again, and XAM's write pointer moved 15 times in 250 ms.
+- **`VdShutdownEngines` calls the callback passed to `VdInitializeEngines`,** once. The probe's callback takes no
+  arguments.
+- **The title exited normally and the console returned to Aurora.**
+
+So a title drives the command processor with `VdInitializeEngines(0x4F810000, callback, context, 0, 0)`,
+`VdInitializeRingBuffer`, `VdEnableRingBufferRPtrWriteBack`, its packets, and `VdShutdownEngines` before it exits.

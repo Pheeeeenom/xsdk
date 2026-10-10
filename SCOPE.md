@@ -277,6 +277,11 @@ buffer and uses the kernel's `Vd*` exports for setup, interrupts and the swap.
      a title do that is unverified.
   3. **Ship libxenon's copy.** This is legally the same question as the corpus.
 - **Recommendation:** try option 1 at milestone 4, then option 2, and decide on 3 only if both fail.
+- **Answer (milestone 4, docs/HARDWARE.md):** option 1 fails: the PFP microcode doesn't read back, and reading either
+  microcode RAM hangs the GPU. Option 2 works in a different form. XAM's own D3D device uses the command processor
+  while a title runs, and `VdInitializeEngines` is what makes it give the GPU up. Called with no microcode, it leaves a
+  command processor that runs the title's packets, and `VdShutdownEngines` hands the GPU back to XAM. The SDK
+  supplies no microcode.
 
 ### 3.3 Packets
 
