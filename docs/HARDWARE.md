@@ -764,3 +764,22 @@ slanted the other way, so a capture shows both and a quad sampling the other tex
 - **The capture shows both as written:** on the left the linear texture as before; on the right green rising to the
   right and red downwards, a blue seam from the top left corner to texel (95, 95) on the bottom edge, and a teal corner
   cut off from texel 128 on the top edge to row 31 on the right.
+
+## Render to texture, milestone 8 (2026-10-10)
+
+The test title passed all 77 checks on the console and exited with status 0; the log is in
+`results/2026-10-10-milestone-8/xsdk.log`, with the user's captures of each half beside it.
+
+- **A scene resolved into a texture that a second pass sampled.** Each of 120 frames drew the source texture mirrored
+  over a 160x96 render target, resolved it into that tiled texture with `xsdk_gpu_resolve_texture`, then drew the
+  source and the render target side by side on screen. The rendered quad held the mirrored source in every texel in
+  the last frame of each half, and its sampled texels in every frame, through the switch from mirroring left to right
+  to top to bottom at frame 60, so no frame sampled a stale texture. The render target started magenta.
+- **The resolve's 8-in-32 byte order leaves ARGB words,** as for libxenon's ARGB surfaces
+  (libxenon:drivers/xenos/xe.c:1104-1108): sampled with the same fetch constant as an uploaded texture, every colour
+  came out right.
+- **Both resolve sizes in each frame came out right** with a rectangle kept for each; this run didn't time whether the
+  CPU still waited.
+- **The captures show both halves as written:** first the right quad mirrored left to right, magenta at its top left
+  and its seam from about texel 32 at the top to 127 at the bottom; then mirrored top to bottom, navy at its bottom
+  left and its seam from texel 33 at the top to 128 at the bottom.
