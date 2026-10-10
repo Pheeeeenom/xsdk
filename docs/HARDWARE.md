@@ -241,6 +241,14 @@ sets its own stops them.
   with source 0, twice the rate XAM submitted at. Xenia calls it once per vsync (120 times in 2000 ms,
   xenia:src/xenia/gpu/graphics_system.cc:272).
 - **The GPU stayed idle,** and the ring registers kept XAM's ring.
+- **Taking XAM's callback breaks XAM once the title exits.** The console froze on the way back to Aurora. In an
+  xbWatson minidump taken then, XAM's thread that checks its device holds "The GPU is hung and can't be recovered
+  without doing a cold boot." in its live frames. Aurora's main thread is blocked early in its start-up: Aurora called
+  into the kernel (return address 0x800C7E4C), the kernel called into XAM (`xamd.dll`+0xDC278), and XAM is waiting.
+  The probe never wrote a GPU register and left the GPU idle, so XAM's device seems to need its callback to finish its
+  work, and nothing gave it back. A title can't give it back itself, since no export returns the current callback.
 
-So a title can stop XAM's device by setting its own callback, then take the command processor once XAM's last packets
-have run.
+So a title's callback stops XAM's device, but XAM can't recover afterwards. Aurora's start-up waits on XAM through the
+kernel, which suggests D3D titles take the GPU from XAM through a kernel call. Xenia lists exports that fit
+(`VdRegisterXamGraphicsNotification`, `VdCallGraphicsNotificationRoutines`, `VdBlockUntilGUIIdle`) but stubs them
+(xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_table.inc:446-447, 476; xboxkrnl_video.cc:310-319).

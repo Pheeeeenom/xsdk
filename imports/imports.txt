@@ -37,6 +37,8 @@ xboxkrnl.exe  0x153  KeTlsFree                           1
 xboxkrnl.exe  0x154  KeTlsGetValue                       1
 xboxkrnl.exe  0x155  KeTlsSetValue                       2
 xboxkrnl.exe  0x18A  XeCryptRandom                       2
+xboxkrnl.exe  0x195  XexGetModuleHandle                  2
+xboxkrnl.exe  0x197  XexGetProcedureAddress              3
 xboxkrnl.exe  0x1B6  VdEnableRingBufferRPtrWriteBack     2
 xboxkrnl.exe  0x1BE  VdGlobalDevice                      variable
 xboxkrnl.exe  0x1BF  VdGlobalXamDevice                   variable

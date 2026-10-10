@@ -251,6 +251,10 @@ void VdInitializeRingBuffer(uint32_t physical_address, uint32_t size_log2);
 typedef void (*VdGraphicsInterruptCallback)(uint32_t source, void *context);
 void VdSetGraphicsInterruptCallback(VdGraphicsInterruptCallback callback, void *context);
 void XeCryptRandom(void *buffer, uint32_t length_bytes);
+// Return 0 on success; module names a loaded module, such as "xboxkrnl.exe"
+// (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_modules.cc:42-62, 142-186).
+uint32_t XexGetModuleHandle(const char *module_name, HANDLE *module);
+NTSTATUS XexGetProcedureAddress(HANDLE module, uint32_t ordinal, void **address);
 
 // xam.xex
 uint32_t XamInputGetState(uint32_t user_index, uint32_t flags, INPUT_STATE *state);
