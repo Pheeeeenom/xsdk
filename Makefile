@@ -20,15 +20,18 @@ IMPORT_SOURCES := $(IMPORT_NAMES:%=$(BUILD)/imports/%.S)
 SDK_OBJECTS := $(patsubst src/%,$(BUILD)/sdk/%.o,$(basename $(SDK_SOURCES))) $(IMPORT_NAMES:%=$(BUILD)/imports/%.o)
 
 TEST_SOURCES := tests/main.c tests/test_image.c tests/test_threads.c tests/test_files.c tests/test_input.c \
-	tests/test_audio.c tests/audio_entry.S
+	tests/test_audio.c tests/audio_entry.S tests/audio_frame.c
 TEST_OBJECTS := $(patsubst tests/%,$(BUILD)/tests/%.o,$(basename $(TEST_SOURCES)))
+# A title for listening to the audio frame layout on the console.
+AUDIO_CHECK_SOURCES := tests/audio_check.c tests/audio_check_entry.S tests/audio_frame.c
+AUDIO_CHECK_OBJECTS := $(patsubst tests/%,$(BUILD)/tests/%.o,$(basename $(AUDIO_CHECK_SOURCES)))
 # Bring-up probes: titles that each answer one question on the console.
 PROBES := probe_spin probe_print
 
 .PHONY: all clean
 # Keep the ELFs and objects that pattern rules build on the way to a .xex.
 .SECONDARY:
-all: $(BUILD)/xsdk_test.xex $(PROBES:%=$(BUILD)/%.xex)
+all: $(BUILD)/xsdk_test.xex $(BUILD)/audio_check.xex $(PROBES:%=$(BUILD)/%.xex)
 
 $(BUILD)/%.xex: $(BUILD)/%.elf tools/elf2xex.py
 	$(PYTHON) tools/elf2xex.py $< $@
@@ -36,6 +39,9 @@ $(BUILD)/%.xex: $(BUILD)/%.elf tools/elf2xex.py
 $(BUILD)/xsdk_test.elf: $(BUILD)/sdk/crt0.o $(TEST_OBJECTS) $(BUILD)/libxsdk.a src/xsdk.ld
 	$(CC) $(LDFLAGS) -Wl,-Map,$(BUILD)/xsdk_test.map -o $@ $(BUILD)/sdk/crt0.o $(TEST_OBJECTS) $(LIBS)
 	$(OBJDUMP) -d $@ | $(PYTHON) tools/xenia_scan.py
+
+$(BUILD)/audio_check.elf: $(BUILD)/sdk/crt0.o $(AUDIO_CHECK_OBJECTS) $(BUILD)/libxsdk.a src/xsdk.ld
+	$(CC) $(LDFLAGS) -o $@ $(BUILD)/sdk/crt0.o $(AUDIO_CHECK_OBJECTS) $(LIBS)
 
 $(BUILD)/probe_%.elf: $(BUILD)/sdk/crt0.o $(BUILD)/tests/probe_%.o $(BUILD)/libxsdk.a src/xsdk.ld
 	$(CC) $(LDFLAGS) -o $@ $(BUILD)/sdk/crt0.o $(BUILD)/tests/probe_$*.o $(LIBS)
