@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdint.h>
 #include <time.h>
 
@@ -9,8 +10,8 @@
 // VdInitializeEngines, which has XAM's D3D device give up the GPU (docs/HARDWARE.md). This calls it with no microcode,
 // to see whether the kernel hands the GPU over and keeps the microcode already running. It leaves XAM's interrupt
 // callback alone, sets the ring up with the kernel's calls, and submits a few of libxenon's scratch fences, each with a
-// MEM_WRITE. It then gives the GPU back with VdShutdownEngines and watches for XAM's device to resume. It leaves out
-// EVENT_WRITE_SHD, which wedged the GPU here and kept VdShutdownEngines from returning (docs/HARDWARE.md).
+// MEM_WRITE, then EVENT_WRITE_SHD fences. It then gives the GPU back with VdShutdownEngines and watches for XAM's
+// device to resume, unless a fence wedged the GPU: VdShutdownEngines then never returns (docs/HARDWARE.md).
 
 enum {
 	RING_BYTES = 0x8000,
@@ -28,6 +29,9 @@ enum {
 	POISON = 0xDEADBEEF,
 	MEM_WRITE_VALUE = 0x4D454D57,
 	SCRATCH_VALUE = 0x53435230,
+	EVENT_VALUE = 0x45564E54,
+	// RBBM_STATUS bit 31: the GPU is busy (libxenon:drivers/xenos/xe.c:258).
+	GPU_BUSY = 0x80000000,
 };
 
 // Register byte offsets, written through the ring as libxenon's Xe_pWriteReg does (xe.c:28-38); the names are Xenia's
@@ -46,6 +50,7 @@ enum {
 enum {
 	PM4_NOP = 0x10,
 	PM4_MEM_WRITE = 0x3D,
+	PM4_EVENT_WRITE_SHD = 0x58,
 	// A packet address's low bits pick a byte swap; 2 swaps the bytes of each dword (xenos.h:193-197).
 	SWAP_8IN32 = 2,
 };
@@ -54,8 +59,21 @@ enum {
 enum {
 	RPTR_SLOT = 0x00,
 	MEM_WRITE_SLOT = 0x10,
+	EVENT_SLOT = 0x20,
 	SCRATCH_SLOT = 0x100,
 };
+
+// Events for VGT_EVENT_INITIATOR (xenia:src/xenia/gpu/xenos.h:1541-1566).
+enum {
+	VS_DONE_TS = 2,
+	PS_DONE_TS = 3,
+	CACHE_FLUSH_TS = 4,
+};
+
+// EVENT_WRITE_SHD writes its value once its event has passed through the pipeline; Xenia calls it "a VS|PS_done event"
+// (xenia:src/xenia/gpu/xenos.h:1595). CACHE_FLUSH_AND_INV_TS_EVENT wedged the GPU (docs/HARDWARE.md), so this tries the
+// shader-done events first, then the plain cache-flush timestamp, stopping at the first that doesn't land.
+static const uint32_t fence_events[] = { VS_DONE_TS, PS_DONE_TS, CACHE_FLUSH_TS };
 
 // Volatile, so each put is one 32-bit store: GCC merges plain ones into 64-bit stores, and one at an address that isn't
 // 8-byte aligned faults in write-combined memory (docs/HARDWARE.md).
@@ -196,7 +214,28 @@ static void submit_fence(Ring *ring, volatile uint32_t *writeback, uint32_t writ
 		(unsigned)scratch_seen, describe(scratch_seen, scratch_value), (unsigned)writeback[RPTR_SLOT / 4]);
 }
 
-static void submit_fences(volatile uint32_t *ring_memory, volatile uint32_t *writeback, uint32_t writeback_physical)
+// Returns whether the event's value landed.
+static bool submit_event_fence(Ring *ring, volatile uint32_t *writeback, uint32_t writeback_physical, uint32_t event)
+{
+	writeback[EVENT_SLOT / 4] = POISON;
+	__asm__ volatile("sync" ::: "memory");
+	const uint32_t value = EVENT_VALUE + event;
+	xsdk_log_write("engines: event %u: appending at dword %u", (unsigned)event, (unsigned)ring->write_index);
+	put_type3(ring, PM4_EVENT_WRITE_SHD, 3);
+	put(ring, event);
+	put(ring, (writeback_physical + EVENT_SLOT) | SWAP_8IN32);
+	put(ring, value);
+	kick(ring);
+	const uint32_t waited_ms = wait_for_write(&writeback[EVENT_SLOT / 4]);
+	const uint32_t seen = writeback[EVENT_SLOT / 4];
+	xsdk_log_write("engines: event %u after %u ms: EVENT_WRITE_SHD %08X (%s), read pointer write-back %08X",
+		(unsigned)event, (unsigned)waited_ms, (unsigned)seen, describe(seen, value),
+		(unsigned)writeback[RPTR_SLOT / 4]);
+	return seen == value;
+}
+
+// Returns false when the GPU ended busy, wedged by a fence.
+static bool submit_fences(volatile uint32_t *ring_memory, volatile uint32_t *writeback, uint32_t writeback_physical)
 {
 	// Append after whatever the kernel left in the ring.
 	Ring ring = { .ring = ring_memory, .write_index = read_register(0x0714) };
@@ -204,7 +243,13 @@ static void submit_fences(volatile uint32_t *ring_memory, volatile uint32_t *wri
 	put_register(&ring, SCRATCH_UMSK, SCRATCH_UMSK_VALUE);
 	for (uint32_t sequence = 0; sequence < FENCES; sequence++)
 		submit_fence(&ring, writeback, writeback_physical, sequence);
-	report_state("after the fences");
+	report_state("after the scratch fences");
+	for (uint32_t i = 0; i < sizeof fence_events / sizeof fence_events[0]; i++) {
+		if (!submit_event_fence(&ring, writeback, writeback_physical, fence_events[i]))
+			break;
+	}
+	report_state("after the event fences");
+	return !(read_register(0x1740) & GPU_BUSY);
 }
 
 int main(void)
@@ -244,13 +289,18 @@ int main(void)
 	xsdk_log_write("engines: the write pointer moved %u times in %u ms after VdInitializeEngines", (unsigned)moves,
 		(unsigned)WATCH_MS);
 
+	bool idle = true;
 	if (moves == 0) {
 		VdInitializeRingBuffer(ring_physical, RING_SIZE_LOG2);
 		VdEnableRingBufferRPtrWriteBack(writeback_physical + RPTR_SLOT, RPTR_BLOCK_SIZE_LOG2);
 		report_state("after the kernel's ring set-up");
-		submit_fences(ring_memory, writeback, writeback_physical);
+		idle = submit_fences(ring_memory, writeback, writeback_physical);
 	} else {
 		xsdk_log_write("engines: XAM's device is still submitting; not using the ring");
+	}
+	if (!idle) {
+		xsdk_log_write("engines: the GPU is wedged; exiting without VdShutdownEngines, which would wait on it");
+		return 1;
 	}
 
 	xsdk_log_write("engines: calling VdShutdownEngines");
