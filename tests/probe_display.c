@@ -5,50 +5,52 @@
 #include "xsdk/log.h"
 #include "xsdk/thread.h"
 
-// The display takes a title's surface but stays black, even with XAM's registers and 0x60EC (docs/HARDWARE.md). Every
-// colour so far had a zero low byte, the alpha if the display reads pixels little-endian, as libxenon's console says
-// (libxenon:drivers/console/console.c:67-70). So this shows white, 0xFFFFFFFF, opaque in any byte order: from a buffer
-// high in memory, where titles' memory lands, then from one low in memory, near XAM's surface at 0x01C10000, both
-// before taking the GPU; then the high one after taking it, then red with an opaque alpha if pixels are little-endian
-// ARGB.
+// When XAM shows the Guide it writes its surface to 0x2840 and 0x2844 as well as D1GRPH, and loads the LUT
+// (docs/HARDWARE.md, "What XAM writes to show the Guide"). After taking the GPU, this shows white with the full surface
+// set, then again after filling the LUT as libxenon does, then red, green and blue as little-endian ARGB with full
+// alpha, then stripes and a diagonal in libxenon's tile layout. It puts the surface back before exiting.
 
 enum {
 	PAGE_BYTES = 0x10000,
 	HOLD_MS = 4000,
+	COLOUR_MS = 3000,
+	PATTERN_HOLD_MS = 5000,
 	APPLY_TIMEOUT_MS = 100,
+	AUTOFILL_TIMEOUT_MS = 100,
+	STRIPE_PIXELS = 64,
 	TILE_PIXELS = 32,
-	GAP_MS = 1500,
-	// Highest physical address tried for the low buffer; XAM's surface was at 0x01C10000.
-	LOW_MEMORY_LIMIT = 0x03FFFFFF,
 	WHITE = 0xFFFFFFFF,
-	// Bytes 00 00 FF FF: alpha and red set if the display reads 0xAARRGGBB little-endian.
-	RED_LITTLE_ENDIAN_ARGB = 0x0000FFFF,
 };
 
-// Display controller registers, in bytes from the register base (libxenon:drivers/xenos/xenos.h:11-54).
+// Display controller registers, in bytes from the register base (libxenon:drivers/xenos/xenos.h:11-54,
+// xenos.c:384-386).
 enum {
+	SURFACE_ADDRESS = 0x2840,
+	SURFACE_PITCH = 0x2844,
 	D1CRTC_DOUBLE_BUFFER_CONTROL = 0x60EC,
 	D1GRPH_PRIMARY_SURFACE_ADDRESS = 0x6110,
 	D1GRPH_PITCH = 0x6120,
 	D1GRPH_X_END = 0x6134,
 	D1GRPH_Y_END = 0x6138,
-	D1GRPH_UPDATE = 0x6144,
-	AVIVO_D1MODE_VIEWPORT_SIZE = 0x6584,
-	// XAM changes these with the viewport width; libxenon writes 0x65E8 as width / 4 - 1 (xenos.c:390).
-	SCALE = 0x65B4,
-	SCALE_PHASE = 0x65B8,
-	LINE_WIDTH = 0x65E8,
+	DC_LUT_RW_MODE = 0x6484,
+	DC_LUT_RW_INDEX = 0x6488,
+	DC_LUT_WRITE_EN_MASK = 0x649C,
+	DC_LUT_AUTOFILL = 0x64A0,
+	DC_LUTA_CONTROL = 0x64C0,
 };
 
 typedef struct {
-	uint32_t surface;
-	uint32_t pitch;
-	uint32_t x_end;
-	uint32_t viewport_size;
-	uint32_t scale;
-	uint32_t scale_phase;
-	uint32_t line_width;
-} Surface;
+	const char *name;
+	uint32_t pixel;
+} Colour;
+
+// 0xAARRGGBB with full alpha, stored little-endian, as libxenon's console says the display reads it
+// (libxenon:drivers/console/console.c:67-70).
+static const Colour colours[] = {
+	{ "red", 0x0000FFFF },
+	{ "green", 0x00FF00FF },
+	{ "blue", 0xFF0000FF },
+};
 
 // GPU registers as titles see them (xenia:src/xenia/gpu/graphics_system.cc:92-95); libxenon's base is the same block.
 static volatile uint32_t *const gpu_registers = (volatile uint32_t *)0x7FC80000;
@@ -63,129 +65,129 @@ static void write_register(uint32_t offset, uint32_t value)
 	gpu_registers[offset / 4] = value;
 }
 
-static Surface read_surface(void)
-{
-	return (Surface){
-		.surface = read_register(D1GRPH_PRIMARY_SURFACE_ADDRESS),
-		.pitch = read_register(D1GRPH_PITCH),
-		.x_end = read_register(D1GRPH_X_END),
-		.viewport_size = read_register(AVIVO_D1MODE_VIEWPORT_SIZE),
-		.scale = read_register(SCALE),
-		.scale_phase = read_register(SCALE_PHASE),
-		.line_width = read_register(LINE_WIDTH),
-	};
-}
-
 static void report(const char *when)
 {
-	const Surface s = read_surface();
 	xsdk_log_write(
-		"display: %s: surface %08X, pitch %08X, x end %08X, y end %08X, viewport %08X, scale %08X, phase "
-		"%08X, line width %08X, update %08X, 60EC %08X",
-		when, (unsigned)s.surface, (unsigned)s.pitch, (unsigned)s.x_end, (unsigned)read_register(D1GRPH_Y_END),
-		(unsigned)s.viewport_size, (unsigned)s.scale, (unsigned)s.scale_phase, (unsigned)s.line_width,
-		(unsigned)read_register(D1GRPH_UPDATE), (unsigned)read_register(D1CRTC_DOUBLE_BUFFER_CONTROL));
+		"display: %s: 2840 %08X, 2844 %08X, surface %08X, pitch %08X, x end %08X, y end %08X, LUT autofill "
+		"%08X, 60EC %08X",
+		when, (unsigned)read_register(SURFACE_ADDRESS), (unsigned)read_register(SURFACE_PITCH),
+		(unsigned)read_register(D1GRPH_PRIMARY_SURFACE_ADDRESS), (unsigned)read_register(D1GRPH_PITCH),
+		(unsigned)read_register(D1GRPH_X_END), (unsigned)read_register(D1GRPH_Y_END),
+		(unsigned)read_register(DC_LUT_AUTOFILL), (unsigned)read_register(D1CRTC_DOUBLE_BUFFER_CONTROL));
 }
 
 // Sets 0x60EC after the registers, as XAM's change showed, and waits for the display to clear it.
 static void apply(void)
 {
 	write_register(D1CRTC_DOUBLE_BUFFER_CONTROL, 1);
+	for (uint32_t waited_ms = 0; read_register(D1CRTC_DOUBLE_BUFFER_CONTROL) && waited_ms < APPLY_TIMEOUT_MS;
+		waited_ms++)
+		(void)xsdk_thread_sleep(1);
+	write_register(D1CRTC_DOUBLE_BUFFER_CONTROL, 0);
+}
+
+// XAM writes the address and pitch to both 0x2840 and D1GRPH (docs/HARDWARE.md).
+static void set_surface(uint32_t physical_address, uint32_t pitch)
+{
+	write_register(SURFACE_ADDRESS, physical_address);
+	write_register(SURFACE_PITCH, pitch);
+	write_register(D1GRPH_PRIMARY_SURFACE_ADDRESS, physical_address);
+	write_register(D1GRPH_PITCH, pitch);
+	write_register(D1GRPH_X_END, pitch);
+	apply();
+}
+
+// libxenon's LUT set-up: autofill writes a linear ramp (libxenon:drivers/xenos/xenos.c:419-424).
+static void fill_lut(void)
+{
+	write_register(DC_LUTA_CONTROL, 0);
+	write_register(DC_LUT_RW_INDEX, 0);
+	write_register(DC_LUT_RW_MODE, 0);
+	write_register(DC_LUT_WRITE_EN_MASK, 7);
+	write_register(DC_LUT_AUTOFILL, 1);
 	uint32_t waited_ms = 0;
-	while (read_register(D1CRTC_DOUBLE_BUFFER_CONTROL) && waited_ms < APPLY_TIMEOUT_MS) {
+	while (!(read_register(DC_LUT_AUTOFILL) & 2) && waited_ms < AUTOFILL_TIMEOUT_MS) {
 		(void)xsdk_thread_sleep(1);
 		waited_ms++;
 	}
-	if (read_register(D1CRTC_DOUBLE_BUFFER_CONTROL)) {
-		xsdk_log_write("display: 0x60EC still 1 after %u ms; clearing it", (unsigned)waited_ms);
-		write_register(D1CRTC_DOUBLE_BUFFER_CONTROL, 0);
-		return;
-	}
-	xsdk_log_write("display: 0x60EC cleared after %u ms", (unsigned)waited_ms);
+	xsdk_log_write("display: LUT autofill %s after %u ms", read_register(DC_LUT_AUTOFILL) & 2 ? "done" : "not done",
+		(unsigned)waited_ms);
 }
 
-static void write_surface(const Surface *s)
+// A pixel's index in 32x32 tiles (libxenon:drivers/console/console.c:60-61; BSD, Copyright 2009 Georg Lukas).
+static uint32_t tiled_index(uint32_t x, uint32_t y, uint32_t width)
 {
-	write_register(D1GRPH_PRIMARY_SURFACE_ADDRESS, s->surface);
-	write_register(D1GRPH_PITCH, s->pitch);
-	write_register(D1GRPH_X_END, s->x_end);
-	write_register(AVIVO_D1MODE_VIEWPORT_SIZE, s->viewport_size);
-	write_register(SCALE, s->scale);
-	write_register(SCALE_PHASE, s->scale_phase);
-	write_register(LINE_WIDTH, s->line_width);
+	return ((y >> 5) * 32 * width + ((x >> 5) << 10) + (x & 3) + ((y & 1) << 2) + (((x & 31) >> 2) << 3) +
+			   (((y & 31) >> 1) << 6)) ^
+		((y & 8) << 2);
 }
 
-static volatile uint32_t *allocate(uint32_t pitch, uint32_t height, uint32_t pixel, uint32_t max_address)
+static void fill(volatile uint32_t *pixels, uint32_t pixel_count, uint32_t pixel)
 {
-	const uint32_t pixel_count = pitch * ((height + TILE_PIXELS - 1) & ~(TILE_PIXELS - 1));
-	const uint32_t bytes = (pixel_count * 4 + PAGE_BYTES - 1) & ~(PAGE_BYTES - 1);
-	volatile uint32_t *const pixels = MmAllocatePhysicalMemoryEx(
-		0, bytes, PAGE_READWRITE | PAGE_WRITECOMBINE | MEM_LARGE_PAGES, 0, max_address, PAGE_BYTES);
-	if (!pixels)
-		return NULL;
 	for (uint32_t i = 0; i < pixel_count; i++)
 		pixels[i] = pixel;
 	__asm__ volatile("sync" ::: "memory");
-	return pixels;
 }
 
-static void show(const Surface *original, uint32_t physical, const char *what)
+// Vertical red and blue stripes with a white diagonal from the top-left corner.
+static void draw_pattern(volatile uint32_t *pixels, uint32_t width, uint32_t height)
 {
-	Surface surface = *original;
-	surface.surface = physical;
-	write_surface(&surface);
-	apply();
-	report(what);
-	xsdk_log_write("display: holding %s for %u ms", what, (unsigned)HOLD_MS);
-	(void)xsdk_thread_sleep(HOLD_MS);
+	for (uint32_t y = 0; y < height; y++) {
+		for (uint32_t x = 0; x < width; x++) {
+			uint32_t pixel = (x / STRIPE_PIXELS) % 2 ? colours[2].pixel : colours[0].pixel;
+			if (x == y || x == y + 1)
+				pixel = WHITE;
+			pixels[tiled_index(x, y, width)] = pixel;
+		}
+	}
+	__asm__ volatile("sync" ::: "memory");
 }
 
-static void blank(const Surface *original)
+static void hold(const char *what, uint32_t ms)
 {
-	write_surface(original);
-	apply();
-	(void)xsdk_thread_sleep(GAP_MS);
+	xsdk_log_write("display: showing %s for %u ms", what, (unsigned)ms);
+	(void)xsdk_thread_sleep(ms);
 }
 
 int main(void)
 {
 	xsdk_log_write("display probe");
 	report("at start");
-	const Surface original = read_surface();
+	const uint32_t old_surface = read_register(D1GRPH_PRIMARY_SURFACE_ADDRESS);
+	const uint32_t width = read_register(D1GRPH_PITCH);
 	const uint32_t height = read_register(D1GRPH_Y_END);
-	volatile uint32_t *const pixels = allocate(original.pitch, height, WHITE, UINT32_MAX);
-	if (!original.pitch || !height || !pixels) {
-		xsdk_log_write("display: no buffer for a %ux%u mode", (unsigned)original.pitch, (unsigned)height);
+	const uint32_t pixel_count = width * ((height + TILE_PIXELS - 1) & ~(TILE_PIXELS - 1));
+	const uint32_t bytes = (pixel_count * 4 + PAGE_BYTES - 1) & ~(PAGE_BYTES - 1);
+	volatile uint32_t *const pixels = MmAllocatePhysicalMemoryEx(
+		0, bytes, PAGE_READWRITE | PAGE_WRITECOMBINE | MEM_LARGE_PAGES, 0, UINT32_MAX, PAGE_BYTES);
+	if (!width || !height || !pixels) {
+		xsdk_log_write("display: no buffer for a %ux%u mode", (unsigned)width, (unsigned)height);
 		return 1;
 	}
 	const uint32_t physical = MmGetPhysicalAddress((const void *)pixels);
-	const uint32_t pixel_count = original.pitch * ((height + TILE_PIXELS - 1) & ~(TILE_PIXELS - 1));
-	volatile uint32_t *const low_pixels = allocate(original.pitch, height, WHITE, LOW_MEMORY_LIMIT);
-	const uint32_t low_physical = low_pixels ? MmGetPhysicalAddress((const void *)low_pixels) : 0;
-	xsdk_log_write("display: high buffer at physical %08X, low buffer at physical %08X", (unsigned)physical,
-		(unsigned)low_physical);
-
-	show(&original, physical, "white from high memory before taking the GPU");
-	blank(&original);
-	if (low_pixels) {
-		show(&original, low_physical, "white from low memory before taking the GPU");
-		blank(&original);
-	}
+	fill(pixels, pixel_count, WHITE);
 
 	const NTSTATUS status = xsdk_gpu_open();
 	if (!NT_SUCCESS(status)) {
 		xsdk_log_write("display: xsdk_gpu_open returned 0x%08X", (unsigned)status);
 		return 1;
 	}
-	show(&original, physical, "white from high memory after taking the GPU");
+	set_surface(physical, width);
+	report("white with 0x2840");
+	hold("white with 0x2840", HOLD_MS);
 
-	for (uint32_t i = 0; i < pixel_count; i++)
-		pixels[i] = RED_LITTLE_ENDIAN_ARGB;
-	__asm__ volatile("sync" ::: "memory");
-	show(&original, physical, "red with alpha, little-endian ARGB");
+	fill_lut();
+	report("after filling the LUT");
+	hold("white after filling the LUT", HOLD_MS);
 
-	write_surface(&original);
-	apply();
+	for (uint32_t i = 0; i < sizeof colours / sizeof colours[0]; i++) {
+		fill(pixels, pixel_count, colours[i].pixel);
+		hold(colours[i].name, COLOUR_MS);
+	}
+	draw_pattern(pixels, width, height);
+	hold("red and blue stripes with a white diagonal", PATTERN_HOLD_MS);
+
+	set_surface(old_surface, width);
 	report("after restoring");
 	return 0;
 }

@@ -441,3 +441,21 @@ runs: XAM's surface shows through the same registers that leave the title's buff
 - **Nothing showed on screen** at any step, opaque white from either buffer included.
 
 So the display is held on the kernel's placeholder while XAM has the GPU, and shows nothing the title gives it after.
+
+## What XAM writes to show the Guide (2026-10-10)
+
+`tests/probe_guide.c` watched wider register blocks while the Guide opened and closed, then snapshotted them around
+`VdInitializeEngines` and `VdShutdownEngines` (log: `results/2026-10-10-probe-guide-2/xsdk.log`).
+
+- **XAM also writes its surface to 0x2840 and 0x2844,** alongside D1GRPH: 0x2840 took 0x01C10000, the same address as
+  0x6110, and 0x2844 took 864, the same as the pitch. libxenon writes its framebuffer address and width there too
+  (libxenon:drivers/xenos/xenos.c:384-386). The earlier probes never wrote them.
+- **XAM loads the LUT as the Guide appears.** `DC_LUT_RW_INDEX` (0x6488) counted up over about 200 ms while 0x648C,
+  0x6490 and 0x6494 took a rising ramp (0x6494 went 0x00100401, 0x00401004, 0x00601806, ...), so the Guide fades in
+  through the LUT. At start `DC_LUT_WRITE_EN_MASK` read 7 and `DC_LUT_AUTOFILL` 2.
+- **0x28BC, 0x28C0 and 0x28C4** went from 0x00010000, 0x01B8D000 and 0x01000000 to 0, 0x1000 and 0x10000 while the Guide
+  showed, and back after.
+- **`VdInitializeEngines` changed none of these registers.** `VdShutdownEngines` handed the display back to XAM, which set
+  a 1280x720 surface at 0x1FC59000 in both 0x2840 and 0x6110, with 1280 in 0x2844, 0x6120 and 0x6134 and 720 in 0x6138.
+
+So a surface shows when 0x2840 and 0x2844 match D1GRPH, and the LUT may be holding the screen black in between.
