@@ -727,3 +727,16 @@ The test title ran again, the present test now logging the three pixels it check
   it to 0 with the rest.
 
 The resolve now sets `PA_SC_AA_CONFIG` to 0, and the SDK gives XAM's value back when it closes the GPU.
+
+## A triangle, milestone 6 (2026-10-10)
+
+The test title passed all 51 checks on the console, exited with status 0 and went back to Aurora without freezing; the
+log is in `results/2026-10-10-milestone-6-4/xsdk.log`.
+
+- **xost-encoded shaders, loaded with `IM_LOAD`, drew a coloured triangle from a vertex buffer.**
+  `xsdk_shader_load` took the containers from `tools/gen_triangle_shaders.py`, `xsdk_shader_set_vertex_layout`
+  patched the vertex fetches for a float4 position and colour, and `xsdk_gpu_set_vertices` wrote vertex fetch constant
+  95 with its group. Each of 120 frames had red, green and blue corners on the clear colour, and the last drew 86160
+  pixels, as in Xenia. The user saw the triangle in the run before.
+- **The present test passed again** with the resolve setting `PA_SC_AA_CONFIG` to 0: every frame held the colour
+  cleared before it.
