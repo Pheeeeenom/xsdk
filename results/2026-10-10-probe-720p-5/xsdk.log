@@ -1,0 +1,74 @@
+log: game:\xsdk.log
+720p line buffer probe
+720p: GPU 0x00000000, display 0x00000000 640x480, output 1920x1080
+720p: at start: 1948 (byte 6520) 00000000
+720p: at start: 1949 (byte 6524) 00000000
+720p: at start: 1952 (byte 6548) 00000000
+720p: at start: 1954 (byte 6550) 000000FF
+720p: at start: 1968 (byte 65A0) 00000000
+720p: at start: 1969 (byte 65A4) 00000000
+720p: at start: 196C (byte 65B0) 00000000
+720p: at start: 196F (byte 65BC) 00000000
+720p: at start: 1970 (byte 65C0) 01000000
+720p: at start: 1973 (byte 65CC) 00000000
+720p: at start: 1974 (byte 65D0) 00000001
+720p: at start: 1977 (byte 65DC) 00000000
+720p: at start: 1978 (byte 65E0) 00000000
+720p: at start: 1979 (byte 65E4) 00000000
+720p: at start: 197A (byte 65E8) 0000009F
+720p: at start: 1B2F (byte 6CBC) 00000003
+720p: at start: 1C46 (byte 7118) 00000780
+720p: grey: 1:1, 6 taps each way: taps 505, filters 00000000 01000000, scale 01000000 by 01000000, phases 00040000 and 00040000; 6000 ms
+720p: read back: taps 505, filters 00000000 01000000, scale 01000000 by 01000000, phases 00040000 and 00040000
+720p: after it: 1949 (byte 6524) 00000000
+720p: after it: 1973 (byte 65CC) 00000000
+720p: after it: 1974 (byte 65D0) 00000001
+720p: after it: 1978 (byte 65E0) 00000000
+720p: blue: scaled, 6 taps each way, as before: taps 505, filters 00000000 01000000, scale 00AAAAAA by 00AAAAAA, phases 0003D555 and 0003D555; 6000 ms
+720p: read back: taps 505, filters 00000000 01000000, scale 00AAAAA0 by 00AAAAA0, phases 0003D400 and 0003D400
+720p: after it: 1949 (byte 6524) 00000000
+720p: after it: 1973 (byte 65CC) 00000000
+720p: after it: 1974 (byte 65D0) 00000001
+720p: after it: 1978 (byte 65E0) 00000000
+720p: green: scaled, 6 horizontal and 4 vertical taps: taps 503, filters 00000000 01000000, scale 00AAAAAA by 00AAAAAA, phases 0003D555 and 0002D555; 6000 ms
+720p: read back: taps 503, filters 00000000 01000000, scale 00AAAAA0 by 00AAAAA0, phases 0003D400 and 0002D400
+720p: after it: 1949 (byte 6524) 00000000
+720p: after it: 1973 (byte 65CC) 00000000
+720p: after it: 1974 (byte 65D0) 00000001
+720p: after it: 1978 (byte 65E0) 00000000
+720p: red: scaled, 6 horizontal and 3 vertical taps: taps 502, filters 00000000 01000000, scale 00AAAAAA by 00AAAAAA, phases 0003D555 and 00025555; 6000 ms
+720p: read back: taps 502, filters 00000000 01000000, scale 00AAAAA0 by 00AAAAA0, phases 0003D400 and 00025400
+720p: after it: 1949 (byte 6524) 00000000
+720p: after it: 1973 (byte 65CC) 00000000
+720p: after it: 1974 (byte 65D0) 00000001
+720p: after it: 1978 (byte 65E0) 00000000
+720p: olive: scaled, 6 horizontal and 2 vertical taps: taps 501, filters 00000000 01000000, scale 00AAAAAA by 00AAAAAA, phases 0003D555 and 0001D555; 6000 ms
+720p: read back: taps 501, filters 00000000 01000000, scale 00AAAAA0 by 00AAAAA0, phases 0003D400 and 0001D400
+720p: after it: 1949 (byte 6524) 00000000
+720p: after it: 1973 (byte 65CC) 00000000
+720p: after it: 1974 (byte 65D0) 00000001
+720p: after it: 1978 (byte 65E0) 00000000
+720p: teal: scaled, 2 horizontal and 6 vertical taps: taps 105, filters 00000000 01000000, scale 00AAAAAA by 00AAAAAA, phases 0001D555 and 0003D555; 6000 ms
+720p: read back: taps 105, filters 00000000 01000000, scale 00AAAAA0 by 00AAAAA0, phases 0001D400 and 0003D400
+720p: after it: 1949 (byte 6524) 00000000
+720p: after it: 1973 (byte 65CC) 00000000
+720p: after it: 1974 (byte 65D0) 00000001
+720p: after it: 1978 (byte 65E0) 00000000
+720p: purple: scaled, the built-in 2-tap filter each way: taps 101, filters 00000100 01000100, scale 00AAAAAA by 00AAAAAA, phases 0001D555 and 0001D555; 6000 ms
+720p: read back: taps 101, filters 00000100 01000100, scale 00AAAAA0 by 00AAAAA0, phases 0001D400 and 0001D400
+720p: after it: 1949 (byte 6524) 00000000
+720p: after it: 1973 (byte 65CC) 00000000
+720p: after it: 1974 (byte 65D0) 00000001
+720p: after it: 1978 (byte 65E0) 00000000
+720p: put back: 1964 (byte 6590) 00000001
+720p: put back: 1965 (byte 6594) 00000505
+720p: put back: 1961 (byte 6584) 028001E0
+720p: put back: 197A (byte 65E8) 0000009F
+720p: put back: 196C (byte 65B0) 00000000
+720p: put back: 196D (byte 65B4) 00555560
+720p: put back: 196E (byte 65B8) 0003AA00
+720p: put back: 1970 (byte 65C0) 01000000
+720p: put back: 1971 (byte 65C4) 0071C720
+720p: put back: 1972 (byte 65C8) 0003B800
+720p: the scaler put back; the GPU goes back at exit
+exit: status 0

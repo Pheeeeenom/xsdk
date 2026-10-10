@@ -966,3 +966,28 @@ here (`D1CRTC_H_TOTAL` 0x6000, `D1GRPH_*` 0x6100-0x614C, `D1MODE_MASTER_UPDATE_L
   right size, or the green one about a sixth of the way across, never both. So the horizontal source position changes
   from line to line, which a filter or a scale factor alone wouldn't do. Too many vertical taps for the line buffer
   would, as lines overwrite each other.
+
+## The built-in 2-tap filter scales 1280x720 to 1920x1080 whole (2026-10-10)
+
+`tests/probe_720p.c` scaled the 1280x720 test image with the scaler on at 1:1, then to the output with fewer and fewer
+vertical taps, with 2 horizontal taps, and with the built-in 2-tap filter each way, each variant on its own
+background tint, writing only scaler registers (log: `results/2026-10-10-probe-720p-5/xsdk.log`, with the xbWatson
+lines from the launch, a cropped capture of the purple variant and a full-frame screenshot of it at 1280x720).
+
+- **Only the built-in 2-tap filter came out whole,** by the user's eye: tap control 0x101, bit 8 set in both filter
+  controls (0x65B0 0x00000100, 0x65C0 0x01000100), scale 0x00AAAAA0 both ways, phases 0x1D400. In the full-frame
+  screenshot the white border shows on all four edges, the corner squares sit in all four corners, and the middle
+  blocks span x 448-832 and y 296-423, where the source has them.
+- **Every variant on the kernel's coefficient table came out scrambled:** 6 taps each way at 1:1 and scaled, 4, 3 and 2
+  vertical taps with 6 horizontal, and 2 horizontal with 6 vertical. So the line buffer limit on vertical taps
+  (above) doesn't explain it alone: 2 vertical taps with 6 horizontal still scrambled. 2 taps each way on the table
+  wasn't tried, so whether the table or the tap count is at fault isn't known.
+- **The log can't tell scrambled from whole.** Every write read back as written, less the low bits the scaler drops,
+  and the registers read after each variant didn't change: 0x6524 0, 0x65CC 0, 0x65D0 1, 0x65E0 0.
+- **At start:** 0x6520 0, 0x6524 0, 0x6548 0, 0x6550 0xFF (libxenon writes 0xFF there, xenos.c:392), 0x65A0 and
+  0x65A4 0, 0x65B0 0, 0x65BC 0, 0x65C0 0x01000000, 0x65DC to 0x65E4 0, 0x65E8 0x9F, 0x6CBC 3 and 0x7118 0x780, which is
+  1920 and which xenon-emu names `DC_LB_MEM_SIZE` (XenosRegisters.h:952).
+- **Putting the registers back returned the kernel's scaling,** and the console went back to Aurora.
+- **Neither of the display's own checks can see the scaled image.** The M56 guide places `DCP_CRC_*` (0x6C80-0x6C94)
+  on the data going into the line buffer, before the scaler, and calls `D1CRTC_PIXEL_DATA_READBACK` (0x6078) a debug
+  register for one-shot clocking. A test of the scaled output needs a capture.
