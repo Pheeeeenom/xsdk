@@ -1,0 +1,10 @@
+log: game:\xsdk.log
+cp probe
+cp: at start: 0x07D8 00007FFF (bit 28: halted), 0x1740 00040110 (bit 31: busy), 0x0E6C 00FE0F0C
+cp: ring: base 01B9D000, control 00020309, read pointer write-back 01B9F03E, read 000000EB, write 000000EB
+cp: reading ME RAM
+cp: ME RAM: 2304 words, 1100 non-zero; crc32 7A8E8248, then 7A8E8248 on a second read
+cp: reading PFP RAM
+cp: PFP RAM: 288 words, 250 non-zero; crc32 0B0F1B3C, then 784071CA on a second read
+cp: after reading: 0x07D8 20007FFF (bit 28: halted), 0x1740 84051310 (bit 31: busy), 0x0E6C 00FE0F0C
+exit: status 0

@@ -104,3 +104,20 @@ The test title, built with the GCC 15 toolchain, passed all 30 checks on the con
 
 The rule that every `lwarx` pairs with a `stwcx.` (`tools/toolchain/gcc-xsdk.patch`) isn't observable in this run and
 stays unverified.
+
+## Command processor at title start (2026-10-10)
+
+`tests/probe_cp.c` read the GPU registers from a title launched from Aurora, without halting the command processor
+(log: `results/2026-10-10-probe-cp/xsdk.log`). Register meanings come from libxenon:drivers/xenos/xe.c.
+
+- **Titles can read the GPU registers** at 0x7FC80000 under this kernel.
+- **Aurora leaves the command processor running and idle.** 0x07D8 is 0x00007FFF, so bit 28 (halted) is clear, and the
+  busy bit of 0x1740 is clear. The ring registers still describe Aurora's ring: base 0x01B9D000, control 0x00020309,
+  read pointer write-back at 0x01B9F03C, read and write pointers both 0xEB.
+- **The ME microcode reads back** through 0x07E4 and 0x07E8 while the command processor runs: 1100 of 2304 words are
+  non-zero, and two reads give the same CRC-32, 7A8E8248. libxenon's copy differs (1178 non-zero words, CRC-32
+  4D1AD8C0), so the console's microcode is a different version.
+- **Reading the PFP microcode while it runs hangs the GPU.** Two reads through 0x117C and 0x1180 disagree, with 250 of
+  288 words non-zero (libxenon's PFP has every word non-zero). Afterwards 0x1740's busy bit was set, 0x07D8 had gained
+  bit 29, and once the title exited, debug XAM broke into the debugger with "The GPU is hung and can't be recovered
+  without doing a cold boot."
