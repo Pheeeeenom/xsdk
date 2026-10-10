@@ -8,6 +8,7 @@
 #include "triangle_shaders.h"
 #include "xsdk/gpu.h"
 #include "xsdk/kernel.h"
+#include "xsdk/log.h"
 #include "xsdk/shader.h"
 
 enum {
@@ -99,6 +100,17 @@ bool bar_scene_holds(const BarScene *scene, volatile const uint32_t *pixels, uin
 	const uint32_t x = bar_x(frame);
 	return pixels[tiled_index(x + 4, CHECK_Y, BAR_FRAME_WIDTH)] == as_stored(scene->argb) &&
 		pixels[tiled_index((x + FAR_AWAY) % BAR_FRAME_WIDTH, CHECK_Y, BAR_FRAME_WIDTH)] == as_stored(CLEAR_ARGB);
+}
+
+void bar_scene_log_miss(const BarScene *scene, volatile const uint32_t *pixels, uint32_t frame, const char *name)
+{
+	const uint32_t x = bar_x(frame);
+	xsdk_log_write("%s: frame %u: bar pixel (%u, %u) held %08X, not %08X; pixel (%u, %u) held %08X, not %08X", name,
+		(unsigned)frame, (unsigned)(x + 4), (unsigned)CHECK_Y,
+		(unsigned)pixels[tiled_index(x + 4, CHECK_Y, BAR_FRAME_WIDTH)], (unsigned)as_stored(scene->argb),
+		(unsigned)((x + FAR_AWAY) % BAR_FRAME_WIDTH), (unsigned)CHECK_Y,
+		(unsigned)pixels[tiled_index((x + FAR_AWAY) % BAR_FRAME_WIDTH, CHECK_Y, BAR_FRAME_WIDTH)],
+		(unsigned)as_stored(CLEAR_ARGB));
 }
 
 void bar_scene_close(BarScene *scene)

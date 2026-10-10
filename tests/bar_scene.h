@@ -25,6 +25,8 @@ bool bar_scene_open(BarScene *scene, uint32_t argb);
 void bar_scene_draw(const BarScene *scene, uint32_t frame, uint32_t address);
 // Whether a resolved frame shows its bar where it belongs, on the clear colour.
 bool bar_scene_holds(const BarScene *scene, volatile const uint32_t *pixels, uint32_t frame);
+// Logs what the two pixels bar_scene_holds checks held, and what they should hold.
+void bar_scene_log_miss(const BarScene *scene, volatile const uint32_t *pixels, uint32_t frame, const char *name);
 void bar_scene_close(BarScene *scene);
 
 #endif

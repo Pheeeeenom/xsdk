@@ -13,6 +13,7 @@ enum {
 	FRAMES = 120,
 	BEGIN_TIMEOUT_MS = 1000,
 	FENCE_TIMEOUT_MS = 1000,
+	MAX_WRONG_LOGGED = 2,
 };
 
 typedef struct {
@@ -58,14 +59,20 @@ static void run_mode(const Mode *mode)
 			break;
 		// The buffer last held the frame mode->buffers before, shown and off screen now.
 		if (presented >= mode->buffers &&
-			!bar_scene_holds(&scene, xsdk_present_pixels(last_address), presented - mode->buffers))
+			!bar_scene_holds(&scene, xsdk_present_pixels(last_address), presented - mode->buffers)) {
+			if (wrong < MAX_WRONG_LOGGED)
+				bar_scene_log_miss(&scene, xsdk_present_pixels(last_address), presented - mode->buffers, mode->name);
 			wrong++;
+		}
 		bar_scene_draw(&scene, presented, last_address);
 		xsdk_present_end();
 	}
 	// The last frame's buffer is on screen or about to be, and still allocated until the present closes.
 	const bool drawn = presented == FRAMES && NT_SUCCESS(xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS)) &&
 		bar_scene_holds(&scene, xsdk_present_pixels(last_address), FRAMES - 1);
+	if (presented == FRAMES && !drawn)
+		bar_scene_log_miss(&scene, xsdk_present_pixels(last_address), FRAMES - 1, mode->name);
+	xsdk_log_write("pacing: %s: %u reused buffers held the wrong frame", mode->name, (unsigned)wrong);
 	xsdk_present_close();
 	XsdkPresentStats stats;
 	xsdk_present_stats(&stats);
