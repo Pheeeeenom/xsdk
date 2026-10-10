@@ -19,7 +19,7 @@ enum {
 	HEIGHT = 480,
 	PIXELS = WIDTH * HEIGHT,
 	BUFFERS = 2,
-	FRAMES = 60,
+	FRAMES = 120,
 	FRAME_MS = 16,
 	FENCE_TIMEOUT_MS = 1000,
 	MAX_MISSES_LOGGED = 4,
@@ -27,9 +27,7 @@ enum {
 	// Not a power of two: the linear pitch is wider than the texture, and the tiled layout spans 5 by 3 tiles.
 	TEXTURE_WIDTH = 160,
 	TEXTURE_HEIGHT = 96,
-	// The quad's top left pixel; the texture is drawn one texel to a pixel.
-	QUAD_X = 64,
-	QUAD_Y = 48,
+	LAYOUTS = 2,
 	QUAD_VERTICES = 6,
 	VERTEX_FLOATS = 6,
 	STRIDE_BYTES = VERTEX_FLOATS * 4,
@@ -38,11 +36,27 @@ enum {
 };
 
 typedef struct {
+	const char *name;
+	bool tiled;
+	// The quad's top left pixel; each texture is drawn one texel to a pixel.
+	uint32_t quad_x;
+	uint32_t quad_y;
+	// The tiled texture swaps red and green and slants its blue bands the other way, so the two look different.
+	bool transposed;
+} Layout;
+
+typedef struct {
 	uint32_t x;
 	uint32_t y;
 } Texel;
 
-static const XsdkVertexElement layout[] = {
+// Side by side in every frame, so one capture shows both and a quad showing the other texture fails.
+static const Layout layouts[LAYOUTS] = {
+	{ .name = "linear", .tiled = false, .quad_x = 96, .quad_y = 192, .transposed = false },
+	{ .name = "tiled", .tiled = true, .quad_x = 384, .quad_y = 192, .transposed = true },
+};
+
+static const XsdkVertexElement vertex_layout[] = {
 	{ .usage = XSDK_USAGE_POSITION, .usage_index = 0, .format = XSDK_VERTEX_FLOAT4, .offset_bytes = 0 },
 	{ .usage = XSDK_USAGE_TEXCOORD,
 		.usage_index = 0,
@@ -50,7 +64,7 @@ static const XsdkVertexElement layout[] = {
 		.offset_bytes = TEXCOORD_OFFSET_BYTES },
 };
 
-// The corners and the middle of the texture, checked every frame.
+// The corners and the middle of each texture, checked every frame.
 static const Texel sampled[] = {
 	{ 0, 0 },
 	{ TEXTURE_WIDTH - 1, 0 },
@@ -61,10 +75,13 @@ static const Texel sampled[] = {
 
 static uint32_t image[TEXTURE_HEIGHT][TEXTURE_WIDTH];
 
-// Every texel differs, red holding its x and green its y, so one out of place shows where it came from.
-static uint32_t texel_argb(uint32_t x, uint32_t y)
+// Every texel of a texture differs, its red and green holding its x and y.
+static uint32_t texel_argb(const Layout *layout, uint32_t x, uint32_t y)
 {
-	return 0xFF000000 | x << 16 | y << 8 | (0x80 | ((x + y) & 0x7F));
+	const uint32_t red = layout->transposed ? y : x;
+	const uint32_t green = layout->transposed ? x : y;
+	const uint32_t blue = 0x80 | ((layout->transposed ? x - y : x + y) & 0x7F);
+	return 0xFF000000 | red << 16 | green << 8 | blue;
 }
 
 // A resolve stores the colour's bytes B, G, R, A, as the display reads them (docs/HARDWARE.md).
@@ -78,34 +95,43 @@ static uint32_t pixel_at(volatile const uint32_t *pixels, uint32_t x, uint32_t y
 	return pixels[tiled_index(x, y, WIDTH)];
 }
 
-// What the pixel should hold: its texel inside the quad, the clear colour around it.
+static bool inside(const Layout *layout, uint32_t x, uint32_t y)
+{
+	return x >= layout->quad_x && x < layout->quad_x + TEXTURE_WIDTH && y >= layout->quad_y &&
+		y < layout->quad_y + TEXTURE_HEIGHT;
+}
+
+// What the pixel should hold: a texel inside either quad, the clear colour elsewhere.
 static uint32_t expected_at(uint32_t x, uint32_t y)
 {
-	const bool inside = x >= QUAD_X && x < QUAD_X + TEXTURE_WIDTH && y >= QUAD_Y && y < QUAD_Y + TEXTURE_HEIGHT;
-	return as_stored(inside ? texel_argb(x - QUAD_X, y - QUAD_Y) : CLEAR_ARGB);
+	for (uint32_t i = 0; i < LAYOUTS; i++) {
+		if (inside(&layouts[i], x, y))
+			return as_stored(texel_argb(&layouts[i], x - layouts[i].quad_x, y - layouts[i].quad_y));
+	}
+	return as_stored(CLEAR_ARGB);
 }
 
-static void log_miss(const char *name, uint32_t frame, uint32_t x, uint32_t y, uint32_t pixel)
+static void log_miss(const Layout *layout, uint32_t frame, uint32_t x, uint32_t y, uint32_t pixel)
 {
-	// A stored word's red and green bytes name the texel it came from.
-	xsdk_log_write("texture: %s: frame %u: (%u, %u) held %08X, texel (%u, %u), not %08X", name, (unsigned)frame,
-		(unsigned)x, (unsigned)y, (unsigned)pixel, (unsigned)(pixel >> 8 & 0xFF), (unsigned)(pixel >> 16 & 0xFF),
-		(unsigned)expected_at(x, y));
+	// A stored word's red and green bytes tell which texel, of which texture, it came from.
+	xsdk_log_write("texture: %s: frame %u: (%u, %u) held %08X, red %u and green %u, not %08X", layout->name,
+		(unsigned)frame, (unsigned)x, (unsigned)y, (unsigned)pixel, (unsigned)(pixel >> 8 & 0xFF),
+		(unsigned)(pixel >> 16 & 0xFF), (unsigned)expected_at(x, y));
 }
 
-// The sampled texels, and the pixel up and left of the quad, hold what they should.
-static bool frame_holds(const char *name, volatile const uint32_t *pixels, uint32_t frame, uint32_t *misses)
+// The quad's sampled texels, and the pixel up and left of it, hold what they should.
+static bool frame_holds(const Layout *layout, volatile const uint32_t *pixels, uint32_t frame, uint32_t *misses)
 {
 	bool holds = true;
 	for (uint32_t i = 0; i <= sizeof sampled / sizeof sampled[0]; i++) {
 		const bool outside = i == sizeof sampled / sizeof sampled[0];
-		const uint32_t x = outside ? QUAD_X - 1 : QUAD_X + sampled[i].x;
-		const uint32_t y = outside ? QUAD_Y - 1 : QUAD_Y + sampled[i].y;
+		const uint32_t x = outside ? layout->quad_x - 1 : layout->quad_x + sampled[i].x;
+		const uint32_t y = outside ? layout->quad_y - 1 : layout->quad_y + sampled[i].y;
 		const uint32_t pixel = pixel_at(pixels, x, y);
 		if (pixel == expected_at(x, y))
 			continue;
 		if (*misses < MAX_MISSES_LOGGED)
-			log_miss(name, frame, x, y, pixel);
+			log_miss(layout, frame, x, y, pixel);
 		holds = false;
 	}
 	*misses += !holds;
@@ -113,16 +139,16 @@ static bool frame_holds(const char *name, volatile const uint32_t *pixels, uint3
 }
 
 // Every pixel of the quad and of a one-pixel border around it; returns how many are wrong.
-static uint32_t count_wrong(const char *name, volatile const uint32_t *pixels, uint32_t frame)
+static uint32_t count_wrong(const Layout *layout, volatile const uint32_t *pixels, uint32_t frame)
 {
 	uint32_t wrong = 0;
-	for (uint32_t y = QUAD_Y - 1; y <= QUAD_Y + TEXTURE_HEIGHT; y++) {
-		for (uint32_t x = QUAD_X - 1; x <= QUAD_X + TEXTURE_WIDTH; x++) {
+	for (uint32_t y = layout->quad_y - 1; y <= layout->quad_y + TEXTURE_HEIGHT; y++) {
+		for (uint32_t x = layout->quad_x - 1; x <= layout->quad_x + TEXTURE_WIDTH; x++) {
 			const uint32_t pixel = pixel_at(pixels, x, y);
 			if (pixel == expected_at(x, y))
 				continue;
 			if (wrong < MAX_MISSES_LOGGED)
-				log_miss(name, frame, x, y, pixel);
+				log_miss(layout, frame, x, y, pixel);
 			wrong++;
 		}
 	}
@@ -141,12 +167,12 @@ static float clip_y(float y)
 }
 
 // Two triangles, edges half a pixel before the pixels, for Direct3D centres (xenia:src/xenia/gpu/draw_util.cc:837).
-static volatile uint32_t *upload_quad(void)
+static volatile uint32_t *upload_quad(const Layout *layout)
 {
-	const float left = clip_x(QUAD_X - 0.5f);
-	const float right = clip_x(QUAD_X + TEXTURE_WIDTH - 0.5f);
-	const float top = clip_y(QUAD_Y - 0.5f);
-	const float bottom = clip_y(QUAD_Y + TEXTURE_HEIGHT - 0.5f);
+	const float left = clip_x(layout->quad_x - 0.5f);
+	const float right = clip_x(layout->quad_x + TEXTURE_WIDTH - 0.5f);
+	const float top = clip_y(layout->quad_y - 0.5f);
+	const float bottom = clip_y(layout->quad_y + TEXTURE_HEIGHT - 0.5f);
 	const float quad[QUAD_VERTICES][VERTEX_FLOATS] = {
 		{ left, top, 0.0f, 1.0f, 0.0f, 0.0f },
 		{ right, top, 0.0f, 1.0f, 1.0f, 0.0f },
@@ -166,10 +192,13 @@ static volatile uint32_t *upload_quad(void)
 	return vertices;
 }
 
-static bool make_texture(XsdkTexture *texture, bool tiled)
+static bool make_texture(XsdkTexture *texture, const Layout *layout)
 {
-	if (!NT_SUCCESS(xsdk_texture_create(texture, TEXTURE_WIDTH, TEXTURE_HEIGHT, tiled)))
+	if (!NT_SUCCESS(xsdk_texture_create(texture, TEXTURE_WIDTH, TEXTURE_HEIGHT, layout->tiled)))
 		return false;
+	for (uint32_t y = 0; y < TEXTURE_HEIGHT; y++)
+		for (uint32_t x = 0; x < TEXTURE_WIDTH; x++)
+			image[y][x] = texel_argb(layout, x, y);
 	xsdk_texture_upload(texture, &image[0][0], TEXTURE_WIDTH);
 	return true;
 }
@@ -177,16 +206,24 @@ static bool make_texture(XsdkTexture *texture, bool tiled)
 typedef struct {
 	const XsdkShader *vertex;
 	const XsdkShader *pixel;
-	uint32_t vertices;
+	uint32_t vertices[LAYOUTS];
+	const XsdkTexture *textures[LAYOUTS];
 	volatile uint32_t *const *buffers;
 	bool has_display;
 } Scene;
 
-// Each frame draws the quad into eDRAM, resolves it into the buffer not on screen, clearing eDRAM, and shows it.
-static void draw_frames(const char *name, const Scene *scene, const XsdkTexture *texture)
+static void check_layout(const Layout *layout, const char *what, bool passed)
 {
-	uint32_t misses = 0;
-	uint32_t wrong = 0;
+	char name[96];
+	snprintf(name, sizeof name, "texture: %s: %s", layout->name, what);
+	check(name, passed);
+}
+
+// Each frame draws both quads into eDRAM, resolves them into the buffer not on screen, clearing eDRAM, and shows it.
+static void draw_frames(const Scene *scene)
+{
+	uint32_t misses[LAYOUTS] = { 0 };
+	uint32_t wrong[LAYOUTS] = { 0 };
 	bool fences_landed = true;
 	bool shown = true;
 	for (uint32_t frame = 0; frame < FRAMES && fences_landed; frame++) {
@@ -194,33 +231,33 @@ static void draw_frames(const char *name, const Scene *scene, const XsdkTexture 
 		const uint32_t address = xsdk_gpu_address(buffer);
 		xsdk_gpu_set_target(WIDTH, HEIGHT);
 		xsdk_gpu_set_shaders(scene->vertex, scene->pixel);
-		xsdk_gpu_set_vertices(scene->vertices, QUAD_VERTICES * STRIDE_BYTES);
-		// The last frame's resolve overwrote slot 0.
-		xsdk_gpu_set_texture(TEXTURE_SLOT, texture);
-		xsdk_gpu_draw(XSDK_PRIMITIVE_TRIANGLE_LIST, QUAD_VERTICES);
+		for (uint32_t i = 0; i < LAYOUTS; i++) {
+			xsdk_gpu_set_vertices(scene->vertices[i], QUAD_VERTICES * STRIDE_BYTES);
+			// Each quad rebinds slot 0, which the last frame's resolve also overwrote.
+			xsdk_gpu_set_texture(TEXTURE_SLOT, scene->textures[i]);
+			xsdk_gpu_draw(XSDK_PRIMITIVE_TRIANGLE_LIST, QUAD_VERTICES);
+		}
 		xsdk_gpu_resolve(address, WIDTH, HEIGHT, CLEAR_ARGB);
 		fences_landed = NT_SUCCESS(xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS));
-		// The first frame's background is whatever eDRAM held; later ones are the clear colour.
-		if (frame > 0 && fences_landed)
-			(void)frame_holds(name, buffer, frame, &misses);
-		if (frame == FRAMES - 1 && fences_landed)
-			wrong = count_wrong(name, buffer, frame);
+		for (uint32_t i = 0; i < LAYOUTS && fences_landed; i++) {
+			// The first frame's background is whatever eDRAM held; later ones are the clear colour.
+			if (frame > 0)
+				(void)frame_holds(&layouts[i], buffer, frame, &misses[i]);
+			if (frame == FRAMES - 1)
+				wrong[i] = count_wrong(&layouts[i], buffer, frame);
+		}
 		if (scene->has_display)
 			shown = shown && NT_SUCCESS(xsdk_display_show(address, WIDTH));
 		(void)xsdk_thread_sleep(FRAME_MS);
 	}
-	xsdk_log_write("texture: %s: the last frame had %u wrong pixels", name, (unsigned)wrong);
-	char what[96];
-	snprintf(what, sizeof what, "texture: %s: every frame's fence landed", name);
-	check(what, fences_landed);
-	snprintf(what, sizeof what, "texture: %s: every frame's corner and middle texels in place", name);
-	check(what, fences_landed && misses == 0);
-	snprintf(what, sizeof what, "texture: %s: the last frame holds every texel, one to a pixel", name);
-	check(what, fences_landed && wrong == 0);
-	if (scene->has_display) {
-		snprintf(what, sizeof what, "texture: %s: every frame shown", name);
-		check(what, shown);
+	check("texture: every frame's fence landed", fences_landed);
+	for (uint32_t i = 0; i < LAYOUTS; i++) {
+		xsdk_log_write("texture: %s: the last frame had %u wrong pixels", layouts[i].name, (unsigned)wrong[i]);
+		check_layout(&layouts[i], "every frame's corner and middle texels in place", fences_landed && misses[i] == 0);
+		check_layout(&layouts[i], "the last frame holds every texel, one to a pixel", fences_landed && wrong[i] == 0);
 	}
+	if (scene->has_display)
+		check("texture: every frame shown", shown);
 }
 
 void test_texture(void)
@@ -239,34 +276,36 @@ void test_texture(void)
 		NT_SUCCESS(xsdk_shader_load(&pixel, texture_pixel_shader, sizeof texture_pixel_shader));
 	check("texture: shaders load", loaded);
 	const bool patched = loaded &&
-		NT_SUCCESS(xsdk_shader_set_vertex_layout(&vertex, layout, sizeof layout / sizeof layout[0], STRIDE_BYTES));
+		NT_SUCCESS(xsdk_shader_set_vertex_layout(
+			&vertex, vertex_layout, sizeof vertex_layout / sizeof vertex_layout[0], STRIDE_BYTES));
 	check("texture: vertex fetches patched for a float4 position and float2 coordinates", patched);
-	for (uint32_t y = 0; y < TEXTURE_HEIGHT; y++)
-		for (uint32_t x = 0; x < TEXTURE_WIDTH; x++)
-			image[y][x] = texel_argb(x, y);
-	XsdkTexture linear = { .texels = NULL };
-	XsdkTexture tiled = { .texels = NULL };
-	const bool made = make_texture(&linear, false) && make_texture(&tiled, true);
+	XsdkTexture textures[LAYOUTS] = { { .texels = NULL }, { .texels = NULL } };
+	volatile uint32_t *vertices[LAYOUTS] = { NULL, NULL };
+	bool made = true;
+	for (uint32_t i = 0; i < LAYOUTS; i++) {
+		made = make_texture(&textures[i], &layouts[i]) && made;
+		vertices[i] = upload_quad(&layouts[i]);
+	}
 	check("texture: linear and tiled textures made", made);
-	volatile uint32_t *const vertices = upload_quad();
 	volatile uint32_t *const buffers[BUFFERS] = { xsdk_gpu_alloc(PIXELS * 4), xsdk_gpu_alloc(PIXELS * 4) };
-	check("texture: vertex and front buffers", vertices && buffers[0] && buffers[1]);
+	check("texture: vertex and front buffers", vertices[0] && vertices[1] && buffers[0] && buffers[1]);
 	// Without a display, as in Xenia, the frames still draw and are checked.
-	if (patched && made && vertices && buffers[0] && buffers[1]) {
+	if (patched && made && vertices[0] && vertices[1] && buffers[0] && buffers[1]) {
 		const Scene scene = { .vertex = &vertex,
 			.pixel = &pixel,
-			.vertices = xsdk_gpu_address(vertices),
+			.vertices = { xsdk_gpu_address(vertices[0]), xsdk_gpu_address(vertices[1]) },
+			.textures = { &textures[0], &textures[1] },
 			.buffers = buffers,
 			.has_display = has_display };
-		draw_frames("linear", &scene, &linear);
-		draw_frames("tiled", &scene, &tiled);
+		draw_frames(&scene);
 	}
 	xsdk_display_close();
 	for (uint32_t i = 0; i < BUFFERS; i++)
 		xsdk_gpu_free(buffers[i]);
-	xsdk_gpu_free(vertices);
-	xsdk_texture_free(&tiled);
-	xsdk_texture_free(&linear);
+	for (uint32_t i = 0; i < LAYOUTS; i++) {
+		xsdk_gpu_free(vertices[i]);
+		xsdk_texture_free(&textures[i]);
+	}
 	xsdk_shader_free(&pixel);
 	xsdk_shader_free(&vertex);
 	check("texture: GPU close", NT_SUCCESS(xsdk_gpu_close()));
