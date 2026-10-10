@@ -565,3 +565,20 @@ fading the clear colour (log: `results/2026-10-10-milestone-5/xsdk.log`).
   (`results/2026-10-10-probe-guide-2/xsdk.log`), so the display still scaled up a 640x480 surface. With the size
   wrong, the test showed nothing.
 - **The other 39 checks passed.**
+
+## A cleared screen, milestone 5 (2026-10-10)
+
+The test title passed all 41 checks on the console and exited with status 0; the log is in
+`results/2026-10-10-milestone-5-2/xsdk.log`.
+
+- **`xsdk_gpu_open` sets the GPU up as libxenon does,** after taking it, on the title's second open as well as its
+  first, and `xsdk_gpu_close` gives it back each time.
+- **`xsdk_display_open` reports the viewport's 640x480,** though the earlier close had left XAM's surface registers
+  at 1280x720, and fills the LUT.
+- **Every frame clears, resolves and presents.** Over 240 frames the clear colour faded between magenta and green;
+  each frame resolved into one of two front buffers in turn, held the colour the resolve before it cleared to at its
+  first, middle and last pixel, and was shown with `xsdk_display_show`, whose 0x60EC write the display took every
+  time.
+
+The user didn't report what the screen showed in this run; earlier runs showed CPU-filled buffers through the same
+registers ("A title's buffer on screen").
