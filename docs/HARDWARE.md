@@ -355,13 +355,12 @@ on it with the arguments Xenia documents (log: `results/2026-10-10-probe-swap/xs
   There were no display registers or front buffer address in the ring, so the flip happens outside it.
 - **The screen stayed black** through the whole run.
 
-## The log file keeps its old size (2026-10-10)
+## Logs cut off at the previous run's length (2026-10-10)
 
-Two logs came back cut off mid-line, each at the length of the run before it: the second engines run's at 2050 bytes,
-the first engines run's length, and the second swap run's at 1454 bytes, the first swap run's length. So when the
-title rewrites `xsdk.log` with `FILE_OVERWRITE_IF`, the new text reaches the disk but the file's size stays the old
-one, even after `NtClose` in `_exit`, and a longer log loses its tail. The log now calls `NtFlushBuffersFile` after
-every line; whether that keeps the size current is for the next run to show.
+Four logs came back cut off mid-line, each at exactly the length of the run before it: 2050 bytes after a 2050-byte
+log, 1454 after 1454, 962 after 962, and 1002 after 1002. Calling `NtFlushBuffersFile` after every line didn't change
+that, so it was reverted. A shorter log always came back whole, which fits the FTP transfer reusing the old file's size
+rather than the console's file system; that's unconfirmed. xbWatson's copy of a log is complete.
 
 ## The kernel doesn't flip on VdSwap (2026-10-10)
 
@@ -430,3 +429,15 @@ values) on a blue buffer, then the originals (log: `results/2026-10-10-probe-dis
 
 The Guide did appear on screen during the run that recorded XAM's registers, so the output isn't muted while a title
 runs: XAM's surface shows through the same registers that leave the title's buffers black.
+
+## A title can't move the display while XAM has the GPU (2026-10-10)
+
+`tests/probe_display.c` showed opaque white (0xFFFFFFFF) from a buffer high in memory (physical 0x1FB20000) and one low
+(0x03ED0000), both before taking the GPU, then the high one after taking it, then red with an opaque alpha (log:
+`results/2026-10-10-probe-display-4/xsdk.log`, cut off after the second step).
+
+- **Before the title takes the GPU, its surface writes don't stick.** Both times `D1GRPH_PRIMARY_SURFACE_ADDRESS` read
+  0 straight after the write and 0x60EC. After taking the GPU, earlier runs showed the address sticking.
+- **Nothing showed on screen** at any step, opaque white from either buffer included.
+
+So the display is held on the kernel's placeholder while XAM has the GPU, and shows nothing the title gives it after.

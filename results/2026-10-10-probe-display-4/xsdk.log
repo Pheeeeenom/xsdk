@@ -1,0 +1,12 @@
+log: game:\xsdk.log
+display probe
+display: at start: surface 00000000, pitch 00000280, x end 00000280, y end 000001E0, viewport 028001E0, scale 00800000, phase 0005C000, line width 0000009F, update 00000000, 60EC 00000000
+display: high buffer at physical 1FB20000, low buffer at physical 03ED0000
+display: 0x60EC cleared after 0 ms
+display: white from high memory before taking the GPU: surface 00000000, pitch 00000280, x end 00000280, y end 000001E0, viewport 028001E0, scale 00800000, phase 0005C000, line width 0000009F, update 00000000, 60EC 00000000
+display: holding white from high memory before taking the GPU for 4000 ms
+display: 0x60EC cleared after 0 ms
+display: 0x60EC cleared after 0 ms
+display: white from low memory before taking the GPU: surface 00000000, pitch 00000280, x end 00000280, y end 000001E0, viewport 028001E0, scale 00800000, phase 0005C000, line width 0000009F, update 00000000, 60EC 00000000
+display: holding white from low memory before taking the GPU for 4000 ms
+displa

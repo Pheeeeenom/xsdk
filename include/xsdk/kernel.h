@@ -239,7 +239,6 @@ NTSTATUS NtCreateFile(HANDLE *handle, uint32_t desired_access, const OBJECT_ATTR
 	IO_STATUS_BLOCK *io_status, const uint64_t *allocation_size, uint32_t file_attributes, uint32_t share_access,
 	uint32_t creation_disposition, uint32_t create_options);
 NTSTATUS NtCreateSemaphore(HANDLE *semaphore, const OBJECT_ATTRIBUTES *attributes, int32_t count, int32_t limit);
-NTSTATUS NtFlushBuffersFile(HANDLE file, IO_STATUS_BLOCK *io_status);
 // file_name, a pattern, is read only when a scan starts (xenia:src/xenia/kernel/xfile.cc:50-71).
 NTSTATUS NtQueryDirectoryFile(HANDLE file, HANDLE event, void *apc_routine, void *apc_context,
 	IO_STATUS_BLOCK *io_status, FILE_DIRECTORY_INFORMATION *information, uint32_t length_bytes,
