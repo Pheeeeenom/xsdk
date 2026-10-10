@@ -528,3 +528,25 @@ white, with the front buffer refilled with magenta before each (log: `results/20
 - **The green clear value 0xFF00FF00 landed as the word 0x00FF00FF,** the green the display shows.
 - **The fetch constant flush didn't change the pattern.**
 - **The console still froze on the way back to Aurora,** though the probe set `RB_MODECONTROL` back to 4 first.
+
+## libxenon's set-up makes the resolves work (2026-10-10)
+
+`tests/probe_resolve.c` took the GPU, sent libxenon's set-up (`tests/libxenon_gpu.h`, from
+libxenon:drivers/xenos/xe.c:398-568) in fenced stages, resolved eight times as libxenon does, and wrote back the
+registers it had changed before giving the GPU up (log: `results/2026-10-10-probe-resolve-5/xsdk.log`, cut off during
+the second resolve). The user reported that the run went perfectly and the console returned to Aurora.
+
+- **Every set-up stage's fence landed,** `ME_INIT` included, with the console's own microcode.
+- **The first two resolves wrote,** where before only every third did: the first copied zero over all 307200 pixels,
+  and the second the white the first cleared to.
+- **The kernel leaves the shader unit set up differently from libxenon.** Read after taking the GPU, then after the
+  set-up: `SQ_GPR_MANAGEMENT` 0x00040400, then libxenon's 0x00070100; `SQ_INST_STORE_MANAGMENT` 0x00000800, then
+  0x00010800; `PA_CL_ENHANCE` 7, then 3. `SQ_FLOW_CONTROL` read 0x04007000 both times, though the set-up wrote
+  0x04000000. `UNKNOWN_0A02` to `0A05`, `UNKNOWN_0E42` and `RB_BC_CONTROL` already held libxenon's values.
+- **Drawing registers don't read back what a title writes.** From 0x2000 up, each read the same before and after the
+  set-up, even where it wrote another value: the window scissor read 16x16 after the set-up set 1024x720. The values
+  look like XAM's last resolve: a 1280-pixel surface and a 1280x720 copy to 0x1C0F2000.
+- **The console didn't freeze on the way back to Aurora.** The probe wrote back what it read, which for drawing
+  registers is that XAM-like state.
+
+Which part of the set-up makes every resolve write, and which write-back stops the freeze, isn't isolated.

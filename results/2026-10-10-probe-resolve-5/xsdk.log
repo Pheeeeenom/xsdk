@@ -1,0 +1,36 @@
+log: game:\xsdk.log
+resolve probe
+resolve: front buffer at physical 1FB20000, vertices at 1FB10000
+resolve: after taking the GPU: 0081 84410380 0082 F0180002 0C85 00000007 0D00 00040400 0D01 04007000 0D02 00000800
+resolve: after taking the GPU: 0D04 00000000 0E42 00001F60 0F01 0000200E 2000 14000500 2001 00000000 2002 00000100
+resolve: after taking the GPU: 200D 00000000 200E 00000000 200F 20002000 2080 00000000 2081 00000000 2082 00100010
+resolve: after taking the GPU: 2100 0000FFFF 2101 00000000 2102 00000000 2104 00000000 210F 44200000 2110 44200000
+resolve: after taking the GPU: 2111 C3B40000 2112 43B40000 2113 3F800000 2114 00000000 2180 1000000E 2181 00000000
+resolve: after taking the GPU: 2200 00000000 2203 00000000 2204 00010000 2205 00010000 2206 00000300 2208 00000004
+resolve: after taking the GPU: 2280 00080008 2302 00000004 2312 0000FFFF 2318 00000000 2319 1C0F2000 231A 02D00500
+resolve: after taking the GPU: 231B 00000000 231D FFFFFF00 231E 00000000 231F 00000000
+resolve: only logged: 0A02 C0100000 0A03 07F00000 0A04 C0000000 0A05 00100000
+resolve: showing magenta from the CPU for 3000 ms
+resolve: set-up: ME_INIT, 19 dwords: fence 0x00000000
+resolve: set-up: shader unit, 20 dwords: fence 0x00000000
+resolve: set-up: render backend, 14 dwords: fence 0x00000000
+resolve: set-up: draw state and shaders, 72 dwords: fence 0x00000000
+resolve: set-up: register split, 1261 dwords: fence 0x00000000
+resolve: set-up: point draws, 52 dwords: fence 0x00000000
+resolve: set-up: vertex cache, 11 dwords: fence 0x00000000
+resolve: set-up: screen scissor, 3 dwords: fence 0x00000000
+resolve: after the set-up: 0081 84410380 0082 F0180002 0C85 00000003 0D00 00070100 0D01 04007000 0D02 00010800
+resolve: after the set-up: 0D04 00000000 0E42 00001F60 0F01 0000200E 2000 14000500 2001 00000000 2002 00000100
+resolve: after the set-up: 200D 00000000 200E 00000000 200F 20002000 2080 00000000 2081 00000000 2082 00100010
+resolve: after the set-up: 2100 0000FFFF 2101 00000000 2102 00000000 2104 00000000 210F 44200000 2110 44200000
+resolve: after the set-up: 2111 C3B40000 2112 43B40000 2113 3F800000 2114 00000000 2180 1000000E 2181 00000000
+resolve: after the set-up: 2200 00000000 2203 00000000 2204 00010000 2205 00010000 2206 00000300 2208 00000004
+resolve: after the set-up: 2280 00080008 2302 00000004 2312 0000FFFF 2318 00000000 2319 1C0F2000 231A 02D00500
+resolve: after the set-up: 231B 00000000 231D FFFFFF00 231E 00000000 231F 00000000
+resolve: white 1: resolve, 118 dwords: fence 0x00000000
+resolve: white 1: every tile 0
+resolve:   00000000 in 307200 pixels
+resolve: holding for 2000 ms
+resolve: white 2: resolve, 118 dwords: fence 0x00000000
+resolve: white 2: every tile W
+resolve:   FFFFFFFF 
