@@ -164,7 +164,8 @@ uint32_t xsdk_gpu_resolve_bytes(uint32_t width, uint32_t height)
 void xsdk_gpu_set_depth_clear(float depth, uint8_t stencil)
 {
 	assert(depth >= 0.0f && depth <= 1.0f);
-	depth_clear = (uint32_t)(depth * DEPTH_24_MAX + 0.5f) << DEPTH_CLEAR_SHIFT | stencil;
+	// In double: in float, 1.0 * 0xFFFFFF + 0.5 rounds up to 0x1000000, and the shift loses it to 0.
+	depth_clear = (uint32_t)(depth * (double)DEPTH_24_MAX + 0.5) << DEPTH_CLEAR_SHIFT | stencil;
 }
 
 void xsdk_gpu_resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t clear_argb)
