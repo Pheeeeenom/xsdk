@@ -1218,3 +1218,40 @@ colour, read as a texel. GPU memory isn't cleared when allocated, so the GPU had
 The SDK now keeps such a texture's mips in its base's tail, and points the mip address at the base so Xenia reads them
 there too. `test_sampling` adds a 16x8 texture to the 16x16 one, and 32x32 and 24x20 textures, whose tail starts at
 level 1, the case Xenia's note sets apart next (texture_util.h:91-94).
+
+## Sampling and mipmaps, milestone 15 (2026-10-10)
+
+The second run of `build/xsdk_test.xex` ran with `test_sampling` and the small-texture fix (log:
+`results/2026-10-10-milestone-15-2/xsdk.log`, with the user's screenshot of the last frame). All 164 checks passed,
+and the console went back to Aurora.
+
+- **All 59 checked frames held all 560 points, and every pixel of the last frame was right:** 221,775 pixels across 56
+  cells and the ring of clear pixels around each.
+- **Mip levels, drawn one texel to a pixel, came from where the SDK put them:**
+  - **128x128:** the packed tail from level 3.
+  - **136x68 and 68x136:** each level's rows and pitch sized as if the base were 256x128 or 128x256, and the tail laid
+    out wide or tall.
+  - **32x32 and 24x20:** the tail from level 1.
+  - **16x16 and 16x8:** the base and its mips in one tail.
+  - **16x16 linear, with one level:** its base in the tail at (16, 0) with a 64-texel pitch.
+- **The GPU picked each level from the drawn size.** The non-square textures' levels came to up to 0.32 above a whole
+  level, and still read that level. Nothing here tells rounding to the nearer level from rounding down.
+- **Filters, each with the other filter of the pair set the other way:**
+  - **Magnified four times:** point matched exactly; linear stayed within 3 per channel of a bilinear blend around texel
+    centres.
+  - **Minified twice, a quarter texel in:** point matched exactly; linear stayed within 3 of weights of 1/4 and 3/4.
+  - **So the GPU took the magnification filter below level 0 and the minification filter above it.**
+- **Mip filters, at level 1 biased by the fetch constant's 12/32:** point read level 1 alone, and linear blended 3/8 of
+  level 2 into it, within 3.
+- **Addressing, with half the texture past each edge:** wrap, mirror and clamp were right, and so was mirroring across
+  with clamping down. So the u and v modes sit where the SDK writes them.
+- **The screenshot shows each level's hue** where a level is big enough to sample. The 1- and 2-pixel levels blur in
+  the screenshot after the scaler; the log checks them.
+- **Not covered:**
+  - **Anisotropic filtering:** it waits, as SCOPE.md says.
+  - **The border and mirror-once modes:** not offered.
+  - **Linear textures with mips:** creating one fails with `STATUS_NOT_IMPLEMENTED`.
+  - **A level of detail exactly halfway between two levels:** avoided.
+  - **The precision of linear filtering:** only bounded by the tolerance of 3.
+
+With that, milestone 15 is done.
