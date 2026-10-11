@@ -1386,3 +1386,24 @@ Two runs, at `7ff6c4c` (logs: `results/2026-10-11-texture-attach/`):
   `xsdk_texture_init`, then `xsdk_texture_attach` at an offset into memory the app allocated. The two byte-order
   formats showed every texel of a 4x4 image exactly: red and blue in place, each format's bytes unswapped
   (k_8_8_8_8, `ENDIAN_NONE`).
+
+## Triangle fans, and raster facts through vulkan4xenon (2026-10-11)
+
+vulkan4xenon's milestone 3 title ran at xsdk `604bdfb` (log and two captures: `results/2026-10-11-fans-and-raster/`).
+All 45 checks passed, and the console went back to Aurora. It drives xsdk's state blocks through Vulkan. Along the
+way it settled what xsdk's own tests hadn't:
+
+- **Triangle fans draw.** `XSDK_PRIMITIVE_TRIANGLE_FAN` (Xenos's `kTriangleFan`, xenia:src/xenia/gpu/xenos.h:50), on
+  16-bit indices: four indices from the top left filled the quad to its edges.
+- **Facing is decided after the viewport.** vulkan4xenon's viewport has a positive y scale, the reverse of xsdk's.
+  Culling still followed winding as the triangle looks on screen, clockwise with `front_clockwise` set.
+- **Pixel centres sit on whole coordinates under `PIX_CENTER_D3D`.** With the viewport moved half a pixel up and
+  left, edges at x = 600.25 and 700.25 covered columns 600 to 699, and the same in y. That's what centres on halves
+  give for Vulkan's coordinates, and what Xenia says of `kD3DZero` (xenia:src/xenia/gpu/xenos.h:861-866).
+- **The scissor's right edge is exclusive too.** Milestone 14 showed the bottom edge only. Here, a 60 by 50 scissor at
+  (280, 510) drew pixel (339, 559), but not (340, 535) or (310, 560).
+- **Reverse subtract and min blend** as their names say, within 2 per channel: destination less source, and the
+  smaller of each. Milestone 14 had covered alpha, additive, subtract and max.
+- **A colour write mask of 0 with stencil replace** wrote the stencil and no colour.
+- **Depth bias in depth units:** -0.01 pulled a quad at 0.3 in front of an equal-depth one under less-than, as in
+  milestone 14. Here it was given as -0.01 x 2^24 in Vulkan's units and divided back.
