@@ -488,6 +488,38 @@ when broken on purpose.
 - occlusion queries;
 - depth resolves, and resolving part of a target.
 
+### Draw throughput, after vulkan4xenon's benchmark
+
+Agreed on 2026-10-11, after vulkan4xenon's milestone 5 measured the GPU layer on the console
+(vulkan4xenon:results/2026-10-11-milestone-5/vkbench_run1.log).
+
+**Why.** A cube drawn with a matrix and a tint cost 37.6 us through the GPU layer, and 4000 of them took 151 ms a
+frame. The GPU finished each frame's last commands and its resolve 0.3 ms after the submit, so it sat idle; the CPU
+waited for room in the ring.
+- A draw writes 156 dwords: each constant write sends the whole block of 16 registers around it, and each indexed draw
+  carries a coherency request. The 32 KB ring fills every 52 draws.
+- Once full, the ring is kicked and the CPU sleeps in 1 ms steps, which come to about 2 ms on the console.
+- libxenon records into a 4 MB buffer through the CPU's cache, flushes it, and kicks every 4 KB of it from the ring
+  with `PM4_INDIRECT_BUFFER` (libxenon:drivers/xenos/xe.c:21-23, 52-75, 108-147). It invalidates the GPU's caches when
+  the CPU unlocks a buffer, not at every draw (xe.c:750-761).
+
+19. **Draw throughput.** In three steps, each run on the console:
+    1. **Measure.** The ring counts what it writes, its kicks, its waits for room and the time they take, and a title
+       reads them. vkbench logs them for each scene, with a 1 ms sleep timed and the CPU's write speed into
+       write-combined memory against cached memory it then flushes.
+    2. **Record ahead of the GPU.** Commands go into a large buffer, which the ring runs in segments with
+       `PM4_INDIRECT_BUFFER` as they fill, as libxenon does, so the GPU works while the CPU records. When the GPU is
+       behind, the CPU waits without 1 ms sleeps. Step 1's numbers choose between cached and write-combined memory.
+    3. **Fewer dwords a draw.** Constants go in smaller groups than 16 registers, where the console takes them: each
+       group size gets its own hardware test, as three float constants alone hung the GPU (src/gpu_constants.c).
+       Coherency requests cover only memory the CPU wrote, which the title declares.
+
+    Done when, on the console:
+    - vkbench's `draws_1000` through the GPU layer fits a 60 Hz frame: draw and submit in under 16 ms, under 16 us a
+      draw;
+    - `draws_4000` is recorded, with the counters showing where its time goes;
+    - xsdk_test and vulkan4xenon_test pass in full, and vkbench's two backends still draw the same pictures.
+
 ## 5. Questions for the user first
 
 1. **The GCC:** its version (C++23 needs 13 or later for most of it), target triple, ABI and code model, its C
