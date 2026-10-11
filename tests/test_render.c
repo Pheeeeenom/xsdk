@@ -196,12 +196,12 @@ static volatile uint32_t *upload_quad(
 
 static bool make_texture(XsdkTexture *texture, bool rendered)
 {
-	if (!NT_SUCCESS(xsdk_texture_create(texture, TEXTURE_WIDTH, TEXTURE_HEIGHT, 1, true)))
+	if (!NT_SUCCESS(xsdk_texture_create(texture, XSDK_FORMAT_A8R8G8B8, TEXTURE_WIDTH, TEXTURE_HEIGHT, 1, true)))
 		return false;
 	for (uint32_t y = 0; y < TEXTURE_HEIGHT; y++)
 		for (uint32_t x = 0; x < TEXTURE_WIDTH; x++)
 			image[y][x] = rendered ? SENTINEL_ARGB : source_argb(x, y);
-	xsdk_texture_upload(texture, 0, &image[0][0], TEXTURE_WIDTH);
+	xsdk_texture_upload(texture, 0, &image[0][0], sizeof image[0]);
 	return true;
 }
 

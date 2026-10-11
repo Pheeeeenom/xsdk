@@ -1,5 +1,5 @@
 // The mip layout below comes from xenia:src/xenia/gpu/texture_util.cc:116-207, 209-449 and texture_util.h:41-44,
-// rewritten in C for 2D 32-bit textures. Xenia carries this notice:
+// rewritten in C for 2D textures. Xenia carries this notice:
 //
 // Copyright (c) 2015, Ben Vanik.
 // All rights reserved.
@@ -32,8 +32,8 @@
 #include "gpu_private.h"
 
 enum {
-	TILE_TEXELS = 32,
-	TEXEL_BYTES = 4,
+	// Tiles and stored rows go in 32 by 32 blocks (xenia:src/xenia/gpu/texture_util.cc:304-345).
+	TILE_BLOCKS = 32,
 	// Each stored level starts on a page (xenia:src/xenia/gpu/xenos.h:1132-1134).
 	PAGE_BYTES = 0x1000,
 	// Levels 16 texels or smaller across their short side share one tail.
@@ -58,16 +58,23 @@ uint32_t xsdk_texture_packed_level(uint32_t width, uint32_t height)
 	return size_log2 > PACKED_SIZE_LOG2 ? size_log2 - PACKED_SIZE_LOG2 : 0;
 }
 
-// Mips are stored as if the base were a power of two, in whole tiles.
-static uint32_t stored_texels(uint32_t size, uint32_t stored_level)
+uint32_t xsdk_texture_blocks(uint32_t texels, uint32_t block_log2)
 {
-	const uint32_t texels = (1u << log2_ceil(size)) >> stored_level;
-	return round_up(texels ? texels : 1, TILE_TEXELS);
+	return (texels + (1u << block_log2) - 1) >> block_log2;
 }
 
-static uint32_t stored_bytes(uint32_t width, uint32_t height, uint32_t stored_level)
+// Mips are stored as if the base were a power of two, in whole tiles of blocks.
+static uint32_t stored_blocks(uint32_t texels, uint32_t stored_level, uint32_t block_log2)
 {
-	return round_up(stored_texels(width, stored_level) * stored_texels(height, stored_level) * TEXEL_BYTES, PAGE_BYTES);
+	const uint32_t level_texels = (1u << log2_ceil(texels)) >> stored_level;
+	return round_up(xsdk_texture_blocks(level_texels ? level_texels : 1, block_log2), TILE_BLOCKS);
+}
+
+static uint32_t stored_bytes(const TextureLayout *layout, uint32_t stored_level)
+{
+	const uint32_t blocks = stored_blocks(layout->width, stored_level, layout->block_log2) *
+		stored_blocks(layout->height, stored_level, layout->block_log2);
+	return round_up(blocks << layout->block_bytes_log2, PAGE_BYTES);
 }
 
 // A level's texels from the tail's corner, laid out by whether the texture is wider than tall.
@@ -88,31 +95,35 @@ static void packed_offset(uint32_t width, uint32_t height, uint32_t level, uint3
 	*y = wide ? 0 : offset;
 }
 
-uint32_t xsdk_texture_mip_bytes(uint32_t width, uint32_t height, uint32_t levels)
+uint32_t xsdk_texture_mip_bytes(const TextureLayout *layout)
 {
-	const uint32_t packed_level = xsdk_texture_packed_level(width, height);
+	const uint32_t packed_level = xsdk_texture_packed_level(layout->width, layout->height);
 	// With the base in the tail, the console reads every level from it, whatever the mip address (docs/HARDWARE.md).
-	if (levels <= 1 || packed_level == 0)
+	if (layout->levels <= 1 || packed_level == 0)
 		return 0;
-	const uint32_t last = levels - 1 < packed_level ? levels - 1 : packed_level;
+	const uint32_t last = layout->levels - 1 < packed_level ? layout->levels - 1 : packed_level;
 	uint32_t bytes = 0;
 	for (uint32_t stored = 1; stored <= last; stored++)
-		bytes += stored_bytes(width, height, stored);
+		bytes += stored_bytes(layout, stored);
 	return bytes;
 }
 
-void xsdk_texture_place(uint32_t width, uint32_t height, uint32_t base_pitch, uint32_t mip_offset_bytes, uint32_t level,
-	TextureLevelPlace *place)
+void xsdk_texture_place(const TextureLayout *layout, uint32_t level, TextureLevelPlace *place)
 {
-	const uint32_t packed_level = xsdk_texture_packed_level(width, height);
-	*place = (TextureLevelPlace){ .offset_bytes = 0, .pitch = base_pitch, .x = 0, .y = 0 };
-	if (level >= packed_level)
-		packed_offset(width, height, level, &place->x, &place->y);
+	const uint32_t packed_level = xsdk_texture_packed_level(layout->width, layout->height);
+	*place = (TextureLevelPlace){ .offset_bytes = 0, .pitch_blocks = layout->base_pitch_blocks, .x = 0, .y = 0 };
+	if (level >= packed_level) {
+		uint32_t x;
+		uint32_t y;
+		packed_offset(layout->width, layout->height, level, &x, &y);
+		place->x = x >> layout->block_log2;
+		place->y = y >> layout->block_log2;
+	}
 	if (level == 0 || packed_level == 0)
 		return;
 	const uint32_t stored = level < packed_level ? level : packed_level;
-	place->offset_bytes = mip_offset_bytes;
+	place->offset_bytes = layout->mip_offset_bytes;
 	for (uint32_t before = 1; before < stored; before++)
-		place->offset_bytes += stored_bytes(width, height, before);
-	place->pitch = stored_texels(width, stored);
+		place->offset_bytes += stored_bytes(layout, before);
+	place->pitch_blocks = stored_blocks(layout->width, stored, layout->block_log2);
 }

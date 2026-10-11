@@ -173,7 +173,8 @@ static uint32_t texel_argb(uint32_t texture, uint32_t level, uint32_t x, uint32_
 static bool make_texture(XsdkTexture *texture, uint32_t which)
 {
 	const TextureSpec *const spec = &specs[which];
-	const NTSTATUS status = xsdk_texture_create(texture, spec->width, spec->height, spec->levels, spec->tiled);
+	const NTSTATUS status =
+		xsdk_texture_create(texture, XSDK_FORMAT_A8R8G8B8, spec->width, spec->height, spec->levels, spec->tiled);
 	if (!NT_SUCCESS(status)) {
 		xsdk_log_write("sampling: %s: xsdk_texture_create failed: 0x%08X", spec->name, (unsigned)status);
 		return false;
@@ -184,7 +185,7 @@ static bool make_texture(XsdkTexture *texture, uint32_t which)
 		for (uint32_t y = 0; y < height; y++)
 			for (uint32_t x = 0; x < width; x++)
 				image[y * width + x] = texel_argb(which, level, x, y);
-		xsdk_texture_upload(texture, level, image, width);
+		xsdk_texture_upload(texture, level, image, width * sizeof image[0]);
 	}
 	return true;
 }

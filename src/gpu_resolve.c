@@ -176,7 +176,7 @@ void xsdk_gpu_resolve(uint32_t address, uint32_t width, uint32_t height, uint32_
 void xsdk_gpu_resolve_texture(const XsdkTexture *texture, uint32_t clear_argb)
 {
 	// Xenia lays out a resolve's destination only as tiled (xenia:src/xenia/gpu/draw_util.cc:1035-1061).
-	assert(texture->tiled);
+	assert(texture->tiled && texture->format == XSDK_FORMAT_A8R8G8B8);
 	// A resolve writes from the corner, so the base can't sit inside the packed tail.
 	assert(xsdk_texture_packed_level(texture->width, texture->height) > 0);
 	resolve(texture->address, texture->width, texture->height, texture->pitch,

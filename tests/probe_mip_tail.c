@@ -105,7 +105,8 @@ static void fill_pages(volatile uint32_t *pages)
 static bool make_texture(XsdkTexture *texture, const Shape *shape, uint32_t setup, volatile uint32_t *pages)
 {
 	XsdkTexture model;
-	if (!NT_SUCCESS(xsdk_texture_create(&model, shape->width, shape->height, shape->levels, true)))
+	if (!NT_SUCCESS(
+			xsdk_texture_create(&model, XSDK_FORMAT_A8R8G8B8, shape->width, shape->height, shape->levels, true)))
 		return false;
 	const uint32_t base = xsdk_gpu_address(pages);
 	const uint32_t mips = setup == 0 ? base + PAGE_BYTES : base;

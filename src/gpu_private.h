@@ -160,21 +160,34 @@ void xsdk_display_flip(uint32_t address);
 // A texel's byte offset in Xenos's tiled layout, the pitch a multiple of 32.
 uint32_t xsdk_tiled_2d(uint32_t x, uint32_t y, uint32_t pitch_texels, uint32_t bytes_per_texel_log2);
 
-// Where a texture level's texel (0, 0) is stored.
+// What places a texture's levels in memory.
+typedef struct {
+	uint32_t width;
+	uint32_t height;
+	uint32_t levels;
+	// Texels across and down a block, as a power of two: 0, or 2 for 4 by 4 blocks.
+	uint32_t block_log2;
+	uint32_t block_bytes_log2;
+	uint32_t base_pitch_blocks;
+	uint32_t mip_offset_bytes;
+} TextureLayout;
+
+// Where a texture level's block (0, 0) is stored.
 typedef struct {
 	// From the texture's start: 0 for the base and its tail, else the mip offset plus the levels stored before it.
 	uint32_t offset_bytes;
-	uint32_t pitch;
-	// Inside the packed tail; 0 above it.
+	uint32_t pitch_blocks;
+	// Inside the packed tail, in blocks; 0 above it.
 	uint32_t x;
 	uint32_t y;
 } TextureLevelPlace;
 
 // The first level stored in the packed tail, which may be the base.
 uint32_t xsdk_texture_packed_level(uint32_t width, uint32_t height);
-// The bytes levels 1 on take at the mip address, for a tiled 32-bit texture.
-uint32_t xsdk_texture_mip_bytes(uint32_t width, uint32_t height, uint32_t levels);
-void xsdk_texture_place(uint32_t width, uint32_t height, uint32_t base_pitch, uint32_t mip_offset_bytes, uint32_t level,
-	TextureLevelPlace *place);
+// Blocks covering texels, rounding up.
+uint32_t xsdk_texture_blocks(uint32_t texels, uint32_t block_log2);
+// The bytes levels 1 on take at the mip address, for a tiled texture.
+uint32_t xsdk_texture_mip_bytes(const TextureLayout *layout);
+void xsdk_texture_place(const TextureLayout *layout, uint32_t level, TextureLevelPlace *place);
 
 #endif

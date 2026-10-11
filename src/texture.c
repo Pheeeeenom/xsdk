@@ -33,6 +33,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "gpu_private.h"
 #include "xsdk/gpu.h"
@@ -40,12 +41,12 @@
 #include "xsdk/log.h"
 
 enum {
-	TEXEL_BYTES_LOG2 = 2,
 	// Linear rows start every 256 bytes (xenia:src/xenia/gpu/xenos.h:1179-1181).
-	LINEAR_PITCH_ALIGNMENT = 256 >> TEXEL_BYTES_LOG2,
-	// Tiled textures are whole 32 by 32 tiles, and libxenon pads linear ones to 32 rows too (xe.c:2082-2083).
-	TILE_TEXELS = 32,
+	LINEAR_ROW_ALIGNMENT_BYTES = 256,
+	// Tiled textures are whole 32 by 32 tiles of blocks, and libxenon pads linear ones to 32 rows too (xe.c:2082-2083).
+	TILE_BLOCKS = 32,
 	PAGE_BYTES = 0x1000,
+	WORD_BYTES = 4,
 	// The fetch constant's fields (xenia:src/xenia/gpu/xenos.h:1184-1285), set as libxenon sets them (xe.c:1187-1207).
 	FETCH_TYPE_TEXTURE = 2,
 	CLAMP_X_SHIFT = 10,
@@ -53,11 +54,9 @@ enum {
 	PITCH_SHIFT = 22,
 	PITCH_UNIT_LOG2 = 5,
 	TILED_SHIFT = 31,
-	FORMAT_8_8_8_8 = 6,
-	ENDIAN_8IN32 = 2 << 6,
+	ENDIAN_SHIFT = 6,
 	HEIGHT_SHIFT = 13,
-	// Red from z, green from y, blue from x and alpha from w, for words written as ARGB (xe.c:1202).
-	SWIZZLE_ARGB = (2 | 1 << 3 | 0 << 6 | 3 << 9) << 1,
+	SWIZZLE_SHIFT = 1,
 	MAG_FILTER_SHIFT = 19,
 	MIN_FILTER_SHIFT = 21,
 	MIP_FILTER_SHIFT = 23,
@@ -72,6 +71,53 @@ enum {
 	FETCH_ADDRESS_ALIGNMENT = 0x1000,
 };
 
+// Endian swaps (xenia:src/xenia/gpu/xenos.h:193-198); libxenon marks 16-bit formats 8-in-16 (xe.h:184).
+enum {
+	ENDIAN_NONE = 0,
+	ENDIAN_8IN16 = 1,
+	ENDIAN_8IN32 = 2,
+};
+
+// Swizzle sources: the components x to w, then 0 and 1 (xenia:src/xenia/gpu/xenos.h:1015-1030).
+enum {
+	X,
+	Y,
+	Z,
+	W,
+	ZERO,
+	ONE,
+};
+
+// Where each of red, green, blue and alpha comes from.
+#define SWIZZLE(red, green, blue, alpha) ((red) | (green) << 3 | (blue) << 6 | (alpha) << 9)
+
+typedef struct {
+	uint32_t format;
+	// Texels across and down a block, as a power of two.
+	uint32_t block_log2;
+	uint32_t block_bytes_log2;
+	uint32_t endian;
+	uint32_t swizzle;
+} FormatInfo;
+
+// TextureFormat values and block sizes (xenia:src/xenia/gpu/xenos.h:450-508, texture_info_formats.cc:25-55). Each
+// format's x is its lowest bits or first byte, as Xenia maps them to Vulkan (vulkan/vulkan_texture_cache.cc:94-265).
+static const FormatInfo formats[XSDK_FORMATS] = {
+	[XSDK_FORMAT_A8R8G8B8] = { 6, 0, 2, ENDIAN_8IN32, SWIZZLE(Z, Y, X, W) },
+	[XSDK_FORMAT_R5G6B5] = { 4, 0, 1, ENDIAN_8IN16, SWIZZLE(Z, Y, X, ONE) },
+	[XSDK_FORMAT_A1R5G5B5] = { 3, 0, 1, ENDIAN_8IN16, SWIZZLE(Z, Y, X, W) },
+	[XSDK_FORMAT_A4R4G4B4] = { 15, 0, 1, ENDIAN_8IN16, SWIZZLE(Z, Y, X, W) },
+	[XSDK_FORMAT_A2B10G10R10] = { 7, 0, 2, ENDIAN_8IN32, SWIZZLE(X, Y, Z, W) },
+	[XSDK_FORMAT_R8] = { 2, 0, 0, ENDIAN_NONE, SWIZZLE(X, ZERO, ZERO, ONE) },
+	[XSDK_FORMAT_R8G8] = { 10, 0, 1, ENDIAN_NONE, SWIZZLE(X, Y, ZERO, ONE) },
+	[XSDK_FORMAT_R16F] = { 30, 0, 1, ENDIAN_8IN16, SWIZZLE(X, ZERO, ZERO, ONE) },
+	[XSDK_FORMAT_R16G16F] = { 31, 0, 2, ENDIAN_8IN16, SWIZZLE(X, Y, ZERO, ONE) },
+	[XSDK_FORMAT_R16G16B16A16F] = { 32, 0, 3, ENDIAN_8IN16, SWIZZLE(X, Y, Z, W) },
+	[XSDK_FORMAT_DXT1] = { 18, 2, 3, ENDIAN_8IN16, SWIZZLE(X, Y, Z, W) },
+	[XSDK_FORMAT_DXT3] = { 19, 2, 4, ENDIAN_8IN16, SWIZZLE(X, Y, Z, W) },
+	[XSDK_FORMAT_DXT5] = { 20, 2, 4, ENDIAN_8IN16, SWIZZLE(X, Y, Z, W) },
+};
+
 static NTSTATUS reject(const char *why)
 {
 	xsdk_log_write("texture: %s", why);
@@ -80,7 +126,7 @@ static NTSTATUS reject(const char *why)
 
 static uint32_t round_up(uint32_t value, uint32_t alignment)
 {
-	return (value + alignment - 1) & ~(alignment - 1);
+	return (value + alignment - 1) / alignment * alignment;
 }
 
 // Down to 1x1 on the long side, as Xenia counts them (xenia:src/xenia/gpu/texture_util.cc:68-74).
@@ -95,9 +141,33 @@ static uint32_t level_size(uint32_t size, uint32_t level)
 	return size >> level ? size >> level : 1;
 }
 
-// Xe_CreateTexture and TEXTURE_FETCH for ARGB levels, the base then the mips, a page apart.
-NTSTATUS xsdk_texture_create(XsdkTexture *texture, uint32_t width, uint32_t height, uint32_t levels, bool tiled)
+static TextureLayout layout_of(const XsdkTexture *texture)
 {
+	const FormatInfo *const info = &formats[texture->format];
+	return (TextureLayout){ .width = texture->width,
+		.height = texture->height,
+		.levels = texture->levels,
+		.block_log2 = info->block_log2,
+		.block_bytes_log2 = info->block_bytes_log2,
+		.base_pitch_blocks = texture->pitch >> info->block_log2,
+		.mip_offset_bytes = texture->mip_offset_bytes };
+}
+
+// Whole tiles of blocks; linear rows also start every 256 bytes.
+static uint32_t base_pitch_blocks(const FormatInfo *info, uint32_t width, bool tiled)
+{
+	const uint32_t blocks = round_up(xsdk_texture_blocks(width, info->block_log2), TILE_BLOCKS);
+	if (tiled)
+		return blocks;
+	return round_up(blocks << info->block_bytes_log2, LINEAR_ROW_ALIGNMENT_BYTES) >> info->block_bytes_log2;
+}
+
+// Xe_CreateTexture and TEXTURE_FETCH for the format's levels, the base then the mips, a page apart.
+NTSTATUS xsdk_texture_create(
+	XsdkTexture *texture, uint32_t format, uint32_t width, uint32_t height, uint32_t levels, bool tiled)
+{
+	if (format >= XSDK_FORMATS)
+		return reject("format not one of XSDK_FORMAT_*");
 	if (!width || !height || width > XSDK_TEXTURE_MAX_SIZE || height > XSDK_TEXTURE_MAX_SIZE)
 		return reject("texture size not from 1 to 8192");
 	if (!levels || levels > level_count(width, height))
@@ -106,9 +176,18 @@ NTSTATUS xsdk_texture_create(XsdkTexture *texture, uint32_t width, uint32_t heig
 		xsdk_log_write("texture: linear textures have one level");
 		return STATUS_NOT_IMPLEMENTED;
 	}
-	const uint32_t pitch = round_up(width, tiled ? TILE_TEXELS : LINEAR_PITCH_ALIGNMENT);
-	const uint32_t mip_offset_bytes = round_up(pitch * round_up(height, TILE_TEXELS) << TEXEL_BYTES_LOG2, PAGE_BYTES);
-	const uint32_t mip_bytes = xsdk_texture_mip_bytes(width, height, levels);
+	const FormatInfo *const info = &formats[format];
+	const uint32_t pitch_blocks = base_pitch_blocks(info, width, tiled);
+	const uint32_t rows = round_up(xsdk_texture_blocks(height, info->block_log2), TILE_BLOCKS);
+	const uint32_t mip_offset_bytes = round_up(pitch_blocks * rows << info->block_bytes_log2, PAGE_BYTES);
+	const TextureLayout layout = { .width = width,
+		.height = height,
+		.levels = levels,
+		.block_log2 = info->block_log2,
+		.block_bytes_log2 = info->block_bytes_log2,
+		.base_pitch_blocks = pitch_blocks,
+		.mip_offset_bytes = mip_offset_bytes };
+	const uint32_t mip_bytes = xsdk_texture_mip_bytes(&layout);
 	const uint32_t size_bytes = mip_offset_bytes + mip_bytes;
 	volatile uint32_t *const texels = xsdk_gpu_alloc(size_bytes);
 	if (!texels)
@@ -117,10 +196,12 @@ NTSTATUS xsdk_texture_create(XsdkTexture *texture, uint32_t width, uint32_t heig
 	assert(address % FETCH_ADDRESS_ALIGNMENT == 0);
 	// Mips in the base's tail point back at the base, so Xenia reads them where the console does.
 	const uint32_t mip_address = levels == 1 ? 0 : mip_bytes ? address + mip_offset_bytes : address;
+	const uint32_t pitch = pitch_blocks << info->block_log2;
 	*texture = (XsdkTexture){
 		.texels = texels,
 		.address = address,
 		.size_bytes = size_bytes,
+		.format = format,
 		.width = width,
 		.height = height,
 		.levels = levels,
@@ -129,9 +210,9 @@ NTSTATUS xsdk_texture_create(XsdkTexture *texture, uint32_t width, uint32_t heig
 		.mip_offset_bytes = mip_offset_bytes,
 		.fetch = {
 			FETCH_TYPE_TEXTURE | (pitch >> PITCH_UNIT_LOG2) << PITCH_SHIFT | (uint32_t)tiled << TILED_SHIFT,
-			address | ENDIAN_8IN32 | FORMAT_8_8_8_8,
+			address | info->endian << ENDIAN_SHIFT | info->format,
 			(height - 1) << HEIGHT_SHIFT | (width - 1),
-			SWIZZLE_ARGB,
+			info->swizzle << SWIZZLE_SHIFT,
 			(levels - 1) << MIP_MAX_LEVEL_SHIFT,
 			mip_address | PACKED_MIPS | DIMENSION_2D,
 		},
@@ -139,20 +220,43 @@ NTSTATUS xsdk_texture_create(XsdkTexture *texture, uint32_t width, uint32_t heig
 	return STATUS_SUCCESS;
 }
 
-void xsdk_texture_upload(XsdkTexture *texture, uint32_t level, const uint32_t *argb, uint32_t row_pixels)
+// A block's byte offset in its stored image.
+static uint32_t block_offset(const XsdkTexture *texture, const TextureLevelPlace *place, uint32_t x, uint32_t y)
+{
+	const uint32_t bytes_log2 = formats[texture->format].block_bytes_log2;
+	if (texture->tiled)
+		return xsdk_tiled_2d(x, y, place->pitch_blocks, bytes_log2);
+	return (y * place->pitch_blocks + x) << bytes_log2;
+}
+
+// Bytes within one 32-bit word, merged with what the word holds unless they fill it.
+static void put_bytes(volatile uint32_t *image, uint32_t offset, const uint8_t *bytes, uint32_t count)
+{
+	volatile uint32_t *const word = image + offset / WORD_BYTES;
+	uint32_t value = count == WORD_BYTES ? 0 : *word;
+	memcpy((uint8_t *)&value + offset % WORD_BYTES, bytes, count);
+	*word = value;
+}
+
+void xsdk_texture_upload(XsdkTexture *texture, uint32_t level, const void *data, uint32_t row_bytes)
 {
 	assert(level < texture->levels);
+	const FormatInfo *const info = &formats[texture->format];
+	const TextureLayout layout = layout_of(texture);
 	TextureLevelPlace place;
-	xsdk_texture_place(texture->width, texture->height, texture->pitch, texture->mip_offset_bytes, level, &place);
-	volatile uint32_t *const image = texture->texels + (place.offset_bytes >> TEXEL_BYTES_LOG2);
-	for (uint32_t y = 0; y < level_size(texture->height, level); y++) {
-		for (uint32_t x = 0; x < level_size(texture->width, level); x++) {
-			const uint32_t stored_x = place.x + x;
-			const uint32_t stored_y = place.y + y;
-			const uint32_t index = texture->tiled
-				? xsdk_tiled_2d(stored_x, stored_y, place.pitch, TEXEL_BYTES_LOG2) >> TEXEL_BYTES_LOG2
-				: stored_y * place.pitch + stored_x;
-			image[index] = argb[y * row_pixels + x];
+	xsdk_texture_place(&layout, level, &place);
+	volatile uint32_t *const image = texture->texels + place.offset_bytes / WORD_BYTES;
+	const uint32_t block_bytes = 1u << info->block_bytes_log2;
+	const uint32_t columns = xsdk_texture_blocks(level_size(texture->width, level), info->block_log2);
+	const uint32_t rows = xsdk_texture_blocks(level_size(texture->height, level), info->block_log2);
+	for (uint32_t y = 0; y < rows; y++) {
+		const uint8_t *const row = (const uint8_t *)data + y * row_bytes;
+		for (uint32_t x = 0; x < columns; x++) {
+			const uint32_t offset = block_offset(texture, &place, place.x + x, place.y + y);
+			// Blocks of 4 bytes or more fill whole words; smaller ones share a word with their neighbours.
+			for (uint32_t byte = 0; byte < block_bytes; byte += WORD_BYTES)
+				put_bytes(image, offset + byte, row + x * block_bytes + byte,
+					block_bytes < WORD_BYTES ? block_bytes : WORD_BYTES);
 		}
 	}
 	__asm__ volatile("sync" ::: "memory");
