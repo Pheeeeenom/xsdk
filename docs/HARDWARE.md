@@ -1162,3 +1162,33 @@ screenshot of the last depth-tested frame). All 143 checks passed, and the conso
   and the GPU took them.
 
 With that, milestone 13 is done.
+
+## Raster and blend state, milestone 14 (2026-10-10)
+
+`build/xsdk_test.xex` ran with `test_raster` (log: `results/2026-10-10-milestone-14/xsdk.log`, with the user's
+screenshot of the last frame). All 152 checks passed, and the console went back to Aurora.
+
+- **All 59 checked frames held all 24 points.** Each point was worked out on the CPU, the blends within 2 per channel.
+  - **Blends over a base:** alpha (half-transparent orange over blue, 80807F), additive with green clamped (C0FFD0),
+    source less destination with green going negative and clamping to 0 (A00060), and max (C0D090).
+  - **The write mask:** only the red and blue of a magenta overlay landed on green, giving E0E0E0.
+  - **Culling, with front faces clockwise:** culling back drew the clockwise rectangle and dropped the mirrored one,
+    and culling front did the reverse.
+  - **The scissor:** its top-left and bottom-right pixels drew, and the pixel just left of it and the one just below
+    it didn't. The bottom-right corner is exclusive, at least in y; no point checks just right of it.
+  - **The viewport:** a draw over all of clip space filled the viewport's rectangle and nothing beside or below it.
+  - **Depth bias:** over a base at depth 0.5 under a less-than test, an unbiased rectangle at the same depth stayed
+    hidden, and the same rectangle biased by -0.01 showed.
+- **The depth clear of 1.0 holds.** The base in the depth bias cell drew, which a depth clear of 0 would have stopped;
+  that was the float rounding fixed before the run.
+- **The screenshot shows the same at each check point.** The greys and the lighter blends land within a few steps of
+  their targets (80807D, C2FFCF, BFD592, E0E0E0, 7E7E7E). Saturated colours shift as in earlier captures (CB3040 for
+  E04040, 8D0059 for A00060, EC7A06 for FF8000). The screenshot's edges are only good to a few pixels, after the
+  scaler and the crop. The log's checks pin the scissor's edges to the pixel, and the viewport's to within 3 pixels.
+- **Setting blend and raster state on their own works.** The SDK writes `RB_BLENDCONTROL0`, `RB_COLOR_MASK`,
+  `PA_SU_SC_MODE_CNTL` and the four `PA_SU_POLY_OFFSET` registers per draw, and the scissor and viewport between
+  draws. libxenon packs the blend and cull fields into its control block (xe.c:1451-1455, 1505-1511). The GPU took the
+  SDK's separate writes mid-frame.
+- **The slope term of depth bias isn't tested.** The API takes it, but this run only used the constant term.
+
+With that, milestone 14 is done.
