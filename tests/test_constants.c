@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "constant_shaders.h"
@@ -13,7 +14,8 @@
 #include "xsdk/shader.h"
 #include "xsdk/thread.h"
 
-// Six quads a frame from one vertex buffer and one pair of shaders, each placed and coloured only by its constants.
+// Six quads a frame from one vertex buffer and one pair of shaders, each placed and coloured only by its constants:
+// set from the CPU, then loaded from memory.
 
 enum {
 	WIDTH = 1280,
@@ -38,6 +40,10 @@ enum {
 	// The register indices of the constant split (xenia:src/xenia/gpu/register_table.inc:578-579).
 	SQ_VS_CONST = 0x2307,
 	SQ_PS_CONST = 0x2308,
+	// Loaded constants come in groups of 4 from 64-byte aligned memory: each quad's two stages, one group each.
+	GROUP = 4,
+	GROUP_BYTES = GROUP * 16,
+	SLOT_BYTES = 2 * GROUP_BYTES,
 };
 
 typedef struct {
@@ -108,26 +114,57 @@ static float unorm(uint8_t value)
 }
 
 // Edges half a pixel early, as the other tests place theirs (xenia:src/xenia/gpu/draw_util.cc:837).
-static void set_quad_constants(const Quad *quad)
+static void quad_floats(const Quad *quad, float vertex[GROUP][4], float pixel[GROUP][4])
 {
 	const float left = (quad->x - 0.5f) / (WIDTH / 2.0f) - 1.0f;
 	const float right = (quad->x + quad->width - 0.5f) / (WIDTH / 2.0f) - 1.0f;
 	const float top = 1.0f - (quad->y - 0.5f) / (HEIGHT / 2.0f);
 	const float bottom = 1.0f - (quad->y + quad->height - 0.5f) / (HEIGHT / 2.0f);
-	const float vertex[3][4] = {
+	const float vertex_values[GROUP][4] = {
 		{ right - left, bottom - top, 1.0f, 1.0f },
 		{ left, top, 0.0f, 0.0f },
 		{ unorm(quad->red), 0.0f, 0.0f, 1.0f },
 	};
-	const float pixel[3][4] = {
+	const float pixel_values[GROUP][4] = {
 		{ 0.0f, unorm(quad->green), 0.0f, 0.0f },
 		{ 0.0f, unorm(quad->bool_green), 0.0f, 0.0f },
 		{ 0.0f, 0.0f, unorm(LOOP_STEP), 0.0f },
 	};
+	memcpy(vertex, vertex_values, sizeof vertex_values);
+	memcpy(pixel, pixel_values, sizeof pixel_values);
+}
+
+// Each quad's float constants as memory to load from, one slot a quad.
+static void fill_loads(volatile uint32_t *loads)
+{
+	for (uint32_t i = 0; i < sizeof quads / sizeof quads[0]; i++) {
+		float floats[2][GROUP][4];
+		quad_floats(&quads[i], floats[0], floats[1]);
+		uint32_t words[SLOT_BYTES / 4];
+		memcpy(words, floats, sizeof words);
+		for (uint32_t w = 0; w < SLOT_BYTES / 4; w++)
+			loads[i * SLOT_BYTES / 4 + w] = words[w];
+	}
+	__asm__ volatile("sync" ::: "memory");
+	xsdk_gpu_invalidate(xsdk_gpu_address(loads), sizeof quads / sizeof quads[0] * SLOT_BYTES);
+}
+
+// From the CPU, or with loads_address, loaded from memory; the boolean and loop constants are always set.
+static void set_quad_constants(uint32_t index, uint32_t loads_address)
+{
+	const Quad *const quad = &quads[index];
+	if (loads_address) {
+		xsdk_gpu_load_vertex_constants(0, loads_address + index * SLOT_BYTES, GROUP);
+		xsdk_gpu_load_pixel_constants(0, loads_address + index * SLOT_BYTES + GROUP_BYTES, GROUP);
+	} else {
+		float vertex[GROUP][4];
+		float pixel[GROUP][4];
+		quad_floats(quad, vertex, pixel);
+		xsdk_gpu_set_vertex_constants(0, &vertex[0][0], 3);
+		xsdk_gpu_set_pixel_constants(0, &pixel[0][0], 3);
+	}
 	const uint32_t bools = quad->use_bool;
 	const uint32_t loop = xsdk_gpu_loop_constant(quad->loop_passes, 0, 1);
-	xsdk_gpu_set_vertex_constants(0, &vertex[0][0], 3);
-	xsdk_gpu_set_pixel_constants(0, &pixel[0][0], 3);
 	xsdk_gpu_set_bool_constants(BOOL_WORD, &bools, 1);
 	xsdk_gpu_set_loop_constants(0, &loop, 1);
 }
@@ -182,8 +219,9 @@ static volatile uint32_t *upload_square(void)
 
 // Each frame sets every quad's constants and draws it, resolves into the buffer not on screen, and shows it.
 static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint32_t vertices,
-	volatile uint32_t *const *buffers, bool has_display)
+	volatile uint32_t *const *buffers, bool has_display, uint32_t loads_address)
 {
+	const char *const how = loads_address ? ", loaded from memory" : "";
 	uint32_t misses = 0;
 	uint32_t frames_wrong = 0;
 	bool fences_landed = true;
@@ -195,7 +233,7 @@ static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint3
 		xsdk_gpu_set_shaders(vertex, pixel);
 		xsdk_gpu_set_vertices(0, vertices, sizeof square);
 		for (uint32_t i = 0; i < sizeof quads / sizeof quads[0]; i++) {
-			set_quad_constants(&quads[i]);
+			set_quad_constants(i, loads_address);
 			xsdk_gpu_draw(XSDK_PRIMITIVE_TRIANGLE_LIST, QUAD_VERTICES);
 		}
 		xsdk_gpu_resolve(address, WIDTH, HEIGHT, CLEAR_ARGB);
@@ -209,12 +247,15 @@ static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint3
 			shown = shown && NT_SUCCESS(xsdk_display_show(address, WIDTH));
 		(void)xsdk_thread_sleep(FRAME_MS);
 	}
-	xsdk_log_write("constants: %u of %u frames checked held a wrong point; %u points wrong", (unsigned)frames_wrong,
-		(unsigned)(FRAMES - 1), (unsigned)misses);
+	xsdk_log_write("constants%s: %u of %u frames checked held a wrong point; %u points wrong", how,
+		(unsigned)frames_wrong, (unsigned)(FRAMES - 1), (unsigned)misses);
 	xsdk_log_write("constants: SQ_VS_CONST %08X, SQ_PS_CONST %08X after the frames",
 		(unsigned)probe_gpu_registers[SQ_VS_CONST], (unsigned)probe_gpu_registers[SQ_PS_CONST]);
-	check("constants: every frame's fence landed", fences_landed);
-	check("constants: every quad placed and coloured by its constants", fences_landed && frames_wrong == 0);
+	char name[96];
+	(void)snprintf(name, sizeof name, "constants: every frame's fence landed%s", how);
+	check(name, fences_landed);
+	(void)snprintf(name, sizeof name, "constants: every quad placed and coloured by its constants%s", how);
+	check(name, fences_landed && frames_wrong == 0);
 	if (has_display) {
 		check("constants: every frame shown", shown);
 		xsdk_log_write("constants: the last frame stays on screen for %u ms for a capture", (unsigned)SHOW_MS);
@@ -247,10 +288,15 @@ void test_constants(void)
 	volatile uint32_t *const vertices = upload_square();
 	const uint32_t buffer_bytes = xsdk_gpu_resolve_bytes(WIDTH, HEIGHT);
 	volatile uint32_t *const buffers[BUFFERS] = { xsdk_gpu_alloc(buffer_bytes), xsdk_gpu_alloc(buffer_bytes) };
-	check("constants: vertex and front buffers", vertices && buffers[0] && buffers[1]);
+	volatile uint32_t *const loads = xsdk_gpu_alloc(sizeof quads / sizeof quads[0] * SLOT_BYTES);
+	check("constants: vertex, front and constant buffers", vertices && buffers[0] && buffers[1] && loads);
 	// Without a display, as in Xenia, the frames still draw and are checked.
-	if (patched && vertices && buffers[0] && buffers[1])
-		draw_frames(&vertex, &pixel, xsdk_gpu_address(vertices), buffers, has_display);
+	if (patched && vertices && buffers[0] && buffers[1] && loads) {
+		draw_frames(&vertex, &pixel, xsdk_gpu_address(vertices), buffers, has_display, 0);
+		fill_loads(loads);
+		draw_frames(&vertex, &pixel, xsdk_gpu_address(vertices), buffers, false, xsdk_gpu_address(loads));
+	}
+	xsdk_gpu_free(loads);
 	xsdk_display_close();
 	for (uint32_t i = 0; i < BUFFERS; i++)
 		xsdk_gpu_free(buffers[i]);

@@ -261,6 +261,11 @@ enum {
 void xsdk_gpu_set_vertex_constants(uint32_t first, const float *values, uint32_t count);
 // The same for the pixel shader's float constants.
 void xsdk_gpu_set_pixel_constants(uint32_t first, const float *values, uint32_t count);
+// Has the GPU load count float constants from first straight from memory at address, as the console takes them:
+// whole groups of 4 from a multiple of 4, from 64-byte aligned memory (docs/HARDWARE.md). The setters' copy doesn't
+// hold loaded values, so a group that's loaded mustn't also be set.
+void xsdk_gpu_load_vertex_constants(uint32_t first, uint32_t address, uint32_t count);
+void xsdk_gpu_load_pixel_constants(uint32_t first, uint32_t address, uint32_t count);
 // Sets words of boolean constants, bit n of word w being constant 32 * w + n, as a shader's cexec names it.
 void xsdk_gpu_set_bool_constants(uint32_t first_word, const uint32_t *words, uint32_t count);
 // Sets loop constants from xsdk_gpu_loop_constant. These and the booleans are always rewritten all together.

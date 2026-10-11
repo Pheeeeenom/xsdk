@@ -11,6 +11,8 @@ enum {
 	// Groups of 4 float constants, from a multiple of 4, ran on the console; libxenon writes 16 (xe.c:1320-1331).
 	FLOAT_GROUP = 4,
 	FLOAT_GROUP_DWORDS = FLOAT_GROUP * 4,
+	// What the console loaded constants from; a group's 64 bytes.
+	LOAD_ALIGNMENT_BYTES = 64,
 	// And the 8 boolean words and 32 loop constants as one block from 0x4900 (xe.c:1365-1369).
 	INTEGER_DWORDS = XSDK_BOOL_CONSTANT_WORDS + XSDK_LOOP_CONSTANTS,
 	// A one-dword packet that does nothing, which libxenon pads with (xe.c:1217-1221).
@@ -57,6 +59,29 @@ void xsdk_gpu_set_vertex_constants(uint32_t first, const float *values, uint32_t
 void xsdk_gpu_set_pixel_constants(uint32_t first, const float *values, uint32_t count)
 {
 	set_floats(1, SHADER_CONSTANT_256_X, first, values, count);
+}
+
+// LOAD_ALU_CONSTANT: the address, then type 0 for float constants and the first register's index, then the dwords
+// (xenia:src/xenia/gpu/command_processor.cc:1477-1515).
+static void load_floats(uint32_t first_register, uint32_t first, uint32_t address, uint32_t count)
+{
+	assert(count && first % FLOAT_GROUP == 0 && count % FLOAT_GROUP == 0 && first + count <= XSDK_FLOAT_CONSTANTS);
+	assert(address % LOAD_ALIGNMENT_BYTES == 0);
+	volatile uint32_t *const packet = xsdk_gpu_reserve(4);
+	packet[0] = xsdk_gpu_type3(PM4_LOAD_ALU_CONSTANT, 3);
+	packet[1] = address;
+	packet[2] = first_register - SHADER_CONSTANT_000_X + first * 4;
+	packet[3] = count * 4;
+}
+
+void xsdk_gpu_load_vertex_constants(uint32_t first, uint32_t address, uint32_t count)
+{
+	load_floats(SHADER_CONSTANT_000_X, first, address, count);
+}
+
+void xsdk_gpu_load_pixel_constants(uint32_t first, uint32_t address, uint32_t count)
+{
+	load_floats(SHADER_CONSTANT_256_X, first, address, count);
 }
 
 void xsdk_gpu_set_bool_constants(uint32_t first_word, const uint32_t *words, uint32_t count)
