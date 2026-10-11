@@ -247,6 +247,7 @@ static uint32_t points_expected(Point *points)
 	points[n++] = (Point){ "scissor: bottom right inside", scissor_x + last, scissor_y + last, scissor_colour, 0 };
 	points[n++] = (Point){ "scissor: left of it", scissor_x - 1, scissor_y, CLEAR_ARGB, 0 };
 	points[n++] = (Point){ "scissor: below it", scissor_x + last, scissor_y + scissor_size, CLEAR_ARGB, 0 };
+	points[n++] = (Point){ "scissor: right of it", scissor_x + scissor_size, scissor_y + last, CLEAR_ARGB, 0 };
 	const Draw *const v = &draws[15];
 	points[n++] = (Point){ "viewport: inside its top left", v->x + 2, v->y + 2, v->argb, 0 };
 	points[n++] = (Point){ "viewport: inside its bottom right", v->x + v->width - 3, v->y + v->height - 3, v->argb, 0 };
