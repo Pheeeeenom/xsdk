@@ -1,0 +1,73 @@
+log: game:\xsdk.log
+vulkan4xenon test title
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 26367 us
+PASS: setup: instance, device, command pool and fence made
+boot logo: XAM's surface 00000000, then 1F4F0000
+PASS: boot logo: the display shows a buffer of its own after vkCreateDevice
+display: Xbox 360 video output, 1280x720 at 60000 mHz
+PASS: boot logo: the swapchain made
+PASS: boot logo: still on screen once the swapchain exists
+boot logo: after the first present the display shows 1F120000, image 0 at 1F120000; pixel 00 60 00
+PASS: boot logo: the first present replaces it with the app's image
+PASS: objects: vkGetInstanceProcAddr finds global functions without an instance
+PASS: objects: vkGetInstanceProcAddr finds instance functions only with an instance
+PASS: objects: vkGetDeviceProcAddr finds device functions and not instance ones
+PASS: objects: an unknown name finds nothing
+PASS: objects: one memory type, device-local, host-visible and coherent
+PASS: objects: a buffer's requirements round its size up to its alignment
+PASS: objects: an instance for Vulkan 1.1 is refused
+vulkan4xenon: no compiled shader for SPIR-V 0806A8C99179CFC2, 20 bytes
+PASS: objects: SPIR-V missing from the bundle is refused
+vulkan4xenon: not supported: colour attachments with mips, or 16 texels or less on a side
+vulkan4xenon: not supported: colour attachments with mips, or 16 texels or less on a side
+PASS: objects: R8G8B8A8_UNORM is a blendable colour attachment, but not 16 texels across or with mips
+vulkan4xenon: not supported: depth and stencil attachments that clear one and load the other
+PASS: objects: a render pass that clears depth and loads stencil is refused
+PASS: triangle: render pass, shader modules, pipeline and vertex buffer made
+PASS: triangle: framebuffers made and command buffers recorded
+PASS: triangle: 120 frames acquired, drawn and presented
+PASS: triangle: every frame's image has red, green and blue corners on the clear colour
+triangle: the image on screen, 1F120000, drew 259200 pixels
+triangle: 120 flips
+PASS: triangle: every presented frame reached the screen
+PASS: triangle: the image on screen has red, green and blue corners on the clear colour
+PASS: triangle: the image on screen covers the triangle's area
+PASS: texture: two images, a sampler, descriptor sets and a pipeline made
+PASS: texture: a buffer copied into both images
+PASS: texture: 60 frames drawn and presented
+PASS: texture: every frame shows each texel, R8G8B8A8 on the left and B8G8R8A8 on the right
+PASS: texture: the image on screen shows them too
+PASS: push constants: a pipeline with a vertex and a fragment range made
+PASS: push constants: 60 frames drawn and presented
+PASS: push constants: every frame places and colours each quad by its pushes
+PASS: push constants: the image on screen shows them too
+PASS: uniform buffers: two set layouts, a pipeline, buffers and descriptor sets made
+PASS: uniform buffers: 60 frames drawn and presented
+PASS: uniform buffers: every frame places each quad by its matrix, coloured and tinted
+PASS: uniform buffers: the image on screen shows them too
+PASS: indexed: a pipeline for each topology, a vertex buffer and an index buffer made
+PASS: indexed: 60 frames drawn and presented
+PASS: indexed: every frame has each shape in its cell: triangle lists, strips and fans, lines, points, and a list past 65535
+PASS: indexed: the image on screen shows them too
+PASS: depth and stencil: a D24S8 attachment, a render pass clearing it and five pipelines made
+PASS: depth and stencil: 60 frames drawn and presented
+PASS: depth and stencil: every frame tests depth both ways, without writing, against the clear, by stencil and with a bias
+PASS: depth and stencil: the image on screen shows them too
+PASS: raster: twelve pipelines of culling, blending, write masks and dynamic viewports made
+PASS: raster: 60 frames drawn and presented
+PASS: raster: every frame culls, blends, masks, follows the dynamic viewport and scissor, and has Vulkan's edges
+PASS: raster: the image on screen shows them too
+PASS: render to texture: three images, seven render passes and four pipelines made
+PASS: render to texture: pass 1 alone leaves the scene's texels, read back
+PASS: render to texture: passes 1 to 4 leave every texel probed in the scene and its copy, read back
+PASS: render to texture: 60 frames of eight render passes drawn and presented
+PASS: render to texture: every frame: the scene, depth tested at 200x120, to its last column and row
+PASS: render to texture: every frame: its copy in B8G8R8A8, made before passes 3 and 4
+PASS: render to texture: every frame: the scene loaded after another pass: colour drawn back, depth kept in eDRAM
+PASS: render to texture: every frame: the scene loaded straight after
+PASS: render to texture: every frame: the swapchain image loaded after another pass, the third image over it
+PASS: render to texture: every frame: the swapchain image loaded straight after
+PASS: render to texture: the image on screen shows them too
+tests: 58 passed, 0 failed
+exit: status 0

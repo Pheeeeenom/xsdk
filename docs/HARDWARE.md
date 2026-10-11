@@ -1407,3 +1407,26 @@ way it settled what xsdk's own tests hadn't:
 - **A colour write mask of 0 with stencil replace** wrote the stencil and no colour.
 - **Depth bias in depth units:** -0.01 pulled a quad at 0.3 in front of an equal-depth one under less-than, as in
   milestone 14. Here it was given as -0.01 x 2^24 in Vulkan's units and divided back.
+
+## Placed targets, resolves that clear less, and byte-order resolves, through vulkan4xenon (2026-10-11)
+
+vulkan4xenon's milestone 4 title ran at xsdk `c5d87ed` (log and capture: `results/2026-10-11-render-to-texture/`).
+All 58 checks passed, and the console went back to Aurora. Its eight render passes a frame, for 60 frames, ran on the
+xsdk additions made for them:
+
+- **Targets placed with `xsdk_gpu_set_target_at`:** colour from tile 0 and depth from 2048 less the target's tiles,
+  for a 200x120 target with depth, colour-only targets of 96x64 and 64x32, and the 1280x720 swapchain. Depth tested
+  right at the top of eDRAM.
+- **A resolve that clears neither leaves eDRAM as it was** (`xsdk_gpu_set_resolve_clears(false, false)`):
+  - depth survived a colour-only target's draws and resolve between two passes: a quad at depth 0.45 stayed hidden
+    behind one at 0.3 drawn two passes before;
+  - colour survived for the next pass, which drew over it without drawing it back.
+- **Byte-order resolves** (`xsdk_gpu_resolve_texture`): R8G8B8A8 without the red-blue swap and B8G8R8A8 with it. Read
+  back from memory and sampled, red and blue were in place, within 2 per channel.
+- **Resolving the pitch:** a 200-wide texture resolved across its 224-texel pitch, and its column 199 held what was
+  drawn there.
+- **Sampling straight after a resolve** into the same texture, in the same submission, as milestone 8 did, now for
+  the byte-order formats. A front buffer also sampled as a tiled B8G8R8A8 texture of its size.
+- **Xenia differs:** in vulkan4xenon's title, a draw sampling an image resolved into earlier in the run got its
+  earlier contents, even across submissions, though `test_render` passes there with an R8G8B8A8 target too. The
+  console is right; the cause in Xenia isn't known.
