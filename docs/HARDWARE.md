@@ -1370,6 +1370,6 @@ What the first run showed:
   logo's frame was freed too early (vulkan4vita:docs/ROADMAP.md:729-733); this didn't.
 - **`D1GRPH_PRIMARY_SURFACE_ADDRESS` reads back the buffer on screen** (`xsdk_display_shown_address`): each read
   matched the buffer the test expected.
-- **Not covered:**
-  - the logo's look: the titles check which buffer is shown, not what's in it;
-  - `xsdk_splash_end` with the splash still up, which a device closed before any swapchain would take.
+- **On screen,** the user reported for the first run: the logo faded in, held for a second or two, the app's dark
+  green flashed, then its triangle showed. The titles check which buffer is shown, not what's in it.
+- **Not covered:** `xsdk_splash_end` with the splash still up, which a device closed before any swapchain would take.
