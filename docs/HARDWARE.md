@@ -1118,3 +1118,26 @@ checks passed, and the console went back to Aurora.
 
 With that, milestone 11 is done. Titles set float, boolean and loop constants per draw. Each kind drives a quad on
 the console, read back by pixel and seen on a capture, and the test fails when any kind is written wrong.
+
+## Indexed draws and topologies, milestone 12 (2026-10-10)
+
+`build/xsdk_test.xex` ran with `test_indexed`, which draws one rectangle eight ways from index buffers (log:
+`results/2026-10-10-milestone-12/xsdk.log`, with the user's screenshot of the last frame at 1280x720). All 133 checks
+passed, and the console went back to Aurora.
+
+- **Every way drew its shape in its cell in all 59 checked frames:**
+  - triangle lists and strips on 16- and 32-bit indices, filled to their edges and not past them;
+  - the outline as a line list on 16-bit indices and as a line strip on 32-bit, each edge found within 2 pixels and
+    the inside clear;
+  - the corners and centre as a point list, each point within 2 pixels and nothing between them;
+  - a triangle list on 32-bit indices past 65535.
+- **The vertices were stored out of order,** so each shape needed its indices followed. The past-65535 list's
+  16-bit truncation would have landed on degenerate vertices and drawn nothing, so the console reads all 32 bits.
+- **The screenshot shows each shape:** the filled rectangles, single-pixel outlines with clear insides, and white
+  single-pixel points at the corners and centre of the seventh cell. Its colours are further from the targets than
+  earlier captures (CC3141 for E04040, EC7A06 for FF8000), which the log's exact pixel checks rule out as a drawing
+  fault.
+- **Indices go to the GPU as libxenon sends them** (xe.c:191-200). The size is in 16-bit words with an 8-in-16 swap,
+  which 32-bit indices shift to 8-in-32. The vertex cache is invalidated over the indices first.
+
+With that, milestone 12 is done.
