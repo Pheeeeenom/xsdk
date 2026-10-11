@@ -1061,3 +1061,16 @@ With the 1080p runs above, item 10 is done. Titles get a 1280x720 front buffer b
 the display's built-in 2-tap filter, shown 1:1 on a 720p output, and the kernel's 640x480 when they ask for it. The
 GPU tests pass at 1280x720, the captures show the image whole, and the console goes back to Aurora. Interlaced outputs
 aren't tried and fall back to the kernel's mode.
+
+## Ten minutes of paced frames at 720p (2026-10-10)
+
+`build/pacing_test.xex` ran its 10-minute mode (3 buffers, a flip every vblank) with the 1280x720 front buffer scaled
+to the 1080p output (log: `results/2026-10-10-pacing-720p/xsdk.log`). All 8 checks passed.
+
+- **36093 frames, 36093 flips over 36094 vblanks: 0 missed, 0 late, 0 frames wrong.** The longest wait for a front
+  buffer was 17950 us, as at 640x480 ("Ten minutes of paced frames, milestone 9").
+- **The line counter reached 720 30702 us after the switch,** inside the 16.0 to 32.7 ms worked out above.
+- **Every frame checked held its bar.** Frame 0 is still left out of the check, as since the 640x480 fix, because its
+  background is whatever eDRAM held.
+
+So milestone 9's pacing holds at the 720p default.

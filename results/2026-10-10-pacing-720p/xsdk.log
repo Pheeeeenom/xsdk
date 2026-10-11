@@ -1,0 +1,26 @@
+log: game:\xsdk.log
+pacing: 10 minutes, 3 buffers, a flip every vblank
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 30702 us
+pacing: GPU 0x00000000, display 1280x720
+PASS: pacing: GPU, scene and present open
+pacing: minute 1: 3612 frames, 3610 flips over 3611 vblanks, 0 missed, 0 late, 0 frames wrong; longest wait 17949 us
+pacing: minute 2: 7221 frames, 7219 flips over 7220 vblanks, 0 missed, 0 late, 0 frames wrong; longest wait 17949 us
+pacing: minute 3: 10830 frames, 10828 flips over 10829 vblanks, 0 missed, 0 late, 0 frames wrong; longest wait 17949 us
+pacing: minute 4: 14439 frames, 14437 flips over 14438 vblanks, 0 missed, 0 late, 0 frames wrong; longest wait 17949 us
+pacing: minute 5: 18048 frames, 18046 flips over 18047 vblanks, 0 missed, 0 late, 0 frames wrong; longest wait 17949 us
+pacing: minute 6: 21657 frames, 21655 flips over 21656 vblanks, 0 missed, 0 late, 0 frames wrong; longest wait 17949 us
+pacing: minute 7: 25266 frames, 25264 flips over 25265 vblanks, 0 missed, 0 late, 0 frames wrong; longest wait 17950 us
+pacing: minute 8: 28875 frames, 28873 flips over 28874 vblanks, 0 missed, 0 late, 0 frames wrong; longest wait 17950 us
+pacing: minute 9: 32484 frames, 32482 flips over 32483 vblanks, 0 missed, 0 late, 0 frames wrong; longest wait 17950 us
+pacing: minute 10: 36093 frames, 36091 flips over 36092 vblanks, 0 missed, 0 late, 0 frames wrong; longest wait 17950 us
+pacing: done: 36093 frames, 36093 flips over 36094 vblanks, 0 missed, 0 late, 0 frames wrong; longest wait 17950 us
+PASS: pacing: every frame queued in time for 10 minutes
+PASS: pacing: every frame shown
+PASS: pacing: no vblank missed
+PASS: pacing: a flip every vblank
+PASS: pacing: every flip inside vblank
+PASS: pacing: every frame resolved with its bar
+PASS: pacing: GPU close
+pacing: 8 passed, 0 failed
+exit: status 0
