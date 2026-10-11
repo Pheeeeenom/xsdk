@@ -403,6 +403,91 @@ After milestone 9, the SDK and the GPU layer are a complete base. A later transl
 vulkan4vita builds on GXM: render passes on eDRAM and resolves, descriptors on fetch and shader constants, and shaders
 from xost's GLSL path. Scoping that layer is a separate document.
 
+### Proposed: GPU milestones before a Vulkan translation layer (draft, not agreed)
+
+A draft for the user to cut down or reorder. Nothing here starts until agreed.
+
+**Why these are needed.** The GPU layer's pipeline is fixed today:
+- one 32-bit colour target, with no depth, blending or culling;
+- non-indexed triangle lists from one stream of float vertices;
+- point-sampled, clamped 32-bit textures with no mips;
+- no way to set shader constants.
+
+A Vulkan-style layer needs that state settable.
+
+**The order** follows what such a layer would hit first. Milestones 11 to 15 come before the layer starts; 16 to 18 can
+run alongside its early work.
+
+**How state is built.** Each piece of state is a precomputed block of register writes, so a pipeline can build its
+state once and apply it when bound. These are not more convenience calls (the GPU layer stays low-level, as agreed).
+
+**When each is done.** On a clean hardware run of tests whose variants are distinguishable on a capture, and which fail
+when broken on purpose.
+
+11. **Shader constants.** Done when:
+    - a title sets vertex and pixel shader float constants per draw (`SHADER_CONSTANT_000_X` from 0x4000,
+      xenia:src/xenia/gpu/register_table.inc:648);
+    - it sets boolean and loop constants (from 0x4900 and 0x4908, register_table.inc:2890, 2899);
+    - a test draws several quads in one frame from the same shaders, each placed and coloured only by its constants,
+      checked by pixel;
+    - the test also takes one quad down a path chosen by a boolean constant, which xost hasn't proven on hardware
+      (xost:README.md:89-91).
+12. **Indexed draws and topologies.** Done when:
+    - titles draw from 16- and 32-bit index buffers in memory (`PM4_DRAW_INDX` with `VGT_DMA_BASE` and `VGT_DMA_SIZE`,
+      xenia:src/xenia/gpu/command_processor.cc:1401-1415, register_table.inc:531-532; `IndexFormat`,
+      xenia:src/xenia/gpu/xenos.h:209);
+    - they draw triangle strips, line lists and strips, and point lists (`PrimitiveType`, xenos.h:44);
+    - a test draws the same shape each way side by side, each in its own colour, checked by pixel.
+13. **Depth and stencil.** Done when:
+    - the target can carry a 24-bit depth, 8-bit stencil buffer in eDRAM (`RB_DEPTH_INFO`,
+      xenia:src/xenia/gpu/registers.h:835; `DepthRenderTargetFormat`, xenos.h:367), cleared to a value;
+    - depth test and write and the stencil test are set per draw (`RB_DEPTHCONTROL` and `RB_STENCILREFMASK`,
+      registers.h:799-834);
+    - a test draws overlapping shapes back to front and front to back, and a shape masked by stencil, checked by pixel;
+    - the same draws with the depth test off fail the depth check.
+14. **Raster and blend state.** Done when:
+    - each of these is set per draw from a state block:
+      - blend factors and operations (`RB_BLENDCONTROL0`, registers.h:780; `BlendFactor`, xenos.h:708);
+      - the colour write mask (`RB_COLOR_MASK`, register_table.inc:505);
+      - culling and front face (`PA_SU_SC_MODE_CNTL`, registers.h:456);
+      - the scissor (`PA_SC_WINDOW_SCISSOR_TL` and `_BR`, registers.h:622);
+      - the viewport (`PA_CL_VPORT_*` from 0x210F);
+      - depth bias (`PA_SU_POLY_OFFSET_*` from 0x2380, register_table.inc:615);
+    - a test draws one variant of each side by side, checked by pixel against values worked out on the CPU.
+15. **Sampling and mipmaps.** Done when:
+    - textures carry mip levels (the mip address and packed mips in the fetch constant, xenos.h:1184-1285);
+    - samplers choose point or linear filtering for magnification, minification and mips (`TextureFilter`,
+      xenos.h:131);
+    - they choose wrap, mirror or clamp addressing (`ClampMode`, xenos.h:104);
+    - a test draws the same quad under each setting side by side, each mip level its own colour, checked by pixel.
+
+    Anisotropic filtering waits.
+16. **Texture formats.** Done when:
+    - textures upload and sample, linear and tiled, in DXT1, DXT2/3 and DXT4/5 (Vulkan's BC1 to BC3), 5-6-5, 4-4-4-4,
+      1-5-5-5, 8, 8-8, 2-10-10-10 and 16-bit float (`TextureFormat`, xenos.h:450);
+    - each format has its own endian swap;
+    - a test shows one quad per format, each a distinct pattern, checked by pixel against a decode on the CPU.
+17. **Vertex input.** Done when:
+    - a draw takes several vertex streams with their own strides (vertex fetch constants, xenos.h:1113-1127);
+    - attributes come in byte, short, normalised and half-float formats as well as float (`VertexFormat`, xenos.h:602),
+      through the vertex-fetch patch;
+    - a test draws one shape per format, each in its own colour, checked by pixel.
+
+    Byte (ubyte4) formats are unproven on hardware (xost:README.md:89-91).
+18. **Recorded command buffers.** Done when:
+    - packets can be recorded into memory ahead of time and run from the ring with `PM4_INDIRECT_BUFFER` (section 3.3;
+      command_processor.cc:731-733);
+    - a buffer can run more than once, and several can run in a frame;
+    - a test records a frame's draws once and replays them for many frames, paced, under milestone 9's checks.
+
+**Left out of these, for when the layer needs them:**
+- multiple render targets, unproven in xost;
+- float render targets and multisampling;
+- predicated tiling, for targets larger than eDRAM;
+- cube and 3D textures, and anisotropic filtering;
+- occlusion queries;
+- depth resolves, and resolving part of a target.
+
 ## 5. Questions for the user first
 
 1. **The GCC:** its version (C++23 needs 13 or later for most of it), target triple, ABI and code model, its C
