@@ -25,6 +25,8 @@ enum {
 	XSDK_PRIMITIVE_LINE_LIST = 2,
 	XSDK_PRIMITIVE_LINE_STRIP = 3,
 	XSDK_PRIMITIVE_TRIANGLE_LIST = 4,
+	// Every triangle shares the first vertex (xenia:src/xenia/gpu/xenos.h:50).
+	XSDK_PRIMITIVE_TRIANGLE_FAN = 5,
 	XSDK_PRIMITIVE_TRIANGLE_STRIP = 6,
 };
 
