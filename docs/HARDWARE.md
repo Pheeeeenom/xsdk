@@ -1042,3 +1042,22 @@ recording where they came (log: `results/2026-10-10-720p-2/xsdk.log`, with the u
   and 100 ms after closing.
 - **The 720p checks passed again,** with no late flip, and the counter reached 720 between 16492 and 32553 us after
   each switch.
+
+## 720p at 720p output, and 720p done, item 10 (2026-10-10)
+
+`build/xsdk_test.xex` ran with the console's video output set to 720p (log: `results/2026-10-10-720p-4/xsdk.log`,
+with the user's screenshot of the scale test). All 115 checks passed, and the console went back to Aurora.
+
+- **The kernel reported a 1280x720 output, and the SDK showed 1280x720 1:1 with the scaler off,** as libxenon does.
+  The scale test read back the settings it expected for that, and `AVIVO_D1MODE_DESKTOP_HEIGHT` read 720.
+- **The screenshot shows the whole 720p frame:** the blue-grey image, its border on all four edges, the corner squares
+  and the middle blocks. The user's OBS canvas is 1920x1080, so a 720p signal sits 1:1 in its top-left, and the
+  1280x720 screenshot shows the frame as its top-left 853x480.
+- **Pacing at 720p output had no missed or late flip,** and the counter reached 720 19069 to 31152 us after each
+  switch, inside the 16.0 to 32.7 ms worked out above.
+- **The kernel's mode again opened at the kernel's size and left the scaler alone.**
+
+With the 1080p runs above, item 10 is done. Titles get a 1280x720 front buffer by default: scaled to a 1080p output by
+the display's built-in 2-tap filter, shown 1:1 on a 720p output, and the kernel's 640x480 when they ask for it. The
+GPU tests pass at 1280x720, the captures show the image whole, and the console goes back to Aurora. Interlaced outputs
+aren't tried and fall back to the kernel's mode.
