@@ -1,0 +1,267 @@
+log: game:\xsdk.log
+xsdk test title
+PASS: read-only data
+PASS: initialised data
+PASS: zeroed data
+PASS: data is writable
+threads: producer queued 100 items
+threads: consumer summed 100 items
+threads: done event 0x00000000, sum 5050
+PASS: threads hand work over
+PASS: threads exit
+files: game:\xsdk_file_test.txt
+PASS: file written
+PASS: file read back
+PASS: file size from seek
+PASS: file append
+PASS: static constructors run before main
+PASS: aligned and over-aligned allocation
+PASS: jthreads share a mutex and condition variable
+PASS: thread_local differs per thread
+PASS: 32-bit atomic count
+PASS: 64-bit atomic count
+atomics: over a 200 ms wait the waiter yielded 16 times and blocked 1 times
+PASS: atomic wait sleeps until notified
+PASS: exception thrown and caught
+PASS: exception passed between threads
+PASS: dynamic_cast and typeid
+chrono: a 250 ms sleep took 249 ms on steady_clock
+PASS: steady_clock times a known delay
+chrono: system_clock reads 2026-10-11 04:56:05 UTC
+PASS: system_clock gives a plausible date
+open: NtCreateFile(game:\xsdk_fs_test) failed: 0xC0000034
+PASS: filesystem creates a directory
+PASS: filesystem lists a directory
+PASS: filesystem removes a directory
+PASS: std::format
+PASS: std::expected
+println: std::println reaches the log through stdout
+PASS: std::println
+input: polling controller 1 for 3 seconds; press some buttons
+input: packet 441 buttons 0x0000 triggers 0 0 left -2024 -1088 right 442 2002
+PASS: controller state read
+audio: playing a 375 Hz tone for 2000 ms
+audio: 376 frames submitted from callbacks
+PASS: audio tone
+PASS: gpu: open
+PASS: gpu: NOP and fence
+PASS: gpu: fences as the ring wraps
+PASS: gpu: close
+PASS: present: GPU open
+display: 1280x720 scaled to the 1920x1080 output
+PASS: present: display open at 1280x720
+PASS: present: front buffers
+display: the line counter reached 720 after 32497 us
+PASS: present: every resolve's fence landed
+PASS: present: every frame held the colour cleared before it
+PASS: present: every frame shown
+PASS: present: GPU close
+PASS: triangle: GPU open
+display: 1280x720 scaled to the 1920x1080 output
+PASS: triangle: display open at 1280x720
+PASS: triangle: shaders load
+PASS: triangle: vertex fetches patched for the layout
+PASS: triangle: vertex and front buffers
+display: the line counter reached 720 after 30837 us
+triangle: the last frame drew 258720 pixels
+PASS: triangle: every frame's fence landed
+PASS: triangle: every frame has red, green and blue corners on the clear colour
+PASS: triangle: the last frame covers the triangle's area
+PASS: triangle: every frame shown
+PASS: triangle: GPU close
+PASS: texture: GPU open
+display: 1280x720 scaled to the 1920x1080 output
+PASS: texture: display open at 1280x720
+PASS: texture: shaders load
+PASS: texture: vertex fetches patched for a float4 position and float2 coordinates
+PASS: texture: linear and tiled textures made
+PASS: texture: vertex and front buffers
+display: the line counter reached 720 after 32500 us
+PASS: texture: every frame's fence landed
+texture: linear: the last frame had 0 wrong pixels
+PASS: texture: linear: every frame's corner and middle texels in place
+PASS: texture: linear: the last frame holds every texel, one to a pixel
+texture: tiled: the last frame had 0 wrong pixels
+PASS: texture: tiled: every frame's corner and middle texels in place
+PASS: texture: tiled: the last frame holds every texel, one to a pixel
+PASS: texture: every frame shown
+PASS: texture: GPU close
+PASS: render: GPU open
+display: 1280x720 scaled to the 1920x1080 output
+PASS: render: display open at 1280x720
+PASS: render: shaders load
+PASS: render: vertex fetches patched
+PASS: render: source texture and render target made
+PASS: render: vertex and front buffers
+display: the line counter reached 720 after 27845 us
+PASS: render: every frame's fence landed
+render: source: the last frame of each half had 0 wrong pixels
+PASS: render: source: every frame's corner and middle texels in place
+PASS: render: source: the last frame of each half holds every texel
+render: rendered: the last frame of each half had 0 wrong pixels
+PASS: render: rendered: every frame's corner and middle texels in place
+PASS: render: rendered: the last frame of each half holds every texel
+PASS: render: every frame shown
+PASS: render: GPU close
+PASS: pacing: GPU open
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 27979 us
+PASS: pacing: 3 buffers, every vblank: scene and present open
+pacing: 3 buffers, every vblank: 0 reused buffers held the wrong frame
+pacing: 3 buffers, every vblank: 120 frames, 120 flips over 121 vblanks (first 2, last 121), 0 missed, 0 late; longest wait 17949 us
+PASS: pacing: 3 buffers, every vblank: every frame shown
+PASS: pacing: 3 buffers, every vblank: no vblank missed
+PASS: pacing: 3 buffers, every vblank: a flip every swap interval
+PASS: pacing: 3 buffers, every vblank: every flip inside vblank
+PASS: pacing: 3 buffers, every vblank: every frame resolved with its bar
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 16299 us
+PASS: pacing: 2 buffers, every vblank: scene and present open
+pacing: 2 buffers, every vblank: 0 reused buffers held the wrong frame
+pacing: 2 buffers, every vblank: 120 frames, 120 flips over 120 vblanks (first 1, last 120), 0 missed, 0 late; longest wait 17949 us
+PASS: pacing: 2 buffers, every vblank: every frame shown
+PASS: pacing: 2 buffers, every vblank: no vblank missed
+PASS: pacing: 2 buffers, every vblank: a flip every swap interval
+PASS: pacing: 2 buffers, every vblank: every flip inside vblank
+PASS: pacing: 2 buffers, every vblank: every frame resolved with its bar
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 30761 us
+PASS: pacing: 3 buffers, every second vblank: scene and present open
+pacing: 3 buffers, every second vblank: 0 reused buffers held the wrong frame
+pacing: 3 buffers, every second vblank: 120 frames, 120 flips over 239 vblanks (first 1, last 239), 0 missed, 0 late; longest wait 33910 us
+PASS: pacing: 3 buffers, every second vblank: every frame shown
+PASS: pacing: 3 buffers, every second vblank: no vblank missed
+PASS: pacing: 3 buffers, every second vblank: a flip every swap interval
+PASS: pacing: 3 buffers, every second vblank: every flip inside vblank
+PASS: pacing: 3 buffers, every second vblank: every frame resolved with its bar
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 28278 us
+PASS: pacing: 2 buffers, every second vblank: scene and present open
+pacing: 2 buffers, every second vblank: 0 reused buffers held the wrong frame
+pacing: 2 buffers, every second vblank: 120 frames, 120 flips over 239 vblanks (first 1, last 239), 0 missed, 0 late; longest wait 33909 us
+PASS: pacing: 2 buffers, every second vblank: every frame shown
+PASS: pacing: 2 buffers, every second vblank: no vblank missed
+PASS: pacing: 2 buffers, every second vblank: a flip every swap interval
+PASS: pacing: 2 buffers, every second vblank: every flip inside vblank
+PASS: pacing: 2 buffers, every second vblank: every frame resolved with its bar
+PASS: pacing: GPU close
+PASS: scale: GPU open
+PASS: scale: the kernel reports the output's size
+PASS: scale: the kernel's own scaler settings fail the check
+display: 1280x720 scaled to the 1920x1080 output
+PASS: scale: display open at 1280x720
+display: the line counter reached 720 after 28608 us
+PASS: scale: image shown
+PASS: scale: the scaler holds 2 taps, the built-in filter and the output's scale factors
+scale: 1280x720 on the 1920x1080 output, desktop height 1080; showing it for 10000 ms for a capture
+PASS: scale: the kernel's scaler settings are back
+PASS: scale: the kernel's mode opens at the kernel's size
+PASS: scale: kernel's mode: buffer shown
+PASS: scale: the kernel's mode leaves the scaler alone
+PASS: scale: the kernel's scaler settings are still there
+PASS: scale: GPU close
+constants: XAM had SQ_VS_CONST 000FF000, SQ_PS_CONST 000FF100
+PASS: constants: GPU open
+display: 1280x720 scaled to the 1920x1080 output
+PASS: constants: display open at 1280x720
+PASS: constants: shaders load
+PASS: constants: vertex fetch patched for a float4 position
+PASS: constants: vertex and front buffers
+display: the line counter reached 720 after 23854 us
+constants: 0 of 59 frames checked held a wrong point; 0 points wrong
+constants: SQ_VS_CONST 000FF000, SQ_PS_CONST 000FF100 after the frames
+PASS: constants: every frame's fence landed
+PASS: constants: every quad placed and coloured by its constants
+PASS: constants: every frame shown
+constants: the last frame stays on screen for 5000 ms for a capture
+PASS: constants: GPU close
+PASS: indexed: GPU open
+display: 1280x720 scaled to the 1920x1080 output
+PASS: indexed: display open at 1280x720
+PASS: indexed: shaders load
+PASS: indexed: vertex fetch patched for a float4 position
+PASS: indexed: vertex, index and front buffers
+display: the line counter reached 720 after 20197 us
+indexed: 0 of 59 frames checked held a wrong point; 0 points wrong
+PASS: indexed: every frame's fence landed
+PASS: indexed: every way drew its shape in its cell
+PASS: indexed: every frame shown
+indexed: the last frame stays on screen for 5000 ms for a capture
+PASS: indexed: GPU close
+PASS: depth: GPU open
+display: 1280x720 scaled to the 1920x1080 output
+PASS: depth: display open at 1280x720
+PASS: depth: shaders load
+PASS: depth: vertex fetch patched for a float4 position
+PASS: depth: vertex and front buffers
+display: the line counter reached 720 after 23855 us
+depth: depth test on: 0 of 59 frames checked held a wrong point
+depth: depth test off: 9 of 9 frames got every depth check wrong and every other right
+PASS: depth: every frame's fence landed
+PASS: depth: overlaps, the stencil mask and the cleared depth all right with the depth test on
+PASS: depth: with the depth test off, the depth checks fail and only they do
+PASS: depth: every frame shown
+depth: the depth-tested frame stays on screen for 5000 ms for a capture
+PASS: depth: GPU close
+PASS: raster: GPU open
+display: 1280x720 scaled to the 1920x1080 output
+PASS: raster: display open at 1280x720
+PASS: raster: shaders load
+PASS: raster: vertex fetch patched for a float4 position
+PASS: raster: vertex and front buffers
+display: the line counter reached 720 after 24853 us
+raster: 25 points a frame; 0 of 59 frames checked held a wrong one, 0 points wrong
+PASS: raster: every frame's fence landed
+PASS: raster: blends, write mask, culling, scissor, viewport and depth bias as worked out
+PASS: raster: every frame shown
+raster: the last frame stays on screen for 5000 ms for a capture
+PASS: raster: GPU close
+PASS: sampling: GPU open
+display: 1280x720 scaled to the 1920x1080 output
+PASS: sampling: display open at 1280x720
+PASS: sampling: shaders load
+PASS: sampling: vertex fetches patched for a float4 position and float2 coordinates
+PASS: sampling: textures made with their levels
+PASS: sampling: vertex and front buffers
+display: the line counter reached 720 after 32500 us
+sampling: 56 cells, 560 points a frame; 0 of 59 frames checked held a wrong one, 0 points wrong
+sampling: the last frame had 0 of 221775 pixels wrong across the cells and their edges
+PASS: sampling: every frame's fence landed
+PASS: sampling: every level of square, wide, tall and packed-base textures, one texel to a pixel
+PASS: sampling: magnification, minification and mip filters as worked out
+PASS: sampling: wrap, mirror and clamp as worked out
+PASS: sampling: every frame shown
+sampling: the last frame stays on screen for 5000 ms for a capture
+PASS: sampling: GPU close
+PASS: formats: GPU open
+display: 1280x720 scaled to the 1920x1080 output
+PASS: formats: display open at 1280x720
+PASS: formats: shaders load
+PASS: formats: vertex fetches patched for a float4 position and float2 coordinates
+PASS: formats: textures made in every format
+PASS: formats: vertex and front buffers
+display: the line counter reached 720 after 19531 us
+formats: the largest error in a channel: A8R8G8B8 0, R5G6B5 0, A1R5G5B5 0, A4R4G4B4 0, A2B10G10R10 0, R8 0, R8G8 0, R16F 0, R16G16F 0, R16G16B16A16F 0, DXT1 3, DXT3 3, DXT5 4
+formats: 62 cells, 620 points a frame; 0 of 59 frames checked held a wrong one, 0 points wrong
+formats: the last frame had 0 of 123102 pixels wrong across the cells and their edges
+PASS: formats: every frame's fence landed
+PASS: formats: every format, linear and tiled, as decoded on the CPU
+PASS: formats: every level of six formats' mipped textures, as decoded on the CPU
+PASS: formats: every frame shown
+formats: the last frame stays on screen for 5000 ms for a capture
+PASS: formats: GPU close
+PASS: vertex: GPU open
+display: 1280x720 scaled to the 1920x1080 output
+PASS: vertex: display open at 1280x720
+PASS: vertex: a vertex shader patched for each cell's layout
+PASS: vertex: vertex and front buffers
+display: the line counter reached 720 after 22525 us
+vertex: 23 cells, 115 points a frame; 0 of 59 frames checked held a wrong one, 0 points wrong
+vertex: the last frame had 0 of 100188 pixels wrong across the cells and their edges
+PASS: vertex: every frame's fence landed
+PASS: vertex: every format, stream, stride and offset drew its colours
+PASS: vertex: every frame shown
+vertex: the last frame stays on screen for 5000 ms for a capture
+PASS: vertex: GPU close
+tests: 183 passed, 0 failed
+exit: status 0

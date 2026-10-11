@@ -1292,3 +1292,32 @@ screenshot of the last frame). All 175 checks passed, and the console went back 
   - Whether linear rows need 256-byte alignment: the SDK always uses it, so nothing tested less.
 
 With that, milestone 16 is done.
+
+## Vertex input, milestone 17 (2026-10-11)
+
+`build/xsdk_test.xex` ran with `test_vertex` (log: `results/2026-10-11-milestone-17/xsdk.log`, with the user's
+screenshot of the last frame). All 183 checks passed, and the console went back to Aurora.
+
+- **All 59 checked frames held all 115 points, and every pixel of the last frame was right:** 100,188 pixels across 23
+  cells and the ring of clear pixels around each.
+- **Every vertex format read right as a colour,** each square within 1 of the CPU's decode, alpha included:
+  - float1 to float4;
+  - half2 and half4;
+  - byte4, short2 and short4, unsigned and signed, normalised and whole numbers.
+- **Sign and scale came out right.**
+  - Each signed format's negative clamped to 0 in the 8-bit target.
+  - Each whole-number format's 2 clamped to 255, where a normalised read would have given nearly 0.
+  - So the fetch's sign and number-format bits sit where the SDK writes them. This is the first hardware result for
+    byte vertex formats, which xost lists as unproven (xost:README.md:89-91).
+- **Components a format lacks read 0, and w read 1, as libxenon patches them** (xe.c:900-916).
+  - float1, float2, float3, half2 and the short2 formats drew alpha 255 as colours.
+  - Positions in half2, short2n, float2 and float3 drew in place, which needs w to be 1.
+- **Streams 0 to 6 and 15 worked, each fetch reading the constant 95 minus its stream.** They span fetch constant
+  groups 31, 30, 29 and 26.
+  - Positions came from streams 0, 3 or 15 and colours from 1, 2 or 4, with strides from 4 to 28 bytes and offsets of
+    0 or 4.
+  - Writing a stream sent its whole group from a kept copy, and the other streams in that group stayed intact.
+  - One cell read position and colour from a single stream, 24 bytes a vertex.
+- **The screenshot shows each cell's four squares,** the formats without blue and alpha in reds and greens.
+
+With that, milestone 17 is done.
