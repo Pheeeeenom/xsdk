@@ -9,7 +9,7 @@ enum {
 	FENCE_TIMEOUT_MS = 1000,
 	// Each fence gives the ring a segment of 14 dwords, so the 8192-dword ring wraps a few times.
 	WRAP_ROUNDS = 4000,
-	// 25600 dwords with no fence, which the ring runs in segments of 1024.
+	// 25600 dwords with no fence, which the ring runs in segments of 1024 or a little more.
 	LONG_WRITE_NOPS = 400,
 	NOP_DWORDS = 64,
 	SEGMENT_DWORDS = 1024,
@@ -48,7 +48,7 @@ static void test_stats(void)
 		"gpu: %u dwords with no fence: %u segments", (unsigned)(after.dwords - before.dwords), (unsigned)kicks);
 	check("gpu: a long write runs in segments, before its fence",
 		after.dwords - before.dwords >= LONG_WRITE_NOPS * NOP_DWORDS &&
-			kicks >= LONG_WRITE_NOPS * NOP_DWORDS / SEGMENT_DWORDS - 1 && ran);
+			kicks >= LONG_WRITE_NOPS * NOP_DWORDS / (2 * SEGMENT_DWORDS) && ran);
 }
 
 // More than the stream holds, so it wraps and reuses its blocks behind the GPU.

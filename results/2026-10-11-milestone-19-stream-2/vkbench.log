@@ -1,0 +1,9 @@
+Execution Thread Found.  Information has been removed
+MultiDiscEngineProcess: info TitleId 00000000 does not match current TitleId 5853444b, disabling
+log: game:\xsdk.log
+vkbench: 10 scenes, each 60 warm-up and 600 measured frames, through xsdk then vulkan4xenon
+vkbench: a 1 ms sleep took 1990 us on average, from 1544 to 1996, over 100
+vkbench: writing 1 MB, fastest of 8: write-combined, 32-bit stores 291 us (3603 MB/s), memcpy 5658 us (185 MB/s); cached, 32-bit stores 650 us then dcbst 92 us (1413 MB/s)
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 26079 us
+PASS: vkbench: xsdk: opened

@@ -1455,3 +1455,17 @@ vulkan4xenon's vkbench, at xsdk `8859829` (log: `results/2026-10-11-milestone-19
 
 So the set-up goes straight into the ring again, as before, and the stream moved to write-combined memory, where
 milestone 18's recorded buffers ran and 32-bit stores were faster.
+
+## A write-combined stream ran its first segment and hung on the next (2026-10-11)
+
+vkbench again, at xsdk `f1d385c` (log: `results/2026-10-11-milestone-19-stream-2/vkbench.log`, the whole of it; the
+title hung on the boot logo). The set-up went straight into the ring and finished, and later packets went into a
+write-combined stream.
+
+- **The probes repeated:** a 1 ms sleep took 1990 us on average; write-combined 32-bit stores again ran at 3603 MB/s,
+  `memcpy` at 185 MB/s, and cached stores with `dcbst` at 1413 MB/s.
+- **The stream's first segment ran:** the xsdk backend's start waits for a resolve and a fence written into the stream
+  (`clear_first`), and it passed. That segment started at the stream's offset 0.
+- **The first frame never finished.** Its segments started wherever the one before ended, at any dword. libxenon starts
+  each of its segments on a 128-byte line (libxenon:drivers/xenos/xe.c:123), and milestone 18's buffers were
+  page-aligned. So the stream now starts each segment on a 128-byte line; the next run tells whether that was all.

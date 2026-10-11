@@ -36,6 +36,8 @@ enum {
 	BLOCK_DWORDS = STREAM_DWORDS / STREAM_BLOCKS,
 	FENCE_DWORDS = 4,
 	SEGMENT_PACKET_DWORDS = 16,
+	// Each segment starts on a 128-byte line, as libxenon's do (libxenon:drivers/xenos/xe.c:123).
+	SEGMENT_ALIGN_DWORDS = 32,
 	// A one-dword packet that does nothing (libxenon:drivers/xenos/xe.c:1217-1221).
 	TYPE2_NOP = 0x80000000,
 	RECTANGLE_FLOATS = 6,
@@ -195,6 +197,7 @@ static void submit_segment(void)
 	volatile uint32_t *const space = ring_reserve(packets.count);
 	for (uint32_t i = 0; i < packets.count; i++)
 		space[i] = packets.dwords[i];
+	stream_write = (stream_write + SEGMENT_ALIGN_DWORDS - 1) & ~(uint32_t)(SEGMENT_ALIGN_DWORDS - 1);
 	segment_start = stream_write;
 	kick();
 }
