@@ -51,6 +51,9 @@ void test_constants(void);
 // Indexed draws and topologies (milestone 12).
 void test_indexed(void);
 
+// Depth and stencil (milestone 13).
+void test_depth(void);
+
 #ifdef __cplusplus
 }
 #endif

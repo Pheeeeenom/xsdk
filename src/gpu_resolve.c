@@ -53,7 +53,11 @@ enum {
 	COPY_DEST_INFO_8888_SWAP = 1 << 24 | 6 << 7,
 	// libxenon's ARGB surfaces also swap each dword's bytes, its BGRA front buffer not (xe.c:968, 1104-1108; xe.h:181).
 	COPY_DEST_ENDIAN_8IN32 = 2,
+	// The depth above the stencil, as an eDRAM sample holds them
+	// (xenia:src/xenia/gpu/dxbc_shader_translator_om.cc:978).
 	DEPTH_CLEAR_FAR = 0xFFFFFF00,
+	DEPTH_CLEAR_SHIFT = 8,
+	DEPTH_24_MAX = 0xFFFFFF,
 	DEPTH_STENCIL_ALWAYS_WRITE = 0x8777,
 	PROGRAM_CNTL_RESOLVE = 2 | 1 << 16,
 	VERTEX_FETCH_TYPE = 3,
@@ -79,6 +83,8 @@ static const uint32_t resolve_vertex_shader[] = {
 	0x00000000,
 	0xC2000000,
 };
+
+static uint32_t depth_clear = DEPTH_CLEAR_FAR;
 
 // RB_COLOR_CLEAR wants the packed colour, red low (xenia:src/xenia/gpu/shaders/pixel_formats.xesli:113-116).
 static uint32_t packed_8888(uint32_t argb)
@@ -117,7 +123,7 @@ static void resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t 
 	gpu_put_register(&packets, RB_COLOR_MASK, 0xF);
 	gpu_put_registers(&packets, PA_CL_VPORT_XSCALE, viewport, 6);
 	gpu_put_registers(&packets, RB_COPY_CONTROL, copy, 4);
-	gpu_put_register(&packets, RB_DEPTH_CLEAR, DEPTH_CLEAR_FAR);
+	gpu_put_register(&packets, RB_DEPTH_CLEAR, depth_clear);
 	gpu_put_register(&packets, RB_COLOR_CLEAR, packed_8888(clear_argb));
 	gpu_put_register(&packets, RB_COLOR_CLEAR_LO, packed_8888(clear_argb));
 	gpu_put_register(&packets, RB_MODECONTROL, EDRAM_MODE_COPY);
@@ -153,6 +159,12 @@ static void resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t 
 uint32_t xsdk_gpu_resolve_bytes(uint32_t width, uint32_t height)
 {
 	return width * ((height + TILE_ROWS - 1) & ~(TILE_ROWS - 1)) * 4;
+}
+
+void xsdk_gpu_set_depth_clear(float depth, uint8_t stencil)
+{
+	assert(depth >= 0.0f && depth <= 1.0f);
+	depth_clear = (uint32_t)(depth * DEPTH_24_MAX + 0.5f) << DEPTH_CLEAR_SHIFT | stencil;
 }
 
 void xsdk_gpu_resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t clear_argb)

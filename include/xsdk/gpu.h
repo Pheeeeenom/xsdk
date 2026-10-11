@@ -72,6 +72,57 @@ void xsdk_gpu_draw(uint32_t primitive_type, uint32_t vertex_count);
 // Draws up to 65535 indices as primitive_type, big-endian, 16 or 32 bits each, from memory from xsdk_gpu_alloc.
 void xsdk_gpu_draw_indexed(uint32_t primitive_type, uint32_t index_address, uint32_t index_count, bool indices_32_bit);
 
+// Comparisons (xenia:src/xenia/gpu/xenos.h:685-694).
+enum {
+	XSDK_COMPARE_NEVER,
+	XSDK_COMPARE_LESS,
+	XSDK_COMPARE_EQUAL,
+	XSDK_COMPARE_LESS_EQUAL,
+	XSDK_COMPARE_GREATER,
+	XSDK_COMPARE_NOT_EQUAL,
+	XSDK_COMPARE_GREATER_EQUAL,
+	XSDK_COMPARE_ALWAYS,
+};
+
+// Stencil operations (xenia:src/xenia/gpu/xenos.h:696-705).
+enum {
+	XSDK_STENCIL_KEEP,
+	XSDK_STENCIL_ZERO,
+	XSDK_STENCIL_REPLACE,
+	XSDK_STENCIL_INCREMENT_CLAMP,
+	XSDK_STENCIL_DECREMENT_CLAMP,
+	XSDK_STENCIL_INVERT,
+	XSDK_STENCIL_INCREMENT_WRAP,
+	XSDK_STENCIL_DECREMENT_WRAP,
+};
+
+// How draws test and write the target's 24-bit depth and 8-bit stencil, the same for both faces.
+typedef struct {
+	bool depth_test;
+	bool depth_write;
+	uint32_t depth_compare;
+	bool stencil_test;
+	uint32_t stencil_compare;
+	uint32_t stencil_fail;
+	uint32_t stencil_depth_fail;
+	uint32_t stencil_pass;
+	uint8_t stencil_reference;
+	uint8_t stencil_read_mask;
+	uint8_t stencil_write_mask;
+} XsdkDepthStencil;
+
+// The registers a depth/stencil setting writes, worked out once.
+typedef struct {
+	uint32_t depth_control;
+	uint32_t stencil_ref_mask;
+} XsdkDepthStencilState;
+
+void xsdk_gpu_depth_stencil_state(XsdkDepthStencilState *state, const XsdkDepthStencil *setting);
+// Applies to the draws after; xsdk_gpu_set_target and resolves turn depth and stencil off.
+void xsdk_gpu_set_depth_stencil(const XsdkDepthStencilState *state);
+// The depth, 0 to 1, and stencil the later resolves clear to; far and 0 until set.
+void xsdk_gpu_set_depth_clear(float depth, uint8_t stencil);
+
 // Shader constants for the draws after, written from a copy in whole blocks: partial writes hung the GPU
 // (docs/HARDWARE.md).
 enum {

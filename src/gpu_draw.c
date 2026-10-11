@@ -70,6 +70,17 @@ enum {
 	INDEX_32_BIT_SHIFT = 11,
 	DMA_SWAP_8IN16 = 1 << 30,
 	MAX_INDICES = 0xFFFF,
+	// RB_DEPTHCONTROL's fields and RB_STENCILREFMASK's bytes (xenia:src/xenia/gpu/registers.h:799-834).
+	STENCIL_ENABLE = 1 << 0,
+	Z_ENABLE = 1 << 1,
+	Z_WRITE_ENABLE = 1 << 2,
+	ZFUNC_SHIFT = 4,
+	STENCILFUNC_SHIFT = 8,
+	STENCILFAIL_SHIFT = 11,
+	STENCILZPASS_SHIFT = 14,
+	STENCILZFAIL_SHIFT = 17,
+	STENCILMASK_SHIFT = 8,
+	STENCILWRITEMASK_SHIFT = 16,
 };
 
 static uint32_t float_bits(float value)
@@ -178,6 +189,27 @@ void xsdk_gpu_draw(uint32_t primitive_type, uint32_t vertex_count)
 	gpu_put_register(&packets, VGT_INDX_OFFSET, 0);
 	gpu_put_type3(&packets, PM4_DRAW_INDX_2, 1);
 	gpu_put(&packets, primitive_type | AUTO_INDEX | vertex_count << VERTEX_COUNT_SHIFT);
+	xsdk_gpu_write(&packets);
+}
+
+void xsdk_gpu_depth_stencil_state(XsdkDepthStencilState *state, const XsdkDepthStencil *setting)
+{
+	assert(setting->depth_compare <= XSDK_COMPARE_ALWAYS && setting->stencil_compare <= XSDK_COMPARE_ALWAYS);
+	state->depth_control = (setting->stencil_test ? STENCIL_ENABLE : 0) | (setting->depth_test ? Z_ENABLE : 0) |
+		(setting->depth_write ? Z_WRITE_ENABLE : 0) | setting->depth_compare << ZFUNC_SHIFT |
+		setting->stencil_compare << STENCILFUNC_SHIFT | setting->stencil_fail << STENCILFAIL_SHIFT |
+		setting->stencil_pass << STENCILZPASS_SHIFT | setting->stencil_depth_fail << STENCILZFAIL_SHIFT;
+	state->stencil_ref_mask = setting->stencil_reference | (uint32_t)setting->stencil_read_mask << STENCILMASK_SHIFT |
+		(uint32_t)setting->stencil_write_mask << STENCILWRITEMASK_SHIFT;
+}
+
+// With backface_enable clear, the front face's stencil setting serves both faces, as D3D's one-sided stencil does.
+void xsdk_gpu_set_depth_stencil(const XsdkDepthStencilState *state)
+{
+	uint32_t dwords[DRAW_MAX_DWORDS];
+	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
+	gpu_put_register(&packets, RB_DEPTHCONTROL, state->depth_control);
+	gpu_put_register(&packets, RB_STENCILREFMASK, state->stencil_ref_mask);
 	xsdk_gpu_write(&packets);
 }
 
