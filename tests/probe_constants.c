@@ -12,7 +12,8 @@
 #include "xsdk/log.h"
 #include "xsdk/shader.h"
 
-// Steps from no constants, through each shader feature on constants written libxenon's way, to the test's writes.
+// Steps from no constants, through each shader feature on constants written libxenon's way, to the test's writes,
+// then float constants in smaller groups than libxenon's 16 (milestone 19, step 3).
 
 enum {
 	WIDTH = 1280,
@@ -38,6 +39,10 @@ enum {
 	SHADER_CONSTANT_LOOP_00 = 0x4908,
 	SQ_VS_CONST = 0x2307,
 	SQ_PS_CONST = 0x2308,
+	// Writes constants from its payload; index 0 of type 0 is register 0x4000 (xenia:src/xenia/gpu/xenos.h:1607,
+	// command_processor.cc:1428-1462).
+	PM4_SET_CONSTANT = 0x2D,
+	SET_CONSTANT_ALU = 0,
 };
 
 typedef enum {
@@ -48,6 +53,13 @@ typedef enum {
 	WRITES_ALIGNED_PARTIAL,
 	// The SDK's calls as test_constants makes them: partial and wherever the ring is.
 	WRITES_SDK,
+	// Float constants alone in smaller aligned groups, each stage's c0 to c2, the integers still one whole block.
+	WRITES_FLOATS_4,
+	WRITES_FLOATS_3,
+	WRITES_FLOATS_1,
+	// The same through SET_CONSTANT, its values aligned as libxenon aligns them.
+	WRITES_SET_CONSTANT_4,
+	WRITES_SET_CONSTANT_1,
 } Writes;
 
 typedef struct {
@@ -113,8 +125,16 @@ static const Step steps[] = {
 		true, false, 0, true, MULTI_FRAMES, 0 },
 	{ "six quads, the SDK's writes", SHADER(constant_vertex_shader), SHADER(constant_pixel_shader), WRITES_SDK, true,
 		false, 0, true, MULTI_FRAMES, 0 },
-	{ "six quads, aligned partial writes, which hung", SHADER(constant_vertex_shader), SHADER(constant_pixel_shader),
-		WRITES_ALIGNED_PARTIAL, true, false, 0, true, MULTI_FRAMES, 0 },
+	{ "six quads, float constants in groups of 4", SHADER(constant_vertex_shader), SHADER(constant_pixel_shader),
+		WRITES_FLOATS_4, true, false, 0, true, MULTI_FRAMES, 0 },
+	{ "six quads, float constants in groups of 4 through SET_CONSTANT", SHADER(constant_vertex_shader),
+		SHADER(constant_pixel_shader), WRITES_SET_CONSTANT_4, true, false, 0, true, MULTI_FRAMES, 0 },
+	{ "six quads, float constants one at a time", SHADER(constant_vertex_shader), SHADER(constant_pixel_shader),
+		WRITES_FLOATS_1, true, false, 0, true, MULTI_FRAMES, 0 },
+	{ "six quads, float constants one at a time through SET_CONSTANT", SHADER(constant_vertex_shader),
+		SHADER(constant_pixel_shader), WRITES_SET_CONSTANT_1, true, false, 0, true, MULTI_FRAMES, 0 },
+	{ "six quads, float constants in groups of 3", SHADER(constant_vertex_shader), SHADER(constant_pixel_shader),
+		WRITES_FLOATS_3, true, false, 0, true, MULTI_FRAMES, 0 },
 };
 
 static const float square[QUAD_VERTICES][VERTEX_FLOATS] = {
@@ -156,6 +176,36 @@ static void put_registers(uint32_t first_register, const uint32_t *values, uint3
 		packet[i++] = TYPE2_NOP;
 }
 
+// SET_CONSTANT's values start on a 16-byte line, as put_registers aligns a type-0 packet's.
+static void put_set_constant(uint32_t first_register, const uint32_t *values, uint32_t count)
+{
+	volatile uint32_t *const packet = xsdk_gpu_reserve(count + 5);
+	uint32_t i = 0;
+	while (((uint32_t)(uintptr_t)&packet[i] >> 2 & 3) != 2)
+		packet[i++] = TYPE2_NOP;
+	packet[i++] = xsdk_gpu_type3(PM4_SET_CONSTANT, count + 1);
+	packet[i++] = SET_CONSTANT_ALU << 16 | (first_register - SHADER_CONSTANT_000_X);
+	for (uint32_t v = 0; v < count; v++)
+		packet[i++] = values[v];
+	while (i < count + 5)
+		packet[i++] = TYPE2_NOP;
+}
+
+// Each stage's c0 to c2 in groups of size registers, through type-0 packets or SET_CONSTANT.
+static void put_float_groups(const uint32_t *vertex, const uint32_t *pixel, uint32_t size, bool set_constant)
+{
+	for (uint32_t first = 0; first < 3; first += size) {
+		const uint32_t count = (first + size <= 3 || size == 4 ? size : 3 - first) * 4;
+		if (set_constant) {
+			put_set_constant(SHADER_CONSTANT_000_X + first * 4, &vertex[first * 4], count);
+			put_set_constant(SHADER_CONSTANT_256_X + first * 4, &pixel[first * 4], count);
+		} else {
+			put_registers(SHADER_CONSTANT_000_X + first * 4, &vertex[first * 4], count, true);
+			put_registers(SHADER_CONSTANT_256_X + first * 4, &pixel[first * 4], count, true);
+		}
+	}
+}
+
 // Edges half a pixel early, as test_constants places them.
 static void quad_constants(const Quad *quad, uint32_t *vertex, uint32_t *pixel)
 {
@@ -191,6 +241,14 @@ static void write_constants(Writes writes, const Quad *quad)
 		put_registers(SHADER_CONSTANT_BOOL_000_031 + BOOL_WORD, &integers[BOOL_WORD], 1, true);
 		put_registers(
 			SHADER_CONSTANT_LOOP_00, &integers[SHADER_CONSTANT_LOOP_00 - SHADER_CONSTANT_BOOL_000_031], 1, true);
+	} else if (writes >= WRITES_FLOATS_4) {
+		static const uint32_t sizes[] = { [WRITES_FLOATS_4] = 4,
+			[WRITES_FLOATS_3] = 3,
+			[WRITES_FLOATS_1] = 1,
+			[WRITES_SET_CONSTANT_4] = 4,
+			[WRITES_SET_CONSTANT_1] = 1 };
+		put_float_groups(vertex, pixel, sizes[writes], writes >= WRITES_SET_CONSTANT_4);
+		put_registers(SHADER_CONSTANT_BOOL_000_031, integers, INTEGER_BLOCK_DWORDS, true);
 	} else if (writes == WRITES_SDK) {
 		float vertex_floats[12];
 		float pixel_floats[12];
