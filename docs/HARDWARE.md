@@ -1141,3 +1141,24 @@ passed, and the console went back to Aurora.
   which 32-bit indices shift to 8-in-32. The vertex cache is invalidated over the indices first.
 
 With that, milestone 12 is done.
+
+## Depth and stencil, milestone 13 (2026-10-10)
+
+`build/xsdk_test.xex` ran with `test_depth` (log: `results/2026-10-10-milestone-13/xsdk.log`, with the user's
+screenshot of the last depth-tested frame). All 143 checks passed, and the console went back to Aurora.
+
+- **With the depth test on, all 59 checked frames were right.** Each resolve cleared depth to 0.5 and stencil to 0.
+  - **Back to front:** the near rectangle covered the far one.
+  - **Front to back:** the far rectangle stayed out of the near one's area and showed only beyond it.
+  - **Stencil:** a rectangle tested for stencil equal to 1 drew only where a mask had replaced the stencil with 1.
+  - **The cleared depth:** a rectangle at 0.75 stayed hidden behind it, and one at 0.25 showed.
+- **With the depth test off, all 9 checked frames got exactly the two depth checks wrong:** the far rectangle in the
+  front-to-back overlap, and the one behind the cleared depth. Every other check stayed right.
+- **The screenshot shows the same at each check point,** with the colour shift of the last capture (3D33D0 for 4040E0
+  in the front-to-back overlap). The far rectangle is cut where the near one is, magenta fills only the mask, and the
+  rectangle behind the cleared depth doesn't show.
+- **Setting the depth and stencil on their own works.** The SDK writes `RB_DEPTHCONTROL` and `RB_STENCILREFMASK` per
+  draw by themselves, where libxenon writes `RB_DEPTHCONTROL` within its 9-register control block (xe.c:1372-1376),
+  and the GPU took them.
+
+With that, milestone 13 is done.
