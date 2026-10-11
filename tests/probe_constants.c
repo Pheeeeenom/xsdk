@@ -142,8 +142,6 @@ static const Step steps[] = {
 		SHADER(constant_pixel_shader), WRITES_SET_CONSTANT_4, true, false, 0, true, MULTI_FRAMES, 0 },
 	{ "six quads, float constants in groups of 4 through LOAD_ALU_CONSTANT", SHADER(constant_vertex_shader),
 		SHADER(constant_pixel_shader), WRITES_LOAD_4, true, false, 0, true, MULTI_FRAMES, 0 },
-	{ "six quads, float constants in groups of 3 through LOAD_ALU_CONSTANT", SHADER(constant_vertex_shader),
-		SHADER(constant_pixel_shader), WRITES_LOAD_3, true, false, 0, true, MULTI_FRAMES, 0 },
 	{ "six quads, float constants one at a time through LOAD_ALU_CONSTANT", SHADER(constant_vertex_shader),
 		SHADER(constant_pixel_shader), WRITES_LOAD_1, true, false, 0, true, MULTI_FRAMES, 0 },
 	{ "six quads, float constants one at a time through SET_CONSTANT", SHADER(constant_vertex_shader),

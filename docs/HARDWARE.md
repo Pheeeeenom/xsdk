@@ -1578,3 +1578,19 @@ caches after writing memory, not every draw.
 With that, milestone 19 is done. `draws_1000` draws and submits in 626 us through the GPU layer, 0.63 us a cube, where
 the milestone asked for under 16 ms and started at 37,590 us; `draws_4000` is recorded with its counts; and every test
 passes.
+
+## Constants loaded from memory go in groups of 4 too (2026-10-11)
+
+`build/probe_constants.xex` at `d3d50a5` (log: `results/2026-10-11-constant-loads/xsdk.log`), for vulkan4xenon's
+milestone 6. Its first 13 steps passed as before; then test_constants's six quads, each stage's c0 to c2 loaded with
+`PM4_LOAD_ALU_CONSTANT` from the quad's own write-combined memory (address, then type 0 and the index, then the
+dwords), for 30 frames each:
+
+- **In groups of 4, from c0:** every frame landed and every centre was right. So the command processor loads float
+  constants from memory, big-endian words as the CPU wrote them.
+- **In groups of 3** hung on the first frame, read pointer = write pointer = 0x1017 and `RBBM_STATUS` busy, as one
+  constant at a time did written as registers.
+- **One at a time through `LOAD_ALU_CONSTANT` or `SET_CONSTANT`, and groups of 3 written as registers,** didn't run.
+
+So every route tried writes float constants in whole groups of 4: type-0 packets, `SET_CONSTANT` and
+`LOAD_ALU_CONSTANT`.
