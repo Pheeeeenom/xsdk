@@ -1,6 +1,10 @@
 #include "tests.h"
 
+#include "xsdk/kernel.h"
 #include "xsdk/log.h"
+#include "xsdk/splash.h"
+
+enum { SPLASH_MS = 2000 };
 
 static int passed_count;
 static int failed_count;
@@ -17,6 +21,7 @@ void check(const char *name, bool passed)
 int main(void)
 {
 	xsdk_log_write("xsdk test title");
+	check("splash: the vulkan4xenon logo shown", NT_SUCCESS(xsdk_splash_show(SPLASH_MS)));
 	test_image();
 	test_threads();
 	test_files();

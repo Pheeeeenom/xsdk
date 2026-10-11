@@ -8,10 +8,12 @@
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
 #include "xsdk/present.h"
+#include "xsdk/splash.h"
 
 // Milestone 9's run: the moving bar for 10 minutes, three buffers and a flip every vblank, logged each minute.
 
 enum {
+	SPLASH_MS = 2000,
 	RUN_MS = 10 * 60 * 1000,
 	MINUTE_MS = 60 * 1000,
 	BUFFERS = 3,
@@ -52,6 +54,7 @@ static void log_stats(const char *when, uint32_t frames, uint32_t wrong)
 int main(void)
 {
 	xsdk_log_write("pacing: 10 minutes, %u buffers, a flip every vblank", (unsigned)BUFFERS);
+	(void)xsdk_splash_show(SPLASH_MS);
 	const NTSTATUS status = xsdk_gpu_open();
 	BarScene scene;
 	const bool opened = NT_SUCCESS(status) && bar_scene_open(&scene, BAR_ARGB);

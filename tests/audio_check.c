@@ -4,11 +4,13 @@
 #include "audio_frame.h"
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
+#include "xsdk/splash.h"
 #include "xsdk/thread.h"
 
 // A title for listening: each step plays a tone on known channels, so a person can confirm the frame layout.
 
 enum {
+	SPLASH_MS = 2000,
 	STEP_MS = 2000,
 	GAP_MS = 1000,
 };
@@ -52,6 +54,7 @@ void audio_check_callback(const uint32_t *context)
 
 int main(void)
 {
+	(void)xsdk_splash_show(SPLASH_MS);
 	// Frame 0 is silence; frame i + 1 belongs to steps[i].
 	float *frames = MmAllocatePhysicalMemoryEx(0, FRAME_BYTES * (STEP_COUNT + 1), PAGE_READWRITE, 0, UINT32_MAX, 0);
 	if (!frames) {
