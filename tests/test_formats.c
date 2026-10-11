@@ -36,7 +36,7 @@ enum {
 	MIP_LEVELS = 6,
 	// Two pixels a texel.
 	CELL_SIZE = 64,
-	CELL_STEP = 92,
+	CELL_STEP = 80,
 	LEVEL_GAP = 12,
 	MIP_ROW_STEP = 48,
 	// Fixed-point channels convert to float and round once more on the way to the 8-bit target.
@@ -44,7 +44,7 @@ enum {
 	// Decoders round DXT's blends their own way: Xenia's host gave 0xAF for two thirds of full green, not 0xAA. Still
 	// well under the 85 between neighbouring blends of these blocks, so a wrong index or block fails.
 	DXT_BLEND_TOLERANCE = 12,
-	MAX_CELLS = 64,
+	MAX_CELLS = 72,
 	POINTS_PER_CELL = 10,
 	// The largest level: 32x32 texels of 8 bytes.
 	MAX_LEVEL_BYTES = TEXTURE_SIZE * TEXTURE_SIZE * 8,
@@ -62,7 +62,7 @@ enum {
 enum {
 	// One unit of 2 or 4 bytes, each channel at a shift.
 	KIND_PACKED,
-	// One byte a channel, red first.
+	// One byte a channel, each at its shift's byte.
 	KIND_BYTES,
 	// One half float a channel, red first.
 	KIND_HALVES,
@@ -78,7 +78,7 @@ typedef struct {
 	uint32_t block_bytes;
 	// Bits in red, green, blue and alpha; 0 for none.
 	uint8_t bits[CHANNELS];
-	// Where each sits in a packed unit.
+	// Where each sits in a packed unit, or which byte holds it.
 	uint8_t shifts[CHANNELS];
 } FormatSpec;
 
@@ -89,13 +89,15 @@ static const FormatSpec specs[XSDK_FORMATS] = {
 	[XSDK_FORMAT_A4R4G4B4] = { "A4R4G4B4", KIND_PACKED, 2, { 4, 4, 4, 4 }, { 8, 4, 0, 12 } },
 	[XSDK_FORMAT_A2B10G10R10] = { "A2B10G10R10", KIND_PACKED, 4, { 10, 10, 10, 2 }, { 0, 10, 20, 30 } },
 	[XSDK_FORMAT_R8] = { "R8", KIND_BYTES, 1, { 8, 0, 0, 0 }, { 0 } },
-	[XSDK_FORMAT_R8G8] = { "R8G8", KIND_BYTES, 2, { 8, 8, 0, 0 }, { 0 } },
+	[XSDK_FORMAT_R8G8] = { "R8G8", KIND_BYTES, 2, { 8, 8, 0, 0 }, { 0, 1 } },
 	[XSDK_FORMAT_R16F] = { "R16F", KIND_HALVES, 2, { 16, 0, 0, 0 }, { 0 } },
 	[XSDK_FORMAT_R16G16F] = { "R16G16F", KIND_HALVES, 4, { 16, 16, 0, 0 }, { 0 } },
 	[XSDK_FORMAT_R16G16B16A16F] = { "R16G16B16A16F", KIND_HALVES, 8, { 16, 16, 16, 16 }, { 0 } },
 	[XSDK_FORMAT_DXT1] = { "DXT1", KIND_DXT1, 8, { 0 }, { 0 } },
 	[XSDK_FORMAT_DXT3] = { "DXT3", KIND_DXT3, 16, { 0 }, { 0 } },
 	[XSDK_FORMAT_DXT5] = { "DXT5", KIND_DXT5, 16, { 0 }, { 0 } },
+	[XSDK_FORMAT_R8G8B8A8] = { "R8G8B8A8", KIND_BYTES, 4, { 8, 8, 8, 8 }, { 0, 1, 2, 3 } },
+	[XSDK_FORMAT_B8G8R8A8] = { "B8G8R8A8", KIND_BYTES, 4, { 8, 8, 8, 8 }, { 2, 1, 0, 3 } },
 };
 
 // One format per kind of block: 1, 2, 4 and 8 bytes a texel, and 8 and 16 bytes a 4 by 4 block.
@@ -268,8 +270,9 @@ static void encode_block(uint32_t format, uint32_t level, uint32_t bx, uint32_t 
 		for (uint32_t i = 0; i < spec->block_bytes; i++)
 			out[i] = (uint8_t)(unit >> (8 * (spec->block_bytes - 1 - i)));
 	} else if (spec->kind == KIND_BYTES) {
-		for (uint32_t channel = 0; channel < spec->block_bytes; channel++)
-			out[channel] = (uint8_t)quantise(pattern(format, level, channel, bx, by), 8);
+		for (uint32_t channel = 0; channel < CHANNELS; channel++)
+			if (spec->bits[channel])
+				out[spec->shifts[channel]] = (uint8_t)quantise(pattern(format, level, channel, bx, by), 8);
 	} else if (spec->kind == KIND_HALVES) {
 		for (uint32_t channel = 0; channel < spec->block_bytes / 2; channel++)
 			put_u16(out + 2 * channel, half_for(format, level, channel, bx, by));
@@ -365,8 +368,9 @@ static uint32_t decode_texel(uint32_t format, uint32_t level, uint32_t x, uint32
 				channels[channel] = (float)(unit >> spec->shifts[channel] & max) * 255.0f / (float)max;
 		}
 	} else if (spec->kind == KIND_BYTES) {
-		for (uint32_t channel = 0; channel < spec->block_bytes; channel++)
-			channels[channel] = (float)block[channel];
+		for (uint32_t channel = 0; channel < CHANNELS; channel++)
+			if (spec->bits[channel])
+				channels[channel] = (float)block[spec->shifts[channel]];
 	} else if (spec->kind == KIND_HALVES) {
 		for (uint32_t channel = 0; channel < spec->block_bytes / 2; channel++)
 			channels[channel] = half_value(get_u16(block + 2 * channel)) * 255.0f;

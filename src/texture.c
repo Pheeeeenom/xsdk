@@ -116,6 +116,8 @@ static const FormatInfo formats[XSDK_FORMATS] = {
 	[XSDK_FORMAT_DXT1] = { 18, 2, 3, ENDIAN_8IN16, SWIZZLE(X, Y, Z, W) },
 	[XSDK_FORMAT_DXT3] = { 19, 2, 4, ENDIAN_8IN16, SWIZZLE(X, Y, Z, W) },
 	[XSDK_FORMAT_DXT5] = { 20, 2, 4, ENDIAN_8IN16, SWIZZLE(X, Y, Z, W) },
+	[XSDK_FORMAT_R8G8B8A8] = { 6, 0, 2, ENDIAN_NONE, SWIZZLE(X, Y, Z, W) },
+	[XSDK_FORMAT_B8G8R8A8] = { 6, 0, 2, ENDIAN_NONE, SWIZZLE(Z, Y, X, W) },
 };
 
 static NTSTATUS reject(const char *why)
@@ -163,7 +165,7 @@ static uint32_t base_pitch_blocks(const FormatInfo *info, uint32_t width, bool t
 }
 
 // Xe_CreateTexture and TEXTURE_FETCH for the format's levels, the base then the mips, a page apart.
-NTSTATUS xsdk_texture_create(
+NTSTATUS xsdk_texture_init(
 	XsdkTexture *texture, uint32_t format, uint32_t width, uint32_t height, uint32_t levels, bool tiled)
 {
 	if (format >= XSDK_FORMATS)
@@ -187,19 +189,9 @@ NTSTATUS xsdk_texture_create(
 		.block_bytes_log2 = info->block_bytes_log2,
 		.base_pitch_blocks = pitch_blocks,
 		.mip_offset_bytes = mip_offset_bytes };
-	const uint32_t mip_bytes = xsdk_texture_mip_bytes(&layout);
-	const uint32_t size_bytes = mip_offset_bytes + mip_bytes;
-	volatile uint32_t *const texels = xsdk_gpu_alloc(size_bytes);
-	if (!texels)
-		return STATUS_NO_MEMORY;
-	const uint32_t address = xsdk_gpu_address(texels);
-	assert(address % FETCH_ADDRESS_ALIGNMENT == 0);
-	// Mips in the base's tail point back at the base, so Xenia reads them where the console does.
-	const uint32_t mip_address = levels == 1 ? 0 : mip_bytes ? address + mip_offset_bytes : address;
+	const uint32_t size_bytes = mip_offset_bytes + xsdk_texture_mip_bytes(&layout);
 	const uint32_t pitch = pitch_blocks << info->block_log2;
 	*texture = (XsdkTexture){
-		.texels = texels,
-		.address = address,
 		.size_bytes = size_bytes,
 		.format = format,
 		.width = width,
@@ -210,13 +202,39 @@ NTSTATUS xsdk_texture_create(
 		.mip_offset_bytes = mip_offset_bytes,
 		.fetch = {
 			FETCH_TYPE_TEXTURE | (pitch >> PITCH_UNIT_LOG2) << PITCH_SHIFT | (uint32_t)tiled << TILED_SHIFT,
-			address | info->endian << ENDIAN_SHIFT | info->format,
+			info->endian << ENDIAN_SHIFT | info->format,
 			(height - 1) << HEIGHT_SHIFT | (width - 1),
 			info->swizzle << SWIZZLE_SHIFT,
 			(levels - 1) << MIP_MAX_LEVEL_SHIFT,
-			mip_address | PACKED_MIPS | DIMENSION_2D,
+			PACKED_MIPS | DIMENSION_2D,
 		},
 	};
+	return STATUS_SUCCESS;
+}
+
+void xsdk_texture_attach(XsdkTexture *texture, volatile uint32_t *texels)
+{
+	const uint32_t address = xsdk_gpu_address(texels);
+	assert(address % FETCH_ADDRESS_ALIGNMENT == 0);
+	// Mips in the base's tail point back at the base, so Xenia reads them where the console does.
+	const bool mips_apart = texture->size_bytes > texture->mip_offset_bytes;
+	const uint32_t mip_address = texture->levels == 1 ? 0 : mips_apart ? address + texture->mip_offset_bytes : address;
+	texture->texels = texels;
+	texture->address = address;
+	texture->fetch[1] |= address;
+	texture->fetch[5] |= mip_address;
+}
+
+NTSTATUS xsdk_texture_create(
+	XsdkTexture *texture, uint32_t format, uint32_t width, uint32_t height, uint32_t levels, bool tiled)
+{
+	const NTSTATUS status = xsdk_texture_init(texture, format, width, height, levels, tiled);
+	if (!NT_SUCCESS(status))
+		return status;
+	volatile uint32_t *const texels = xsdk_gpu_alloc(texture->size_bytes);
+	if (!texels)
+		return STATUS_NO_MEMORY;
+	xsdk_texture_attach(texture, texels);
 	return STATUS_SUCCESS;
 }
 

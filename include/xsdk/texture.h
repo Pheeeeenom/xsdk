@@ -38,6 +38,9 @@ enum {
 	XSDK_FORMAT_DXT1,
 	XSDK_FORMAT_DXT3,
 	XSDK_FORMAT_DXT5,
+	// Bytes: red, green, blue then alpha; or blue, green, red then alpha (Vulkan's R8G8B8A8 and B8G8R8A8).
+	XSDK_FORMAT_R8G8B8A8,
+	XSDK_FORMAT_B8G8R8A8,
 	XSDK_FORMATS,
 };
 
@@ -86,11 +89,18 @@ typedef struct {
 	uint32_t fetch[XSDK_TEXTURE_FETCH_DWORDS];
 } XsdkSamplerState;
 
-// Allocates the texture, linear or in Xenos's tiled layout, with levels from 1 to a 1x1 level; linear has 1.
+// Works out the texture's layout and size_bytes, without memory: linear or in Xenos's tiled layout, with levels from 1
+// to a 1x1 level; linear has 1.
+NTSTATUS xsdk_texture_init(
+	XsdkTexture *texture, uint32_t format, uint32_t width, uint32_t height, uint32_t levels, bool tiled);
+// Puts an initialised texture's texels at memory from xsdk_gpu_alloc, 4 KB aligned and size_bytes long.
+void xsdk_texture_attach(XsdkTexture *texture, volatile uint32_t *texels);
+// xsdk_texture_init, then memory of its own for xsdk_texture_attach.
 NTSTATUS xsdk_texture_create(
 	XsdkTexture *texture, uint32_t format, uint32_t width, uint32_t height, uint32_t levels, bool tiled);
 // Copies in a level's rows of texels or blocks, row_bytes apart, sizes halving per level; not while the GPU reads it.
 void xsdk_texture_upload(XsdkTexture *texture, uint32_t level, const void *data, uint32_t row_bytes);
+// Frees what xsdk_texture_create allocated.
 void xsdk_texture_free(XsdkTexture *texture);
 // Works out the sampler's fetch constant bits once, for xsdk_gpu_set_texture.
 void xsdk_texture_sampler_state(XsdkSamplerState *state, const XsdkSampler *sampler);
