@@ -403,9 +403,9 @@ After milestone 9, the SDK and the GPU layer are a complete base. A later transl
 vulkan4vita builds on GXM: render passes on eDRAM and resolves, descriptors on fetch and shader constants, and shaders
 from xost's GLSL path. Scoping that layer is a separate document.
 
-### Proposed: GPU milestones before a Vulkan translation layer (draft, not agreed)
+### GPU milestones before a Vulkan translation layer
 
-A draft for the user to cut down or reorder. Nothing here starts until agreed.
+Agreed after item 10, in this order, on 2026-10-10.
 
 **Why these are needed.** The GPU layer's pipeline is fixed today:
 - one 32-bit colour target, with no depth, blending or culling;
