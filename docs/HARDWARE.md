@@ -1552,3 +1552,29 @@ whole block, for 30 frames each:
 - **One at a time through `SET_CONSTANT`, and groups of 3,** didn't run after the hang.
 
 So the SDK writes float constants in groups of 4, from a multiple of 4, rather than libxenon's 16.
+
+## Fewer dwords a draw, milestone 19 (2026-10-11)
+
+Three runs at xsdk `63fd069` and vulkan4xenon `bf60e98` (logs: `results/2026-10-11-milestone-19-step-3/`, with the
+tails the user sent for the two test titles). Float constants went in groups of 4, and titles invalidated the GPU's
+caches after writing memory, not every draw.
+
+- **`build/xsdk_test.xex`** (`xsdk_test-tail.log`): all 201 checks passed, and the title exited with status 0. Among
+  them are the tests that reuse memory for new vertices, the pacing modes and the recorded buffers' moving bars, which
+  showed stale vertices when the vertex cache wasn't invalidated (see "The splash stays up until present's first
+  frame"). So every write the tests make is invalidated where it needs to be.
+- **vulkan4xenon's test title** (`vulkan4xenon_test-tail.log`): all 58 checks passed, and it exited with status 0,
+  invalidating all memory once a submit.
+- **vkbench** (`vkbench.log` and its CSVs): all 14 checks passed, both backends drawing the same picture in every
+  scene, with no waits.
+  - A cube draw wrote 49.1 dwords through xsdk, from 156.4, and 87.1 through vulkan4xenon, from 200.3.
+  - Drawing and submitting `draws_1000` took 626 us through xsdk, from 1,210, so 0.63 us a cube; `draws_4000` took
+    2,487 us, from 4,823; `states_1000` 1,022 us, from 2,145.
+  - Through vulkan4xenon, `draws_1000` took 1,503 us, from 2,878; `draws_4000` 6,218 us, from 11,752;
+    `uniforms_1000` 5,309 us, 3.8 us a draw more than `draws_1000` for reading its uniform buffers.
+  - In xsdk's `states` scenes the GPU now finished 0.8 ms after the submit, from 0.3: the CPU writes a texture and
+    shader change faster than the GPU runs it. The frame's draw, submit and GPU time still fell, 1.8 ms from 2.4.
+
+With that, milestone 19 is done. `draws_1000` draws and submits in 626 us through the GPU layer, 0.63 us a cube, where
+the milestone asked for under 16 ms and started at 37,590 us; `draws_4000` is recorded with its counts; and every test
+passes.
