@@ -39,7 +39,7 @@ PACING_SOURCES := tests/pacing.c tests/bar_scene.c
 PACING_OBJECTS := $(patsubst tests/%,$(BUILD)/tests/%.o,$(basename $(PACING_SOURCES)))
 # Bring-up probes: titles that each answer one question on the console.
 PROBES := probe_spin probe_print probe_cp probe_ring probe_interrupt probe_exports probe_engines probe_swap \
-	probe_display probe_guide probe_resolve probe_triangle probe_vblank probe_720p
+	probe_display probe_guide probe_resolve probe_triangle probe_vblank probe_720p probe_constants
 
 .PHONY: all clean
 # Keep the ELFs and objects that pattern rules build on the way to a .xex.

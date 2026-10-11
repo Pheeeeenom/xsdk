@@ -199,6 +199,8 @@ static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint3
 		}
 		xsdk_gpu_resolve(address, WIDTH, HEIGHT, CLEAR_ARGB);
 		fences_landed = NT_SUCCESS(xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS));
+		if (!fences_landed)
+			xsdk_log_write("constants: frame %u's fence didn't land", (unsigned)frame);
 		// The first frame's background is whatever eDRAM held; later ones are the clear colour.
 		if (frame > 0 && fences_landed)
 			frames_wrong += !frame_holds(buffer, frame, &misses);
