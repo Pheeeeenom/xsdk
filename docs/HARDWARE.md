@@ -1515,3 +1515,24 @@ right:
   where copying with the same stores ran at 517 MB/s.
 - **VMX runs in titles,** as it already did in the C++ unwinder, which saves vector registers with `stvx` when a test
   throws.
+
+## The SDK's memcpy, milestone 20 (2026-10-11)
+
+Three runs at xsdk `bf425b9` and vulkan4xenon `109487a` (logs: `results/2026-10-11-milestone-20-memcpy/`, with the
+tails the user sent for the two test titles):
+- **vkbench** (`vkbench.log`): all 14 checks passed, both backends drawing the same picture in every scene. Every copy
+  in the title went through the SDK's `memcpy` (`src/copy.c`), and its probes timed it:
+  - into write-combined memory: 5577 MB/s for 256 KB from the cache, and 1476 MB/s for 1 MB from memory, where
+    newlib's managed 185 MB/s;
+  - into cached memory: 1814 MB/s for 1 MB from memory, where newlib's managed 410 MB/s;
+  - prefetching 16 lines ahead copied at 1508 MB/s and 32 lines at 1315 MB/s, against 1470 MB/s for 8, so `memcpy`
+    stays at 8;
+  - `stream_8000` drew and submitted in 526 us through xsdk, from 5,553, and in 539 us through vulkan4xenon, from
+    5,562; `stream_1000` in 32 us, from 698. The other scenes stayed within 3%.
+- **`build/xsdk_test.xex`** (`xsdk_test-tail.log`): all 201 checks passed and the title exited with status 0. Among
+  them were the four copy checks: every size from 0 to 300 at every source and destination alignment, 1 MB at four
+  alignments, copies into write-combined memory, and `memmove` over itself both ways.
+- **vulkan4xenon's test title** (`vulkan4xenon_test-tail.log`): all 58 checks passed and it exited with status 0.
+
+With that, milestone 20 is done: `memcpy` writes write-combined memory at 5.6 GB/s from the cache, `stream_8000` fell
+to match, and every test passes.
