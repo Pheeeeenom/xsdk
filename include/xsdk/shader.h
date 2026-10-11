@@ -18,9 +18,34 @@ enum {
 	XSDK_USAGE_POSITION = 0,
 	XSDK_USAGE_TEXCOORD = 5,
 	XSDK_USAGE_COLOR = 10,
-	// Vertex data formats (xenia:src/xenia/gpu/xenos.h:602-617).
-	XSDK_VERTEX_FLOAT2 = 37,
-	XSDK_VERTEX_FLOAT4 = 38,
+	// Each takes a vertex fetch constant, 95 down.
+	XSDK_VERTEX_STREAMS = 16,
+};
+
+// Vertex formats, as Vulkan's; vertices are 32-bit words, each component after the first in the bits above it.
+enum {
+	XSDK_VERTEX_FLOAT1,
+	XSDK_VERTEX_FLOAT2,
+	XSDK_VERTEX_FLOAT3,
+	XSDK_VERTEX_FLOAT4,
+	// Half floats, two to a word.
+	XSDK_VERTEX_HALF2,
+	XSDK_VERTEX_HALF4,
+	// Four bytes to a word: unsigned or signed, normalised to 0 to 1 or -1 to 1, or whole numbers.
+	XSDK_VERTEX_UBYTE4N,
+	XSDK_VERTEX_BYTE4N,
+	XSDK_VERTEX_UBYTE4,
+	XSDK_VERTEX_BYTE4,
+	// Two 16-bit numbers to a word, likewise.
+	XSDK_VERTEX_USHORT2N,
+	XSDK_VERTEX_SHORT2N,
+	XSDK_VERTEX_USHORT2,
+	XSDK_VERTEX_SHORT2,
+	XSDK_VERTEX_USHORT4N,
+	XSDK_VERTEX_SHORT4N,
+	XSDK_VERTEX_USHORT4,
+	XSDK_VERTEX_SHORT4,
+	XSDK_VERTEX_FORMATS,
 };
 
 typedef struct {
@@ -31,24 +56,26 @@ typedef struct {
 	// SQ_PROGRAM_CNTL and SQ_CONTEXT_MISC bits the shader needs.
 	uint32_t program_control;
 	uint32_t context_misc;
-	// The container's vertex fetch patch records; the container must outlive the shader.
+	// The container's vertex fetch patch records and microcode; the container must outlive the shader.
 	const uint32_t *fetches;
 	uint32_t fetch_count;
+	const uint32_t *source;
 } XsdkShader;
 
-// One attribute of a vertex: the shader input it feeds, its data format, and where it sits in the vertex.
+// One attribute of a vertex: the shader input it feeds, its format, its stream, and where it sits in the stream.
 typedef struct {
 	uint32_t usage;
 	uint32_t usage_index;
 	uint32_t format;
+	uint32_t stream;
 	uint32_t offset_bytes;
 } XsdkVertexElement;
 
 // Copies the container's microcode into GPU memory.
 NTSTATUS xsdk_shader_load(XsdkShader *shader, const uint32_t *container, uint32_t size_bytes);
-// Patches a vertex shader's fetches for this layout, as libxenon does; not while the GPU may be running it.
+// Patches a vertex shader's fetches for this layout and each stream's stride, as libxenon does; not while it may run.
 NTSTATUS xsdk_shader_set_vertex_layout(
-	XsdkShader *shader, const XsdkVertexElement *elements, uint32_t element_count, uint32_t stride_bytes);
+	XsdkShader *shader, const XsdkVertexElement *elements, uint32_t element_count, const uint32_t *stream_strides);
 void xsdk_shader_free(XsdkShader *shader);
 
 #ifdef __cplusplus

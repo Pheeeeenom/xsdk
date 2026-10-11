@@ -293,7 +293,7 @@ static void draw_as_sdk(const Variant *variant, const XsdkShader *vertex, const 
 		xsdk_gpu_set_target(WIDTH, HEIGHT);
 	xsdk_gpu_set_shaders(vertex, pixel);
 	if (variant->sdk_vertices)
-		xsdk_gpu_set_vertices(vertices, sizeof triangle);
+		xsdk_gpu_set_vertices(0, vertices, sizeof triangle);
 	else
 		put_vertices(variant, vertices);
 	if (variant->target_last)
@@ -392,7 +392,8 @@ int main(void)
 	volatile uint32_t *const scratch = xsdk_gpu_alloc(PIXELS * 4);
 	if (!NT_SUCCESS(xsdk_shader_load(&vertex, triangle_vertex_shader, sizeof triangle_vertex_shader)) ||
 		!NT_SUCCESS(xsdk_shader_load(&pixel, triangle_pixel_shader, sizeof triangle_pixel_shader)) ||
-		!NT_SUCCESS(xsdk_shader_set_vertex_layout(&vertex, layout, sizeof layout / sizeof layout[0], STRIDE_BYTES)) ||
+		!NT_SUCCESS(xsdk_shader_set_vertex_layout(
+			&vertex, layout, sizeof layout / sizeof layout[0], (const uint32_t[]){ STRIDE_BYTES })) ||
 		!vertices || !buffer || !scratch)
 		return 1;
 	const Frame frame = { .vertex = &vertex,

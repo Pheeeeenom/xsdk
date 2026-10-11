@@ -231,7 +231,7 @@ static void draw_frame(const Scene *scene, uint32_t frame, uint32_t front_buffer
 	// The first pass draws the source, mirrored, over the whole render target, then resolves it into the texture.
 	xsdk_gpu_set_target(TEXTURE_WIDTH, TEXTURE_HEIGHT);
 	xsdk_gpu_set_shaders(scene->vertex, scene->pixel);
-	xsdk_gpu_set_vertices(scene->mirrored[frame < HALF ? 0 : 1], QUAD_BYTES);
+	xsdk_gpu_set_vertices(0, scene->mirrored[frame < HALF ? 0 : 1], QUAD_BYTES);
 	xsdk_gpu_set_texture(TEXTURE_SLOT, scene->textures[0], scene->sampler);
 	xsdk_gpu_draw(XSDK_PRIMITIVE_TRIANGLE_LIST, QUAD_VERTICES);
 	xsdk_gpu_resolve_texture(scene->textures[1], CLEAR_ARGB);
@@ -239,7 +239,7 @@ static void draw_frame(const Scene *scene, uint32_t frame, uint32_t front_buffer
 	xsdk_gpu_set_target(WIDTH, HEIGHT);
 	xsdk_gpu_set_shaders(scene->vertex, scene->pixel);
 	for (uint32_t i = 0; i < SIDES; i++) {
-		xsdk_gpu_set_vertices(scene->shown[i], QUAD_BYTES);
+		xsdk_gpu_set_vertices(0, scene->shown[i], QUAD_BYTES);
 		xsdk_gpu_set_texture(TEXTURE_SLOT, scene->textures[i], scene->sampler);
 		xsdk_gpu_draw(XSDK_PRIMITIVE_TRIANGLE_LIST, QUAD_VERTICES);
 	}
@@ -297,8 +297,8 @@ void test_render(void)
 		NT_SUCCESS(xsdk_shader_load(&pixel, texture_pixel_shader, sizeof texture_pixel_shader));
 	check("render: shaders load", loaded);
 	const bool patched = loaded &&
-		NT_SUCCESS(xsdk_shader_set_vertex_layout(
-			&vertex, vertex_layout, sizeof vertex_layout / sizeof vertex_layout[0], STRIDE_BYTES));
+		NT_SUCCESS(xsdk_shader_set_vertex_layout(&vertex, vertex_layout, sizeof vertex_layout / sizeof vertex_layout[0],
+			(const uint32_t[]){ STRIDE_BYTES }));
 	check("render: vertex fetches patched", patched);
 	XsdkTexture textures[SIDES] = { { .texels = NULL }, { .texels = NULL } };
 	bool made = true;

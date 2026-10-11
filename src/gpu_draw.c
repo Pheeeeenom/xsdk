@@ -57,8 +57,11 @@ enum {
 	// Stream 0's vertex fetch constant and libxenon's fetch word: type 3, k8in32, bit 28 (xe.c:1181-1185, 1965).
 	VERTEX_FETCH_CONSTANT = 95,
 	// Vertex fetch constants go in threes (xenia:src/xenia/gpu/xenos.h:1288-1315).
-	VERTEX_FETCH_GROUP_FIRST = VERTEX_FETCH_CONSTANT / 3 * 3,
+	FETCHES_PER_GROUP = 3,
+	VERTEX_FETCH_DWORDS = 2,
 	FETCH_GROUP_DWORDS = 6,
+	LAST_GROUP = VERTEX_FETCH_CONSTANT / FETCHES_PER_GROUP,
+	STREAM_GROUPS = LAST_GROUP - (VERTEX_FETCH_CONSTANT - (XSDK_VERTEX_STREAMS - 1)) / FETCHES_PER_GROUP + 1,
 	// A texture fetch takes a 5-bit fetch constant index (xenia:src/xenia/gpu/ucode.h:789-790).
 	TEXTURE_SLOTS = 32,
 	VERTEX_FETCH_TYPE = 3,
@@ -165,11 +168,17 @@ void xsdk_gpu_set_shaders(const XsdkShader *vertex, const XsdkShader *pixel)
 	xsdk_gpu_write(&packets);
 }
 
-void xsdk_gpu_set_vertices(uint32_t address, uint32_t size_bytes)
+// The streams' vertex fetch constants, 95 down, kept so each write can send its whole group.
+static uint32_t vertex_groups[STREAM_GROUPS][FETCH_GROUP_DWORDS];
+
+void xsdk_gpu_set_vertices(uint32_t stream, uint32_t address, uint32_t size_bytes)
 {
-	uint32_t group[FETCH_GROUP_DWORDS] = { 0 };
-	group[(VERTEX_FETCH_CONSTANT - VERTEX_FETCH_GROUP_FIRST) * 2] = address | VERTEX_FETCH_TYPE;
-	group[(VERTEX_FETCH_CONSTANT - VERTEX_FETCH_GROUP_FIRST) * 2 + 1] =
+	assert(stream < XSDK_VERTEX_STREAMS);
+	const uint32_t constant = VERTEX_FETCH_CONSTANT - stream;
+	const uint32_t group_index = constant / FETCHES_PER_GROUP;
+	uint32_t *const group = vertex_groups[LAST_GROUP - group_index];
+	group[constant % FETCHES_PER_GROUP * VERTEX_FETCH_DWORDS] = address | VERTEX_FETCH_TYPE;
+	group[constant % FETCHES_PER_GROUP * VERTEX_FETCH_DWORDS + 1] =
 		VERTEX_FETCH_8IN32 | size_bytes / 4 << VERTEX_FETCH_SIZE_SHIFT;
 	const uint32_t flush_fetch[] = { 0, 0, 0 };
 	uint32_t dwords[DRAW_MAX_DWORDS];
@@ -177,7 +186,8 @@ void xsdk_gpu_set_vertices(uint32_t address, uint32_t size_bytes)
 	// libxenon invalidates vertices the CPU wrote and flushes the fetch constants it set (xe.c:759, 1146).
 	xsdk_gpu_put_coherency(&packets, COHER_VERTEX_CACHE, address, size_bytes);
 	// Written alone, a fetch constant breaks drawing (docs/HARDWARE.md, "Fetch constants go in whole groups").
-	gpu_put_registers(&packets, SHADER_CONSTANT_FETCH_00_0 + VERTEX_FETCH_GROUP_FIRST * 2, group, FETCH_GROUP_DWORDS);
+	gpu_put_registers(
+		&packets, SHADER_CONSTANT_FETCH_00_0 + group_index * FETCH_GROUP_DWORDS, group, FETCH_GROUP_DWORDS);
 	gpu_put_registers(&packets, SHADER_CONSTANT_FLUSH_FETCH_0, flush_fetch, 3);
 	xsdk_gpu_write(&packets);
 }

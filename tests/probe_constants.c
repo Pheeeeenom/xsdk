@@ -234,7 +234,7 @@ static bool run_step(
 	for (uint32_t frame = 0; frame < step->frames; frame++) {
 		xsdk_gpu_set_target(WIDTH, HEIGHT);
 		xsdk_gpu_set_shaders(vertex, pixel);
-		xsdk_gpu_set_vertices(vertices, sizeof square);
+		xsdk_gpu_set_vertices(0, vertices, sizeof square);
 		const uint32_t quads = step->six ? sizeof six_quads / sizeof six_quads[0] : 1;
 		for (uint32_t q = 0; q < quads; q++) {
 			write_constants(step->writes, step->six ? &six_quads[q] : &one);
@@ -292,7 +292,7 @@ int main(void)
 		XsdkShader pixel = { .microcode = NULL };
 		const bool ready = NT_SUCCESS(xsdk_shader_load(&vertex, steps[i].vertex, steps[i].vertex_bytes)) &&
 			NT_SUCCESS(xsdk_shader_load(&pixel, steps[i].pixel, steps[i].pixel_bytes)) &&
-			NT_SUCCESS(xsdk_shader_set_vertex_layout(&vertex, layout, 1, STRIDE_BYTES));
+			NT_SUCCESS(xsdk_shader_set_vertex_layout(&vertex, layout, 1, (const uint32_t[]){ STRIDE_BYTES }));
 		if (!ready) {
 			xsdk_log_write("constants probe: step %u, %s: shaders didn't load", (unsigned)i + 1, steps[i].name);
 			return 1;

@@ -65,9 +65,15 @@ enum {
 
 // Vertex fetch fields (xenia:src/xenia/gpu/ucode.h:745-777) and a patch record's (xe.c:821-823).
 enum {
+	FETCH_CONSTANT_INDEX_SHIFT = 20,
+	FETCH_CONSTANT_SELECT_SHIFT = 25,
+	FETCH_CONSTANT_MASK = 0x7F << FETCH_CONSTANT_INDEX_SHIFT,
 	FETCH_PREFETCH_MASK = 0x38000000,
+	FETCH_SWIZZLE_MASK = 0xFFF,
 	FETCH_SIGNED = 1 << 12,
 	FETCH_INTEGER = 1 << 13,
+	// Clear for D3D's signed mapping, -1 clamped (xenia:src/xenia/gpu/xenos.h:761-767).
+	FETCH_NO_ZERO = 1 << 14,
 	FETCH_FORMAT_SHIFT = 16,
 	FETCH_FORMAT_MASK = 0x3F << FETCH_FORMAT_SHIFT,
 	FETCH_MINI = 1 << 30,
@@ -78,6 +84,44 @@ enum {
 	PATCH_USAGE_SHIFT = 12,
 	PATCH_INDEX_SHIFT = 16,
 	PATCH_FIELD_MASK = 0xF,
+	// Stream 0's vertex fetch constant, as the GPU layer binds it; vertex fetch constants go in threes.
+	STREAM_0_FETCH_CONSTANT = 95,
+	FETCHES_PER_GROUP = 3,
+	// A fetch's destination swizzle: 3 bits a component, x to w, then 0 and 1 (xenia:src/xenia/gpu/ucode.h:677-688).
+	SWIZZLE_BITS = 3,
+	SWIZZLE_SOURCE_MASK = 7,
+	SWIZZLE_W = 3,
+	SWIZZLE_ZERO = 4,
+	SWIZZLE_ONE = 5,
+};
+
+typedef struct {
+	uint8_t format;
+	uint8_t components;
+	bool is_signed;
+	bool normalized;
+} VertexFormatInfo;
+
+// VertexFormat values and component counts (xenia:src/xenia/gpu/xenos.h:602-646).
+static const VertexFormatInfo vertex_formats[XSDK_VERTEX_FORMATS] = {
+	[XSDK_VERTEX_FLOAT1] = { 36, 1, false, false },
+	[XSDK_VERTEX_FLOAT2] = { 37, 2, false, false },
+	[XSDK_VERTEX_FLOAT3] = { 57, 3, false, false },
+	[XSDK_VERTEX_FLOAT4] = { 38, 4, false, false },
+	[XSDK_VERTEX_HALF2] = { 31, 2, false, false },
+	[XSDK_VERTEX_HALF4] = { 32, 4, false, false },
+	[XSDK_VERTEX_UBYTE4N] = { 6, 4, false, true },
+	[XSDK_VERTEX_BYTE4N] = { 6, 4, true, true },
+	[XSDK_VERTEX_UBYTE4] = { 6, 4, false, false },
+	[XSDK_VERTEX_BYTE4] = { 6, 4, true, false },
+	[XSDK_VERTEX_USHORT2N] = { 25, 2, false, true },
+	[XSDK_VERTEX_SHORT2N] = { 25, 2, true, true },
+	[XSDK_VERTEX_USHORT2] = { 25, 2, false, false },
+	[XSDK_VERTEX_SHORT2] = { 25, 2, true, false },
+	[XSDK_VERTEX_USHORT4N] = { 26, 4, false, true },
+	[XSDK_VERTEX_SHORT4N] = { 26, 4, true, true },
+	[XSDK_VERTEX_USHORT4] = { 26, 4, false, false },
+	[XSDK_VERTEX_SHORT4] = { 26, 4, true, false },
 };
 
 static NTSTATUS reject(const char *why)
@@ -137,17 +181,29 @@ NTSTATUS xsdk_shader_load(XsdkShader *shader, const uint32_t *container, uint32_
 		.context_misc = record[RECORD_CONTEXT_MISC],
 		.fetches = fetch_count ? &container[fetch_dword] : NULL,
 		.fetch_count = fetch_count,
+		.source = &container[microcode_offset / 4],
 	};
 	return STATUS_SUCCESS;
 }
 
-// Xe_ShaderApplyVFetchPatches for one-dword prefetches and float2 or float4 elements (xe.c:788-933).
+// Components the data lacks read as 0, and w as 1, as libxenon pads them (xe.c:900-916).
+static uint32_t padded_swizzle(uint32_t swizzle, uint32_t components)
+{
+	for (uint32_t component = 0; component < 4; component++) {
+		const uint32_t shift = component * SWIZZLE_BITS;
+		const uint32_t source = swizzle >> shift & SWIZZLE_SOURCE_MASK;
+		if (source <= SWIZZLE_W && source >= components)
+			swizzle = (swizzle & ~(SWIZZLE_SOURCE_MASK << shift)) |
+				(source == SWIZZLE_W ? SWIZZLE_ONE : SWIZZLE_ZERO) << shift;
+	}
+	return swizzle;
+}
+
+// Xe_ShaderApplyVFetchPatches for one-dword prefetches, with each element's stream and format (xe.c:788-933).
 NTSTATUS xsdk_shader_set_vertex_layout(
-	XsdkShader *shader, const XsdkVertexElement *elements, uint32_t element_count, uint32_t stride_bytes)
+	XsdkShader *shader, const XsdkVertexElement *elements, uint32_t element_count, const uint32_t *stream_strides)
 {
 	assert(shader->type == XSDK_SHADER_VERTEX);
-	if (stride_bytes % 4 || stride_bytes / 4 > FETCH_STRIDE_MASK)
-		return reject("vertex stride not a whole number of dwords up to 255");
 	for (uint32_t i = 0; i < shader->fetch_count; i++) {
 		const uint32_t patch = shader->fetches[i];
 		const uint32_t slot = patch & PATCH_SLOT_MASK;
@@ -155,16 +211,27 @@ NTSTATUS xsdk_shader_set_vertex_layout(
 			patch >> PATCH_USAGE_SHIFT & PATCH_FIELD_MASK, patch >> PATCH_INDEX_SHIFT & PATCH_FIELD_MASK);
 		if (!element)
 			return reject("the vertex layout lacks an input the shader fetches");
-		if (element->format != XSDK_VERTEX_FLOAT2 && element->format != XSDK_VERTEX_FLOAT4)
-			return STATUS_NOT_IMPLEMENTED;
+		if (element->format >= XSDK_VERTEX_FORMATS || element->stream >= XSDK_VERTEX_STREAMS)
+			return reject("vertex format or stream out of range");
+		const uint32_t stride_bytes = stream_strides[element->stream];
+		if (stride_bytes % 4 || stride_bytes / 4 > FETCH_STRIDE_MASK)
+			return reject("vertex stride not a whole number of dwords up to 255");
 		if (element->offset_bytes % 4 || (slot + 1) * SLOT_DWORDS > shader->dword_count)
 			return reject("vertex element or fetch slot out of range");
+		const VertexFormatInfo *const info = &vertex_formats[element->format];
+		const uint32_t constant = STREAM_0_FETCH_CONSTANT - element->stream;
+		const uint32_t *const source = &shader->source[slot * SLOT_DWORDS];
 		volatile uint32_t *const fetch = &shader->microcode[slot * SLOT_DWORDS];
-		fetch[0] = fetch[0] & ~FETCH_PREFETCH_MASK;
-		// libxenon marks every format but 8_8_8_8 as integer, and none as signed (xe.c:858-863).
-		fetch[1] = (fetch[1] & ~(FETCH_FORMAT_MASK | FETCH_SIGNED | FETCH_INTEGER | FETCH_MINI)) |
-			element->format << FETCH_FORMAT_SHIFT | FETCH_INTEGER;
-		fetch[2] = (fetch[2] & ~(FETCH_OFFSET_MASK | FETCH_STRIDE_MASK)) |
+		fetch[0] = (source[0] & ~(FETCH_CONSTANT_MASK | FETCH_PREFETCH_MASK)) |
+			constant / FETCHES_PER_GROUP << FETCH_CONSTANT_INDEX_SHIFT |
+			constant % FETCHES_PER_GROUP << FETCH_CONSTANT_SELECT_SHIFT;
+		fetch[1] =
+			(source[1] &
+				~(FETCH_SWIZZLE_MASK | FETCH_SIGNED | FETCH_INTEGER | FETCH_NO_ZERO | FETCH_FORMAT_MASK | FETCH_MINI)) |
+			padded_swizzle(source[1] & FETCH_SWIZZLE_MASK, info->components) |
+			(uint32_t)info->is_signed * FETCH_SIGNED | (uint32_t)!info->normalized * FETCH_INTEGER |
+			(uint32_t)info->format << FETCH_FORMAT_SHIFT;
+		fetch[2] = (source[2] & ~(FETCH_OFFSET_MASK | FETCH_STRIDE_MASK)) |
 			element->offset_bytes / 4 << FETCH_OFFSET_SHIFT | stride_bytes / 4;
 	}
 	__asm__ volatile("sync" ::: "memory");

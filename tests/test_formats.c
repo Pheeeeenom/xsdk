@@ -585,7 +585,7 @@ static void draw_cells(const Scene *scene)
 	xsdk_gpu_set_target(WIDTH, HEIGHT);
 	xsdk_gpu_set_shaders(scene->vertex, scene->pixel);
 	for (uint32_t i = 0; i < scene->cell_count; i++) {
-		xsdk_gpu_set_vertices(scene->vertices + i * QUAD_BYTES, QUAD_BYTES);
+		xsdk_gpu_set_vertices(0, scene->vertices + i * QUAD_BYTES, QUAD_BYTES);
 		xsdk_gpu_set_texture(TEXTURE_SLOT, &scene->textures[scene->cells[i].texture], scene->sampler);
 		xsdk_gpu_draw(XSDK_PRIMITIVE_TRIANGLE_LIST, QUAD_VERTICES);
 	}
@@ -676,8 +676,8 @@ void test_formats(void)
 		NT_SUCCESS(xsdk_shader_load(&pixel, texture_pixel_shader, sizeof texture_pixel_shader));
 	check("formats: shaders load", loaded);
 	const bool patched = loaded &&
-		NT_SUCCESS(xsdk_shader_set_vertex_layout(
-			&vertex, vertex_layout, sizeof vertex_layout / sizeof vertex_layout[0], STRIDE_BYTES));
+		NT_SUCCESS(xsdk_shader_set_vertex_layout(&vertex, vertex_layout, sizeof vertex_layout / sizeof vertex_layout[0],
+			(const uint32_t[]){ STRIDE_BYTES }));
 	check("formats: vertex fetches patched for a float4 position and float2 coordinates", patched);
 	static XsdkTexture textures[TEXTURES];
 	bool made = true;

@@ -279,7 +279,7 @@ static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint3
 		const uint32_t address = xsdk_gpu_address(buffer);
 		xsdk_gpu_set_target(WIDTH, HEIGHT);
 		xsdk_gpu_set_shaders(vertex, pixel);
-		xsdk_gpu_set_vertices(vertices, VERTICES * STRIDE_BYTES);
+		xsdk_gpu_set_vertices(0, vertices, VERTICES * STRIDE_BYTES);
 		for (uint32_t w = 0; w < sizeof ways / sizeof ways[0]; w++) {
 			set_way_constants(&ways[w]);
 			xsdk_gpu_draw_indexed(
@@ -328,7 +328,8 @@ void test_indexed(void)
 		NT_SUCCESS(xsdk_shader_load(&pixel, triangle_pixel_shader, sizeof triangle_pixel_shader));
 	check("indexed: shaders load", loaded);
 	const bool patched = loaded &&
-		NT_SUCCESS(xsdk_shader_set_vertex_layout(&vertex, layout, sizeof layout / sizeof layout[0], STRIDE_BYTES));
+		NT_SUCCESS(xsdk_shader_set_vertex_layout(
+			&vertex, layout, sizeof layout / sizeof layout[0], (const uint32_t[]){ STRIDE_BYTES }));
 	check("indexed: vertex fetch patched for a float4 position", patched);
 	volatile uint32_t *const vertices = upload_vertices();
 	volatile uint32_t *const indices = upload_indices();

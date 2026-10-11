@@ -234,7 +234,7 @@ static void draw_frames(const Scene *scene)
 		xsdk_gpu_set_target(WIDTH, HEIGHT);
 		xsdk_gpu_set_shaders(scene->vertex, scene->pixel);
 		for (uint32_t i = 0; i < LAYOUTS; i++) {
-			xsdk_gpu_set_vertices(scene->vertices[i], QUAD_VERTICES * STRIDE_BYTES);
+			xsdk_gpu_set_vertices(0, scene->vertices[i], QUAD_VERTICES * STRIDE_BYTES);
 			// Each quad rebinds slot 0, which the last frame's resolve also overwrote.
 			xsdk_gpu_set_texture(TEXTURE_SLOT, scene->textures[i], scene->sampler);
 			xsdk_gpu_draw(XSDK_PRIMITIVE_TRIANGLE_LIST, QUAD_VERTICES);
@@ -279,8 +279,8 @@ void test_texture(void)
 		NT_SUCCESS(xsdk_shader_load(&pixel, texture_pixel_shader, sizeof texture_pixel_shader));
 	check("texture: shaders load", loaded);
 	const bool patched = loaded &&
-		NT_SUCCESS(xsdk_shader_set_vertex_layout(
-			&vertex, vertex_layout, sizeof vertex_layout / sizeof vertex_layout[0], STRIDE_BYTES));
+		NT_SUCCESS(xsdk_shader_set_vertex_layout(&vertex, vertex_layout, sizeof vertex_layout / sizeof vertex_layout[0],
+			(const uint32_t[]){ STRIDE_BYTES }));
 	check("texture: vertex fetches patched for a float4 position and float2 coordinates", patched);
 	XsdkTexture textures[LAYOUTS] = { { .texels = NULL }, { .texels = NULL } };
 	volatile uint32_t *vertices[LAYOUTS] = { NULL, NULL };

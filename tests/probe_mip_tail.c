@@ -219,7 +219,7 @@ int main(void)
 	XsdkShader pixel = { .microcode = NULL };
 	const bool ready = NT_SUCCESS(xsdk_shader_load(&vertex, texture_vertex_shader, sizeof texture_vertex_shader)) &&
 		NT_SUCCESS(xsdk_shader_load(&pixel, texture_pixel_shader, sizeof texture_pixel_shader)) &&
-		NT_SUCCESS(xsdk_shader_set_vertex_layout(&vertex, vertex_layout, 2, STRIDE_BYTES));
+		NT_SUCCESS(xsdk_shader_set_vertex_layout(&vertex, vertex_layout, 2, (const uint32_t[]){ STRIDE_BYTES }));
 	static Cell cells[MAX_CELLS];
 	const uint32_t cell_count = make_cells(cells);
 	static XsdkTexture textures[SHAPES * SETUPS];
@@ -248,7 +248,7 @@ int main(void)
 		xsdk_gpu_set_target(WIDTH, HEIGHT);
 		xsdk_gpu_set_shaders(&vertex, &pixel);
 		for (uint32_t i = 0; i < cell_count; i++) {
-			xsdk_gpu_set_vertices(xsdk_gpu_address(vertices) + i * QUAD_BYTES, QUAD_BYTES);
+			xsdk_gpu_set_vertices(0, xsdk_gpu_address(vertices) + i * QUAD_BYTES, QUAD_BYTES);
 			xsdk_gpu_set_texture(TEXTURE_SLOT, &textures[cells[i].texture], &sampler);
 			xsdk_gpu_draw(XSDK_PRIMITIVE_TRIANGLE_LIST, QUAD_VERTICES);
 		}

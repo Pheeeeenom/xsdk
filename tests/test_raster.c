@@ -340,7 +340,7 @@ static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint3
 		const uint32_t address = xsdk_gpu_address(buffer);
 		xsdk_gpu_set_target(WIDTH, HEIGHT);
 		xsdk_gpu_set_shaders(vertex, pixel);
-		xsdk_gpu_set_vertices(vertices, sizeof square);
+		xsdk_gpu_set_vertices(0, vertices, sizeof square);
 		draw_all(&states);
 		xsdk_gpu_resolve(address, WIDTH, HEIGHT, CLEAR_ARGB);
 		fences_landed = NT_SUCCESS(xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS));
@@ -399,7 +399,8 @@ void test_raster(void)
 		NT_SUCCESS(xsdk_shader_load(&pixel, triangle_pixel_shader, sizeof triangle_pixel_shader));
 	check("raster: shaders load", loaded);
 	const bool patched = loaded &&
-		NT_SUCCESS(xsdk_shader_set_vertex_layout(&vertex, layout, sizeof layout / sizeof layout[0], STRIDE_BYTES));
+		NT_SUCCESS(xsdk_shader_set_vertex_layout(
+			&vertex, layout, sizeof layout / sizeof layout[0], (const uint32_t[]){ STRIDE_BYTES }));
 	check("raster: vertex fetch patched for a float4 position", patched);
 	volatile uint32_t *const vertices = upload_square();
 	const uint32_t buffer_bytes = xsdk_gpu_resolve_bytes(WIDTH, HEIGHT);

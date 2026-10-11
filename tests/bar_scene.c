@@ -79,8 +79,8 @@ bool bar_scene_open(BarScene *scene, uint32_t argb)
 	*scene = (BarScene){ .vertex = { .microcode = NULL }, .pixel = { .microcode = NULL }, .argb = argb };
 	if (!NT_SUCCESS(xsdk_shader_load(&scene->vertex, triangle_vertex_shader, sizeof triangle_vertex_shader)) ||
 		!NT_SUCCESS(xsdk_shader_load(&scene->pixel, triangle_pixel_shader, sizeof triangle_pixel_shader)) ||
-		!NT_SUCCESS(
-			xsdk_shader_set_vertex_layout(&scene->vertex, layout, sizeof layout / sizeof layout[0], STRIDE_BYTES)))
+		!NT_SUCCESS(xsdk_shader_set_vertex_layout(
+			&scene->vertex, layout, sizeof layout / sizeof layout[0], (const uint32_t[]){ STRIDE_BYTES })))
 		return false;
 	scene->vertices = upload_bars(argb);
 	return scene->vertices != NULL;
@@ -90,7 +90,7 @@ void bar_scene_draw(const BarScene *scene, uint32_t frame, uint32_t address)
 {
 	xsdk_gpu_set_target(BAR_FRAME_WIDTH, BAR_FRAME_HEIGHT);
 	xsdk_gpu_set_shaders(&scene->vertex, &scene->pixel);
-	xsdk_gpu_set_vertices(xsdk_gpu_address(scene->vertices) + frame % POSITIONS * QUAD_BYTES, QUAD_BYTES);
+	xsdk_gpu_set_vertices(0, xsdk_gpu_address(scene->vertices) + frame % POSITIONS * QUAD_BYTES, QUAD_BYTES);
 	xsdk_gpu_draw(XSDK_PRIMITIVE_TRIANGLE_LIST, QUAD_VERTICES);
 	xsdk_gpu_resolve(address, BAR_FRAME_WIDTH, BAR_FRAME_HEIGHT, CLEAR_ARGB);
 }

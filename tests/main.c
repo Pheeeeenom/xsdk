@@ -42,6 +42,7 @@ int main(void)
 	test_raster();
 	test_sampling();
 	test_formats();
+	test_vertex();
 	xsdk_log_write("tests: %d passed, %d failed", passed_count, failed_count);
 	return failed_count;
 }

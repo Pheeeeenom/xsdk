@@ -130,7 +130,7 @@ static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint3
 		const uint32_t address = xsdk_gpu_address(buffer);
 		xsdk_gpu_set_target(WIDTH, HEIGHT);
 		xsdk_gpu_set_shaders(vertex, pixel);
-		xsdk_gpu_set_vertices(vertices, sizeof triangle);
+		xsdk_gpu_set_vertices(0, vertices, sizeof triangle);
 		xsdk_gpu_draw(XSDK_PRIMITIVE_TRIANGLE_LIST, 3);
 		xsdk_gpu_resolve(address, WIDTH, HEIGHT, CLEAR_ARGB);
 		fences_landed = NT_SUCCESS(xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS));
@@ -169,7 +169,8 @@ void test_triangle(void)
 		NT_SUCCESS(xsdk_shader_load(&pixel, triangle_pixel_shader, sizeof triangle_pixel_shader));
 	check("triangle: shaders load", loaded);
 	const bool patched = loaded &&
-		NT_SUCCESS(xsdk_shader_set_vertex_layout(&vertex, layout, sizeof layout / sizeof layout[0], STRIDE_BYTES));
+		NT_SUCCESS(xsdk_shader_set_vertex_layout(
+			&vertex, layout, sizeof layout / sizeof layout[0], (const uint32_t[]){ STRIDE_BYTES }));
 	check("triangle: vertex fetches patched for the layout", patched);
 	volatile uint32_t *const vertices = upload_triangle();
 	const uint32_t buffer_bytes = xsdk_gpu_resolve_bytes(WIDTH, HEIGHT);

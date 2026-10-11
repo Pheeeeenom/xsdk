@@ -63,8 +63,8 @@ void xsdk_gpu_resolve_texture(const XsdkTexture *texture, uint32_t clear_argb);
 void xsdk_gpu_set_target(uint32_t width, uint32_t height);
 // Loads both shaders with IM_LOAD and sets the program registers; a resolve replaces the vertex shader.
 void xsdk_gpu_set_shaders(const XsdkShader *vertex, const XsdkShader *pixel);
-// Points vertex stream 0 at vertices from xsdk_gpu_alloc, clearing fetch constants 93 and 94, which share its group.
-void xsdk_gpu_set_vertices(uint32_t address, uint32_t size_bytes);
+// Points a vertex stream at vertices from xsdk_gpu_alloc; streams 0-2 share texture slot 31's group, 3-5 slot 30's.
+void xsdk_gpu_set_vertices(uint32_t stream, uint32_t address, uint32_t size_bytes);
 // Points fetch constant slot 0 to 31 at the texture and sampler; a resolve takes slot 0, xsdk_gpu_set_vertices 31.
 void xsdk_gpu_set_texture(uint32_t slot, const XsdkTexture *texture, const XsdkSamplerState *sampler);
 // Draws vertex_count auto-indexed vertices as primitive_type.

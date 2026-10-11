@@ -63,6 +63,9 @@ void test_sampling(void);
 // Texture formats (milestone 16).
 void test_formats(void);
 
+// Vertex input (milestone 17).
+void test_vertex(void);
+
 #ifdef __cplusplus
 }
 #endif
