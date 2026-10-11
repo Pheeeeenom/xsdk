@@ -104,6 +104,9 @@ void xsdk_gpu_set_target_at(uint32_t width, uint32_t height, uint32_t color_tile
 uint32_t xsdk_gpu_target_tiles(uint32_t width, uint32_t height);
 // Loads both shaders with IM_LOAD and sets the program registers; a resolve replaces the vertex shader.
 void xsdk_gpu_set_shaders(const XsdkShader *vertex, const XsdkShader *pixel);
+// After the CPU writes vertices, indices or texels, xsdk_texture_upload's included, and before the draws that read
+// them: the GPU's caches drop what they hold of that memory, as libxenon's unlock does. A resolve does it for itself.
+void xsdk_gpu_invalidate(uint32_t address, uint32_t size_bytes);
 // Points a vertex stream at vertices from xsdk_gpu_alloc; streams 0-2 share texture slot 31's group, 3-5 slot 30's.
 void xsdk_gpu_set_vertices(uint32_t stream, uint32_t address, uint32_t size_bytes);
 // Points fetch constant slot 0 to 31 at the texture and sampler; a resolve takes slot 0, vertex streams 31 down.

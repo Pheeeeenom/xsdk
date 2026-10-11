@@ -113,6 +113,8 @@ static volatile uint32_t *upload_bars(uint32_t top, uint32_t argb)
 		return NULL;
 	for (uint32_t i = 0; i < POSITIONS; i++)
 		put_rectangle(vertices + i * QUAD_BYTES / 4, i * STEP, top, BAR_WIDTH, BAR_HEIGHT, argb);
+	__asm__ volatile("sync" ::: "memory");
+	xsdk_gpu_invalidate(xsdk_gpu_address(vertices), POSITIONS * QUAD_BYTES);
 	return vertices;
 }
 
@@ -124,6 +126,8 @@ static volatile uint32_t *upload_squares(void)
 	for (uint32_t i = 0; i < SQUARES; i++)
 		put_rectangle(
 			vertices + i * QUAD_BYTES / 4, squares[i].x, squares[i].y, SQUARE_SIZE, SQUARE_SIZE, squares[i].argb);
+	__asm__ volatile("sync" ::: "memory");
+	xsdk_gpu_invalidate(xsdk_gpu_address(vertices), SQUARES * QUAD_BYTES);
 	return vertices;
 }
 

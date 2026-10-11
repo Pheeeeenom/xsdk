@@ -186,6 +186,7 @@ static bool make_texture(XsdkTexture *texture, uint32_t which)
 			for (uint32_t x = 0; x < width; x++)
 				image[y * width + x] = texel_argb(which, level, x, y);
 		xsdk_texture_upload(texture, level, image, width * sizeof image[0]);
+		xsdk_gpu_invalidate(texture->address, texture->size_bytes);
 	}
 	return true;
 }
@@ -590,6 +591,7 @@ void test_sampling(void)
 		for (uint32_t i = 0; i < cell_count; i++)
 			put_quad(vertices + i * QUAD_BYTES / 4, &cells[i]);
 		__asm__ volatile("sync" ::: "memory");
+		xsdk_gpu_invalidate(xsdk_gpu_address(vertices), cell_count * QUAD_BYTES);
 	}
 	const uint32_t buffer_bytes = xsdk_gpu_resolve_bytes(WIDTH, HEIGHT);
 	volatile uint32_t *const buffers[BUFFERS] = { xsdk_gpu_alloc(buffer_bytes), xsdk_gpu_alloc(buffer_bytes) };

@@ -130,6 +130,7 @@ static volatile uint32_t *upload_vertices(void)
 		put_vertex(vertices, TRUNCATED_BASE + i, 0.0f, 0.0f);
 	}
 	__asm__ volatile("sync" ::: "memory");
+	xsdk_gpu_invalidate(xsdk_gpu_address(vertices), VERTICES * STRIDE_BYTES);
 	return vertices;
 }
 
@@ -163,6 +164,7 @@ static volatile uint32_t *upload_indices(void)
 	for (uint32_t i = 0; i < offset / 4; i++)
 		indices[i] = buffer.words[i];
 	__asm__ volatile("sync" ::: "memory");
+	xsdk_gpu_invalidate(xsdk_gpu_address(indices), INDEX_BUFFER_BYTES);
 	return indices;
 }
 

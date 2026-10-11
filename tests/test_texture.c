@@ -188,6 +188,7 @@ static volatile uint32_t *upload_quad(const Layout *layout)
 	for (uint32_t i = 0; i < sizeof quad / 4; i++)
 		vertices[i] = words[i];
 	__asm__ volatile("sync" ::: "memory");
+	xsdk_gpu_invalidate(xsdk_gpu_address(vertices), sizeof quad);
 	return vertices;
 }
 
@@ -200,6 +201,7 @@ static bool make_texture(XsdkTexture *texture, const Layout *layout)
 		for (uint32_t x = 0; x < TEXTURE_WIDTH; x++)
 			image[y][x] = texel_argb(layout, x, y);
 	xsdk_texture_upload(texture, 0, &image[0][0], sizeof image[0]);
+	xsdk_gpu_invalidate(texture->address, texture->size_bytes);
 	return true;
 }
 

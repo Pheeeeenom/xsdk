@@ -214,8 +214,7 @@ void xsdk_gpu_set_vertices(uint32_t stream, uint32_t address, uint32_t size_byte
 	const uint32_t flush_fetch[] = { 0, 0, 0 };
 	uint32_t dwords[DRAW_MAX_DWORDS];
 	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
-	// libxenon invalidates vertices the CPU wrote and flushes the fetch constants it set (xe.c:759, 1146).
-	xsdk_gpu_put_coherency(&packets, COHER_VERTEX_CACHE, address, size_bytes);
+	// libxenon flushes the fetch constants it set (xe.c:1146).
 	// Written alone, a fetch constant breaks drawing (docs/HARDWARE.md, "Fetch constants go in whole groups").
 	gpu_put_registers(
 		&packets, SHADER_CONSTANT_FETCH_00_0 + group_index * FETCH_GROUP_DWORDS, group, FETCH_GROUP_DWORDS);
@@ -223,7 +222,17 @@ void xsdk_gpu_set_vertices(uint32_t stream, uint32_t address, uint32_t size_byte
 	xsdk_gpu_write(&packets);
 }
 
-// Xe_SetTexture's fetch constant, as a whole group, after the caches drop what the CPU may have rewritten (xe.c:1748).
+// Both caches, as Xe_SetTexture invalidates them (xe.c:1748); once per write, not every draw, as libxenon's unlock
+// invalidates (xe.c:750-761).
+void xsdk_gpu_invalidate(uint32_t address, uint32_t size_bytes)
+{
+	uint32_t dwords[DRAW_MAX_DWORDS];
+	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
+	xsdk_gpu_put_coherency(&packets, COHER_VERTEX_CACHE | COHER_TEXTURE_CACHE, address, size_bytes);
+	xsdk_gpu_write(&packets);
+}
+
+// Xe_SetTexture's fetch constant, as a whole group (xe.c:1748).
 void xsdk_gpu_set_texture(uint32_t slot, const XsdkTexture *texture, const XsdkSamplerState *sampler)
 {
 	assert(slot < TEXTURE_SLOTS);
@@ -233,7 +242,6 @@ void xsdk_gpu_set_texture(uint32_t slot, const XsdkTexture *texture, const XsdkS
 	const uint32_t flush_fetch[] = { 0, 0, 0 };
 	uint32_t dwords[DRAW_MAX_DWORDS];
 	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
-	xsdk_gpu_put_coherency(&packets, COHER_VERTEX_CACHE | COHER_TEXTURE_CACHE, texture->address, texture->size_bytes);
 	gpu_put_registers(&packets, SHADER_CONSTANT_FETCH_00_0 + slot * FETCH_GROUP_DWORDS, fetch, FETCH_GROUP_DWORDS);
 	gpu_put_registers(&packets, SHADER_CONSTANT_FLUSH_FETCH_0, flush_fetch, 3);
 	xsdk_gpu_write(&packets);
@@ -334,13 +342,12 @@ void xsdk_gpu_set_viewport(float x, float y, float width, float height, float mi
 	xsdk_gpu_write(&packets);
 }
 
-// Xe_pDrawIndexedPrimitive (xe.c:191-200); the indices leave the vertex cache first, as Xe_IB_Unlock has them.
+// Xe_pDrawIndexedPrimitive (xe.c:191-200).
 void xsdk_gpu_draw_indexed(uint32_t primitive_type, uint32_t index_address, uint32_t index_count, bool indices_32_bit)
 {
 	assert(index_count && index_count <= MAX_INDICES && index_address % (indices_32_bit ? 4 : 2) == 0);
 	uint32_t dwords[DRAW_MAX_DWORDS];
 	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
-	xsdk_gpu_put_coherency(&packets, COHER_VERTEX_CACHE, index_address, index_count << (indices_32_bit ? 2 : 1));
 	gpu_put_register(&packets, COHER_DEST_BASE_1, 0);
 	gpu_put_register(&packets, VGT_INDX_OFFSET, 0);
 	gpu_put_type3(&packets, PM4_DRAW_INDX, 4);

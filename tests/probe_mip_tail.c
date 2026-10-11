@@ -99,6 +99,7 @@ static void fill_pages(volatile uint32_t *pages)
 			for (uint32_t x = 0; x < PAGE_TEXELS; x++)
 				pages[page * PAGE_BYTES / 4 + tiled_index(x, y, PAGE_TEXELS)] = code(page, x, y);
 	__asm__ volatile("sync" ::: "memory");
+	xsdk_gpu_invalidate(xsdk_gpu_address(pages), PAGES * PAGE_BYTES);
 }
 
 // The SDK's fetch constant for the shape, pointed at the coded pages.
@@ -239,6 +240,7 @@ int main(void)
 	for (uint32_t i = 0; i < cell_count; i++)
 		put_quad(vertices + i * QUAD_BYTES / 4, &cells[i]);
 	__asm__ volatile("sync" ::: "memory");
+	xsdk_gpu_invalidate(xsdk_gpu_address(vertices), cell_count * QUAD_BYTES);
 	const XsdkSampler point_clamped = { XSDK_FILTER_POINT, XSDK_FILTER_POINT, XSDK_FILTER_POINT, XSDK_ADDRESS_CLAMP,
 		XSDK_ADDRESS_CLAMP, 0.0f };
 	XsdkSamplerState sampler;

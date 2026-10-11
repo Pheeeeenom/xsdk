@@ -509,6 +509,10 @@ void test_vertex(void)
 		allocated = allocated && position_buffers[i] && colour_buffers[i];
 		if (position_buffers[i] && colour_buffers[i]) {
 			fill_streams(cell, i, position_buffers[i], colour_buffers[i]);
+			__asm__ volatile("sync" ::: "memory");
+			xsdk_gpu_invalidate(xsdk_gpu_address(position_buffers[i]), VERTICES * cell->position_stride);
+			if (colour_buffers[i] != position_buffers[i])
+				xsdk_gpu_invalidate(xsdk_gpu_address(colour_buffers[i]), VERTICES * cell->colour_stride);
 			positions[i] = xsdk_gpu_address(position_buffers[i]);
 			colours[i] = xsdk_gpu_address(colour_buffers[i]);
 		}

@@ -71,6 +71,7 @@ static volatile uint32_t *upload_bars(uint32_t argb)
 		vertices[i] = word;
 	}
 	__asm__ volatile("sync" ::: "memory");
+	xsdk_gpu_invalidate(xsdk_gpu_address(vertices), sizeof bars);
 	return vertices;
 }
 

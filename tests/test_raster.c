@@ -379,6 +379,7 @@ static volatile uint32_t *upload_square(void)
 	for (uint32_t i = 0; i < sizeof square / 4; i++)
 		vertices[i] = words[i];
 	__asm__ volatile("sync" ::: "memory");
+	xsdk_gpu_invalidate(xsdk_gpu_address(vertices), sizeof square);
 	return vertices;
 }
 

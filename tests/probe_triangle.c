@@ -369,6 +369,7 @@ static volatile uint32_t *upload_triangle(void)
 	for (uint32_t i = 0; i < sizeof triangle / 4; i++)
 		vertices[i] = words[i];
 	__asm__ volatile("sync" ::: "memory");
+	xsdk_gpu_invalidate(xsdk_gpu_address(vertices), sizeof triangle);
 	return vertices;
 }
 
