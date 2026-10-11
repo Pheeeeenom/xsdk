@@ -19,9 +19,13 @@ enum {
 	PM4_NOP = 0x10,
 };
 
-// Primitive types (xenia:src/xenia/gpu/xenos.h:44-49).
+// Primitive types (xenia:src/xenia/gpu/xenos.h:44-51).
 enum {
+	XSDK_PRIMITIVE_POINT_LIST = 1,
+	XSDK_PRIMITIVE_LINE_LIST = 2,
+	XSDK_PRIMITIVE_LINE_STRIP = 3,
 	XSDK_PRIMITIVE_TRIANGLE_LIST = 4,
+	XSDK_PRIMITIVE_TRIANGLE_STRIP = 6,
 };
 
 // The header of a type-3 packet with payload_dwords dwords after it (xenia:src/xenia/gpu/xenos.h:1657-1664).
@@ -63,8 +67,10 @@ void xsdk_gpu_set_shaders(const XsdkShader *vertex, const XsdkShader *pixel);
 void xsdk_gpu_set_vertices(uint32_t address, uint32_t size_bytes);
 // Points texture fetch constant slot, 0 to 31, at the texture; a resolve overwrites slot 0, xsdk_gpu_set_vertices 31.
 void xsdk_gpu_set_texture(uint32_t slot, const XsdkTexture *texture);
-// Draws vertex_count auto-indexed vertices as a list of primitive_type.
+// Draws vertex_count auto-indexed vertices as primitive_type.
 void xsdk_gpu_draw(uint32_t primitive_type, uint32_t vertex_count);
+// Draws up to 65535 indices as primitive_type, big-endian, 16 or 32 bits each, from memory from xsdk_gpu_alloc.
+void xsdk_gpu_draw_indexed(uint32_t primitive_type, uint32_t index_address, uint32_t index_count, bool indices_32_bit);
 
 // Shader constants for the draws after, written from a copy in whole blocks: partial writes hung the GPU
 // (docs/HARDWARE.md).

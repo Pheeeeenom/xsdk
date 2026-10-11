@@ -48,6 +48,9 @@ void test_scale(void);
 // Shader constants (milestone 11).
 void test_constants(void);
 
+// Indexed draws and topologies (milestone 12).
+void test_indexed(void);
+
 #ifdef __cplusplus
 }
 #endif

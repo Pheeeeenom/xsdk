@@ -77,6 +77,7 @@ enum {
 // Type-3 opcodes (xenia:src/xenia/gpu/xenos.h:1572-1622).
 enum {
 	PM4_REG_RMW = 0x21,
+	PM4_DRAW_INDX = 0x22,
 	PM4_IM_LOAD = 0x27,
 	PM4_IM_LOAD_IMMEDIATE = 0x2B,
 	PM4_DRAW_INDX_2 = 0x36,

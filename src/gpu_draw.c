@@ -66,6 +66,10 @@ enum {
 	VERTEX_FETCH_SIZE_SHIFT = 2,
 	AUTO_INDEX = 2 << 6,
 	VERTEX_COUNT_SHIFT = 16,
+	// The initiator's index_size bit and the size's 8-in-16 swap (xenia:src/xenia/gpu/registers.h:300-327).
+	INDEX_32_BIT_SHIFT = 11,
+	DMA_SWAP_8IN16 = 1 << 30,
+	MAX_INDICES = 0xFFFF,
 };
 
 static uint32_t float_bits(float value)
@@ -174,5 +178,23 @@ void xsdk_gpu_draw(uint32_t primitive_type, uint32_t vertex_count)
 	gpu_put_register(&packets, VGT_INDX_OFFSET, 0);
 	gpu_put_type3(&packets, PM4_DRAW_INDX_2, 1);
 	gpu_put(&packets, primitive_type | AUTO_INDEX | vertex_count << VERTEX_COUNT_SHIFT);
+	xsdk_gpu_write(&packets);
+}
+
+// Xe_pDrawIndexedPrimitive (xe.c:191-200); the indices leave the vertex cache first, as Xe_IB_Unlock has them.
+void xsdk_gpu_draw_indexed(uint32_t primitive_type, uint32_t index_address, uint32_t index_count, bool indices_32_bit)
+{
+	assert(index_count && index_count <= MAX_INDICES && index_address % (indices_32_bit ? 4 : 2) == 0);
+	uint32_t dwords[DRAW_MAX_DWORDS];
+	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
+	xsdk_gpu_put_coherency(&packets, COHER_VERTEX_CACHE, index_address, index_count << (indices_32_bit ? 2 : 1));
+	gpu_put_register(&packets, COHER_DEST_BASE_1, 0);
+	gpu_put_register(&packets, VGT_INDX_OFFSET, 0);
+	gpu_put_type3(&packets, PM4_DRAW_INDX, 4);
+	gpu_put(&packets, 0);
+	gpu_put(
+		&packets, primitive_type | index_count << VERTEX_COUNT_SHIFT | (uint32_t)indices_32_bit << INDEX_32_BIT_SHIFT);
+	gpu_put(&packets, index_address);
+	gpu_put(&packets, (index_count | DMA_SWAP_8IN16) << indices_32_bit);
 	xsdk_gpu_write(&packets);
 }
