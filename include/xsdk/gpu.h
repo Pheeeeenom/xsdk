@@ -123,6 +123,86 @@ void xsdk_gpu_set_depth_stencil(const XsdkDepthStencilState *state);
 // The depth, 0 to 1, and stencil the later resolves clear to; far and 0 until set.
 void xsdk_gpu_set_depth_clear(float depth, uint8_t stencil);
 
+// Blend factors (xenia:src/xenia/gpu/xenos.h:708-723), less the constant-colour ones, and operations (727-733).
+enum {
+	XSDK_BLEND_ZERO = 0,
+	XSDK_BLEND_ONE = 1,
+	XSDK_BLEND_SRC_COLOR = 4,
+	XSDK_BLEND_ONE_MINUS_SRC_COLOR = 5,
+	XSDK_BLEND_SRC_ALPHA = 6,
+	XSDK_BLEND_ONE_MINUS_SRC_ALPHA = 7,
+	XSDK_BLEND_DST_COLOR = 8,
+	XSDK_BLEND_ONE_MINUS_DST_COLOR = 9,
+	XSDK_BLEND_DST_ALPHA = 10,
+	XSDK_BLEND_ONE_MINUS_DST_ALPHA = 11,
+	XSDK_BLEND_SRC_ALPHA_SATURATE = 16,
+};
+
+enum {
+	XSDK_BLEND_OP_ADD,
+	XSDK_BLEND_OP_SUBTRACT,
+	XSDK_BLEND_OP_MIN,
+	XSDK_BLEND_OP_MAX,
+	XSDK_BLEND_OP_REVERSE_SUBTRACT,
+};
+
+// Colour write mask bits (xenia:src/xenia/gpu/registers.h:755-761).
+enum {
+	XSDK_WRITE_RED = 1 << 0,
+	XSDK_WRITE_GREEN = 1 << 1,
+	XSDK_WRITE_BLUE = 1 << 2,
+	XSDK_WRITE_ALPHA = 1 << 3,
+	XSDK_WRITE_ALL = 0xF,
+};
+
+// Source times source factor, op, destination times destination factor; ONE, ZERO and ADD both ways is no blending.
+typedef struct {
+	uint32_t color_source;
+	uint32_t color_dest;
+	uint32_t color_op;
+	uint32_t alpha_source;
+	uint32_t alpha_dest;
+	uint32_t alpha_op;
+	uint32_t write_mask;
+} XsdkBlend;
+
+typedef struct {
+	uint32_t blend_control;
+	uint32_t color_mask;
+} XsdkBlendState;
+
+void xsdk_gpu_blend_state(XsdkBlendState *state, const XsdkBlend *setting);
+// Applies to the draws after; xsdk_gpu_set_target turns blending off and writes every channel.
+void xsdk_gpu_set_blend(const XsdkBlendState *state);
+
+enum {
+	XSDK_CULL_NONE,
+	XSDK_CULL_FRONT,
+	XSDK_CULL_BACK,
+};
+
+// Which faces draw, and a depth bias: a constant in depth units, plus slope times the polygon's depth slope per pixel.
+typedef struct {
+	uint32_t cull;
+	bool front_clockwise;
+	float depth_bias;
+	float depth_bias_slope;
+} XsdkRaster;
+
+typedef struct {
+	uint32_t mode_control;
+	// Front scale and offset, then back.
+	uint32_t polygon_offset[4];
+} XsdkRasterState;
+
+void xsdk_gpu_raster_state(XsdkRasterState *state, const XsdkRaster *setting);
+// Applies to the draws after; xsdk_gpu_set_target culls nothing and biases nothing.
+void xsdk_gpu_set_raster(const XsdkRasterState *state);
+// Draws only to pixels x to x + width - 1 and y to y + height - 1; xsdk_gpu_set_target opens it to the whole target.
+void xsdk_gpu_set_scissor(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+// Maps clip space to that rectangle in pixels and depth to min_depth..max_depth; xsdk_gpu_set_target covers the target.
+void xsdk_gpu_set_viewport(float x, float y, float width, float height, float min_depth, float max_depth);
+
 // Shader constants for the draws after, written from a copy in whole blocks: partial writes hung the GPU
 // (docs/HARDWARE.md).
 enum {

@@ -81,6 +81,22 @@ enum {
 	STENCILZFAIL_SHIFT = 17,
 	STENCILMASK_SHIFT = 8,
 	STENCILWRITEMASK_SHIFT = 16,
+	// RB_BLENDCONTROL's fields (xenia:src/xenia/gpu/registers.h:780-794).
+	COLOR_COMB_FCN_SHIFT = 5,
+	COLOR_DESTBLEND_SHIFT = 8,
+	ALPHA_SRCBLEND_SHIFT = 16,
+	ALPHA_COMB_FCN_SHIFT = 21,
+	ALPHA_DESTBLEND_SHIFT = 24,
+	// PA_SU_SC_MODE_CNTL's fields (registers.h:456-486); libxenon keeps the window offset on (xe.c:1403-1416).
+	CULL_FRONT = 1 << 0,
+	CULL_BACK = 1 << 1,
+	FACE_CLOCKWISE = 1 << 2,
+	POLY_OFFSET_FRONT_ENABLE = 1 << 11,
+	POLY_OFFSET_BACK_ENABLE = 1 << 12,
+	VTX_WINDOW_OFFSET_ENABLE = 1 << 16,
+	// The slope scale register counts 1/16-pixel subpixels (xenia:src/xenia/gpu/xenos.h:404-407).
+	SUBPIXELS_PER_PIXEL = 16,
+	SCISSOR_Y_SHIFT = 16,
 };
 
 static uint32_t float_bits(float value)
@@ -210,6 +226,68 @@ void xsdk_gpu_set_depth_stencil(const XsdkDepthStencilState *state)
 	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
 	gpu_put_register(&packets, RB_DEPTHCONTROL, state->depth_control);
 	gpu_put_register(&packets, RB_STENCILREFMASK, state->stencil_ref_mask);
+	xsdk_gpu_write(&packets);
+}
+
+void xsdk_gpu_blend_state(XsdkBlendState *state, const XsdkBlend *setting)
+{
+	assert(setting->color_op <= XSDK_BLEND_OP_REVERSE_SUBTRACT && setting->alpha_op <= XSDK_BLEND_OP_REVERSE_SUBTRACT);
+	state->blend_control = setting->color_source | setting->color_op << COLOR_COMB_FCN_SHIFT |
+		setting->color_dest << COLOR_DESTBLEND_SHIFT | setting->alpha_source << ALPHA_SRCBLEND_SHIFT |
+		setting->alpha_op << ALPHA_COMB_FCN_SHIFT | setting->alpha_dest << ALPHA_DESTBLEND_SHIFT;
+	state->color_mask = setting->write_mask & XSDK_WRITE_ALL;
+}
+
+void xsdk_gpu_set_blend(const XsdkBlendState *state)
+{
+	uint32_t dwords[DRAW_MAX_DWORDS];
+	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
+	gpu_put_register(&packets, RB_BLENDCONTROL0, state->blend_control);
+	gpu_put_register(&packets, RB_COLOR_MASK, state->color_mask);
+	xsdk_gpu_write(&packets);
+}
+
+void xsdk_gpu_raster_state(XsdkRasterState *state, const XsdkRaster *setting)
+{
+	const bool biased = setting->depth_bias != 0.0f || setting->depth_bias_slope != 0.0f;
+	state->mode_control = VTX_WINDOW_OFFSET_ENABLE | (setting->front_clockwise ? FACE_CLOCKWISE : 0) |
+		(setting->cull == XSDK_CULL_FRONT ? CULL_FRONT : 0) | (setting->cull == XSDK_CULL_BACK ? CULL_BACK : 0) |
+		(biased ? POLY_OFFSET_FRONT_ENABLE | POLY_OFFSET_BACK_ENABLE : 0);
+	const uint32_t scale = float_bits(setting->depth_bias_slope * SUBPIXELS_PER_PIXEL);
+	const uint32_t offset = float_bits(setting->depth_bias);
+	state->polygon_offset[0] = scale;
+	state->polygon_offset[1] = offset;
+	state->polygon_offset[2] = scale;
+	state->polygon_offset[3] = offset;
+}
+
+void xsdk_gpu_set_raster(const XsdkRasterState *state)
+{
+	uint32_t dwords[DRAW_MAX_DWORDS];
+	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
+	gpu_put_register(&packets, PA_SU_SC_MODE_CNTL, state->mode_control);
+	gpu_put_registers(&packets, PA_SU_POLY_OFFSET_FRONT_SCALE, state->polygon_offset, 4);
+	xsdk_gpu_write(&packets);
+}
+
+// The window offset stays 0: target pixels, bottom right exclusive (xenia:src/xenia/gpu/draw_util.cc:559-607).
+void xsdk_gpu_set_scissor(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+{
+	const uint32_t scissor[] = { x | y << SCISSOR_Y_SHIFT, (x + width) | (y + height) << SCISSOR_Y_SHIFT };
+	uint32_t dwords[DRAW_MAX_DWORDS];
+	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
+	gpu_put_registers(&packets, PA_SC_WINDOW_SCISSOR_TL, scissor, 2);
+	xsdk_gpu_write(&packets);
+}
+
+// The scale and offset xsdk_gpu_set_target writes for the whole target, moved to the rectangle.
+void xsdk_gpu_set_viewport(float x, float y, float width, float height, float min_depth, float max_depth)
+{
+	const uint32_t viewport[] = { float_bits(width / 2.0f), float_bits(x + width / 2.0f), float_bits(-height / 2.0f),
+		float_bits(y + height / 2.0f), float_bits(max_depth - min_depth), float_bits(min_depth) };
+	uint32_t dwords[DRAW_MAX_DWORDS];
+	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
+	gpu_put_registers(&packets, PA_CL_VPORT_XSCALE, viewport, 6);
 	xsdk_gpu_write(&packets);
 }
 
