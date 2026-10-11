@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1280 720" width="1280" height="720"
+  font-family="Segoe UI, Selawik, 'Open Sans', sans-serif">
+  <title>xsdk</title>
+  <defs>
+    <!-- The sky and floor of the 2008 dashboard's channels, its colours measured from a capture. -->
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="720" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#284607"/>
+      <stop offset="0.2" stop-color="#4B7218"/>
+      <stop offset="0.42" stop-color="#7E9D4E"/>
+      <stop offset="0.58" stop-color="#A2B2A2"/>
+      <stop offset="0.7" stop-color="#B2BCB6"/>
+    </linearGradient>
+    <linearGradient id="haze" x1="300" y1="0" x2="1280" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7C8B80" stop-opacity="0"/>
+      <stop offset="1" stop-color="#7C8B80" stop-opacity="0.8"/>
+    </linearGradient>
+    <linearGradient id="floor" x1="0" y1="0" x2="1280" y2="260" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#B9BEC7"/>
+      <stop offset="0.45" stop-color="#9297A0"/>
+      <stop offset="1" stop-color="#5E6068"/>
+    </linearGradient>
+    <linearGradient id="floor-shade" x1="0" y1="400" x2="0" y2="720" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3E4046" stop-opacity="0"/>
+      <stop offset="1" stop-color="#3E4046" stop-opacity="0.45"/>
+    </linearGradient>
+    <!-- A slot: bright lime under its top edge, olive at its foot. -->
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F8FE9C"/>
+      <stop offset="0.04" stop-color="#ECFD72"/>
+      <stop offset="0.16" stop-color="#DCFB46"/>
+      <stop offset="0.52" stop-color="#9BD815"/>
+      <stop offset="0.87" stop-color="#456A13"/>
+      <stop offset="1" stop-color="#22350D"/>
+    </linearGradient>
+    <linearGradient id="tile-light" x1="0" y1="0" x2="0.7" y2="0.8">
+      <stop offset="0" stop-color="#FFF" stop-opacity="0.16"/>
+      <stop offset="0.5" stop-color="#FFF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="glyph" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="0.6" stop-color="#F1F9D8"/>
+      <stop offset="1" stop-color="#D3EA86"/>
+    </linearGradient>
+    <linearGradient id="cube-top" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#F2FAD6"/>
+    </linearGradient>
+    <linearGradient id="cube-left" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#EDF7C8"/>
+      <stop offset="1" stop-color="#D2E794"/>
+    </linearGradient>
+    <linearGradient id="cube-right" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#CDE380"/>
+      <stop offset="1" stop-color="#A9C94A"/>
+    </linearGradient>
+    <linearGradient id="fade" x1="0" y1="430" x2="0" y2="700" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFF" stop-opacity="0.34"/>
+      <stop offset="1" stop-color="#FFF" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="reflection-fade" maskUnits="userSpaceOnUse" x="0" y="0" width="1280" height="720">
+      <rect width="1280" height="720" fill="url(#fade)"/>
+    </mask>
+    <clipPath id="front-clip"><rect x="96" y="262" width="416" height="315" rx="12"/></clipPath>
+    <filter id="text-shadow" x="-10%" y="-30%" width="120%" height="160%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#0E1A04" flood-opacity="0.45"/>
+    </filter>
+    <!-- Each slot shades the one behind it. -->
+    <filter id="slot-shadow" x="-10%" y="-10%" width="125%" height="120%">
+      <feDropShadow dx="6" dy="0" stdDeviation="6" flood-color="#18260A" flood-opacity="0.4"/>
+    </filter>
+    <filter id="icon-shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#1C2E06" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <rect width="1280" height="720" fill="url(#sky)"/>
+  <rect width="1280" height="470" fill="url(#haze)"/>
+  <path d="M0 452 C400 432 900 408 1280 398 V720 H0 Z" fill="url(#floor)"/>
+  <path d="M0 452 C400 432 900 408 1280 398 V720 H0 Z" fill="url(#floor-shade)"/>
+
+  <!-- The channel list: the selected channel large, with its square, and the ones above it fading. -->
+  <g fill="#FFF">
+    <text x="102" y="96" font-size="28" opacity="0.26">vulkan4xenon</text>
+    <text x="102" y="141" font-size="38" opacity="0.42">xost</text>
+    <g filter="url(#text-shadow)">
+      <rect x="78" y="192" width="15" height="15"/>
+      <text x="100" y="226" font-size="100" font-weight="600">xsdk</text>
+    </g>
+  </g>
+
+  <g mask="url(#reflection-fade)">
+    <use href="#slot-5" transform="matrix(1 0 0 -1 0 914)"/><use href="#slot-4" transform="matrix(1 0 0 -1 0 933)"/><use href="#slot-3" transform="matrix(1 0 0 -1 0 965)"/><use href="#slot-2" transform="matrix(1 0 0 -1 0 1003)"/><use href="#slot-1" transform="matrix(1 0 0 -1 0 1059)"/><use href="#slot-0" transform="matrix(1 0 0 -1 0 1154)"/>
+  </g>
+  <g>
+    <g id="slot-5" filter="url(#slot-shadow)"><rect x="1138.1" y="342" width="151.9" height="115" rx="4.4" fill="url(#tile)"/><rect x="1138.1" y="342" width="151.9" height="115" rx="4.4" fill="url(#tile-light)"/><g transform="translate(1248 390.3) scale(0.365)" filter="url(#icon-shadow)"><circle r="56" fill="url(#glyph)"/><path d="M0 0 L-52.6 -19.2 A56 56 0 0 1 -32.1 -45.9 Z M0 0 L52.6 19.2 A56 56 0 0 1 32.1 45.9 Z" fill="#FFF" opacity="0.85"/><circle r="55" fill="none" stroke="#C9E07A" stroke-width="2"/><circle r="20" fill="#C9E07A"/><circle r="9" fill="#7FA328"/></g><rect x="1138.1" y="342" width="151.9" height="115" rx="4.4" fill="none" stroke="#F6FFB0" stroke-opacity="0.35" stroke-width="2"/><rect x="1138.1" y="342" width="151.9" height="115" rx="4.4" fill="#000" opacity="0.15"/></g><g id="slot-4" filter="url(#slot-shadow)"><rect x="1039" y="332.5" width="177" height="134" rx="5.1" fill="url(#tile)"/><rect x="1039" y="332.5" width="177" height="134" rx="5.1" fill="url(#tile-light)"/><g transform="translate(1172 388.8) scale(0.425)" filter="url(#icon-shadow)"><rect x="-58" y="-26.0" width="14" height="3.6" fill="#E4F1BC"/><rect x="44" y="-26.0" width="14" height="3.6" fill="#E4F1BC"/><rect x="-58" y="-18.8" width="14" height="3.6" fill="#E4F1BC"/><rect x="44" y="-18.8" width="14" height="3.6" fill="#E4F1BC"/><rect x="-58" y="-11.6" width="14" height="3.6" fill="#E4F1BC"/><rect x="44" y="-11.6" width="14" height="3.6" fill="#E4F1BC"/><rect x="-58" y="-4.4" width="14" height="3.6" fill="#E4F1BC"/><rect x="44" y="-4.4" width="14" height="3.6" fill="#E4F1BC"/><rect x="-58" y="2.8" width="14" height="3.6" fill="#E4F1BC"/><rect x="44" y="2.8" width="14" height="3.6" fill="#E4F1BC"/><rect x="-58" y="10.0" width="14" height="3.6" fill="#E4F1BC"/><rect x="44" y="10.0" width="14" height="3.6" fill="#E4F1BC"/><rect x="-58" y="17.2" width="14" height="3.6" fill="#E4F1BC"/><rect x="44" y="17.2" width="14" height="3.6" fill="#E4F1BC"/><rect x="-58" y="24.4" width="14" height="3.6" fill="#E4F1BC"/><rect x="44" y="24.4" width="14" height="3.6" fill="#E4F1BC"/><rect x="-46" y="-30" width="92" height="60" rx="4" fill="url(#glyph)"/><circle cx="-33" cy="-17" r="5" fill="#A9C94A"/></g><rect x="1039" y="332.5" width="177" height="134" rx="5.1" fill="none" stroke="#F6FFB0" stroke-opacity="0.35" stroke-width="2"/><rect x="1039" y="332.5" width="177" height="134" rx="5.1" fill="#000" opacity="0.12"/></g><g id="slot-3" filter="url(#slot-shadow)"><rect x="914.1" y="320.5" width="213.9" height="162" rx="6.2" fill="url(#tile)"/><rect x="914.1" y="320.5" width="213.9" height="162" rx="6.2" fill="url(#tile-light)"/><g transform="translate(1068 388.5) scale(0.514)" filter="url(#icon-shadow)"><path d="M-52 -22 H-26 L8 -54 V54 L-26 22 H-52 Z" fill="url(#glyph)" stroke="url(#glyph)" stroke-width="8" stroke-linejoin="round"/><g fill="none" stroke="url(#glyph)" stroke-width="11" stroke-linecap="round"><path d="M26 -24 A34 34 0 0 1 26 24"/><path d="M42 -46 A62 62 0 0 1 42 46"/></g></g><rect x="914.1" y="320.5" width="213.9" height="162" rx="6.2" fill="none" stroke="#F6FFB0" stroke-opacity="0.35" stroke-width="2"/><rect x="914.1" y="320.5" width="213.9" height="162" rx="6.2" fill="#000" opacity="0.09"/></g><g id="slot-2" filter="url(#slot-shadow)"><rect x="754.4" y="309.5" width="253.6" height="192" rx="7.3" fill="url(#tile)"/><rect x="754.4" y="309.5" width="253.6" height="192" rx="7.3" fill="url(#tile-light)"/><g transform="translate(916 390.1) scale(0.610)" filter="url(#icon-shadow)"><rect x="-52" y="-46" width="104" height="92" rx="10" fill="url(#glyph)"/><path d="M-36 -30 H36 V20 H16 V34 H-16 V20 H-36 Z" fill="#8FB52E" stroke="#8FB52E" stroke-width="4" stroke-linejoin="round"/><rect x="-29.5" y="-30" width="3" height="15" fill="#F1F9D8"/><rect x="-21.5" y="-30" width="3" height="15" fill="#F1F9D8"/><rect x="-13.5" y="-30" width="3" height="15" fill="#F1F9D8"/><rect x="-5.5" y="-30" width="3" height="15" fill="#F1F9D8"/><rect x="2.5" y="-30" width="3" height="15" fill="#F1F9D8"/><rect x="10.5" y="-30" width="3" height="15" fill="#F1F9D8"/><rect x="18.5" y="-30" width="3" height="15" fill="#F1F9D8"/><rect x="26.5" y="-30" width="3" height="15" fill="#F1F9D8"/></g><rect x="754.4" y="309.5" width="253.6" height="192" rx="7.3" fill="none" stroke="#F6FFB0" stroke-opacity="0.35" stroke-width="2"/><rect x="754.4" y="309.5" width="253.6" height="192" rx="7.3" fill="#000" opacity="0.06"/></g><g id="slot-1" filter="url(#slot-shadow)"><rect x="507" y="289.5" width="317" height="240" rx="9.1" fill="url(#tile)"/><rect x="507" y="289.5" width="317" height="240" rx="9.1" fill="url(#tile-light)"/><g transform="translate(668 390.3) scale(0.762)" filter="url(#icon-shadow)"><path d="M-44 -62 H22 L50 -34 V62 H-44 Z" fill="url(#glyph)"/><path d="M22 -62 V-34 H50 Z" fill="#C9E07A"/><g fill="#8FB52E"><rect x="-28" y="-14" width="58" height="9" rx="4"/><rect x="-28" y="8" width="58" height="9" rx="4"/><rect x="-28" y="30" width="38" height="9" rx="4"/></g></g><text x="529" y="489.5" font-size="24" fill="#FFF" filter="url(#text-shadow)">Titles<tspan x="529" dy="22" font-size="16">XEX2 on the retail kernel</tspan></text><rect x="507" y="289.5" width="317" height="240" rx="9.1" fill="none" stroke="#F6FFB0" stroke-opacity="0.35" stroke-width="2"/><rect x="507" y="289.5" width="317" height="240" rx="9.1" fill="#000" opacity="0.03"/></g><g id="slot-0" filter="url(#slot-shadow)"><rect x="96" y="262" width="416" height="315" rx="12" fill="url(#tile)"/><rect x="96" y="262" width="416" height="315" rx="12" fill="url(#tile-light)"/><g clip-path="url(#front-clip)" fill="none" stroke="#FFF"><circle cx="445.4" cy="321.9" r="40" stroke-width="7" opacity="0.17"/><circle cx="445.4" cy="321.9" r="18" stroke-width="5" opacity="0.15"/><circle cx="150.1" cy="334.4" r="26" stroke-width="5" opacity="0.13"/><circle cx="200" cy="510.9" r="13" stroke-width="4" opacity="0.13"/><circle cx="378.9" cy="299.8" r="9" stroke-width="3" opacity="0.14"/><circle cx="491.2" cy="457.3" r="28" stroke-width="4" opacity="0.09"/></g><g filter="url(#icon-shadow)" stroke-linejoin="round"><polygon points="304,314.3 373.3,354.3 373.3,434.3 304,474.3 234.7,434.3 234.7,354.3" fill="#C6DF6E" stroke="#C6DF6E" stroke-width="14"/><polygon points="304,314.3 373.3,354.3 304,394.3 234.7,354.3" fill="url(#cube-top)"/><polygon points="234.7,354.3 304,394.3 304,474.3 234.7,434.3" fill="url(#cube-left)"/><polygon points="304,394.3 373.3,354.3 373.3,434.3 304,474.3" fill="url(#cube-right)"/><polyline points="234.7,354.3 304,394.3 373.3,354.3" fill="none" stroke="#FFF" stroke-opacity="0.8" stroke-width="3"/><line x1="304" y1="394.3" x2="304" y2="474.3" stroke="#FFF" stroke-opacity="0.45" stroke-width="3"/></g><text x="126" y="547" font-size="30" fill="#FFF" filter="url(#text-shadow)">homebrew sdk for xenon</text><rect x="96" y="262" width="416" height="315" rx="12" fill="none" stroke="#F6FFB0" stroke-opacity="0.35" stroke-width="2"/></g>
+  </g>
+</svg>
