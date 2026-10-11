@@ -1,0 +1,32 @@
+log: game:\xsdk.log
+vulkan4xenon test title
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 28046 us
+PASS: setup: instance, device, command pool and fence made
+boot logo: XAM's surface 00000000, then 1F4F0000
+PASS: boot logo: the display shows a buffer of its own after vkCreateDevice
+display: Xbox 360 video output, 1280x720 at 60000 mHz
+PASS: boot logo: the swapchain made
+PASS: boot logo: still on screen once the swapchain exists
+boot logo: after the first present the display shows 1F150000, image 0 at 1F150000; pixel 00 60 00
+PASS: boot logo: the first present replaces it with the app's image
+PASS: objects: vkGetInstanceProcAddr finds global functions without an instance
+PASS: objects: vkGetInstanceProcAddr finds instance functions only with an instance
+PASS: objects: vkGetDeviceProcAddr finds device functions and not instance ones
+PASS: objects: an unknown name finds nothing
+PASS: objects: one memory type, device-local, host-visible and coherent
+PASS: objects: a buffer's requirements round its size up to its alignment
+PASS: objects: an instance for Vulkan 1.1 is refused
+vulkan4xenon: no compiled shader for SPIR-V 0806A8C99179CFC2, 20 bytes
+PASS: objects: SPIR-V missing from the bundle is refused
+PASS: triangle: render pass, shader modules, pipeline and vertex buffer made
+PASS: triangle: framebuffers made and command buffers recorded
+PASS: triangle: 120 frames acquired, drawn and presented
+PASS: triangle: every frame's image has red, green and blue corners on the clear colour
+triangle: 121 flips over 132 vblanks, 10 missed, 0 late
+PASS: triangle: every presented frame reached the screen
+triangle: the image on screen, 1F150000, drew 259200 pixels
+PASS: triangle: the image on screen has red, green and blue corners on the clear colour
+PASS: triangle: the image on screen covers the triangle's area
+tests: 20 passed, 0 failed
+exit: status 0

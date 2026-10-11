@@ -1348,3 +1348,28 @@ passed, and the console went back to Aurora.
   - buffers large enough to take long to run.
 
 With that, milestone 18 is done, and so are all of milestones 11 to 18.
+
+## The splash stays up until present's first frame (2026-10-11)
+
+Two runs, at `7420d94` (logs: `results/2026-10-11-splash-handover/`):
+- **vulkan4xenon's milestone 1 title** (`vulkan4xenon_test.log`). It shows the splash with `xsdk_splash_begin` from
+  `vkCreateDevice`, and its swapchain is `xsdk_present`. All 20 checks passed, and the console went back to Aurora.
+- **`build/xsdk_test.xex`** (`xsdk_test-tail.log`, the tail the user sent). All 194 checks passed, the splash's
+  among them: `xsdk_splash_show` is now begin, a hold and end, and this was its first run on the console.
+
+What the first run showed:
+- **`xsdk_splash_begin` put the logo on screen.** `D1GRPH_PRIMARY_SURFACE_ADDRESS` went from XAM's 640x480 surface at
+  0 (see "At title start the display shows a 640x480 surface at address 0") to the splash's buffer at 0x1F4F0000.
+- **`xsdk_present_open` took the display over without showing its own black buffer.** Afterwards the display still
+  showed 0x1F4F0000, which isn't one of present's buffers.
+- **The first present flipped to buffer 0** (0x1F150000), whose centre read the app's clear colour exactly (00 60
+  00).
+- **The present chain kept going afterwards.** The splash's buffers are freed a vblank after the first flip; that
+  step isn't logged. All 120 later frames were shown: 121 flips over 132 vblanks, none late. The 10 vblanks missed
+  came from the title, which waits for each frame and reads it back before presenting it. vulkan4vita hung when its
+  logo's frame was freed too early (vulkan4vita:docs/ROADMAP.md:729-733); this didn't.
+- **`D1GRPH_PRIMARY_SURFACE_ADDRESS` reads back the buffer on screen** (`xsdk_display_shown_address`): each read
+  matched the buffer the test expected.
+- **Not covered:**
+  - the logo's look: the titles check which buffer is shown, not what's in it;
+  - `xsdk_splash_end` with the splash still up, which a device closed before any swapchain would take.
