@@ -1498,3 +1498,20 @@ Two runs at xsdk `5a06bc3` (the tails the user sent: `results/2026-10-11-milesto
 With the run before, milestone 19's done-when holds on the console: `draws_1000` drew and submitted in 1,213 us,
 under 16 ms; `draws_4000` is recorded with its counts; both titles pass in full; and vkbench's backends drew the same
 pictures. Its third step, fewer dwords a draw, hasn't been started.
+
+## Copies into write-combined and cached memory (2026-10-11)
+
+vkbench at vulkan4xenon `86866e8`, xsdk `a465595` (log: `results/2026-10-11-milestone-20-probe/vkbench.log`), for
+milestone 20. All 14 checks passed again, with draw and submit times within 4% of the run before. Its probes copied
+1 MB from memory, flushing the source from the cache with `dcbf` before each of 8 rounds, and every copy came out
+right:
+
+- **Into write-combined memory:** newlib's `memcpy` 185 MB/s; 32-bit stores with `dcbt` 517 MB/s; 64-bit stores with
+  `dcbt` 883 MB/s; VMX stores 568 MB/s; VMX stores with `dcbt` 8 lines ahead 1485 MB/s.
+- **Into cached memory, flushed too:** newlib's `memcpy` 410 MB/s; VMX with `dcbt` 1823 MB/s; VMX, `dcbt` and `dcbz`
+  2274 MB/s.
+- So aligned 64-bit and VMX stores work in write-combined memory, and VMX with `dcbt` copied fastest into it.
+- **Reading the source from memory bounds a copy:** in-order 32-bit stores of values the CPU made wrote 3603 MB/s,
+  where copying with the same stores ran at 517 MB/s.
+- **VMX runs in titles,** as it already did in the C++ unwinder, which saves vector registers with `stvx` when a test
+  throws.
