@@ -401,7 +401,7 @@ Each is proven on the user's console, as xost's milestones were.
 
 After milestone 9, the SDK and the GPU layer are a complete base. A later translation layer can build on them the way
 vulkan4vita builds on GXM: render passes on eDRAM and resolves, descriptors on fetch and shader constants, and shaders
-from xost's GLSL path. Scoping that layer is a separate document.
+from xost's GLSL path. That layer is vulkan4xenon, scoped in its own repository's docs/ROADMAP.md (Z:ulkan4xenon).
 
 ### GPU milestones before a Vulkan translation layer
 
