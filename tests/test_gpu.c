@@ -7,11 +7,15 @@
 
 enum {
 	FENCE_TIMEOUT_MS = 1000,
-	// About 30000 dwords, so the 8192-dword ring wraps a few times.
+	// Each fence gives the ring a segment of 14 dwords, so the 8192-dword ring wraps a few times.
 	WRAP_ROUNDS = 4000,
-	// 25600 dwords with no fence, so the ring fills about three times.
-	FULL_RING_NOPS = 400,
-	FULL_RING_NOP_DWORDS = 64,
+	// 25600 dwords with no fence, which the ring runs in segments of 1024.
+	LONG_WRITE_NOPS = 400,
+	NOP_DWORDS = 64,
+	SEGMENT_DWORDS = 1024,
+	// 5 MB, so the 4 MB stream wraps, with a fence every 64 KB.
+	STREAM_WRAP_NOPS = 20480,
+	NOPS_A_FENCE = 256,
 };
 
 static void put_nop(uint32_t payload_dwords)
@@ -22,7 +26,7 @@ static void put_nop(uint32_t payload_dwords)
 		packet[i] = 0;
 }
 
-// A NOP of 4 dwords, then a fence that kicks once; then more NOPs than the ring holds, so it waits for room.
+// A NOP of 4 dwords, then a fence that kicks once; then a long write with no fence, which still runs.
 static void test_stats(void)
 {
 	XsdkGpuStats before;
@@ -35,18 +39,36 @@ static void test_stats(void)
 	xsdk_gpu_stats(&before);
 	check("gpu: stats count the dwords written and the fence's kick", counted_nop && before.kicks == after.kicks + 1);
 
-	for (uint32_t i = 0; i < FULL_RING_NOPS; i++)
-		put_nop(FULL_RING_NOP_DWORDS - 1);
+	for (uint32_t i = 0; i < LONG_WRITE_NOPS; i++)
+		put_nop(NOP_DWORDS - 1);
 	xsdk_gpu_stats(&after);
-	const uint32_t waits = after.waits - before.waits;
-	const uint32_t sleeps = after.sleeps - before.sleeps;
-	const uint32_t waited_us = (uint32_t)(after.waited_us - before.waited_us);
-	xsdk_log_write("gpu: %u dwords with no fence: %u waits for room, %u sleeps, %u us waiting",
-		(unsigned)(after.dwords - before.dwords), (unsigned)waits, (unsigned)sleeps, (unsigned)waited_us);
-	check("gpu: stats count a full ring's waits, sleeps and time",
-		after.dwords - before.dwords >= FULL_RING_NOPS * FULL_RING_NOP_DWORDS && waits >= 2 && sleeps >= 1 &&
-			waited_us > 0);
-	(void)xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS);
+	const uint32_t kicks = after.kicks - before.kicks;
+	const bool ran = NT_SUCCESS(xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS));
+	xsdk_log_write(
+		"gpu: %u dwords with no fence: %u segments", (unsigned)(after.dwords - before.dwords), (unsigned)kicks);
+	check("gpu: a long write runs in segments, before its fence",
+		after.dwords - before.dwords >= LONG_WRITE_NOPS * NOP_DWORDS &&
+			kicks >= LONG_WRITE_NOPS * NOP_DWORDS / SEGMENT_DWORDS - 1 && ran);
+}
+
+// More than the stream holds, so it wraps and reuses its blocks behind the GPU.
+static void test_stream_wrap(void)
+{
+	XsdkGpuStats before;
+	XsdkGpuStats after;
+	xsdk_gpu_stats(&before);
+	uint32_t fence = 0;
+	for (uint32_t i = 1; i <= STREAM_WRAP_NOPS; i++) {
+		put_nop(NOP_DWORDS - 1);
+		if (i % NOPS_A_FENCE == 0)
+			fence = xsdk_gpu_fence();
+	}
+	const bool ran = NT_SUCCESS(xsdk_gpu_wait(fence, FENCE_TIMEOUT_MS));
+	xsdk_gpu_stats(&after);
+	xsdk_log_write("gpu: %u dwords as the stream wraps: %u segments, %u waits, %u us waiting",
+		(unsigned)(after.dwords - before.dwords), (unsigned)(after.kicks - before.kicks),
+		(unsigned)(after.waits - before.waits), (unsigned)(after.waited_us - before.waited_us));
+	check("gpu: fences as the stream wraps", ran && after.dwords - before.dwords >= STREAM_WRAP_NOPS * NOP_DWORDS);
 }
 
 void test_gpu(void)
@@ -61,6 +83,7 @@ void test_gpu(void)
 	put_nop(1);
 	check("gpu: NOP and fence", NT_SUCCESS(xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS)));
 	test_stats();
+	test_stream_wrap();
 
 	// NOPs of different sizes, so the ring wraps at different offsets.
 	uint32_t fence = 0;

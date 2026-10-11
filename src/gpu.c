@@ -26,6 +26,20 @@ enum {
 	SET_UP_TIMEOUT_MS = 1000,
 	// A NOP with one dword after it, the smallest packet that can fill the end of the ring.
 	FILLER_DWORDS = 2,
+	// Commands go into a stream, which the ring runs a segment at a time, as libxenon does
+	// (libxenon:drivers/xenos/xe.c:21-23, 108-147).
+	STREAM_BYTES = 0x400000,
+	STREAM_DWORDS = STREAM_BYTES / 4,
+	SEGMENT_DWORDS = 1024,
+	// The stream is reused a block at a time, once the GPU is past a fence written after the block.
+	STREAM_BLOCKS = 64,
+	BLOCK_DWORDS = STREAM_DWORDS / STREAM_BLOCKS,
+	FENCE_DWORDS = 4,
+	SEGMENT_PACKET_DWORDS = 16,
+	// The CPU's cache line (libxenon:drivers/ppc/cache.S:1).
+	CACHE_LINE_BYTES = 128,
+	// A one-dword packet that does nothing (libxenon:drivers/xenos/xe.c:1217-1221).
+	TYPE2_NOP = 0x80000000,
 	RECTANGLE_FLOATS = 6,
 	// Resolve sizes kept at once, so a frame resolving at a few sizes doesn't wait for the GPU.
 	RECTANGLE_SLOTS = 8,
@@ -43,6 +57,8 @@ enum {
 	RPTR_OFFSET = 0x00,
 	FENCE_OFFSET = 0x20,
 	RECTANGLE_OFFSET = 0x40,
+	// The stream's own fences, apart from the title's.
+	BLOCK_FENCE_OFFSET = 0x200,
 };
 
 enum {
@@ -59,6 +75,16 @@ static uint32_t writeback_physical;
 static uint32_t write_index;
 static uint32_t last_fence;
 static XsdkGpuStats ring_stats;
+
+// Cached, and written out to memory before the ring runs it.
+static volatile uint32_t *stream;
+static uint32_t stream_physical;
+static uint32_t stream_write;
+// Where the part of the stream the ring hasn't been given starts.
+static uint32_t segment_start;
+static uint32_t block;
+static uint32_t block_fences[STREAM_BLOCKS];
+static uint32_t last_block_fence;
 
 typedef struct {
 	uint32_t width;
@@ -91,13 +117,15 @@ static volatile uint32_t *allocate(uint32_t size_bytes, uint32_t protect)
 
 static void free_memory(void)
 {
+	xsdk_gpu_free(stream);
 	xsdk_gpu_free(writeback);
 	xsdk_gpu_free(ring);
+	stream = NULL;
 	writeback = NULL;
 	ring = NULL;
 }
 
-// Dwords the title can write before it reaches what the GPU hasn't read.
+// Dwords the ring can take before it reaches what the GPU hasn't read.
 static uint32_t free_dwords(void)
 {
 	return (writeback[RPTR_OFFSET / 4] - write_index - 1) & (RING_DWORDS - 1);
@@ -118,6 +146,7 @@ static uint64_t now_us(void)
 	return (uint64_t)now.tv_sec * MICROSECONDS_PER_SECOND + (uint64_t)now.tv_nsec / NANOSECONDS_PER_MICROSECOND;
 }
 
+// Spins, as the GPU frees room far sooner than a 1 ms sleep returns.
 static void wait_for_room(uint32_t dword_count)
 {
 	if (free_dwords() >= dword_count)
@@ -126,10 +155,102 @@ static void wait_for_room(uint32_t dword_count)
 	ring_stats.waits++;
 	kick();
 	while (free_dwords() < dword_count) {
-		(void)xsdk_thread_sleep(1);
-		ring_stats.sleeps++;
 	}
 	ring_stats.waited_us += now_us() - start;
+}
+
+// Room in the ring itself, which runs the stream's segments and recorded buffers.
+static volatile uint32_t *ring_reserve(uint32_t dword_count)
+{
+	// Keep room at the end for a NOP, so the ring can always wrap.
+	if (write_index + dword_count > RING_DWORDS - FILLER_DWORDS) {
+		const uint32_t filler_dwords = RING_DWORDS - write_index;
+		wait_for_room(filler_dwords);
+		ring[write_index] = xsdk_gpu_type3(PM4_NOP, filler_dwords - 1);
+		write_index = 0;
+	}
+	wait_for_room(dword_count);
+	volatile uint32_t *const packets = &ring[write_index];
+	write_index += dword_count;
+	return packets;
+}
+
+// Writes the CPU's cached copy of the stream out to memory, where the GPU reads it
+// (libxenon:drivers/ppc/cache.S:22-36).
+static void flush_stream(uint32_t first, uint32_t end)
+{
+	const uintptr_t first_line = (uintptr_t)&stream[first] & ~(uintptr_t)(CACHE_LINE_BYTES - 1);
+	for (uintptr_t line = first_line; line < (uintptr_t)&stream[end]; line += CACHE_LINE_BYTES)
+		__asm__ volatile("dcbst 0, %0" : : "r"(line) : "memory");
+	__asm__ volatile("sync" ::: "memory");
+}
+
+// The ring runs the stream written since the last segment, once the vertex cache drops that memory, as libxenon's
+// does (libxenon:drivers/xenos/xe.c:83-95, 108-115).
+static void submit_segment(void)
+{
+	const uint32_t count = stream_write - segment_start;
+	if (!count)
+		return;
+	flush_stream(segment_start, stream_write);
+	const uint32_t address = stream_physical + segment_start * 4;
+	uint32_t dwords[SEGMENT_PACKET_DWORDS];
+	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = SEGMENT_PACKET_DWORDS };
+	xsdk_gpu_put_coherency(&packets, COHER_VERTEX_CACHE, address, count * 4);
+	gpu_put_type3(&packets, PM4_INDIRECT_BUFFER, 2);
+	gpu_put(&packets, address);
+	gpu_put(&packets, count);
+	volatile uint32_t *const space = ring_reserve(packets.count);
+	for (uint32_t i = 0; i < packets.count; i++)
+		space[i] = packets.dwords[i];
+	segment_start = stream_write;
+	kick();
+}
+
+static bool block_free(uint32_t index)
+{
+	return (int32_t)(writeback[BLOCK_FENCE_OFFSET / 4] - block_fences[index]) >= 0;
+}
+
+// Pads the block out, so no packet spans two.
+static void pad_block(void)
+{
+	const uint32_t left = (block + 1) * BLOCK_DWORDS - stream_write;
+	if (left == 1)
+		stream[stream_write] = TYPE2_NOP;
+	else if (left > 1)
+		stream[stream_write] = xsdk_gpu_type3(PM4_NOP, left - 1);
+	stream_write += left;
+	ring_stats.dwords += left;
+}
+
+// Moves into the stream's next block once the GPU is past what it last held, and fences the block left behind.
+static void next_block(void)
+{
+	pad_block();
+	const uint32_t left = block;
+	block = (block + 1) % STREAM_BLOCKS;
+	if (!block) {
+		submit_segment();
+		stream_write = 0;
+		segment_start = 0;
+	}
+	if (!block_free(block)) {
+		const uint64_t start = now_us();
+		ring_stats.waits++;
+		submit_segment();
+		while (!block_free(block)) {
+		}
+		ring_stats.waited_us += now_us() - start;
+	}
+	volatile uint32_t *const packet = &stream[stream_write];
+	packet[0] = xsdk_gpu_type3(PM4_EVENT_WRITE_SHD, 3);
+	packet[1] = PS_DONE_TS;
+	packet[2] = (writeback_physical + BLOCK_FENCE_OFFSET) | SWAP_8IN32;
+	packet[3] = ++last_block_fence;
+	block_fences[left] = last_block_fence;
+	stream_write += FENCE_DWORDS;
+	ring_stats.dwords += FENCE_DWORDS;
 }
 
 static uint32_t float_bits(float value)
@@ -162,15 +283,24 @@ NTSTATUS xsdk_gpu_open(void)
 	ring = allocate(RING_BYTES, PAGE_WRITECOMBINE);
 	// Uncached, so the CPU sees what the GPU writes back.
 	writeback = allocate(PAGE_BYTES, PAGE_NOCACHE);
-	if (!ring || !writeback) {
+	// Cached, as libxenon records (libxenon:drivers/xenos/xe.c:61-75, 153).
+	stream = allocate(STREAM_BYTES, 0);
+	if (!ring || !writeback || !stream) {
 		free_memory();
 		return STATUS_NO_MEMORY;
 	}
 	writeback_physical = MmGetPhysicalAddress((const void *)writeback);
 	writeback[RPTR_OFFSET / 4] = 0;
 	writeback[FENCE_OFFSET / 4] = 0;
+	writeback[BLOCK_FENCE_OFFSET / 4] = 0;
 	write_index = 0;
 	last_fence = 0;
+	stream_physical = MmGetPhysicalAddress((const void *)stream);
+	stream_write = 0;
+	segment_start = 0;
+	block = 0;
+	memset(block_fences, 0, sizeof block_fences);
+	last_block_fence = 0;
 	memset(&ring_stats, 0, sizeof ring_stats);
 	memset(rectangles, 0, sizeof rectangles);
 
@@ -203,6 +333,7 @@ NTSTATUS xsdk_gpu_close(void)
 		xsdk_log_write("gpu: the GPU didn't finish: 0x%08X; keeping it and its memory", (unsigned)status);
 		ring = NULL;
 		writeback = NULL;
+		stream = NULL;
 		return status;
 	}
 	VdShutdownEngines();
@@ -226,18 +357,14 @@ volatile uint32_t *xsdk_gpu_reserve(uint32_t dword_count)
 {
 	if (recording)
 		return reserve_recorded(dword_count);
-	assert(ring && dword_count <= RING_DWORDS - FILLER_DWORDS);
-	// Keep room at the end for a NOP, so the ring can always wrap.
-	if (write_index + dword_count > RING_DWORDS - FILLER_DWORDS) {
-		const uint32_t filler_dwords = RING_DWORDS - write_index;
-		wait_for_room(filler_dwords);
-		ring[write_index] = xsdk_gpu_type3(PM4_NOP, filler_dwords - 1);
-		write_index = 0;
-		ring_stats.dwords += filler_dwords;
-	}
-	wait_for_room(dword_count);
-	volatile uint32_t *const packets = &ring[write_index];
-	write_index += dword_count;
+	assert(stream && dword_count <= OVERFLOW_SCRATCH_DWORDS);
+	// Everything reserved before this call has been written, so it can run.
+	if (stream_write - segment_start >= SEGMENT_DWORDS)
+		submit_segment();
+	if (stream_write + dword_count > (block + 1) * BLOCK_DWORDS)
+		next_block();
+	volatile uint32_t *const packets = &stream[stream_write];
+	stream_write += dword_count;
 	ring_stats.dwords += dword_count;
 	return packets;
 }
@@ -299,7 +426,7 @@ uint32_t xsdk_gpu_fence(void)
 	packet[2] = (writeback_physical + FENCE_OFFSET) | SWAP_8IN32;
 	packet[3] = fence;
 	last_fence = fence;
-	kick();
+	submit_segment();
 	return fence;
 }
 
@@ -374,7 +501,10 @@ void xsdk_gpu_execute(const XsdkCommandBuffer *buffer)
 	assert(!recording);
 	if (!buffer->count)
 		return;
-	volatile uint32_t *const packet = xsdk_gpu_reserve(3);
+	// From the ring, after what the stream holds: the console hasn't run a buffer from inside another
+	// (docs/HARDWARE.md).
+	submit_segment();
+	volatile uint32_t *const packet = ring_reserve(3);
 	packet[0] = xsdk_gpu_type3(PM4_INDIRECT_BUFFER, 2);
 	packet[1] = buffer->address;
 	packet[2] = buffer->count;

@@ -49,13 +49,13 @@ NTSTATUS xsdk_gpu_wait(uint32_t fence, uint32_t timeout_ms);
 // Whether the GPU has passed the fence, without waiting; safe in the graphics interrupt callback.
 bool xsdk_gpu_fence_done(uint32_t fence);
 
-// What the ring has done since xsdk_gpu_open, to measure a title by.
+// What the GPU layer has sent since xsdk_gpu_open, to measure a title by.
 typedef struct {
+	// Written into the command stream, which the ring runs a segment at a time.
 	uint64_t dwords;
 	uint32_t kicks;
-	// Reserves that found the ring full, the 1 ms sleeps they took, and how long they waited.
+	// Times the CPU found the ring or the stream's next block still in use, and how long it waited.
 	uint32_t waits;
-	uint32_t sleeps;
 	uint64_t waited_us;
 } XsdkGpuStats;
 
