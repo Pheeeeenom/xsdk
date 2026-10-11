@@ -520,6 +520,27 @@ waited for room in the ring.
     - `draws_4000` is recorded, with the counters showing where its time goes;
     - xsdk_test and vulkan4xenon_test pass in full, and vkbench's two backends still draw the same pictures.
 
+### Memory copies, after milestone 19
+
+Agreed on 2026-10-11, after milestone 19's probes timed the CPU's writes on the console (docs/HARDWARE.md).
+
+**Why.** newlib's `memcpy` wrote 1 MB into write-combined memory at 185 MB/s, where volatile 32-bit stores in order
+wrote it at 3603 MB/s. As the toolchain builds it, its loop copies 16 bytes with four 32-bit loads and stores, the
+stores scheduled out of order, and it copies data that isn't 4-byte aligned a byte at a time. Vertex streams and the
+GPU layer's uploads go through it into write-combined memory, and so do Vulkan apps filling mapped memory.
+
+20. **Memory copies.** In two steps, each run on the console:
+    1. **Probe.** vkbench times 1 MB copied into write-combined memory with newlib's `memcpy`, in-order 32-bit stores,
+       aligned 64-bit stores and VMX 128-bit stores, and between cached buffers with VMX and `dcbt`.
+    2. **The SDK's own `memcpy` and `memmove`,** which titles link ahead of newlib's: stores in order, in the width step
+       1 found fastest, and unaligned copies without a byte loop. No `dcbz`, which works only in cached memory, so they
+       are safe on any memory.
+
+    Done when, on the console:
+    - `memcpy` writes write-combined memory at 3 GB/s or more;
+    - vkbench's `stream_8000` draw time falls to match, from 5.5 ms;
+    - xsdk_test, vulkan4xenon_test and vkbench pass in full.
+
 ## 5. Questions for the user first
 
 1. **The GCC:** its version (C++23 needs 13 or later for most of it), target triple, ABI and code model, its C
