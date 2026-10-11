@@ -1469,3 +1469,20 @@ write-combined stream.
 - **The first frame never finished.** Its segments started wherever the one before ended, at any dword. libxenon starts
   each of its segments on a 128-byte line (libxenon:drivers/xenos/xe.c:123), and milestone 18's buffers were
   page-aligned. So the stream now starts each segment on a 128-byte line; the next run tells whether that was all.
+
+## Segments on 128-byte lines run, and the waiting is gone (2026-10-11)
+
+vkbench at xsdk `b5933a0` (log and CSVs: `results/2026-10-11-milestone-19-stream-3/`). All 14 checks passed, both
+backends drew the same picture in every scene, and the console went back to Aurora. The only change from the run that
+hung was each stream segment starting on a 128-byte line, so that was the cause.
+
+- **No waits:** in every scene, the ring and the stream never made the CPU wait. `draws_4000` ran 602.6 segments a
+  frame, 156.4 dwords a cube.
+- **Draw and submit, median, against the first run** (vulkan4xenon:results/2026-10-11-milestone-5/vkbench_run1.log):
+  - xsdk `draws_1000` 1,213 us, from 37,590, so 1.21 us a cube; `draws_4000` 4,836 us, from 151,190; `states_1000`
+    2,167 us, from 55,496;
+  - vulkan4xenon `draws_1000` 2,867 us, from 47,515; `draws_4000` 11,703 us, from 195,871.
+- **The GPU still finished 0.3 ms after the submit** in the cube scenes, and the GPU-bound scenes kept their times.
+- **Reading uniform buffers is now the largest cost through vulkan4xenon:** `uniforms_1000` took 6,852 us against
+  `draws_1000`'s 2,867, 4.0 us a draw for its two blocks read from mapped write-combined memory at submit. The first
+  run measured 1.0 us.
