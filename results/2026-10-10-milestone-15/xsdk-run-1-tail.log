@@ -1,0 +1,51 @@
+display: 1280x720 scaled to the 1920x1080 output
+PASS: raster: display open at 1280x720
+PASS: raster: shaders load
+PASS: raster: vertex fetch patched for a float4 position
+PASS: raster: vertex and front buffers
+display: the line counter reached 720 after 24853 us
+raster: 25 points a frame; 0 of 59 frames checked held a wrong one, 0 points wrong
+PASS: raster: every frame's fence landed
+PASS: raster: blends, write mask, culling, scissor, viewport and depth bias as worked out
+PASS: raster: every frame shown
+raster: the last frame stays on screen for 5000 ms for a capture
+PASS: raster: GPU close
+PASS: sampling: GPU open
+display: 1280x720 scaled to the 1920x1080 output
+PASS: sampling: display open at 1280x720
+PASS: sampling: shaders load
+PASS: sampling: vertex fetches patched for a float4 position and float2 coordinates
+PASS: sampling: textures made with their levels
+PASS: sampling: vertex and front buffers
+display: the line counter reached 720 after 21860 us
+sampling: frame 1: 16x16 level 1 at (68, 470) held FF202020, not E020E0FF
+sampling: frame 1: 16x16 level 1 at (75, 470) held FF202020, not E020E7FF
+sampling: frame 1: 16x16 level 1 at (68, 477) held FF202020, not E027E0FF
+sampling: frame 1: 16x16 level 1 at (75, 477) held FF202020, not E027E7FF
+sampling: frame 1: 16x16 level 1 at (71, 473) held FF202020, not E023E3FF
+sampling: frame 1: 16x16 level 1 at (69, 471) held FF202020, not E021E1FF
+sampling: frame 1: 16x16 level 1 at (73, 471) held FF202020, not E021E5FF
+sampling: frame 1: 16x16 level 1 at (69, 475) held FF202020, not E025E1FF
+sampling: frame 59: 16x16 level 1 at (68, 470) held FF202020, not E020E0FF
+sampling: frame 59: 16x16 level 1 at (69, 470) held FF202020, not E020E1FF
+sampling: frame 59: 16x16 level 1 at (70, 470) held FF202020, not E020E2FF
+sampling: frame 59: 16x16 level 1 at (71, 470) held FF202020, not E020E3FF
+sampling: frame 59: 16x16 level 1 at (72, 470) held FF202020, not E020E4FF
+sampling: frame 59: 16x16 level 1 at (73, 470) held FF202020, not E020E5FF
+sampling: frame 59: 16x16 level 1 at (74, 470) held FF202020, not E020E6FF
+sampling: frame 59: 16x16 level 1 at (75, 470) held FF202020, not E020E7FF
+sampling: 16x16 level 1: 64 of 100 pixels wrong
+sampling: 16x16 level 2: 16 of 36 pixels wrong
+sampling: 16x16 level 3: 4 of 16 pixels wrong
+sampling: 16x16 level 4: 1 of 9 pixels wrong
+sampling: 40 cells, 400 points a frame; 59 of 59 frames checked held a wrong one, 2124 points wrong
+sampling: the last frame had 85 of 219024 pixels wrong across the cells and their edges
+PASS: sampling: every frame's fence landed
+FAIL: sampling: every level of square, wide, tall and packed-base textures, one texel to a pixel
+PASS: sampling: magnification, minification and mip filters as worked out
+PASS: sampling: wrap, mirror and clamp as worked out
+PASS: sampling: every frame shown
+sampling: the last frame stays on screen for 5000 ms for a capture
+PASS: sampling: GPU close
+tests: 163 passed, 1 failed
+exit: status 1
