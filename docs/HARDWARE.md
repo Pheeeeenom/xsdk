@@ -1102,3 +1102,19 @@ showed the SDK's constant split read back as set and no checked frame wrong, but
   change, each packet aligned as libxenon aligns it.
 - **The boolean and loop results are the first hardware proof** of those xost encodings: its feature notes list
   boolean constants as unproven (xenos-toolchain/docs/feature-tests.md).
+
+## Shader constants, milestone 11 (2026-10-10)
+
+`build/xsdk_test.xex` ran with the SDK writing constants in whole aligned blocks (log:
+`results/2026-10-10-milestone-11-2/xsdk.log`, with the xbWatson lines from the launch and the user's capture). All 124
+checks passed, and the console went back to Aurora.
+
+- **test_constants passed:** 6 quads in each of 60 frames, each placed and coloured only by its constants. Every
+  checked point was right in all 59 checked frames: the centre and 4 points inside each quad, and 2 outside.
+- **Each quad's centre in the capture matches its colour** within a few units of the capture's conversion: BA0201 for
+  C00000, 02BE01 for 00C000, 42FD03 for 40FF00 (the boolean), 3F3F3F for 404040 (one loop pass), 0001B9 for 0000C0
+  (three), FA817F for FF8080 (all of them). The background reads 202020.
+- **The vertex/pixel constant split read XAM's 0x000FF000 and 0x000FF100** before the test and the same after.
+
+With that, milestone 11 is done. Titles set float, boolean and loop constants per draw. Each kind drives a quad on
+the console, read back by pixel and seen on a capture, and the test fails when any kind is written wrong.

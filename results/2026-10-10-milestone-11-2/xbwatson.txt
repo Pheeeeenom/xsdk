@@ -1,0 +1,5 @@
+xbWatson: Connection to Xbox successful
+xbWatson: Xbox is restarting
+
+Execution Thread Found.  Information has been removed
+MultiDiscEngineProcess: info TitleId 00000000 does not match current TitleId 5853444b, disabling
