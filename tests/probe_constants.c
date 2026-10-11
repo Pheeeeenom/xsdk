@@ -129,8 +129,6 @@ static const Step steps[] = {
 		WRITES_FLOATS_4, true, false, 0, true, MULTI_FRAMES, 0 },
 	{ "six quads, float constants in groups of 4 through SET_CONSTANT", SHADER(constant_vertex_shader),
 		SHADER(constant_pixel_shader), WRITES_SET_CONSTANT_4, true, false, 0, true, MULTI_FRAMES, 0 },
-	{ "six quads, float constants one at a time", SHADER(constant_vertex_shader), SHADER(constant_pixel_shader),
-		WRITES_FLOATS_1, true, false, 0, true, MULTI_FRAMES, 0 },
 	{ "six quads, float constants one at a time through SET_CONSTANT", SHADER(constant_vertex_shader),
 		SHADER(constant_pixel_shader), WRITES_SET_CONSTANT_1, true, false, 0, true, MULTI_FRAMES, 0 },
 	{ "six quads, float constants in groups of 3", SHADER(constant_vertex_shader), SHADER(constant_pixel_shader),

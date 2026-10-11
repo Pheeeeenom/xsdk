@@ -247,8 +247,8 @@ void xsdk_gpu_set_scissor(uint32_t x, uint32_t y, uint32_t width, uint32_t heigh
 // Maps clip space to that rectangle in pixels and depth to min_depth..max_depth; xsdk_gpu_set_target covers the target.
 void xsdk_gpu_set_viewport(float x, float y, float width, float height, float min_depth, float max_depth);
 
-// Shader constants for the draws after, written from a copy in whole blocks: partial writes hung the GPU
-// (docs/HARDWARE.md).
+// Shader constants for the draws after, written from a copy: float constants in whole groups of 4, the boolean and
+// loop words all together, as lone ones hung the GPU (docs/HARDWARE.md).
 enum {
 	// Four floats each; each stage reads its own 256.
 	XSDK_FLOAT_CONSTANTS = 256,

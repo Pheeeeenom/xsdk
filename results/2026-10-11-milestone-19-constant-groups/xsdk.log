@@ -1,0 +1,22 @@
+log: game:\xsdk.log
+constants probe
+constants probe: XAM had SQ_VS_CONST 000FF000, SQ_PS_CONST 000FF100
+constants probe: GPU 0x00000000; SQ_VS_CONST 000FF000, SQ_PS_CONST 000FF100
+constants probe: step 1, no constants: 1 frames landed, 0 centres wrong (first 00000000), last centre 008080FF
+constants probe: step 2, vertex shader reads c2: 1 frames landed, 0 centres wrong (first 00000000), last centre 0000C0FF
+constants probe: step 3, vertex shader mad with c0 and c1: 1 frames landed, 0 centres wrong (first 00000000), last centre 0000C0FF
+constants probe: step 4, pixel shader reads c0: 1 frames landed, 0 centres wrong (first 00000000), last centre 00C0C0FF
+constants probe: step 5, cexec b128 with the boolean clear: 1 frames landed, 0 centres wrong (first 00000000), last centre 00C0C0FF
+constants probe: step 6, cexec b128 with the boolean set: 1 frames landed, 0 centres wrong (first 00000000), last centre 00FFC0FF
+constants probe: step 7, loop i0, 0 passes: 1 frames landed, 0 centres wrong (first 00000000), last centre 00C0C0FF
+constants probe: step 8, loop i0, 1 pass: 1 frames landed, 0 centres wrong (first 00000000), last centre 40C0C0FF
+constants probe: step 9, loop i0, 3 passes: 1 frames landed, 0 centres wrong (first 00000000), last centre C0C0C0FF
+constants probe: step 10, six quads, libxenon's writes: 30 frames landed, 0 centres wrong (first 00000000), last centre 8080FFFF
+constants probe: step 11, six quads, the SDK's writes: 30 frames landed, 0 centres wrong (first 00000000), last centre 8080FFFF
+constants probe: step 12, six quads, float constants in groups of 4: 30 frames landed, 0 centres wrong (first 00000000), last centre 8080FFFF
+constants probe: step 13, six quads, float constants in groups of 4 through SET_CONSTANT: 30 frames landed, 0 centres wrong (first 00000000), last centre 8080FFFF
+constants probe: step 14, six quads, float constants one at a time: frame 0's fence didn't land: 0xC00000B5
+constants probe: after the hang: 0x07D8 20007FFF (bit 28: halted), 0x1740 8A254700 (bit 31: busy)
+constants probe: after the hang: ring base 1FC40000, control 0002060C, read pointer write-back 1FC30002, read 00001017, write 00001017
+gpu: the GPU didn't finish: 0xC00000B5; keeping it and its memory
+exit: status 1

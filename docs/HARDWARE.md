@@ -1536,3 +1536,19 @@ tails the user sent for the two test titles):
 
 With that, milestone 20 is done: `memcpy` writes write-combined memory at 5.6 GB/s from the cache, `stream_8000` fell
 to match, and every test passes.
+
+## Float constants go in groups of 4 (2026-10-11)
+
+`build/probe_constants.xex`, with the steps added at `af68195` (log:
+`results/2026-10-11-milestone-19-constant-groups/xsdk.log`), for milestone 19's third step. Its first 11 steps
+passed as before. Then test_constants's six quads, each stage's c0 to c2 written per draw and the integers kept one
+whole block, for 30 frames each:
+
+- **In groups of 4, from c0:** every frame landed and every centre was right, as aligned type-0 packets and through
+  `SET_CONSTANT` with its values aligned the same way.
+- **One constant at a time** hung on the first frame, each packet aligned. The command processor had read everything
+  (read pointer = write pointer = 0x1017) and `RBBM_STATUS` read busy, as in milestone 11's hang. So the lone float
+  constants, at least, hung that run; whether its lone boolean and loop words would too isn't shown.
+- **One at a time through `SET_CONSTANT`, and groups of 3,** didn't run after the hang.
+
+So the SDK writes float constants in groups of 4, from a multiple of 4, rather than libxenon's 16.

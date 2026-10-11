@@ -6,11 +6,11 @@
 
 #include "gpu_private.h"
 
-// Constants written as libxenon writes them; three float constants and lone boolean and loop words hung the GPU.
+// Constants in aligned whole groups, as the console takes them: a lone float constant hung the GPU (docs/HARDWARE.md).
 enum {
-	// libxenon uploads float constants 16 at a time (libxenon:drivers/xenos/xe.c:1320-1331).
-	FLOAT_BLOCK = 16,
-	FLOAT_BLOCK_DWORDS = FLOAT_BLOCK * 4,
+	// Groups of 4 float constants, from a multiple of 4, ran on the console; libxenon writes 16 (xe.c:1320-1331).
+	FLOAT_GROUP = 4,
+	FLOAT_GROUP_DWORDS = FLOAT_GROUP * 4,
 	// And the 8 boolean words and 32 loop constants as one block from 0x4900 (xe.c:1365-1369).
 	INTEGER_DWORDS = XSDK_BOOL_CONSTANT_WORDS + XSDK_LOOP_CONSTANTS,
 	// A one-dword packet that does nothing, which libxenon pads with (xe.c:1217-1221).
@@ -37,15 +37,15 @@ static void put_aligned(uint32_t first_register, const uint32_t *values, uint32_
 		packet[i++] = TYPE2_NOP;
 }
 
-// Copies the floats in, then writes every whole block they touch.
+// Copies the floats in, then writes every whole group they touch.
 static void set_floats(uint32_t stage, uint32_t first_register, uint32_t first, const float *values, uint32_t count)
 {
 	assert(count && first + count <= XSDK_FLOAT_CONSTANTS);
 	memcpy(&float_constants[stage][first * 4], values, count * 4 * sizeof(float));
-	const uint32_t first_block = first / FLOAT_BLOCK;
-	const uint32_t blocks = (first + count - 1) / FLOAT_BLOCK - first_block + 1;
-	put_aligned(first_register + first_block * FLOAT_BLOCK_DWORDS,
-		&float_constants[stage][first_block * FLOAT_BLOCK_DWORDS], blocks * FLOAT_BLOCK_DWORDS);
+	const uint32_t first_group = first / FLOAT_GROUP;
+	const uint32_t groups = (first + count - 1) / FLOAT_GROUP - first_group + 1;
+	put_aligned(first_register + first_group * FLOAT_GROUP_DWORDS,
+		&float_constants[stage][first_group * FLOAT_GROUP_DWORDS], groups * FLOAT_GROUP_DWORDS);
 }
 
 void xsdk_gpu_set_vertex_constants(uint32_t first, const float *values, uint32_t count)
