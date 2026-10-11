@@ -1321,3 +1321,30 @@ screenshot of the last frame). All 183 checks passed, and the console went back 
 - **The screenshot shows each cell's four squares,** the formats without blue and alpha in reds and greens.
 
 With that, milestone 17 is done.
+
+## Recorded command buffers, milestone 18 (2026-10-11)
+
+`build/xsdk_test.xex` ran with `test_replay` (log: `results/2026-10-11-milestone-18/xsdk.log`). All 193 checks
+passed, and the console went back to Aurora.
+
+- **The GPU ran packets from memory with `PM4_INDIRECT_BUFFER`,** two dwords after the header: the buffer's GPU
+  address, then its length in dwords, as Xenia reads them (xenia:src/xenia/gpu/command_processor.cc:943-953).
+- **The recordings:**
+  - **A background of 86 dwords:** the target, the shaders, stream 0 and a draw of four squares, recorded once.
+  - **A bar of 6 dwords:** one draw, recorded once.
+- **Each of 120 frames ran the background once and the bar twice.** Before each bar, the ring pointed stream 0 at a
+  different moving bar.
+  - So one buffer ran more than once in a frame, and several ran in a frame.
+  - State set on the ring between runs carried into the recorded draws.
+- **Every frame came back with both bars where its frame put them, and all four squares.** None of the reused buffers
+  held the wrong frame.
+- **Milestone 9's checks held through the present path,** with 2 buffers flipping every vblank. The 120 frames took
+  120 flips over 120 vblanks, with none missed and none late, and the longest wait was 17,948 us.
+- **The recordings' padded constant writes still aligned,** as the buffers are page-aligned like the ring.
+- **A recording that outgrew its 4-dword buffer** failed with `STATUS_BUFFER_TOO_SMALL` and left the buffer empty.
+- **Not covered:**
+  - running a buffer from inside another;
+  - `PM4_INDIRECT_BUFFER_PFD`;
+  - buffers large enough to take long to run.
+
+With that, milestone 18 is done, and so are all of milestones 11 to 18.
