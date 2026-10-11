@@ -70,15 +70,26 @@ void xsdk_gpu_record_begin(XsdkCommandBuffer *buffer);
 NTSTATUS xsdk_gpu_record_end(void);
 // Queues the recorded packets from the ring, constant blocks as recorded; keep the buffer until a later fence.
 void xsdk_gpu_execute(const XsdkCommandBuffer *buffer);
-// Queues copying the eDRAM colour target to address as tiled k_8_8_8_8, then clearing it; width a multiple of 32.
+// Queues copying the eDRAM colour target to address as tiled k_8_8_8_8, then clearing eDRAM; width a multiple of 32.
 void xsdk_gpu_resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t clear_argb);
 // The bytes such a resolve writes, in whole 32-row tiles (xenia:src/xenia/gpu/draw_util.cc:1055-1062).
 uint32_t xsdk_gpu_resolve_bytes(uint32_t width, uint32_t height);
-// Queues the same into a tiled texture, drawn at its size, leaving ARGB words as xsdk_texture_upload does.
+// Queues the same into a tiled 32-bit RGBA texture drawn at its size, its whole pitch, leaving its upload's layout.
 void xsdk_gpu_resolve_texture(const XsdkTexture *texture, uint32_t clear_argb);
+// Which of colour, and depth with stencil, the later resolves clear after copying; both until set.
+void xsdk_gpu_set_resolve_clears(bool color, bool depth_stencil);
+
+enum {
+	// eDRAM's tiles of 80x16 pixels at 32 bits (xenia:src/xenia/gpu/xenos.h:414-416).
+	XSDK_EDRAM_TILES = 2048,
+};
 
 // Sets the eDRAM colour target and a viewport, no depth, blending or culling (libxenon); a resolve undoes it.
 void xsdk_gpu_set_target(uint32_t width, uint32_t height);
+// The same with colour from eDRAM tile color_tile and depth from depth_tile, not depth then colour; resolves keep it.
+void xsdk_gpu_set_target_at(uint32_t width, uint32_t height, uint32_t color_tile, uint32_t depth_tile);
+// The eDRAM tiles a target this size takes for its colour, and as many again for its depth.
+uint32_t xsdk_gpu_target_tiles(uint32_t width, uint32_t height);
 // Loads both shaders with IM_LOAD and sets the program registers; a resolve replaces the vertex shader.
 void xsdk_gpu_set_shaders(const XsdkShader *vertex, const XsdkShader *pixel);
 // Points a vertex stream at vertices from xsdk_gpu_alloc; streams 0-2 share texture slot 31's group, 3-5 slot 30's.

@@ -43,7 +43,6 @@ enum {
 	// eDRAM tiles without multisampling (xenia:src/xenia/gpu/xenos.h:414-416).
 	TILE_WIDTH = 80,
 	TILE_HEIGHT = 16,
-	EDRAM_TILES = 2048,
 	EDRAM_MODE_COLOR_DEPTH = 4,
 	// libxenon's control state from RB_DEPTHCONTROL on, less depth and culling (xe.c:1403-1416).
 	BLEND_ONE_ZERO = 0x00010001,
@@ -109,19 +108,36 @@ static uint32_t float_bits(float value)
 	return bits;
 }
 
-// Xe_SetRenderTarget's layout: depth then colour, as many tiles each, an even number across (xe.c:998-1036).
+// Where xsdk_gpu_set_target_at put the target's colour and depth, in eDRAM tiles.
+static bool target_placed;
+static uint32_t placed_color_tile;
+static uint32_t placed_depth_tile;
+
+// An even number of tiles across (xe.c:998-1036).
+static uint32_t tiles_across(uint32_t width)
+{
+	return ((width + TILE_WIDTH - 1) / TILE_WIDTH + 1) & ~1u;
+}
+
+uint32_t xsdk_gpu_target_tiles(uint32_t width, uint32_t height)
+{
+	return tiles_across(width) * ((height + TILE_HEIGHT - 1) / TILE_HEIGHT);
+}
+
+// Xe_SetRenderTarget's layout unless placed: depth then colour, as many tiles each (xe.c:998-1036).
 void xsdk_gpu_put_surface(GpuPackets *packets, uint32_t width, uint32_t height)
 {
-	const uint32_t tiles_across = ((width + TILE_WIDTH - 1) / TILE_WIDTH + 1) & ~1u;
-	const uint32_t target_tiles = tiles_across * ((height + TILE_HEIGHT - 1) / TILE_HEIGHT);
-	assert(2 * target_tiles <= EDRAM_TILES);
-	const uint32_t edram_pitch = tiles_across * TILE_WIDTH;
-	const uint32_t surface[] = { edram_pitch | edram_pitch << 18, target_tiles, 0 };
+	const uint32_t target_tiles = xsdk_gpu_target_tiles(width, height);
+	const uint32_t color_tile = target_placed ? placed_color_tile : target_tiles;
+	const uint32_t depth_tile = target_placed ? placed_depth_tile : 0;
+	assert(color_tile + target_tiles <= XSDK_EDRAM_TILES && depth_tile + target_tiles <= XSDK_EDRAM_TILES);
+	const uint32_t edram_pitch = tiles_across(width) * TILE_WIDTH;
+	const uint32_t surface[] = { edram_pitch | edram_pitch << 18, color_tile, depth_tile };
 	gpu_put_registers(packets, RB_SURFACE_INFO, surface, 3);
 }
 
 // Xe_pSetState's control and miscellaneous state (xe.c:1688-1744).
-void xsdk_gpu_set_target(uint32_t width, uint32_t height)
+static void put_target(uint32_t width, uint32_t height)
 {
 	const uint32_t control[] = { 0, BLEND_ONE_ZERO, COLOR_CONTROL, 0, CLIP_D3D_SPACE, SC_MODE_WINDOW_OFFSET_NO_CULL,
 		VTE_VIEWPORT_AND_W0, 0, EDRAM_MODE_COLOR_DEPTH };
@@ -144,6 +160,21 @@ void xsdk_gpu_set_target(uint32_t width, uint32_t height)
 	gpu_put_register(&packets, PA_SC_AA_CONFIG, 0);
 	gpu_put_register(&packets, PA_SC_AA_MASK, 0xFFFF);
 	xsdk_gpu_write(&packets);
+}
+
+void xsdk_gpu_set_target(uint32_t width, uint32_t height)
+{
+	target_placed = false;
+	put_target(width, height);
+}
+
+// A base is any tile: Xenia adds it to each pixel's tile, wrapping (xenia:src/xenia/gpu/draw_util.cc:1111-1138).
+void xsdk_gpu_set_target_at(uint32_t width, uint32_t height, uint32_t color_tile, uint32_t depth_tile)
+{
+	target_placed = true;
+	placed_color_tile = color_tile;
+	placed_depth_tile = depth_tile;
+	put_target(width, height);
 }
 
 // IM_LOAD takes address | type, then the size in dwords (xenia:src/xenia/gpu/command_processor.cc:1535-1539).

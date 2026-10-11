@@ -48,9 +48,15 @@ enum {
 	VTX_WINDOW_OFFSET_ENABLE = 1 << 16,
 	VTE_XY_Z_ALREADY_TRANSFORMED = 0x300,
 	EDRAM_MODE_COPY = 6,
-	// Copy colour, clear colour and depth, k_8_8_8_8 with the swap bit (xe.c:1104-1108).
-	COPY_CONTROL_CLEAR_COLOR_DEPTH = 1 << 20 | 3 << 8,
-	COPY_DEST_INFO_8888_SWAP = 1 << 24 | 6 << 7,
+	// Copy colour into k_8_8_8_8, then clear colour or depth (xe.c:1104-1108).
+	COPY_CONTROL_CONVERT = 1 << 20,
+	COPY_DEST_INFO_8888 = 6 << 7,
+	// RB_COPY_CONTROL's clears (xenia:src/xenia/gpu/registers.h:860-861).
+	COPY_CONTROL_COLOR_CLEAR = 1 << 8,
+	COPY_CONTROL_DEPTH_CLEAR = 1 << 9,
+	// Swaps red and blue (xenia:src/xenia/gpu/shaders/resolve.xesli:768-795).
+	COPY_DEST_SWAP = 1 << 24,
+	COPY_DEST_INFO_8888_SWAP = COPY_DEST_INFO_8888 | COPY_DEST_SWAP,
 	// libxenon's ARGB surfaces also swap each dword's bytes, its BGRA front buffer not (xe.c:968, 1104-1108; xe.h:181).
 	COPY_DEST_ENDIAN_8IN32 = 2,
 	// The depth above the stencil, as an eDRAM sample holds them
@@ -85,6 +91,7 @@ static const uint32_t resolve_vertex_shader[] = {
 };
 
 static uint32_t depth_clear = DEPTH_CLEAR_FAR;
+static uint32_t clears = COPY_CONTROL_COLOR_CLEAR | COPY_CONTROL_DEPTH_CLEAR;
 
 // RB_COLOR_CLEAR wants the packed colour, red low (xenia:src/xenia/gpu/shaders/pixel_formats.xesli:113-116).
 static uint32_t packed_8888(uint32_t argb)
@@ -109,7 +116,7 @@ static void resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t 
 	assert(width % 32 == 0);
 	const uint32_t vertices = xsdk_gpu_rectangle(width, height);
 	const uint32_t viewport[] = { 0x44000000, 0x44000000, 0xC3B40000, 0x43B40000, 0x3F800000, 0 };
-	const uint32_t copy[] = { COPY_CONTROL_CLEAR_COLOR_DEPTH, address, pitch | height << 16, dest_info };
+	const uint32_t copy[] = { COPY_CONTROL_CONVERT | clears, address, pitch | height << 16, dest_info };
 	const uint32_t program[] = { PROGRAM_CNTL_RESOLVE, 0 };
 	const uint32_t indices[] = { 0xFFFF, 0, 0 };
 	const uint32_t clip[] = { CLIP_DISABLE, VTX_WINDOW_OFFSET_ENABLE, VTE_XY_Z_ALREADY_TRANSFORMED };
@@ -173,12 +180,32 @@ void xsdk_gpu_resolve(uint32_t address, uint32_t width, uint32_t height, uint32_
 	resolve(address, width, height, width, COPY_DEST_INFO_8888_SWAP, xsdk_gpu_resolve_bytes(width, height), clear_argb);
 }
 
+void xsdk_gpu_set_resolve_clears(bool color, bool depth_stencil)
+{
+	clears = (color ? COPY_CONTROL_COLOR_CLEAR : 0) | (depth_stencil ? COPY_CONTROL_DEPTH_CLEAR : 0);
+}
+
+// eDRAM packs red low, so the byte-order formats copy as they are, or with red and blue swapped.
+static uint32_t texture_dest_info(uint32_t format)
+{
+	switch (format) {
+	case XSDK_FORMAT_A8R8G8B8:
+		return COPY_DEST_INFO_8888_SWAP | COPY_DEST_ENDIAN_8IN32;
+	case XSDK_FORMAT_B8G8R8A8:
+		return COPY_DEST_INFO_8888_SWAP;
+	default:
+		assert(format == XSDK_FORMAT_R8G8B8A8);
+		return COPY_DEST_INFO_8888;
+	}
+}
+
 void xsdk_gpu_resolve_texture(const XsdkTexture *texture, uint32_t clear_argb)
 {
 	// Xenia lays out a resolve's destination only as tiled (xenia:src/xenia/gpu/draw_util.cc:1035-1061).
-	assert(texture->tiled && texture->format == XSDK_FORMAT_A8R8G8B8);
+	assert(texture->tiled);
 	// A resolve writes from the corner, so the base can't sit inside the packed tail.
 	assert(xsdk_texture_packed_level(texture->width, texture->height) > 0);
-	resolve(texture->address, texture->width, texture->height, texture->pitch,
-		COPY_DEST_INFO_8888_SWAP | COPY_DEST_ENDIAN_8IN32, texture->size_bytes, clear_argb);
+	// The pitch is whole tiles of 32 texels, as a resolve's width must be.
+	resolve(texture->address, texture->pitch, texture->height, texture->pitch, texture_dest_info(texture->format),
+		texture->size_bytes, clear_argb);
 }
