@@ -21,8 +21,10 @@ typedef struct {
 	uint32_t flips;
 	// Vblanks where a frame was due and none had finished, so the last one showed again.
 	uint32_t missed;
-	// Flips whose writes ran past the end of vblank, where they could tear.
+	// Flips whose writes ran past the end of vblank, where they could tear, and the first one's vblank and line.
 	uint32_t late;
+	uint32_t first_late_vblank;
+	uint32_t first_late_line;
 	uint32_t first_flip_vblank;
 	uint32_t last_flip_vblank;
 	// The longest xsdk_present_begin waited for a front buffer to come off screen.

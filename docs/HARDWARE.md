@@ -991,3 +991,25 @@ lines from the launch, a cropped capture of the purple variant and a full-frame 
 - **Neither of the display's own checks can see the scaled image.** The M56 guide places `DCP_CRC_*` (0x6C80-0x6C94)
   on the data going into the line buffer, before the scaler, and calls `D1CRTC_PIXEL_DATA_READBACK` (0x6078) a debug
   register for one-shot clocking. A test of the scaled output needs a capture.
+
+## 720p in the test title: one late flip at the first vblank (2026-10-10)
+
+`build/xsdk_test.xex` ran with every GPU test at 1280x720 on the display's scaler, and the new scale test (log:
+`results/2026-10-10-720p/xsdk.log`, with the xbWatson lines from the launch). 108 checks passed and 3 failed.
+
+- **The 1280x720 front buffers work.** The present, triangle, texture and render tests passed every check, with 0
+  wrong pixels in the texture and render tests and 258720 pixels drawn for a triangle of 259200.
+- **The scaler took the SDK's settings and gave the kernel's back.** With the update lock at bit 16, the scale test read
+  back tap control 0x101, the built-in filter bit in both filter controls, and the output's scale factors and phases
+  100 ms after showing, then the kernel's values 100 ms after closing. 0x652C, which libxenon names
+  `AVIVO_D1MODE_DESKTOP_HEIGHT`, read 1080.
+- **The 3 failures were one late flip each, in the three pacing modes whose first flip came at vblank 1.** The mode
+  whose first flip came at vblank 2 had none, and every mode missed no vblank and flipped every swap interval. At
+  640x480 a first flip at vblank 1 wasn't late (`results/2026-10-10-milestone-9/xsdk.log`).
+- **Why isn't shown.** The late check compares 0x6530, the line counter, with the front buffer's height. The counter
+  runs in viewport lines: under the kernel's 480-line viewport its two calls a frame came 28 lines and 930 us apart,
+  63 lines of the 1080p output ("The vblank callback, flips and giving the callback back"), so it stays below about
+  500 there (1125 output lines times 480/1080). The SDK switches the scaler to 720 lines just before pacing starts. If
+  the switch hadn't taken by the first vblank, the counter would still read on the old scale, under 720, and the flip
+  would count as late whether or not it tore. So the first 1280x720 show now waits until the counter passes 720 and
+  logs how long that took, and a late flip records its vblank and line.

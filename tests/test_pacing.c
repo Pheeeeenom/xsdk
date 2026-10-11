@@ -83,6 +83,9 @@ static void run_mode(const Mode *mode)
 		mode->name, (unsigned)presented, (unsigned)stats.flips, (unsigned)stats.vblanks,
 		(unsigned)stats.first_flip_vblank, (unsigned)stats.last_flip_vblank, (unsigned)stats.missed,
 		(unsigned)stats.late, (unsigned)stats.longest_wait_us);
+	if (stats.late)
+		xsdk_log_write("pacing: %s: the first late flip came at vblank %u, line %u", mode->name,
+			(unsigned)stats.first_late_vblank, (unsigned)stats.first_late_line);
 	check_mode(mode, "every frame shown", presented == FRAMES && stats.flips == FRAMES);
 	check_mode(mode, "no vblank missed", stats.flips == FRAMES && stats.missed == 0);
 	check_mode(mode, "a flip every swap interval",

@@ -43,17 +43,13 @@ typedef struct {
 	volatile uint32_t vblanks;
 	volatile uint32_t missed;
 	volatile uint32_t late;
+	volatile uint32_t first_late_vblank;
+	volatile uint32_t first_late_line;
 	volatile uint32_t first_flip_vblank;
 	volatile uint32_t last_flip_vblank;
 } Present;
 
 static Present present;
-
-// From the mode's last line on, the display is in vblank.
-static bool in_vblank(void)
-{
-	return gpu_registers[R500_D1MODE_V_COUNTER] >= present.height;
-}
 
 // Runs in the kernel's interrupt handling, twice a frame; it only reads registers, flips and counts.
 static void on_interrupt(uint32_t source, void *context)
@@ -75,8 +71,15 @@ static void on_interrupt(uint32_t source, void *context)
 		return;
 	}
 	xsdk_display_flip(present.addresses[next % present.buffer_count]);
-	if (!in_vblank())
+	// From the mode's last line on, the display is in vblank.
+	const uint32_t line = gpu_registers[R500_D1MODE_V_COUNTER];
+	if (line < present.height) {
+		if (!present.late) {
+			present.first_late_vblank = vblank;
+			present.first_late_line = line;
+		}
 		present.late = present.late + 1;
+	}
 	if (!next)
 		present.first_flip_vblank = vblank;
 	present.last_flip_vblank = vblank;
@@ -166,6 +169,8 @@ void xsdk_present_stats(XsdkPresentStats *stats)
 		.flips = present.flipped,
 		.missed = present.missed,
 		.late = present.late,
+		.first_late_vblank = present.first_late_vblank,
+		.first_late_line = present.first_late_line,
 		.first_flip_vblank = present.first_flip_vblank,
 		.last_flip_vblank = present.last_flip_vblank,
 		.longest_wait_us = present.longest_wait_us };

@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <time.h>
 
 #include "gpu_private.h"
 #include "xsdk/kernel.h"
@@ -23,6 +24,8 @@ enum {
 	DC_LUT_WRITE_EN_MASK = 0x1927,
 	DC_LUT_AUTOFILL = 0x1928,
 	DC_LUTA_CONTROL = 0x1930,
+	// The line being scanned, in viewport lines (xenia:src/xenia/gpu/graphics_system.cc:189-192; docs/HARDWARE.md).
+	R500_D1MODE_V_COUNTER = 0x194C,
 	AVIVO_D1MODE_VIEWPORT_SIZE = 0x1961,
 	AVIVO_D1SCL_SCALER_ENABLE = 0x1964,
 	AVIVO_D1SCL_SCALER_TAP_CONTROL = 0x1965,
@@ -54,6 +57,9 @@ enum {
 	BUILT_IN_FILTER = 0x100,
 	// Holds the scaler's registers until it's released (xf86-video-radeonhd:src/rhd_regs.h:412-413).
 	SCALER_UPDATE_LOCK = 0x10000,
+	// Three frames at 60 Hz.
+	SCALER_TAKE_TIMEOUT_US = 50000,
+	MICROSECONDS_PER_SECOND = 1000000,
 };
 
 typedef struct {
@@ -207,6 +213,25 @@ static NTSTATUS apply(const Surface *surface)
 	return STATUS_SUCCESS;
 }
 
+static uint32_t elapsed_us(const struct timespec *start)
+{
+	struct timespec now;
+	(void)clock_gettime(CLOCK_MONOTONIC, &now);
+	return (uint32_t)((now.tv_sec - start->tv_sec) * MICROSECONDS_PER_SECOND + (now.tv_nsec - start->tv_nsec) / 1000);
+}
+
+// The counter runs in viewport lines, under 500 on the kernel's 480, so passing 720 shows the new size has taken.
+static void wait_for_scaler(void)
+{
+	struct timespec start;
+	(void)clock_gettime(CLOCK_MONOTONIC, &start);
+	uint32_t waited_us = 0;
+	while (gpu_registers[R500_D1MODE_V_COUNTER] < mode_height && waited_us < SCALER_TAKE_TIMEOUT_US)
+		waited_us = elapsed_us(&start);
+	xsdk_log_write("display: the line counter reached %u after %u us", (unsigned)gpu_registers[R500_D1MODE_V_COUNTER],
+		(unsigned)waited_us);
+}
+
 // The display takes it at once (docs/HARDWARE.md, "The vblank callback, flips and giving the callback back").
 void xsdk_display_flip(uint32_t address)
 {
@@ -221,13 +246,16 @@ void xsdk_display_flip(uint32_t address)
 NTSTATUS xsdk_display_show(uint32_t address, uint32_t pitch_pixels)
 {
 	assert(is_open);
-	// Not at open, while XAM's 640x480 surface still shows: the scaler changes with the first 1280x720 surface.
-	if (scaling && !scaler_applied) {
-		write_scaler(new_scaler);
-		scaler_applied = true;
-	}
 	const Surface surface = { .address = address, .pitch = pitch_pixels, .x_end = pitch_pixels, .y_end = mode_height };
-	return apply(&surface);
+	if (!scaling || scaler_applied)
+		return apply(&surface);
+	// Not at open, while XAM's 640x480 surface still shows: the scaler changes with the first 1280x720 surface.
+	write_scaler(new_scaler);
+	scaler_applied = true;
+	const NTSTATUS status = apply(&surface);
+	// So a vblank callback set next doesn't read the line counter on the old scale (docs/HARDWARE.md).
+	wait_for_scaler();
+	return status;
 }
 
 void xsdk_display_close(void)

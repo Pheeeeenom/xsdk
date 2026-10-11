@@ -96,6 +96,9 @@ int main(void)
 	XsdkPresentStats stats;
 	xsdk_present_stats(&stats);
 	check("pacing: every frame queued in time for 10 minutes", kept_up);
+	if (stats.late)
+		xsdk_log_write("pacing: the first late flip came at vblank %u, line %u", (unsigned)stats.first_late_vblank,
+			(unsigned)stats.first_late_line);
 	check("pacing: every frame shown", stats.flips == frame);
 	check("pacing: no vblank missed", stats.missed == 0);
 	check("pacing: a flip every vblank", stats.flips && stats.last_flip_vblank - stats.first_flip_vblank == frame - 1);
