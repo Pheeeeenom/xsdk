@@ -1410,9 +1410,13 @@ way it settled what xsdk's own tests hadn't:
 
 ## Placed targets, resolves that clear less, and byte-order resolves, through vulkan4xenon (2026-10-11)
 
-vulkan4xenon's milestone 4 title ran at xsdk `c5d87ed` (log and capture: `results/2026-10-11-render-to-texture/`).
-All 58 checks passed, and the console went back to Aurora. Its eight render passes a frame, for 60 frames, ran on the
-xsdk additions made for them:
+Two runs, at `c5d87ed` (logs and a capture: `results/2026-10-11-render-to-texture/`):
+- **`build/xsdk_test.xex`** (`xsdk_test.log`). All 194 checks passed, and the console went back to Aurora, so the
+  existing callers lost nothing: `xsdk_gpu_set_target` and the resolves still write what they did.
+- **vulkan4xenon's milestone 4 title** (`vulkan4xenon_test.log`, `render_to_texture.png`). All 58 checks passed, and
+  the console went back to Aurora.
+
+That title's eight render passes a frame, for 60 frames, ran on the xsdk additions made for them:
 
 - **Targets placed with `xsdk_gpu_set_target_at`:** colour from tile 0 and depth from 2048 less the target's tiles,
   for a 200x120 target with depth, colour-only targets of 96x64 and 64x32, and the 1280x720 swapchain. Depth tested
