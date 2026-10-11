@@ -1594,3 +1594,18 @@ dwords), for 30 frames each:
 
 So every route tried writes float constants in whole groups of 4: type-0 packets, `SET_CONSTANT` and
 `LOAD_ALU_CONSTANT`.
+
+## Constants loaded from memory, for titles and vulkan4xenon (2026-10-11)
+
+Runs at xsdk `5d4bda6`, with xost at `b9b38e9` (logs: `results/2026-10-11-constant-loading/` and
+vulkan4xenon:results/2026-10-11-milestone-7/):
+- **`build/xsdk_test.xex`** (`xsdk_test-tail.log`): all 203 checks passed, and the title exited with status 0. Among
+  them, test_constants drew its six quads for 60 frames with each stage's float constants loaded from memory through
+  `xsdk_gpu_load_vertex_constants` and `xsdk_gpu_load_pixel_constants`, a group of 4 from c0 out of a 64-byte slot
+  each, and every checked point was right.
+- **vulkan4xenon's test title and vkbench** loaded every uniform block with them, at the registers xost now gives
+  uniform blocks: whole groups of 4 to each. The title passed all 58 checks and vkbench all 14, both backends drawing
+  the same pictures. vkbench's `uniforms_1000` drew and submitted through the layer in 717 us, from 2,091, with no
+  uniform data read by the CPU.
+
+So the GPU loads float constants from memory for titles, in whole groups of 4 from a multiple of 4.
