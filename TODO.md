@@ -49,6 +49,9 @@ work begins.
   clamp to border and mirror clamp to edge.
 - **Level-of-detail clamps.** The fetch constant's `mip_min_level` and `mip_max_level` (xenos.h:1265-1266), for
   Vulkan's `minLod`, `maxLod` and image views' level ranges. The SDK always samples every level.
+- **More texture formats.** Milestone 16 covers 13. A Vulkan layer will also want DXN (BC5), 16-bit fixed point,
+  32-bit float, 10-11-11, and the signed and gamma (sRGB) variants: `TextureFormat` (xenos.h:450-532) and
+  `TextureSign` (xenos.h:121-129).
 - **Mipped linear textures.** `xsdk_texture_create` returns `STATUS_NOT_IMPLEMENTED` for them. Xenia keeps their rows
   256-byte aligned (texture_util.cc:209-449). Vulkan rarely needs them.
 
@@ -57,6 +60,8 @@ work begins.
 - **The depth-bias slope.** `XsdkRaster` takes it, but milestone 14 tested only the constant term.
 - **Point mip filtering exactly halfway between two levels:** the nearer level, or the one below. Milestone 15
   avoided it.
+- **DXT3 and DXT5 colour blocks whose first endpoint isn't above the second:** four colours, as BC2 and BC3 say, or
+  DXT1's three and transparent black. Milestone 16 kept them four-colour.
 - **Linear filtering's precision.** Milestone 15 bounds it only by its tolerance of 3 per channel.
 - **Which partial constant write hangs the GPU:** the floats, or the lone boolean or loop word. It matters only for
   writing just the changed constants, to save ring space (docs/HARDWARE.md, "Shader constants: partial writes hang the
