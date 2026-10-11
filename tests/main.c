@@ -36,6 +36,7 @@ int main(void)
 	test_render();
 	test_pacing();
 	test_scale();
+	test_constants();
 	xsdk_log_write("tests: %d passed, %d failed", passed_count, failed_count);
 	return failed_count;
 }

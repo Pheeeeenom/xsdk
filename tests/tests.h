@@ -45,6 +45,9 @@ void test_pacing(void);
 // 1280x720 on the display's scaler, held on screen for a capture.
 void test_scale(void);
 
+// Shader constants (milestone 11).
+void test_constants(void);
+
 #ifdef __cplusplus
 }
 #endif
