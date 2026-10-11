@@ -59,6 +59,12 @@ work begins.
 - **More texture formats.** Milestone 16 covers 13. A Vulkan layer will also want DXN (BC5), 16-bit fixed point,
   32-bit float, 10-11-11, and the signed and gamma (sRGB) variants: `TextureFormat` (xenos.h:450-532) and
   `TextureSign` (xenos.h:121-129).
+- **Render areas smaller than the framebuffer.** vulkan4xenon refuses them with `VK_ERROR_FEATURE_NOT_PRESENT`
+  (vulkan4xenon:docs/ROADMAP.md, milestone 4): a render pass may change only its area, but the SDK's resolves copy and
+  clear the whole target from its corner. It needs a resolve of a rectangle at an offset, which Xenos takes from the
+  resolve's drawn rectangle, widened to 8 pixels (xenia:src/xenia/gpu/draw_util.cc:893-902), or clears by drawing with
+  the rest of the target loaded first. encounter's Aurora always renders whole targets. A port that needs them gets
+  `vulkan4xenon: not supported: render areas smaller than the framebuffer` in its log, and `vkEndCommandBuffer` fails.
 - **Mipped linear textures.** `xsdk_texture_create` returns `STATUS_NOT_IMPLEMENTED` for them. Xenia keeps their rows
   256-byte aligned (texture_util.cc:209-449). Vulkan rarely needs them.
 
