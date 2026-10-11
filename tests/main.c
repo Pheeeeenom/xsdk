@@ -25,6 +25,7 @@ int main(void)
 	test_image();
 	test_threads();
 	test_files();
+	test_copy();
 	test_cpp_objects();
 	test_cpp_threads();
 	test_cpp_atomics();

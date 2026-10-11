@@ -12,6 +12,8 @@ void check(const char *name, bool passed);
 void test_image(void);
 void test_threads(void);
 void test_files(void);
+// The SDK's memcpy and memmove (milestone 20).
+void test_copy(void);
 void test_input(void);
 void test_audio(void);
 
