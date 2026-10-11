@@ -1,5 +1,6 @@
 #include "xsdk/splash.h"
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -20,6 +21,15 @@ enum {
 	OPAQUE = 0xFF000000,
 	PIXEL_BYTES_LOG2 = 2,
 };
+
+typedef struct {
+	volatile uint32_t *buffers[BUFFERS];
+	// The display is open for the logo, and whether xsdk_present_open has taken it over.
+	bool up;
+	bool handed_over;
+} Splash;
+
+static Splash splash;
 
 // A front buffer stores each pixel's bytes B, G, R, A, as resolves write them (docs/HARDWARE.md).
 static uint32_t as_stored(uint32_t rgb, uint32_t level)
@@ -58,22 +68,79 @@ static void draw_logo(volatile uint32_t *pixels, uint32_t level)
 	__asm__ volatile("sync" ::: "memory");
 }
 
-// Fades in by drawing each step into the buffer not on screen, then holds the last.
-static bool fade_in(volatile uint32_t *const *buffers, uint32_t duration_ms)
+// Draws each step into the buffer not on screen, ending on the logo at full brightness.
+static NTSTATUS fade_in(void)
 {
-	uint32_t shown_ms = 0;
-	for (uint32_t frame = 0; shown_ms < duration_ms; frame++) {
+	for (uint32_t frame = 0;; frame++) {
 		const uint32_t elapsed = frame * FRAME_MS;
-		volatile uint32_t *const buffer = buffers[frame % BUFFERS];
-		if (elapsed <= FADE_MS + FRAME_MS) {
-			draw_logo(buffer, elapsed >= FADE_MS ? 255 : elapsed * 255 / FADE_MS);
-			if (!NT_SUCCESS(xsdk_display_show(xsdk_gpu_address(buffer), SPLASH_WIDTH)))
-				return false;
-		}
+		volatile uint32_t *const buffer = splash.buffers[frame % BUFFERS];
+		draw_logo(buffer, elapsed >= FADE_MS ? 255 : elapsed * 255 / FADE_MS);
+		const NTSTATUS status = xsdk_display_show(xsdk_gpu_address(buffer), SPLASH_WIDTH);
+		if (!NT_SUCCESS(status) || elapsed >= FADE_MS)
+			return status;
 		(void)xsdk_thread_sleep(FRAME_MS);
-		shown_ms += FRAME_MS;
 	}
+}
+
+static void free_buffers(void)
+{
+	for (uint32_t i = 0; i < BUFFERS; i++) {
+		if (splash.buffers[i])
+			xsdk_gpu_free(splash.buffers[i]);
+	}
+	splash = (Splash){ .up = false };
+}
+
+NTSTATUS xsdk_splash_begin(void)
+{
+	assert(!splash.up);
+	uint32_t width = 0;
+	uint32_t height = 0;
+	NTSTATUS status = xsdk_display_open(XSDK_DISPLAY_720P, &width, &height);
+	if (NT_SUCCESS(status) && (width != SPLASH_WIDTH || height != SPLASH_HEIGHT)) {
+		xsdk_display_close();
+		status = STATUS_NOT_SUPPORTED;
+	}
+	if (!NT_SUCCESS(status))
+		return status;
+	const uint32_t bytes = xsdk_gpu_resolve_bytes(SPLASH_WIDTH, SPLASH_HEIGHT);
+	splash = (Splash){ .buffers = { xsdk_gpu_alloc(bytes), xsdk_gpu_alloc(bytes) }, .up = true };
+	status = splash.buffers[0] && splash.buffers[1] ? STATUS_SUCCESS : STATUS_NO_MEMORY;
+	if (NT_SUCCESS(status)) {
+		fill_black(splash.buffers[0]);
+		fill_black(splash.buffers[1]);
+		status = fade_in();
+	}
+	if (!NT_SUCCESS(status)) {
+		xsdk_display_close();
+		free_buffers();
+		xsdk_log_write("splash: failed: 0x%08X", (unsigned)status);
+	}
+	return status;
+}
+
+void xsdk_splash_end(void)
+{
+	if (!splash.up || splash.handed_over)
+		return;
+	xsdk_display_close();
+	free_buffers();
+}
+
+bool xsdk_splash_hand_over(uint32_t *width, uint32_t *height)
+{
+	if (!splash.up || splash.handed_over)
+		return false;
+	splash.handed_over = true;
+	*width = SPLASH_WIDTH;
+	*height = SPLASH_HEIGHT;
 	return true;
+}
+
+void xsdk_splash_free(void)
+{
+	assert(splash.handed_over);
+	free_buffers();
 }
 
 NTSTATUS xsdk_splash_show(uint32_t duration_ms)
@@ -81,31 +148,12 @@ NTSTATUS xsdk_splash_show(uint32_t duration_ms)
 	NTSTATUS status = xsdk_gpu_open();
 	if (!NT_SUCCESS(status))
 		return status;
-	uint32_t width = 0;
-	uint32_t height = 0;
-	status = xsdk_display_open(XSDK_DISPLAY_720P, &width, &height);
-	if (NT_SUCCESS(status) && (width != SPLASH_WIDTH || height != SPLASH_HEIGHT)) {
-		xsdk_display_close();
-		status = STATUS_NOT_SUPPORTED;
-	}
-	if (!NT_SUCCESS(status)) {
-		(void)xsdk_gpu_close();
-		return status;
-	}
-	const uint32_t bytes = xsdk_gpu_resolve_bytes(SPLASH_WIDTH, SPLASH_HEIGHT);
-	volatile uint32_t *const buffers[BUFFERS] = { xsdk_gpu_alloc(bytes), xsdk_gpu_alloc(bytes) };
-	status = buffers[0] && buffers[1] ? STATUS_SUCCESS : STATUS_NO_MEMORY;
+	status = xsdk_splash_begin();
 	if (NT_SUCCESS(status)) {
-		fill_black(buffers[0]);
-		fill_black(buffers[1]);
-		if (!fade_in(buffers, duration_ms))
-			status = STATUS_UNSUCCESSFUL;
+		for (uint32_t shown_ms = FADE_MS; shown_ms < duration_ms; shown_ms += FRAME_MS)
+			(void)xsdk_thread_sleep(FRAME_MS);
+		xsdk_splash_end();
 	}
-	xsdk_display_close();
-	for (uint32_t i = 0; i < BUFFERS; i++)
-		xsdk_gpu_free(buffers[i]);
 	const NTSTATUS closed = xsdk_gpu_close();
-	if (!NT_SUCCESS(status))
-		xsdk_log_write("splash: failed: 0x%08X", (unsigned)status);
 	return NT_SUCCESS(status) ? closed : status;
 }

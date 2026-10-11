@@ -158,6 +158,10 @@ void xsdk_gpu_put_coherency(GpuPackets *packets, uint32_t actions, uint32_t base
 void xsdk_gpu_put_surface(GpuPackets *packets, uint32_t width, uint32_t height);
 // Points the shown surface at another buffer of its size; for the vblank callback, so it never sleeps.
 void xsdk_display_flip(uint32_t address);
+// For xsdk_present_open: whether the splash's display can be taken over, leaving the logo up, and its size.
+bool xsdk_splash_hand_over(uint32_t *width, uint32_t *height);
+// Frees a handed-over splash's buffers, once nothing shows them.
+void xsdk_splash_free(void);
 // A texel's byte offset in Xenos's tiled layout, the pitch a multiple of 32.
 uint32_t xsdk_tiled_2d(uint32_t x, uint32_t y, uint32_t pitch_texels, uint32_t bytes_per_texel_log2);
 

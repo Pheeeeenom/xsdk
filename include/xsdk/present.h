@@ -32,10 +32,13 @@ typedef struct {
 } XsdkPresentStats;
 
 // Opens the display in this mode with buffer_count front buffers, 2 or 3; each frame shows for swap_interval vblanks.
+// A 720p display the splash holds (xsdk_splash_begin) is taken over, and its logo shows until the first frame.
 NTSTATUS xsdk_present_open(
 	XsdkDisplayMode mode, uint32_t buffer_count, uint32_t swap_interval, uint32_t *width, uint32_t *height);
 // Waits up to timeout_ms for the next front buffer to come off screen, then gives its address to resolve into.
 NTSTATUS xsdk_present_begin(uint32_t *address, uint32_t timeout_ms);
+// The GPU address of front buffer index, 0 to buffer_count - 1, in the order frames use them.
+uint32_t xsdk_present_buffer_address(uint32_t index);
 // The CPU's view of the front buffer at an address xsdk_present_begin gave.
 volatile uint32_t *xsdk_present_pixels(uint32_t address);
 // Queues the frame resolved into that buffer; the vblank callback shows it once the GPU has finished it.

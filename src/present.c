@@ -34,6 +34,8 @@ typedef struct {
 	uint32_t height;
 	uint32_t longest_wait_us;
 	bool open;
+	// The splash's logo shows until the first flip, and its buffers wait for one more vblank after that.
+	bool splash_held;
 	// Written by the title.
 	volatile uint32_t queued;
 	volatile uint32_t fences[QUEUE_SLOTS];
@@ -99,10 +101,13 @@ NTSTATUS xsdk_present_open(
 {
 	assert(!present.open && buffer_count >= 2 && buffer_count <= XSDK_PRESENT_MAX_BUFFERS);
 	assert(swap_interval >= 1 && swap_interval <= 2);
-	const NTSTATUS status = xsdk_display_open(mode, width, height);
+	const bool splash_held = mode == XSDK_DISPLAY_720P && xsdk_splash_hand_over(width, height);
+	const NTSTATUS status = splash_held ? STATUS_SUCCESS : xsdk_display_open(mode, width, height);
 	if (!NT_SUCCESS(status))
 		return status;
-	present = (Present){ .buffer_count = buffer_count, .swap_interval = swap_interval, .height = *height };
+	present = (Present){
+		.buffer_count = buffer_count, .swap_interval = swap_interval, .height = *height, .splash_held = splash_held
+	};
 	const uint32_t pixels = xsdk_gpu_resolve_bytes(*width, *height) / 4;
 	for (uint32_t i = 0; i < buffer_count; i++) {
 		present.buffers[i] = xsdk_gpu_alloc(pixels * 4);
@@ -110,6 +115,8 @@ NTSTATUS xsdk_present_open(
 			for (uint32_t j = 0; j < i; j++)
 				xsdk_gpu_free(present.buffers[j]);
 			xsdk_display_close();
+			if (splash_held)
+				xsdk_splash_free();
 			return STATUS_NO_MEMORY;
 		}
 		for (uint32_t p = 0; p < pixels; p++)
@@ -117,17 +124,31 @@ NTSTATUS xsdk_present_open(
 		present.addresses[i] = xsdk_gpu_address(present.buffers[i]);
 	}
 	__asm__ volatile("sync" ::: "memory");
-	// The last buffer stands for frame -1, so frame 0 resolves into the first.
-	(void)xsdk_display_show(present.addresses[buffer_count - 1], *width);
+	// The last buffer stands for frame -1, so frame 0 resolves into the first; the splash's logo stands in for it.
+	if (!splash_held)
+		(void)xsdk_display_show(present.addresses[buffer_count - 1], *width);
 	present.open = true;
 	VdSetGraphicsInterruptCallback(on_interrupt, NULL);
 	return STATUS_SUCCESS;
+}
+
+// Frees the splash's buffers once a vblank has passed since the first flip took the logo off screen.
+static void release_splash(void)
+{
+	if (!present.splash_held || !present.flipped)
+		return;
+	__asm__ volatile("lwsync" ::: "memory");
+	if (present.vblanks == present.first_flip_vblank)
+		return;
+	xsdk_splash_free();
+	present.splash_held = false;
 }
 
 // Frame k reuses frame k - buffer_count's buffer, off screen once frame k - buffer_count + 1 has been shown.
 NTSTATUS xsdk_present_begin(uint32_t *address, uint32_t timeout_ms)
 {
 	assert(present.open);
+	release_splash();
 	const uint32_t frame = present.queued;
 	const uint32_t needed = frame - present.buffer_count + 2;
 	struct timespec start;
@@ -141,6 +162,12 @@ NTSTATUS xsdk_present_begin(uint32_t *address, uint32_t timeout_ms)
 	present.longest_wait_us = waited_us > present.longest_wait_us ? waited_us : present.longest_wait_us;
 	*address = present.addresses[frame % present.buffer_count];
 	return STATUS_SUCCESS;
+}
+
+uint32_t xsdk_present_buffer_address(uint32_t index)
+{
+	assert(present.open && index < present.buffer_count);
+	return present.addresses[index];
 }
 
 volatile uint32_t *xsdk_present_pixels(uint32_t address)
@@ -186,6 +213,8 @@ void xsdk_present_close(void)
 	// So the kernel doesn't call into the title once it unloads; XAM runs again afterwards (docs/HARDWARE.md).
 	VdSetGraphicsInterruptCallback(0, 0);
 	xsdk_display_close();
+	if (present.splash_held)
+		xsdk_splash_free();
 	for (uint32_t i = 0; i < present.buffer_count; i++)
 		xsdk_gpu_free(present.buffers[i]);
 	present.open = false;

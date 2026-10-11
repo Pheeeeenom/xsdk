@@ -258,6 +258,11 @@ NTSTATUS xsdk_display_show(uint32_t address, uint32_t pitch_pixels)
 	return status;
 }
 
+uint32_t xsdk_display_shown_address(void)
+{
+	return gpu_registers[D1GRPH_PRIMARY_SURFACE_ADDRESS];
+}
+
 void xsdk_display_close(void)
 {
 	if (!is_open)
