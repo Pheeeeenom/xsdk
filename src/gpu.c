@@ -29,6 +29,10 @@ enum {
 	// Resolve sizes kept at once, so a frame resolving at a few sizes doesn't wait for the GPU.
 	RECTANGLE_SLOTS = 8,
 	RECTANGLE_STRIDE = 0x20,
+	// Room for the largest packet a call reserves, as the ring has.
+	OVERFLOW_SCRATCH_DWORDS = RING_DWORDS,
+	// An indirect buffer's length is 20 bits (xenia:src/xenia/gpu/command_processor.cc:947-949).
+	INDIRECT_BUFFER_MAX_DWORDS = 0xFFFFF,
 };
 
 // Byte offsets in the write-back page.
@@ -60,6 +64,11 @@ typedef struct {
 } Rectangle;
 
 static Rectangle rectangles[RECTANGLE_SLOTS];
+
+// The buffer being recorded into, and where packets past its end go to be dropped.
+static XsdkCommandBuffer *recording;
+static bool recording_overflowed;
+static uint32_t overflow_scratch[OVERFLOW_SCRATCH_DWORDS];
 
 // VdShutdownEngines calls it (docs/HARDWARE.md); the SDK has nothing to clean up there.
 static void engines_shut_down(void)
@@ -183,8 +192,22 @@ NTSTATUS xsdk_gpu_close(void)
 	return STATUS_SUCCESS;
 }
 
+static volatile uint32_t *reserve_recorded(uint32_t dword_count)
+{
+	assert(dword_count <= OVERFLOW_SCRATCH_DWORDS);
+	if (recording->count + dword_count > recording->capacity_dwords) {
+		recording_overflowed = true;
+		return overflow_scratch;
+	}
+	volatile uint32_t *const packets = &recording->dwords[recording->count];
+	recording->count += dword_count;
+	return packets;
+}
+
 volatile uint32_t *xsdk_gpu_reserve(uint32_t dword_count)
 {
+	if (recording)
+		return reserve_recorded(dword_count);
 	assert(ring && dword_count <= RING_DWORDS - FILLER_DWORDS);
 	// Keep room at the end for a NOP, so the ring can always wrap.
 	if (write_index + dword_count > RING_DWORDS - FILLER_DWORDS) {
@@ -238,6 +261,8 @@ static uint32_t rectangle_slot(uint32_t width, uint32_t height)
 
 uint32_t xsdk_gpu_rectangle(uint32_t width, uint32_t height)
 {
+	// A recorded resolve could outlive its slot.
+	assert(!recording);
 	const uint32_t slot = rectangle_slot(width, height);
 	// The resolve about to use it is queued before the next fence.
 	rectangles[slot].fence = last_fence + 1;
@@ -246,6 +271,7 @@ uint32_t xsdk_gpu_rectangle(uint32_t width, uint32_t height)
 
 uint32_t xsdk_gpu_fence(void)
 {
+	assert(!recording);
 	const uint32_t fence = last_fence + 1;
 	volatile uint32_t *const packet = xsdk_gpu_reserve(4);
 	packet[0] = xsdk_gpu_type3(PM4_EVENT_WRITE_SHD, 3);
@@ -271,4 +297,60 @@ NTSTATUS xsdk_gpu_wait(uint32_t fence, uint32_t timeout_ms)
 			return STATUS_IO_TIMEOUT;
 		(void)xsdk_thread_sleep(1);
 	}
+}
+
+NTSTATUS xsdk_gpu_command_buffer_create(XsdkCommandBuffer *buffer, uint32_t capacity_dwords)
+{
+	if (!capacity_dwords || capacity_dwords > INDIRECT_BUFFER_MAX_DWORDS) {
+		xsdk_log_write("gpu: command buffer size not from 1 to %u dwords", (unsigned)INDIRECT_BUFFER_MAX_DWORDS);
+		return STATUS_INVALID_PARAMETER;
+	}
+	volatile uint32_t *const dwords = xsdk_gpu_alloc(capacity_dwords * 4);
+	if (!dwords)
+		return STATUS_NO_MEMORY;
+	*buffer = (XsdkCommandBuffer){
+		.dwords = dwords, .address = xsdk_gpu_address(dwords), .capacity_dwords = capacity_dwords, .count = 0
+	};
+	return STATUS_SUCCESS;
+}
+
+void xsdk_gpu_command_buffer_free(XsdkCommandBuffer *buffer)
+{
+	assert(recording != buffer);
+	xsdk_gpu_free(buffer->dwords);
+	*buffer = (XsdkCommandBuffer){ .dwords = NULL };
+}
+
+void xsdk_gpu_record_begin(XsdkCommandBuffer *buffer)
+{
+	assert(!recording);
+	buffer->count = 0;
+	recording = buffer;
+	recording_overflowed = false;
+}
+
+NTSTATUS xsdk_gpu_record_end(void)
+{
+	assert(recording);
+	// Drain the write-combined stores before the GPU reads them (libxenon:drivers/xenos/xe.c:97-106).
+	__asm__ volatile("sync" ::: "memory");
+	XsdkCommandBuffer *const buffer = recording;
+	recording = NULL;
+	if (!recording_overflowed)
+		return STATUS_SUCCESS;
+	xsdk_log_write("gpu: the recording outgrew its %u-dword command buffer", (unsigned)buffer->capacity_dwords);
+	buffer->count = 0;
+	return STATUS_BUFFER_TOO_SMALL;
+}
+
+// The ring runs the buffer's packets, then carries on (xenia:src/xenia/gpu/command_processor.cc:943-953).
+void xsdk_gpu_execute(const XsdkCommandBuffer *buffer)
+{
+	assert(!recording);
+	if (!buffer->count)
+		return;
+	volatile uint32_t *const packet = xsdk_gpu_reserve(3);
+	packet[0] = xsdk_gpu_type3(PM4_INDIRECT_BUFFER, 2);
+	packet[1] = buffer->address;
+	packet[2] = buffer->count;
 }

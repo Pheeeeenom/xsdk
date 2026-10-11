@@ -52,6 +52,22 @@ volatile uint32_t *xsdk_gpu_alloc(uint32_t size_bytes);
 void xsdk_gpu_free(volatile uint32_t *memory);
 // The address the GPU uses for memory from xsdk_gpu_alloc.
 uint32_t xsdk_gpu_address(volatile const uint32_t *memory);
+// Packets recorded into GPU memory ahead of time, to run from the ring as often as wanted.
+typedef struct {
+	volatile uint32_t *dwords;
+	uint32_t address;
+	uint32_t capacity_dwords;
+	uint32_t count;
+} XsdkCommandBuffer;
+
+NTSTATUS xsdk_gpu_command_buffer_create(XsdkCommandBuffer *buffer, uint32_t capacity_dwords);
+void xsdk_gpu_command_buffer_free(XsdkCommandBuffer *buffer);
+// Until xsdk_gpu_record_end, GPU calls append to the buffer, not the ring; no fences, resolves or executes inside.
+void xsdk_gpu_record_begin(XsdkCommandBuffer *buffer);
+// Ends the recording, or fails with STATUS_BUFFER_TOO_SMALL, leaving the buffer empty, if it outgrew the buffer.
+NTSTATUS xsdk_gpu_record_end(void);
+// Queues the recorded packets from the ring, constant blocks as recorded; keep the buffer until a later fence.
+void xsdk_gpu_execute(const XsdkCommandBuffer *buffer);
 // Queues copying the eDRAM colour target to address as tiled k_8_8_8_8, then clearing it; width a multiple of 32.
 void xsdk_gpu_resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t clear_argb);
 // The bytes such a resolve writes, in whole 32-row tiles (xenia:src/xenia/gpu/draw_util.cc:1055-1062).
@@ -65,7 +81,7 @@ void xsdk_gpu_set_target(uint32_t width, uint32_t height);
 void xsdk_gpu_set_shaders(const XsdkShader *vertex, const XsdkShader *pixel);
 // Points a vertex stream at vertices from xsdk_gpu_alloc; streams 0-2 share texture slot 31's group, 3-5 slot 30's.
 void xsdk_gpu_set_vertices(uint32_t stream, uint32_t address, uint32_t size_bytes);
-// Points fetch constant slot 0 to 31 at the texture and sampler; a resolve takes slot 0, xsdk_gpu_set_vertices 31.
+// Points fetch constant slot 0 to 31 at the texture and sampler; a resolve takes slot 0, vertex streams 31 down.
 void xsdk_gpu_set_texture(uint32_t slot, const XsdkTexture *texture, const XsdkSamplerState *sampler);
 // Draws vertex_count auto-indexed vertices as primitive_type.
 void xsdk_gpu_draw(uint32_t primitive_type, uint32_t vertex_count);

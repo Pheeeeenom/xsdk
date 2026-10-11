@@ -66,6 +66,9 @@ void test_formats(void);
 // Vertex input (milestone 17).
 void test_vertex(void);
 
+// Recorded command buffers (milestone 18).
+void test_replay(void);
+
 #ifdef __cplusplus
 }
 #endif
