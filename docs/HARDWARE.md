@@ -1373,3 +1373,16 @@ What the first run showed:
 - **On screen,** the user reported for the first run: the logo faded in, held for a second or two, the app's dark
   green flashed, then its triangle showed. The titles check which buffer is shown, not what's in it.
 - **Not covered:** `xsdk_splash_end` with the splash still up, which a device closed before any swapchain would take.
+
+## Textures in memory the caller owns, and byte-order RGBA (2026-10-11)
+
+Two runs, at `7ff6c4c` (logs: `results/2026-10-11-texture-attach/`):
+- **`build/xsdk_test.xex`** (`xsdk_test-tail.log`, the tail the user sent). All 194 checks passed.
+  - `xsdk_texture_create`, now `xsdk_texture_init`, an allocation and `xsdk_texture_attach`, made every texture the
+    earlier milestones' tests sample.
+  - `test_formats` passed with its 66 cells, which include `XSDK_FORMAT_R8G8B8A8` and `XSDK_FORMAT_B8G8R8A8`, linear
+    and tiled.
+- **vulkan4xenon's milestone 2 title** (`vulkan4xenon_test.log`). All 33 checks passed. Its images are
+  `xsdk_texture_init`, then `xsdk_texture_attach` at an offset into memory the app allocated. The two byte-order
+  formats showed every texel of a 4x4 image exactly: red and blue in place, each format's bytes unswapped
+  (k_8_8_8_8, `ENDIAN_NONE`).
