@@ -20,6 +20,13 @@ work begins.
   `program_multi_taps_filter` uses (docs/HARDWARE.md, "What AMD's code says about the scaler" and "The built-in 2-tap
   filter scales 1280x720 to 1920x1080 whole").
 
+## Toolchain
+
+- **xost off Python.** Its compiler (`xsc`), assembler (`xasm`) and disassembler (`xdis`) are Python; only the
+  combiner generator `xcomb` is C99 (xost:README.md:49-71, docs/xsc.md:1-14). The combined SDK shouldn't need
+  Python. Until then, the Vulkan layer compiles shaders offline and looks them up by their SPIR-V, as vulkan4vita
+  does.
+
 ## GPU features SCOPE.md left out of milestones 11 to 18
 
 - **Multiple render targets.** Unproven in xost.
