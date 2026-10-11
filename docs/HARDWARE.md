@@ -1486,3 +1486,15 @@ hung was each stream segment starting on a 128-byte line, so that was the cause.
 - **Reading uniform buffers is now the largest cost through vulkan4xenon:** `uniforms_1000` took 6,852 us against
   `draws_1000`'s 2,867, 4.0 us a draw for its two blocks read from mapped write-combined memory at submit. The first
   run measured 1.0 us.
+
+## Every test passes on the stream (2026-10-11)
+
+Two runs at xsdk `5a06bc3` (the tails the user sent: `results/2026-10-11-milestone-19-regression/`):
+- **`build/xsdk_test.xex`:** all 197 checks passed, the 194 from before and the three for the counters and the
+  stream, and the title exited with status 0. So every drawing test, milestone 18's recorded buffers among them, ran
+  from the stream.
+- **vulkan4xenon's test title:** all 58 checks passed, and the title exited with status 0.
+
+With the run before, milestone 19's done-when holds on the console: `draws_1000` drew and submitted in 1,213 us,
+under 16 ms; `draws_4000` is recorded with its counts; both titles pass in full; and vkbench's backends drew the same
+pictures. Its third step, fewer dwords a draw, hasn't been started.
