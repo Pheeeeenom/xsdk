@@ -1020,10 +1020,11 @@ lines from the launch, a cropped capture of the purple variant and a full-frame 
 recording where they came (log: `results/2026-10-10-720p-2/xsdk.log`, with the user's screenshot of the scale test at
 1280x720). All 111 checks passed, and the console went back to Aurora.
 
-- **The counter took 18154 to 32559 us to reach 720 after each switch,** never less than a frame (16.7 ms at 60 Hz):
-  nine opens read 27794, 30122, 18154, 30123, 22392, 32559, 30048, 29562 and 24900 us. That fits the new size taking at
-  the next vblank and the counter first reaching 720 at the vblank after, so the first vblank after a switch still
-  counts on the old scale, which is what the late flips needed.
+- **The counter took 18154 to 32559 us to reach 720 after each switch:** nine opens read 27794, 30122, 18154, 30123,
+  22392, 32559, 30048, 29562 and 24900 us. That fits the new size taking at the next vblank, up to a frame (16.7 ms)
+  away, and the counter then reaching 720 one active display later, 720 of 750 lines or about 16.0 ms: 16.0 to 32.7
+  ms in all. So the first vblank after a switch still counts on the old scale, which is what the late flips needed.
+  The next run's shortest wait, 16492 us, also falls in that range.
 - **No flip was late.** Three of the four pacing modes made their first flip at vblank 1, where each had one late flip
   in the run before; all four had 0 missed and 0 late.
 - **The scale test's screenshot shows the image whole and in place:** the blue-grey background, the white border on all
@@ -1031,3 +1032,13 @@ recording where they came (log: `results/2026-10-10-720p-2/xsdk.log`, with the u
   source.
 - **Not covered by this run:** a title asking for `XSDK_DISPLAY_KERNEL`, which no test opened, and 1:1 at a 720p output,
   as the console outputs 1080p.
+
+## The kernel's mode through the SDK, at 1080p output (2026-10-10)
+
+`build/xsdk_test.xex` ran with the scale test also opening `XSDK_DISPLAY_KERNEL` (log:
+`results/2026-10-10-720p-3/xsdk.log`). All 115 checks passed.
+
+- **The kernel's mode opened at the kernel's 640x480 and left the scaler alone,** both 100 ms after showing a buffer
+  and 100 ms after closing.
+- **The 720p checks passed again,** with no late flip, and the counter reached 720 between 16492 and 32553 us after
+  each switch.
