@@ -1074,3 +1074,31 @@ to the 1080p output (log: `results/2026-10-10-pacing-720p/xsdk.log`). All 8 chec
   background is whatever eDRAM held.
 
 So milestone 9's pacing holds at the 720p default.
+
+## Shader constants: partial writes hang the GPU, libxenon's whole blocks don't (2026-10-10)
+
+`build/xsdk_test.xex` ran milestone 11's `test_constants` twice. Each time it set three float constants per stage,
+one boolean word and one loop constant per draw with the first `xsdk_gpu_set_*_constants`, and each time a fence never
+landed and the GPU was kept. The user sent the end of each log (`results/2026-10-10-milestone-11/`). The second
+showed the SDK's constant split read back as set and no checked frame wrong, but not which frame hung.
+
+`tests/probe_constants.c` then stepped through the features one draw at a time, each with its own fence (log:
+`results/2026-10-10-probe-constants/xsdk.log`, with the whole paste in `paste.txt`).
+
+- **XAM leaves the constant split the SDK sets:** `SQ_VS_CONST` 0x000FF000 and `SQ_PS_CONST` 0x000FF100, vertex
+  shaders' 256 constants from 0 and pixel shaders' from 256, as libxenon's setters assume (xe.c:2013-2029).
+- **Every shader feature works on constants written libxenon's way.** That means aligned whole blocks: 16 float
+  constants at a time, and all 40 boolean and loop dwords at once (xe.c:1217-1221, 1320-1369). The vertex shader read
+  c2 and placed a quad with `mad oPos, r1, c0, c1`, two constants in one instruction. The pixel shader read c0.
+  `cexec b128` skipped its block with the boolean clear and ran it with it set. `loop i0` ran 0, 1 and 3 passes as
+  loop constant 0 said. Each centre held the expected colour. test_constants's six quads, every kind of constant set
+  per draw, drew right for 30 frames.
+- **Writing only what changed hung on the first frame,** still aligned. That was three float constants per stage, a
+  lone boolean word and a lone loop dword. After the hang the command processor had read everything (read pointer =
+  write pointer = 0x1016) and `RBBM_STATUS` read busy, so the hang is in the pipeline, not in fetching the packets.
+- **Which of the partial writes hangs isn't shown,** the float constants or the lone boolean or loop word, nor whether
+  whole blocks need the alignment. The SDK now writes exactly as the passing step did: it keeps a copy of every
+  constant, rewrites each 16-constant block a change touches, and rewrites all 40 boolean and loop dwords for any
+  change, each packet aligned as libxenon aligns it.
+- **The boolean and loop results are the first hardware proof** of those xost encodings: its feature notes list
+  boolean constants as unproven (xenos-toolchain/docs/feature-tests.md).

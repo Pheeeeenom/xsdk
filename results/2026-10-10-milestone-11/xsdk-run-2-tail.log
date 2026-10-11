@@ -1,0 +1,11 @@
+display: the line counter reached 720 after 21868 us
+constants: 0 of 59 frames checked held a wrong point; 0 points wrong
+constants: SQ_VS_CONST 000FF000, SQ_PS_CONST 000FF100 after the frames
+FAIL: constants: every frame's fence landed
+FAIL: constants: every quad placed and coloured by its constants
+PASS: constants: every frame shown
+constants: the last frame stays on screen for 5000 ms for a capture
+gpu: the GPU didn't finish: 0xC00000B5; keeping it and its memory
+FAIL: constants: GPU close
+tests: 120 passed, 4 failed
+exit: status 4

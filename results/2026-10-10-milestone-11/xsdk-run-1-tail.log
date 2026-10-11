@@ -1,0 +1,8 @@
+FAIL: constants: every frame's fence landed
+FAIL: constants: every quad placed and coloured by its constants
+PASS: constants: every frame shown
+constants: the last frame stays on screen for 5000 ms for a capture
+gpu: the GPU didn't finish: 0xC00000B5; keeping it and its memory
+FAIL: constants: GPU close
+tests: 121 passed, 3 failed
+exit: status 3

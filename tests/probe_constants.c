@@ -111,10 +111,10 @@ static const Step steps[] = {
 		false, 3, false, 1, 0xFFC0C0C0 },
 	{ "six quads, libxenon's writes", SHADER(constant_vertex_shader), SHADER(constant_pixel_shader), WRITES_LIBXENON,
 		true, false, 0, true, MULTI_FRAMES, 0 },
-	{ "six quads, aligned partial writes", SHADER(constant_vertex_shader), SHADER(constant_pixel_shader),
-		WRITES_ALIGNED_PARTIAL, true, false, 0, true, MULTI_FRAMES, 0 },
 	{ "six quads, the SDK's writes", SHADER(constant_vertex_shader), SHADER(constant_pixel_shader), WRITES_SDK, true,
 		false, 0, true, MULTI_FRAMES, 0 },
+	{ "six quads, aligned partial writes, which hung", SHADER(constant_vertex_shader), SHADER(constant_pixel_shader),
+		WRITES_ALIGNED_PARTIAL, true, false, 0, true, MULTI_FRAMES, 0 },
 };
 
 static const float square[QUAD_VERTICES][VERTEX_FLOATS] = {

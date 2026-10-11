@@ -66,21 +66,23 @@ void xsdk_gpu_set_texture(uint32_t slot, const XsdkTexture *texture);
 // Draws vertex_count auto-indexed vertices as a list of primitive_type.
 void xsdk_gpu_draw(uint32_t primitive_type, uint32_t vertex_count);
 
-// Shader constants, queued for the draws after. A float constant is four floats; each stage reads its own 256.
+// Shader constants for the draws after, written from a copy in whole blocks: partial writes hung the GPU
+// (docs/HARDWARE.md).
 enum {
+	// Four floats each; each stage reads its own 256.
 	XSDK_FLOAT_CONSTANTS = 256,
 	// 32 to a word; libxenon gives vertex shaders the first 128 and pixel shaders the rest (xe.c:2038-2064).
 	XSDK_BOOL_CONSTANT_WORDS = 8,
 	XSDK_LOOP_CONSTANTS = 32,
 };
 
-// Sets the vertex shader's float constants first to first + count - 1 from count * 4 floats.
+// Sets the vertex shader's float constants first to first + count - 1 from count * 4 floats, rewriting each 16 touched.
 void xsdk_gpu_set_vertex_constants(uint32_t first, const float *values, uint32_t count);
 // The same for the pixel shader's float constants.
 void xsdk_gpu_set_pixel_constants(uint32_t first, const float *values, uint32_t count);
-// Sets whole words of boolean constants, bit n of word w being constant 32 * w + n, as a shader's cexec names it.
+// Sets words of boolean constants, bit n of word w being constant 32 * w + n, as a shader's cexec names it.
 void xsdk_gpu_set_bool_constants(uint32_t first_word, const uint32_t *words, uint32_t count);
-// Sets loop constants, each from xsdk_gpu_loop_constant, as a shader's loop instructions name them.
+// Sets loop constants from xsdk_gpu_loop_constant. These and the booleans are always rewritten all together.
 void xsdk_gpu_set_loop_constants(uint32_t first, const uint32_t *values, uint32_t count);
 
 // A loop of count passes, aL running from start by step (xenia:src/xenia/gpu/xenos.h:1086-1097).
