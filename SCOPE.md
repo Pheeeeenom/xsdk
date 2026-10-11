@@ -415,8 +415,8 @@ Agreed after item 10, in this order, on 2026-10-10.
 
 A Vulkan-style layer needs that state settable.
 
-**The order** follows what such a layer would hit first. Milestones 11 to 15 come before the layer starts; 16 to 18 can
-run alongside its early work.
+**The order** follows what such a layer would hit first. All eight come before the layer is scoped: 16 to 18 were to
+run alongside its early work, and were moved ahead of it on 2026-10-11, after milestone 15.
 
 **How state is built.** Each piece of state is a precomputed block of register writes, so a pipeline can build its
 state once and apply it when bound. These are not more convenience calls (the GPU layer stays low-level, as agreed).
