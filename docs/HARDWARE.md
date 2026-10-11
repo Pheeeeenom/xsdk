@@ -1255,3 +1255,40 @@ and the console went back to Aurora.
   - **The precision of linear filtering:** only bounded by the tolerance of 3.
 
 With that, milestone 15 is done.
+
+## Texture formats, milestone 16 (2026-10-11)
+
+`build/xsdk_test.xex` ran with `test_formats` (log: `results/2026-10-11-milestone-16/xsdk.log`, with the user's
+screenshot of the last frame). All 175 checks passed, and the console went back to Aurora.
+
+- **All 59 checked frames held all 620 points, and every pixel of the last frame was within tolerance:** 123,102 pixels
+  across 62 cells and the ring of clear pixels around each.
+- **Every format read back right, linear and tiled:** A8R8G8B8, R5G6B5, A1R5G5B5, A4R4G4B4, A2B10G10R10, R8, R8G8,
+  R16F, R16G16F, R16G16B16A16F, DXT1, DXT3 and DXT5.
+- **The fixed-point and half-float formats matched the CPU's decode exactly,** alpha included: the largest error in any
+  channel was 0.
+  - The 4-, 5-, 6- and 10-bit channels and the 1- and 2-bit alphas came out as the value times 255 over its maximum,
+    rounded.
+  - Halves of 2.0 and -1.0 clamped to 255 and 0 in the 8-bit target.
+- **So each format's endian swap and component order are right.**
+  - **Endian swaps:** 8-in-16 for 16-bit units, half floats and DXT's words; 8-in-32 for 32-bit units; none for bytes.
+  - **Component order:** x is the lowest bits or the first byte, as Xenia maps the formats to Vulkan.
+- **DXT decoded as the CPU worked it out:**
+  - **Endpoints and DXT1's transparent black came out exact,** within the tolerance of 1.
+  - **Blends came within 3 (DXT1, DXT3) and 4 (DXT5)** of exact thirds, halves, sevenths and fifths. Xenia's host
+    GPU was off by up to 6.
+  - DXT1's three-colour mode with transparent black works, and so do DXT5's six-alpha mode with 0 and 255, and DXT3's
+    4-bit alphas.
+- **Mips work in blocks:** every level of 32x32 tiled R8, R5G6B5, A2B10G10R10, R16G16B16A16F, DXT1 and DXT5 textures
+  read right. That covers 1-, 2-, 4- and 8-byte texels, and 8- and 16-byte blocks, each with its tail from level 1 and
+  DXT's tail offsets in blocks.
+- **The screenshot's linear and tiled rows match each other,** within the screenshot's own scaling noise: at most 10 in
+  a channel, 2.2 on average.
+- **Not covered:**
+  - DXT3 and DXT5 colour blocks with the first endpoint not above the second: the test kept them four-colour.
+  - Signed and gamma textures.
+  - The formats outside the milestone, such as DXN, 16-bit fixed point and 32-bit float.
+  - Linear filtering of these formats: the test point-sampled.
+  - Whether linear rows need 256-byte alignment: the SDK always uses it, so nothing tested less.
+
+With that, milestone 16 is done.
