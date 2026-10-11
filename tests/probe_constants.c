@@ -43,6 +43,13 @@ enum {
 	// command_processor.cc:1428-1462).
 	PM4_SET_CONSTANT = 0x2D,
 	SET_CONSTANT_ALU = 0,
+	// Has the command processor copy constants from memory: address, then index and type, then dwords
+	// (xenia:src/xenia/gpu/xenos.h:1610, command_processor.cc:1477-1515).
+	PM4_LOAD_ALU_CONSTANT = 0x2F,
+	// Each quad's constants in memory: each stage's c0 to c3.
+	GROUP_DWORDS = 16,
+	LOAD_SLOT_DWORDS = 2 * GROUP_DWORDS,
+	LOAD_SLOTS = 6,
 };
 
 typedef enum {
@@ -60,6 +67,10 @@ typedef enum {
 	// The same through SET_CONSTANT, its values aligned as libxenon aligns them.
 	WRITES_SET_CONSTANT_4,
 	WRITES_SET_CONSTANT_1,
+	// Loaded from memory with LOAD_ALU_CONSTANT, the integers still one whole block.
+	WRITES_LOAD_4,
+	WRITES_LOAD_3,
+	WRITES_LOAD_1,
 } Writes;
 
 typedef struct {
@@ -129,6 +140,12 @@ static const Step steps[] = {
 		WRITES_FLOATS_4, true, false, 0, true, MULTI_FRAMES, 0 },
 	{ "six quads, float constants in groups of 4 through SET_CONSTANT", SHADER(constant_vertex_shader),
 		SHADER(constant_pixel_shader), WRITES_SET_CONSTANT_4, true, false, 0, true, MULTI_FRAMES, 0 },
+	{ "six quads, float constants in groups of 4 through LOAD_ALU_CONSTANT", SHADER(constant_vertex_shader),
+		SHADER(constant_pixel_shader), WRITES_LOAD_4, true, false, 0, true, MULTI_FRAMES, 0 },
+	{ "six quads, float constants in groups of 3 through LOAD_ALU_CONSTANT", SHADER(constant_vertex_shader),
+		SHADER(constant_pixel_shader), WRITES_LOAD_3, true, false, 0, true, MULTI_FRAMES, 0 },
+	{ "six quads, float constants one at a time through LOAD_ALU_CONSTANT", SHADER(constant_vertex_shader),
+		SHADER(constant_pixel_shader), WRITES_LOAD_1, true, false, 0, true, MULTI_FRAMES, 0 },
 	{ "six quads, float constants one at a time through SET_CONSTANT", SHADER(constant_vertex_shader),
 		SHADER(constant_pixel_shader), WRITES_SET_CONSTANT_1, true, false, 0, true, MULTI_FRAMES, 0 },
 	{ "six quads, float constants in groups of 3", SHADER(constant_vertex_shader), SHADER(constant_pixel_shader),
@@ -204,6 +221,36 @@ static void put_float_groups(const uint32_t *vertex, const uint32_t *pixel, uint
 	}
 }
 
+// The quads' constants in memory, for LOAD_ALU_CONSTANT.
+static volatile uint32_t *loads;
+
+static void put_load(uint32_t address, uint32_t first_register, uint32_t count)
+{
+	volatile uint32_t *const packet = xsdk_gpu_reserve(4);
+	packet[0] = xsdk_gpu_type3(PM4_LOAD_ALU_CONSTANT, 3);
+	packet[1] = address;
+	packet[2] = SET_CONSTANT_ALU << 16 | (first_register - SHADER_CONSTANT_000_X);
+	packet[3] = count;
+}
+
+// Each stage's c0 to c3 into the quad's own memory, then c0 to c2 loaded from it in groups of size registers.
+static void put_float_loads(const uint32_t *vertex, const uint32_t *pixel, uint32_t size, uint32_t slot)
+{
+	volatile uint32_t *const memory = &loads[slot * LOAD_SLOT_DWORDS];
+	for (uint32_t i = 0; i < GROUP_DWORDS; i++) {
+		memory[i] = vertex[i];
+		memory[GROUP_DWORDS + i] = pixel[i];
+	}
+	__asm__ volatile("sync" ::: "memory");
+	const uint32_t address = xsdk_gpu_address(loads) + slot * LOAD_SLOT_DWORDS * 4;
+	xsdk_gpu_invalidate(address, LOAD_SLOT_DWORDS * 4);
+	for (uint32_t first = 0; first < 3; first += size) {
+		const uint32_t count = (first + size <= 3 || size == 4 ? size : 3 - first) * 4;
+		put_load(address + first * 16, SHADER_CONSTANT_000_X + first * 4, count);
+		put_load(address + GROUP_DWORDS * 4 + first * 16, SHADER_CONSTANT_256_X + first * 4, count);
+	}
+}
+
 // Edges half a pixel early, as test_constants places them.
 static void quad_constants(const Quad *quad, uint32_t *vertex, uint32_t *pixel)
 {
@@ -221,7 +268,7 @@ static void quad_constants(const Quad *quad, uint32_t *vertex, uint32_t *pixel)
 	}
 }
 
-static void write_constants(Writes writes, const Quad *quad)
+static void write_constants(Writes writes, const Quad *quad, uint32_t slot)
 {
 	uint32_t vertex[FLOAT_BLOCK * 4] = { 0 };
 	uint32_t pixel[FLOAT_BLOCK * 4] = { 0 };
@@ -239,6 +286,10 @@ static void write_constants(Writes writes, const Quad *quad)
 		put_registers(SHADER_CONSTANT_BOOL_000_031 + BOOL_WORD, &integers[BOOL_WORD], 1, true);
 		put_registers(
 			SHADER_CONSTANT_LOOP_00, &integers[SHADER_CONSTANT_LOOP_00 - SHADER_CONSTANT_BOOL_000_031], 1, true);
+	} else if (writes >= WRITES_LOAD_4) {
+		static const uint32_t sizes[] = { [WRITES_LOAD_4] = 4, [WRITES_LOAD_3] = 3, [WRITES_LOAD_1] = 1 };
+		put_float_loads(vertex, pixel, sizes[writes], slot);
+		put_registers(SHADER_CONSTANT_BOOL_000_031, integers, INTEGER_BLOCK_DWORDS, true);
 	} else if (writes >= WRITES_FLOATS_4) {
 		static const uint32_t sizes[] = { [WRITES_FLOATS_4] = 4,
 			[WRITES_FLOATS_3] = 3,
@@ -293,7 +344,7 @@ static bool run_step(
 		xsdk_gpu_set_vertices(0, vertices, sizeof square);
 		const uint32_t quads = step->six ? sizeof six_quads / sizeof six_quads[0] : 1;
 		for (uint32_t q = 0; q < quads; q++) {
-			write_constants(step->writes, step->six ? &six_quads[q] : &one);
+			write_constants(step->writes, step->six ? &six_quads[q] : &one, q);
 			xsdk_gpu_draw(XSDK_PRIMITIVE_TRIANGLE_LIST, QUAD_VERTICES);
 		}
 		xsdk_gpu_resolve(xsdk_gpu_address(buffer), WIDTH, HEIGHT, CLEAR_ARGB);
@@ -336,7 +387,8 @@ int main(void)
 		return 1;
 	volatile uint32_t *const vertices = xsdk_gpu_alloc(sizeof square);
 	volatile uint32_t *const buffer = xsdk_gpu_alloc(xsdk_gpu_resolve_bytes(WIDTH, HEIGHT));
-	if (!vertices || !buffer)
+	loads = xsdk_gpu_alloc(LOAD_SLOTS * LOAD_SLOT_DWORDS * 4);
+	if (!vertices || !buffer || !loads)
 		return 1;
 	uint32_t words[sizeof square / 4];
 	memcpy(words, square, sizeof square);
@@ -361,6 +413,7 @@ int main(void)
 		if (!landed)
 			return 1;
 	}
+	xsdk_gpu_free(loads);
 	xsdk_gpu_free(buffer);
 	xsdk_gpu_free(vertices);
 	xsdk_log_write("constants probe: every step landed");
