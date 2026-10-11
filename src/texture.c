@@ -108,13 +108,15 @@ NTSTATUS xsdk_texture_create(XsdkTexture *texture, uint32_t width, uint32_t heig
 	}
 	const uint32_t pitch = round_up(width, tiled ? TILE_TEXELS : LINEAR_PITCH_ALIGNMENT);
 	const uint32_t mip_offset_bytes = round_up(pitch * round_up(height, TILE_TEXELS) << TEXEL_BYTES_LOG2, PAGE_BYTES);
-	const uint32_t size_bytes = mip_offset_bytes + xsdk_texture_mip_bytes(width, height, levels);
+	const uint32_t mip_bytes = xsdk_texture_mip_bytes(width, height, levels);
+	const uint32_t size_bytes = mip_offset_bytes + mip_bytes;
 	volatile uint32_t *const texels = xsdk_gpu_alloc(size_bytes);
 	if (!texels)
 		return STATUS_NO_MEMORY;
 	const uint32_t address = xsdk_gpu_address(texels);
 	assert(address % FETCH_ADDRESS_ALIGNMENT == 0);
-	const uint32_t mip_address = levels > 1 ? address + mip_offset_bytes : 0;
+	// Mips in the base's tail point back at the base, so Xenia reads them where the console does.
+	const uint32_t mip_address = levels == 1 ? 0 : mip_bytes ? address + mip_offset_bytes : address;
 	*texture = (XsdkTexture){
 		.texels = texels,
 		.address = address,

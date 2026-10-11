@@ -88,20 +88,15 @@ static void packed_offset(uint32_t width, uint32_t height, uint32_t level, uint3
 	*y = wide ? 0 : offset;
 }
 
-// The tail holds its levels in the stored level it starts at; when that is the base, the mips keep a tail of their own.
-static uint32_t first_stored_mip(uint32_t packed_level)
-{
-	return packed_level == 0 ? 0 : 1;
-}
-
 uint32_t xsdk_texture_mip_bytes(uint32_t width, uint32_t height, uint32_t levels)
 {
-	if (levels <= 1)
-		return 0;
 	const uint32_t packed_level = xsdk_texture_packed_level(width, height);
+	// With the base in the tail, the console reads every level from it, whatever the mip address (docs/HARDWARE.md).
+	if (levels <= 1 || packed_level == 0)
+		return 0;
 	const uint32_t last = levels - 1 < packed_level ? levels - 1 : packed_level;
 	uint32_t bytes = 0;
-	for (uint32_t stored = first_stored_mip(packed_level); stored <= last; stored++)
+	for (uint32_t stored = 1; stored <= last; stored++)
 		bytes += stored_bytes(width, height, stored);
 	return bytes;
 }
@@ -113,11 +108,11 @@ void xsdk_texture_place(uint32_t width, uint32_t height, uint32_t base_pitch, ui
 	*place = (TextureLevelPlace){ .offset_bytes = 0, .pitch = base_pitch, .x = 0, .y = 0 };
 	if (level >= packed_level)
 		packed_offset(width, height, level, &place->x, &place->y);
-	if (level == 0)
+	if (level == 0 || packed_level == 0)
 		return;
 	const uint32_t stored = level < packed_level ? level : packed_level;
 	place->offset_bytes = mip_offset_bytes;
-	for (uint32_t before = first_stored_mip(packed_level); before < stored; before++)
+	for (uint32_t before = 1; before < stored; before++)
 		place->offset_bytes += stored_bytes(width, height, before);
 	place->pitch = stored_texels(width, stored);
 }

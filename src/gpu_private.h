@@ -162,7 +162,7 @@ uint32_t xsdk_tiled_2d(uint32_t x, uint32_t y, uint32_t pitch_texels, uint32_t b
 
 // Where a texture level's texel (0, 0) is stored.
 typedef struct {
-	// From the texture's start: 0 for the base, else the mip offset plus the levels stored before it.
+	// From the texture's start: 0 for the base and its tail, else the mip offset plus the levels stored before it.
 	uint32_t offset_bytes;
 	uint32_t pitch;
 	// Inside the packed tail; 0 above it.

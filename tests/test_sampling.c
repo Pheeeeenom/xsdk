@@ -34,7 +34,7 @@ enum {
 	TEXTURE_SLOT = 0,
 	// Linear filters weigh texels in fixed point and round on the way out.
 	LINEAR_TOLERANCE = 3,
-	MAX_CELLS = 48,
+	MAX_CELLS = 64,
 	POINTS_PER_CELL = 10,
 	MAX_LEVEL_TEXELS = 256 * 256,
 	LEVEL_GAP = 12,
@@ -56,6 +56,9 @@ enum {
 	TEXTURE_TALL,
 	TEXTURE_SMALL,
 	TEXTURE_SMALL_LINEAR,
+	TEXTURE_SMALL_WIDE,
+	TEXTURE_TAIL_32,
+	TEXTURE_TAIL_24,
 	TEXTURE_CHECKER_SMALL,
 	TEXTURE_CHECKER_LARGE,
 	TEXTURE_SOLID_LEVELS,
@@ -83,13 +86,17 @@ typedef struct {
 	uint32_t pattern;
 } TextureSpec;
 
-// The mip rows cover a square, both sides not a power of two each way, and a base inside the packed tail.
+// The mip rows cover a square, sides not a power of two each way, and bases inside the packed tail with their mips.
 static const TextureSpec specs[TEXTURES] = {
 	[TEXTURE_SQUARE] = { "128x128", 128, 128, 8, true, PATTERN_LEVELS },
 	[TEXTURE_WIDE] = { "136x68", 136, 68, 8, true, PATTERN_LEVELS },
 	[TEXTURE_TALL] = { "68x136", 68, 136, 8, true, PATTERN_LEVELS },
 	[TEXTURE_SMALL] = { "16x16", 16, 16, 5, true, PATTERN_LEVELS },
 	[TEXTURE_SMALL_LINEAR] = { "16x16 linear", 16, 16, 1, false, PATTERN_LEVELS },
+	[TEXTURE_SMALL_WIDE] = { "16x8", 16, 8, 5, true, PATTERN_LEVELS },
+	// From 17 to 32 across, the base isn't packed but level 1 starts the tail (texture_util.h:91-94).
+	[TEXTURE_TAIL_32] = { "32x32", 32, 32, 6, true, PATTERN_LEVELS },
+	[TEXTURE_TAIL_24] = { "24x20", 24, 20, 5, true, PATTERN_LEVELS },
 	[TEXTURE_CHECKER_SMALL] = { "32x32 checker", 32, 32, 1, true, PATTERN_CHECKER },
 	[TEXTURE_CHECKER_LARGE] = { "256x256 checker", 256, 256, 1, true, PATTERN_CHECKER },
 	[TEXTURE_SOLID_LEVELS] = { "256x256 levels", 256, 256, 9, true, PATTERN_SOLID },
@@ -241,6 +248,9 @@ static uint32_t make_cells(Cell *cells)
 	count = add_mip_row(cells, count, TEXTURE_TALL, 40, 300);
 	count = add_mip_row(cells, count, TEXTURE_SMALL, 40, 470);
 	count = add_mip_row(cells, count, TEXTURE_SMALL_LINEAR, 140, 470);
+	count = add_mip_row(cells, count, TEXTURE_SMALL_WIDE, 40, 500);
+	count = add_mip_row(cells, count, TEXTURE_TAIL_32, 40, 530);
+	count = add_mip_row(cells, count, TEXTURE_TAIL_24, 200, 530);
 	return add_grid(cells, count);
 }
 

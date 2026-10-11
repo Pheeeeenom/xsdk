@@ -1192,3 +1192,29 @@ screenshot of the last frame). All 152 checks passed, and the console went back 
 - **The slope term of depth bias isn't tested.** The API takes it, but this run only used the constant term.
 
 With that, milestone 14 is done.
+
+## A small texture's mips share its base's tail (2026-10-10)
+
+Milestone 15's first run of `build/xsdk_test.xex` passed 163 of 164 checks (log tail:
+`results/2026-10-10-milestone-15/xsdk-run-1-tail.log`). Only the 16x16 tiled texture failed, and only its levels 1 to
+4. Its base, read from inside the packed tail, was right. Every pixel of the four levels held an earlier test's clear
+colour, read as a texel. GPU memory isn't cleared when allocated, so the GPU had read texels the test never wrote.
+
+`build/probe_mip_tail.xex` settled where those levels are (log: `results/2026-10-10-probe-mip-tail/xsdk.log`).
+
+- **The setup:** six tiled textures whose short side is 16 or less (16x16, 8x8, 4x4, 16x8, 8x16 and 32x16), drawn one
+  texel to a pixel at every level. Every texel of four pages around each texture held a code for its page and place.
+- **With the mip address on the page after the base, every level came from the base's page.** None came from the mip
+  page or from outside the four pages.
+- **With the mip address set to the base, every level came from the same texels as before.** So the console ignores the
+  mip address once the base is in the tail.
+- **Every level read one rectangle at Xenia's tail offsets** (xenia:src/xenia/gpu/texture_util.cc:116-207). That
+  includes the base at (16, 0) for a square and (0, 16) for a wide texture. It matches Xenia's own run of the probe,
+  page aside.
+- **Xenia is wrong to give these mips a tail of their own at the mip address**
+  (xenia:src/xenia/gpu/texture_util.h:85-98). Xenia reads from the mip address, so the probe's first setup would pass
+  in Xenia and fail on the console.
+
+The SDK now keeps such a texture's mips in its base's tail, and points the mip address at the base so Xenia reads them
+there too. `test_sampling` adds a 16x8 texture to the 16x16 one, and 32x32 and 24x20 textures, whose tail starts at
+level 1, the case Xenia's note sets apart next (texture_util.h:91-94).
