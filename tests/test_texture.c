@@ -193,12 +193,12 @@ static volatile uint32_t *upload_quad(const Layout *layout)
 
 static bool make_texture(XsdkTexture *texture, const Layout *layout)
 {
-	if (!NT_SUCCESS(xsdk_texture_create(texture, TEXTURE_WIDTH, TEXTURE_HEIGHT, layout->tiled)))
+	if (!NT_SUCCESS(xsdk_texture_create(texture, TEXTURE_WIDTH, TEXTURE_HEIGHT, 1, layout->tiled)))
 		return false;
 	for (uint32_t y = 0; y < TEXTURE_HEIGHT; y++)
 		for (uint32_t x = 0; x < TEXTURE_WIDTH; x++)
 			image[y][x] = texel_argb(layout, x, y);
-	xsdk_texture_upload(texture, &image[0][0], TEXTURE_WIDTH);
+	xsdk_texture_upload(texture, 0, &image[0][0], TEXTURE_WIDTH);
 	return true;
 }
 
@@ -207,6 +207,8 @@ typedef struct {
 	const XsdkShader *pixel;
 	uint32_t vertices[LAYOUTS];
 	const XsdkTexture *textures[LAYOUTS];
+	// Nearest texel, edges clamped.
+	const XsdkSamplerState *sampler;
 	volatile uint32_t *const *buffers;
 	bool has_display;
 } Scene;
@@ -233,7 +235,7 @@ static void draw_frames(const Scene *scene)
 		for (uint32_t i = 0; i < LAYOUTS; i++) {
 			xsdk_gpu_set_vertices(scene->vertices[i], QUAD_VERTICES * STRIDE_BYTES);
 			// Each quad rebinds slot 0, which the last frame's resolve also overwrote.
-			xsdk_gpu_set_texture(TEXTURE_SLOT, scene->textures[i]);
+			xsdk_gpu_set_texture(TEXTURE_SLOT, scene->textures[i], scene->sampler);
 			xsdk_gpu_draw(XSDK_PRIMITIVE_TRIANGLE_LIST, QUAD_VERTICES);
 		}
 		xsdk_gpu_resolve(address, WIDTH, HEIGHT, CLEAR_ARGB);
@@ -290,12 +292,21 @@ void test_texture(void)
 	const uint32_t buffer_bytes = xsdk_gpu_resolve_bytes(WIDTH, HEIGHT);
 	volatile uint32_t *const buffers[BUFFERS] = { xsdk_gpu_alloc(buffer_bytes), xsdk_gpu_alloc(buffer_bytes) };
 	check("texture: vertex and front buffers", vertices[0] && vertices[1] && buffers[0] && buffers[1]);
+	const XsdkSampler point_clamped = { .mag_filter = XSDK_FILTER_POINT,
+		.min_filter = XSDK_FILTER_POINT,
+		.mip_filter = XSDK_FILTER_POINT,
+		.address_u = XSDK_ADDRESS_CLAMP,
+		.address_v = XSDK_ADDRESS_CLAMP,
+		.lod_bias = 0.0f };
+	XsdkSamplerState sampler;
+	xsdk_texture_sampler_state(&sampler, &point_clamped);
 	// Without a display, as in Xenia, the frames still draw and are checked.
 	if (patched && made && vertices[0] && vertices[1] && buffers[0] && buffers[1]) {
 		const Scene scene = { .vertex = &vertex,
 			.pixel = &pixel,
 			.vertices = { xsdk_gpu_address(vertices[0]), xsdk_gpu_address(vertices[1]) },
 			.textures = { &textures[0], &textures[1] },
+			.sampler = &sampler,
 			.buffers = buffers,
 			.has_display = has_display };
 		draw_frames(&scene);

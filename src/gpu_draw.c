@@ -183,15 +183,17 @@ void xsdk_gpu_set_vertices(uint32_t address, uint32_t size_bytes)
 }
 
 // Xe_SetTexture's fetch constant, as a whole group, after the caches drop what the CPU may have rewritten (xe.c:1748).
-void xsdk_gpu_set_texture(uint32_t slot, const XsdkTexture *texture)
+void xsdk_gpu_set_texture(uint32_t slot, const XsdkTexture *texture, const XsdkSamplerState *sampler)
 {
 	assert(slot < TEXTURE_SLOTS);
+	uint32_t fetch[FETCH_GROUP_DWORDS];
+	for (uint32_t i = 0; i < FETCH_GROUP_DWORDS; i++)
+		fetch[i] = texture->fetch[i] | sampler->fetch[i];
 	const uint32_t flush_fetch[] = { 0, 0, 0 };
 	uint32_t dwords[DRAW_MAX_DWORDS];
 	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
 	xsdk_gpu_put_coherency(&packets, COHER_VERTEX_CACHE | COHER_TEXTURE_CACHE, texture->address, texture->size_bytes);
-	gpu_put_registers(
-		&packets, SHADER_CONSTANT_FETCH_00_0 + slot * FETCH_GROUP_DWORDS, texture->fetch, FETCH_GROUP_DWORDS);
+	gpu_put_registers(&packets, SHADER_CONSTANT_FETCH_00_0 + slot * FETCH_GROUP_DWORDS, fetch, FETCH_GROUP_DWORDS);
 	gpu_put_registers(&packets, SHADER_CONSTANT_FLUSH_FETCH_0, flush_fetch, 3);
 	xsdk_gpu_write(&packets);
 }

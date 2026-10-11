@@ -196,12 +196,12 @@ static volatile uint32_t *upload_quad(
 
 static bool make_texture(XsdkTexture *texture, bool rendered)
 {
-	if (!NT_SUCCESS(xsdk_texture_create(texture, TEXTURE_WIDTH, TEXTURE_HEIGHT, true)))
+	if (!NT_SUCCESS(xsdk_texture_create(texture, TEXTURE_WIDTH, TEXTURE_HEIGHT, 1, true)))
 		return false;
 	for (uint32_t y = 0; y < TEXTURE_HEIGHT; y++)
 		for (uint32_t x = 0; x < TEXTURE_WIDTH; x++)
 			image[y][x] = rendered ? SENTINEL_ARGB : source_argb(x, y);
-	xsdk_texture_upload(texture, &image[0][0], TEXTURE_WIDTH);
+	xsdk_texture_upload(texture, 0, &image[0][0], TEXTURE_WIDTH);
 	return true;
 }
 
@@ -213,6 +213,8 @@ typedef struct {
 	// The second pass's quads on screen, one a side.
 	uint32_t shown[SIDES];
 	const XsdkTexture *textures[SIDES];
+	// Nearest texel, edges clamped.
+	const XsdkSamplerState *sampler;
 	volatile uint32_t *const *buffers;
 	bool has_display;
 } Scene;
@@ -230,7 +232,7 @@ static void draw_frame(const Scene *scene, uint32_t frame, uint32_t front_buffer
 	xsdk_gpu_set_target(TEXTURE_WIDTH, TEXTURE_HEIGHT);
 	xsdk_gpu_set_shaders(scene->vertex, scene->pixel);
 	xsdk_gpu_set_vertices(scene->mirrored[frame < HALF ? 0 : 1], QUAD_BYTES);
-	xsdk_gpu_set_texture(TEXTURE_SLOT, scene->textures[0]);
+	xsdk_gpu_set_texture(TEXTURE_SLOT, scene->textures[0], scene->sampler);
 	xsdk_gpu_draw(XSDK_PRIMITIVE_TRIANGLE_LIST, QUAD_VERTICES);
 	xsdk_gpu_resolve_texture(scene->textures[1], CLEAR_ARGB);
 	// The second pass draws the source and the render target side by side; the resolve undid the target and shader.
@@ -238,7 +240,7 @@ static void draw_frame(const Scene *scene, uint32_t frame, uint32_t front_buffer
 	xsdk_gpu_set_shaders(scene->vertex, scene->pixel);
 	for (uint32_t i = 0; i < SIDES; i++) {
 		xsdk_gpu_set_vertices(scene->shown[i], QUAD_BYTES);
-		xsdk_gpu_set_texture(TEXTURE_SLOT, scene->textures[i]);
+		xsdk_gpu_set_texture(TEXTURE_SLOT, scene->textures[i], scene->sampler);
 		xsdk_gpu_draw(XSDK_PRIMITIVE_TRIANGLE_LIST, QUAD_VERTICES);
 	}
 	xsdk_gpu_resolve(front_buffer, WIDTH, HEIGHT, CLEAR_ARGB);
@@ -315,6 +317,14 @@ void test_render(void)
 	for (uint32_t i = 0; i < MIRRORS + SIDES; i++)
 		allocated = allocated && vertices[i];
 	check("render: vertex and front buffers", allocated);
+	const XsdkSampler point_clamped = { .mag_filter = XSDK_FILTER_POINT,
+		.min_filter = XSDK_FILTER_POINT,
+		.mip_filter = XSDK_FILTER_POINT,
+		.address_u = XSDK_ADDRESS_CLAMP,
+		.address_v = XSDK_ADDRESS_CLAMP,
+		.lod_bias = 0.0f };
+	XsdkSamplerState sampler;
+	xsdk_texture_sampler_state(&sampler, &point_clamped);
 	// Without a display, as in Xenia, the frames still draw and are checked.
 	if (patched && made && allocated) {
 		const Scene scene = { .vertex = &vertex,
@@ -322,6 +332,7 @@ void test_render(void)
 			.mirrored = { xsdk_gpu_address(vertices[0]), xsdk_gpu_address(vertices[1]) },
 			.shown = { xsdk_gpu_address(vertices[2]), xsdk_gpu_address(vertices[3]) },
 			.textures = { &textures[0], &textures[1] },
+			.sampler = &sampler,
 			.buffers = buffers,
 			.has_display = has_display };
 		draw_frames(&scene);

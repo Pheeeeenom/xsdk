@@ -20,7 +20,7 @@ LIBS := -Wl,--start-group $(BUILD)/libxsdk.a -lstdc++ -lc -lm -lgcc -Wl,--end-gr
 SDK_SOURCES := src/start.c src/log.c src/sbrk.c src/thread.c src/thread_entry.S src/file.c src/path.c src/dir.c \
 	src/pthread.c src/lock.c src/reent.c src/time.c src/sysconf.c src/entropy.c src/exit.c src/gpu.c \
 	src/gpu_setup.c src/gpu_resolve.c src/gpu_draw.c src/gpu_constants.c src/display.c src/shader.c src/texture.c \
-	src/tiled.c src/present.c
+	src/texture_layout.c src/tiled.c src/present.c
 IMPORT_NAMES := $(shell $(PYTHON) tools/gen_imports.py --list imports/imports.txt)
 IMPORT_SOURCES := $(IMPORT_NAMES:%=$(BUILD)/imports/%.S)
 SDK_OBJECTS := $(patsubst src/%,$(BUILD)/sdk/%.o,$(basename $(SDK_SOURCES))) $(IMPORT_NAMES:%=$(BUILD)/imports/%.o)
@@ -30,7 +30,7 @@ TEST_SOURCES := tests/main.c tests/test_image.c tests/test_threads.c tests/test_
 	tests/test_cpp_atomics.cpp tests/test_cpp_exceptions.cpp tests/test_cpp_chrono.cpp tests/test_cpp_filesystem.cpp \
 	tests/test_cpp_format.cpp tests/test_gpu.c tests/test_present.c tests/test_triangle.c tests/test_texture.c \
 	tests/test_render.c tests/test_pacing.c tests/bar_scene.c tests/test_scale.c tests/test_constants.c \
-	tests/test_indexed.c tests/test_depth.c tests/test_raster.c
+	tests/test_indexed.c tests/test_depth.c tests/test_raster.c tests/test_sampling.c
 TEST_OBJECTS := $(patsubst tests/%,$(BUILD)/tests/%.o,$(basename $(TEST_SOURCES)))
 # A title for listening to the audio frame layout on the console.
 AUDIO_CHECK_SOURCES := tests/audio_check.c tests/audio_check_entry.S tests/audio_frame.c

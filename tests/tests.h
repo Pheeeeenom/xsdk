@@ -57,6 +57,9 @@ void test_depth(void);
 // Raster and blend state (milestone 14).
 void test_raster(void);
 
+// Sampling and mipmaps (milestone 15).
+void test_sampling(void);
+
 #ifdef __cplusplus
 }
 #endif

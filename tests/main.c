@@ -40,6 +40,7 @@ int main(void)
 	test_indexed();
 	test_depth();
 	test_raster();
+	test_sampling();
 	xsdk_log_write("tests: %d passed, %d failed", passed_count, failed_count);
 	return failed_count;
 }
