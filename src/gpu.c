@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <time.h>
 
 #include "gpu_private.h"
 #include "xsdk/kernel.h"
@@ -33,6 +34,8 @@ enum {
 	OVERFLOW_SCRATCH_DWORDS = RING_DWORDS,
 	// An indirect buffer's length is 20 bits (xenia:src/xenia/gpu/command_processor.cc:947-949).
 	INDIRECT_BUFFER_MAX_DWORDS = 0xFFFFF,
+	MICROSECONDS_PER_SECOND = 1000000,
+	NANOSECONDS_PER_MICROSECOND = 1000,
 };
 
 // Byte offsets in the write-back page.
@@ -55,6 +58,7 @@ static volatile uint32_t *writeback;
 static uint32_t writeback_physical;
 static uint32_t write_index;
 static uint32_t last_fence;
+static XsdkGpuStats ring_stats;
 
 typedef struct {
 	uint32_t width;
@@ -104,15 +108,28 @@ static void kick(void)
 	// Drain the write-combined stores before the GPU reads them (libxenon:drivers/xenos/xe.c:97-106).
 	__asm__ volatile("sync" ::: "memory");
 	gpu_registers[CP_RB_WPTR] = write_index;
+	ring_stats.kicks++;
+}
+
+static uint64_t now_us(void)
+{
+	struct timespec now;
+	(void)clock_gettime(CLOCK_MONOTONIC, &now);
+	return (uint64_t)now.tv_sec * MICROSECONDS_PER_SECOND + (uint64_t)now.tv_nsec / NANOSECONDS_PER_MICROSECOND;
 }
 
 static void wait_for_room(uint32_t dword_count)
 {
 	if (free_dwords() >= dword_count)
 		return;
+	const uint64_t start = now_us();
+	ring_stats.waits++;
 	kick();
-	while (free_dwords() < dword_count)
+	while (free_dwords() < dword_count) {
 		(void)xsdk_thread_sleep(1);
+		ring_stats.sleeps++;
+	}
+	ring_stats.waited_us += now_us() - start;
 }
 
 static uint32_t float_bits(float value)
@@ -154,6 +171,7 @@ NTSTATUS xsdk_gpu_open(void)
 	writeback[FENCE_OFFSET / 4] = 0;
 	write_index = 0;
 	last_fence = 0;
+	memset(&ring_stats, 0, sizeof ring_stats);
 	memset(rectangles, 0, sizeof rectangles);
 
 	// No microcode: the kernel keeps the command processor's own (docs/HARDWARE.md).
@@ -215,10 +233,12 @@ volatile uint32_t *xsdk_gpu_reserve(uint32_t dword_count)
 		wait_for_room(filler_dwords);
 		ring[write_index] = xsdk_gpu_type3(PM4_NOP, filler_dwords - 1);
 		write_index = 0;
+		ring_stats.dwords += filler_dwords;
 	}
 	wait_for_room(dword_count);
 	volatile uint32_t *const packets = &ring[write_index];
 	write_index += dword_count;
+	ring_stats.dwords += dword_count;
 	return packets;
 }
 
@@ -286,6 +306,11 @@ uint32_t xsdk_gpu_fence(void)
 bool xsdk_gpu_fence_done(uint32_t fence)
 {
 	return (int32_t)(writeback[FENCE_OFFSET / 4] - fence) >= 0;
+}
+
+void xsdk_gpu_stats(XsdkGpuStats *stats)
+{
+	*stats = ring_stats;
 }
 
 NTSTATUS xsdk_gpu_wait(uint32_t fence, uint32_t timeout_ms)

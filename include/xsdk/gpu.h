@@ -49,6 +49,18 @@ NTSTATUS xsdk_gpu_wait(uint32_t fence, uint32_t timeout_ms);
 // Whether the GPU has passed the fence, without waiting; safe in the graphics interrupt callback.
 bool xsdk_gpu_fence_done(uint32_t fence);
 
+// What the ring has done since xsdk_gpu_open, to measure a title by.
+typedef struct {
+	uint64_t dwords;
+	uint32_t kicks;
+	// Reserves that found the ring full, the 1 ms sleeps they took, and how long they waited.
+	uint32_t waits;
+	uint32_t sleeps;
+	uint64_t waited_us;
+} XsdkGpuStats;
+
+void xsdk_gpu_stats(XsdkGpuStats *stats);
+
 // Write-combined physical memory for the GPU, in 64 KB pages, or NULL. Write it with volatile 32-bit stores.
 volatile uint32_t *xsdk_gpu_alloc(uint32_t size_bytes);
 void xsdk_gpu_free(volatile uint32_t *memory);
