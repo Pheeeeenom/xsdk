@@ -15,9 +15,8 @@
 #include "xsdk/thread.h"
 
 enum {
-	WIDTH = 640,
-	HEIGHT = 480,
-	PIXELS = WIDTH * HEIGHT,
+	WIDTH = 1280,
+	HEIGHT = 720,
 	BUFFERS = 2,
 	FRAMES = 120,
 	// The first half renders the source mirrored left to right, the second top to bottom.
@@ -287,8 +286,9 @@ void test_render(void)
 		return;
 	uint32_t width = 0;
 	uint32_t height = 0;
-	const bool has_display = NT_SUCCESS(xsdk_display_open(&width, &height)) && width == WIDTH && height == HEIGHT;
-	check("render: display open in a 640x480 mode", has_display);
+	const bool has_display =
+		NT_SUCCESS(xsdk_display_open(XSDK_DISPLAY_720P, &width, &height)) && width == WIDTH && height == HEIGHT;
+	check("render: display open at 1280x720", has_display);
 	XsdkShader vertex = { .microcode = NULL };
 	XsdkShader pixel = { .microcode = NULL };
 	const bool loaded = NT_SUCCESS(xsdk_shader_load(&vertex, texture_vertex_shader, sizeof texture_vertex_shader)) &&
@@ -309,7 +309,8 @@ void test_render(void)
 		upload_quad(WIDTH, HEIGHT, sides[0].quad_x, QUAD_Y, false, false),
 		upload_quad(WIDTH, HEIGHT, sides[1].quad_x, QUAD_Y, false, false),
 	};
-	volatile uint32_t *const buffers[BUFFERS] = { xsdk_gpu_alloc(PIXELS * 4), xsdk_gpu_alloc(PIXELS * 4) };
+	const uint32_t buffer_bytes = xsdk_gpu_resolve_bytes(WIDTH, HEIGHT);
+	volatile uint32_t *const buffers[BUFFERS] = { xsdk_gpu_alloc(buffer_bytes), xsdk_gpu_alloc(buffer_bytes) };
 	bool allocated = buffers[0] && buffers[1];
 	for (uint32_t i = 0; i < MIRRORS + SIDES; i++)
 		allocated = allocated && vertices[i];

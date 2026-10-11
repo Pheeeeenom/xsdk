@@ -382,7 +382,7 @@ int main(void)
 	}
 	uint32_t width = 0;
 	uint32_t height = 0;
-	const NTSTATUS display_status = xsdk_display_open(&width, &height);
+	const NTSTATUS display_status = xsdk_display_open(XSDK_DISPLAY_KERNEL, &width, &height);
 	const bool has_display = NT_SUCCESS(display_status) && width == WIDTH && height == HEIGHT;
 	xsdk_log_write("triangle: display 0x%08X, %ux%u", (unsigned)display_status, (unsigned)width, (unsigned)height);
 	XsdkShader vertex = { .microcode = NULL };

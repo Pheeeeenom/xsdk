@@ -6,11 +6,11 @@
 
 #include "xsdk/shader.h"
 
-// A full-height bar moving 8 pixels right a frame across 640x480, so a frame shown late or torn shows on a capture.
+// A full-height bar moving 8 pixels right a frame across 1280x720, so a frame shown late or torn shows on a capture.
 
 enum {
-	BAR_FRAME_WIDTH = 640,
-	BAR_FRAME_HEIGHT = 480,
+	BAR_FRAME_WIDTH = 1280,
+	BAR_FRAME_HEIGHT = 720,
 };
 
 typedef struct {

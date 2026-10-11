@@ -45,7 +45,8 @@ static void run_mode(const Mode *mode)
 	const bool opened = bar_scene_open(&scene, mode->argb);
 	uint32_t width = 0;
 	uint32_t height = 0;
-	const NTSTATUS status = opened ? xsdk_present_open(mode->buffers, mode->swap_interval, &width, &height) : 0;
+	const NTSTATUS status =
+		opened ? xsdk_present_open(XSDK_DISPLAY_720P, mode->buffers, mode->swap_interval, &width, &height) : 0;
 	check_mode(mode, "scene and present open", opened && NT_SUCCESS(status));
 	if (!opened || !NT_SUCCESS(status)) {
 		bar_scene_close(&scene);

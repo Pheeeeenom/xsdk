@@ -2,6 +2,7 @@
 #include <stdint.h>
 
 #include "tests.h"
+#include "tiled_index.h"
 #include "xsdk/display.h"
 #include "xsdk/gpu.h"
 #include "xsdk/kernel.h"
@@ -9,9 +10,8 @@
 #include "xsdk/thread.h"
 
 enum {
-	WIDTH = 640,
-	HEIGHT = 480,
-	PIXELS = WIDTH * HEIGHT,
+	WIDTH = 1280,
+	HEIGHT = 720,
 	BUFFERS = 2,
 	FRAMES = 240,
 	FRAME_MS = 16,
@@ -34,10 +34,16 @@ static uint32_t as_stored(uint32_t argb)
 	return __builtin_bswap32(argb);
 }
 
+static uint32_t pixel_at(volatile const uint32_t *pixels, uint32_t x, uint32_t y)
+{
+	return pixels[tiled_index(x, y, WIDTH)];
+}
+
 // The first, middle and last pixel; reading all of write-combined memory every frame would take too long.
 static bool holds(volatile const uint32_t *pixels, uint32_t value)
 {
-	return pixels[0] == value && pixels[PIXELS / 2] == value && pixels[PIXELS - 1] == value;
+	return pixel_at(pixels, 0, 0) == value && pixel_at(pixels, WIDTH / 2, HEIGHT / 2) == value &&
+		pixel_at(pixels, WIDTH - 1, HEIGHT - 1) == value;
 }
 
 // Each frame resolves into the buffer not on screen, clearing eDRAM to the next colour, then shows it.
@@ -56,8 +62,9 @@ static void present_frames(volatile uint32_t *const *buffers, bool has_display)
 		if (frame > 0 && fences_landed && !holds(buffer, expected)) {
 			if (misses < MAX_MISSES_LOGGED)
 				xsdk_log_write("present: frame %u held %08X %08X %08X at its first, middle and last pixel, not %08X",
-					(unsigned)frame, (unsigned)buffer[0], (unsigned)buffer[PIXELS / 2], (unsigned)buffer[PIXELS - 1],
-					(unsigned)expected);
+					(unsigned)frame, (unsigned)pixel_at(buffer, 0, 0),
+					(unsigned)pixel_at(buffer, WIDTH / 2, HEIGHT / 2),
+					(unsigned)pixel_at(buffer, WIDTH - 1, HEIGHT - 1), (unsigned)expected);
 			misses++;
 		}
 		if (has_display)
@@ -80,10 +87,11 @@ void test_present(void)
 		return;
 	uint32_t width = 0;
 	uint32_t height = 0;
-	const NTSTATUS display_status = xsdk_display_open(&width, &height);
+	const NTSTATUS display_status = xsdk_display_open(XSDK_DISPLAY_720P, &width, &height);
 	const bool has_display = NT_SUCCESS(display_status) && width == WIDTH && height == HEIGHT;
-	check("present: display open in a 640x480 mode", has_display);
-	volatile uint32_t *const buffers[BUFFERS] = { xsdk_gpu_alloc(PIXELS * 4), xsdk_gpu_alloc(PIXELS * 4) };
+	check("present: display open at 1280x720", has_display);
+	const uint32_t buffer_bytes = xsdk_gpu_resolve_bytes(WIDTH, HEIGHT);
+	volatile uint32_t *const buffers[BUFFERS] = { xsdk_gpu_alloc(buffer_bytes), xsdk_gpu_alloc(buffer_bytes) };
 	check("present: front buffers", buffers[0] && buffers[1]);
 	// Without a display, as in Xenia, the frames still resolve and are checked.
 	if (buffers[0] && buffers[1])

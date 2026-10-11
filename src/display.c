@@ -24,6 +24,18 @@ enum {
 	DC_LUT_AUTOFILL = 0x1928,
 	DC_LUTA_CONTROL = 0x1930,
 	AVIVO_D1MODE_VIEWPORT_SIZE = 0x1961,
+	AVIVO_D1SCL_SCALER_ENABLE = 0x1964,
+	AVIVO_D1SCL_SCALER_TAP_CONTROL = 0x1965,
+	// Filter control, scale factor and start phase, horizontal then vertical (docs/HARDWARE.md).
+	UNKNOWN_196C = 0x196C,
+	UNKNOWN_196D = 0x196D,
+	UNKNOWN_196E = 0x196E,
+	UNKNOWN_1970 = 0x1970,
+	UNKNOWN_1971 = 0x1971,
+	UNKNOWN_1972 = 0x1972,
+	AVIVO_D1SCL_UPDATE = 0x1973,
+	// The viewport's width over 4, less one (libxenon:drivers/xenos/xenos.c:390, 397).
+	UNKNOWN_197A = 0x197A,
 };
 
 enum {
@@ -33,6 +45,15 @@ enum {
 	AUTOFILL_TIMEOUT_MS = 100,
 	AUTOFILL_DONE = 2,
 	LUT_ALL_CHANNELS = 7,
+	WIDTH_720P = 1280,
+	HEIGHT_720P = 720,
+	SCALE_ONE_LOG2 = 24,
+	// 2 taps each way through the built-in filter, the only setting that scaled whole (docs/HARDWARE.md).
+	TWO_TAPS = 0x101,
+	TAPS = 2,
+	BUILT_IN_FILTER = 0x100,
+	// Holds the scaler's registers until it's released (xf86-video-radeonhd:src/rhd_regs.h:412-413).
+	SCALER_UPDATE_LOCK = 0x10000,
 };
 
 typedef struct {
@@ -42,9 +63,33 @@ typedef struct {
 	uint32_t y_end;
 } Surface;
 
+enum {
+	SCALER_ENABLE,
+	SCALER_TAP_CONTROL,
+	VIEWPORT_SIZE,
+	VIEWPORT_WIDTH_QUARTER,
+	HORIZONTAL_FILTER,
+	HORIZONTAL_SCALE,
+	HORIZONTAL_PHASE,
+	VERTICAL_FILTER,
+	VERTICAL_SCALE,
+	VERTICAL_PHASE,
+	SCALER_REGISTERS,
+};
+
+// The registers the scaling probes wrote and put back, which gave the display back to XAM (docs/HARDWARE.md).
+static const uint32_t scaler_registers[SCALER_REGISTERS] = { AVIVO_D1SCL_SCALER_ENABLE, AVIVO_D1SCL_SCALER_TAP_CONTROL,
+	AVIVO_D1MODE_VIEWPORT_SIZE, UNKNOWN_197A, UNKNOWN_196C, UNKNOWN_196D, UNKNOWN_196E, UNKNOWN_1970, UNKNOWN_1971,
+	UNKNOWN_1972 };
+
 static bool is_open;
 static uint32_t mode_height;
 static Surface old_surface;
+// Set while the title's front buffer is 1280x720 on the SDK's scaling rather than the kernel's.
+static bool scaling;
+static bool scaler_applied;
+static uint32_t old_scaler[SCALER_REGISTERS];
+static uint32_t new_scaler[SCALER_REGISTERS];
 
 // libxenon's autofill of a linear ramp; the screen stays black without it (libxenon:drivers/xenos/xenos.c:419-424).
 static NTSTATUS fill_lut(void)
@@ -62,7 +107,49 @@ static NTSTATUS fill_lut(void)
 	return STATUS_SUCCESS;
 }
 
-NTSTATUS xsdk_display_open(uint32_t *width, uint32_t *height)
+// Source over output in 8.24 (docs/HARDWARE.md, "Scaling 1280x720 by hand").
+static uint32_t scale(uint32_t source, uint32_t output)
+{
+	return (uint32_t)(((uint64_t)source << SCALE_ONE_LOG2) / output);
+}
+
+// (scale + taps + 1) / 2 in 16.16 (docs/HARDWARE.md, "What AMD's code says about the scaler").
+static uint32_t phase(uint32_t scale_8_24)
+{
+	return ((TAPS + 1) << 15) + (scale_8_24 >> 9);
+}
+
+// Plans 1280x720 scaled to the output, or shown 1:1 with the scaler off as libxenon does (xenos.c:381-417).
+static bool plan_scaler(void)
+{
+	VIDEO_MODE video;
+	VdQueryVideoMode(&video);
+	if (video.is_interlaced || !video.display_width || !video.display_height) {
+		xsdk_log_write("display: the output is %ux%u, interlaced %u, which 1280x720 isn't tried on; the kernel's mode",
+			(unsigned)video.display_width, (unsigned)video.display_height, (unsigned)video.is_interlaced);
+		return false;
+	}
+	for (uint32_t i = 0; i < SCALER_REGISTERS; i++)
+		old_scaler[i] = gpu_registers[scaler_registers[i]];
+	const uint32_t horizontal = scale(WIDTH_720P, video.display_width);
+	const uint32_t vertical = scale(HEIGHT_720P, video.display_height);
+	const bool scaled = horizontal != 1u << SCALE_ONE_LOG2 || vertical != 1u << SCALE_ONE_LOG2;
+	new_scaler[SCALER_ENABLE] = scaled;
+	new_scaler[SCALER_TAP_CONTROL] = TWO_TAPS;
+	new_scaler[VIEWPORT_SIZE] = WIDTH_720P << 16 | HEIGHT_720P;
+	new_scaler[VIEWPORT_WIDTH_QUARTER] = WIDTH_720P / 4 - 1;
+	new_scaler[HORIZONTAL_FILTER] = old_scaler[HORIZONTAL_FILTER] | BUILT_IN_FILTER;
+	new_scaler[HORIZONTAL_SCALE] = horizontal;
+	new_scaler[HORIZONTAL_PHASE] = phase(horizontal);
+	new_scaler[VERTICAL_FILTER] = old_scaler[VERTICAL_FILTER] | BUILT_IN_FILTER;
+	new_scaler[VERTICAL_SCALE] = vertical;
+	new_scaler[VERTICAL_PHASE] = phase(vertical);
+	xsdk_log_write("display: 1280x720 %s to the %ux%u output", scaled ? "scaled" : "shown 1:1",
+		(unsigned)video.display_width, (unsigned)video.display_height);
+	return true;
+}
+
+NTSTATUS xsdk_display_open(XsdkDisplayMode mode, uint32_t *width, uint32_t *height)
 {
 	assert(!is_open);
 	// The size the display scales up, width high (xenia:src/xenia/gpu/graphics_system.cc:191-194; docs/HARDWARE.md).
@@ -82,11 +169,21 @@ NTSTATUS xsdk_display_open(uint32_t *width, uint32_t *height)
 		.x_end = gpu_registers[D1GRPH_X_END],
 		.y_end = gpu_registers[D1GRPH_Y_END],
 	};
-	*width = viewport >> 16;
-	*height = viewport & 0xFFFF;
+	scaling = mode == XSDK_DISPLAY_720P && plan_scaler();
+	scaler_applied = false;
+	*width = scaling ? WIDTH_720P : viewport >> 16;
+	*height = scaling ? HEIGHT_720P : viewport & 0xFFFF;
 	mode_height = *height;
 	is_open = true;
 	return STATUS_SUCCESS;
+}
+
+static void write_scaler(const uint32_t *values)
+{
+	gpu_registers[AVIVO_D1SCL_UPDATE] = SCALER_UPDATE_LOCK;
+	for (uint32_t i = 0; i < SCALER_REGISTERS; i++)
+		gpu_registers[scaler_registers[i]] = values[i];
+	gpu_registers[AVIVO_D1SCL_UPDATE] = 0;
 }
 
 // XAM writes both 0x2840 and D1GRPH, then sets 0x60EC, which the display clears (docs/HARDWARE.md).
@@ -124,6 +221,11 @@ void xsdk_display_flip(uint32_t address)
 NTSTATUS xsdk_display_show(uint32_t address, uint32_t pitch_pixels)
 {
 	assert(is_open);
+	// Not at open, while XAM's 640x480 surface still shows: the scaler changes with the first 1280x720 surface.
+	if (scaling && !scaler_applied) {
+		write_scaler(new_scaler);
+		scaler_applied = true;
+	}
 	const Surface surface = { .address = address, .pitch = pitch_pixels, .x_end = pitch_pixels, .y_end = mode_height };
 	return apply(&surface);
 }
@@ -132,6 +234,8 @@ void xsdk_display_close(void)
 {
 	if (!is_open)
 		return;
+	if (scaler_applied)
+		write_scaler(old_scaler);
 	(void)apply(&old_surface);
 	is_open = false;
 }

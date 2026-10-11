@@ -13,9 +13,8 @@
 #include "xsdk/thread.h"
 
 enum {
-	WIDTH = 640,
-	HEIGHT = 480,
-	PIXELS = WIDTH * HEIGHT,
+	WIDTH = 1280,
+	HEIGHT = 720,
 	BUFFERS = 2,
 	FRAMES = 120,
 	FRAME_MS = 16,
@@ -25,8 +24,8 @@ enum {
 	VERTEX_FLOATS = 8,
 	STRIDE_BYTES = VERTEX_FLOATS * 4,
 	COLOR_OFFSET_BYTES = 16,
-	// The corners land at (320, 60), (80, 420) and (560, 420): half of 480 by 360 pixels, give or take its edges.
-	TRIANGLE_PIXELS = 480 * 360 / 2,
+	// The corners land at (640, 90), (160, 630) and (1120, 630): half of 960 by 540 pixels, give or take its edges.
+	TRIANGLE_PIXELS = 960 * 540 / 2,
 	TRIANGLE_TOLERANCE_PIXELS = 2000,
 	// Near a corner its colour is above this, and the other two below the low mark.
 	CHANNEL_HIGH = 0xC0,
@@ -55,9 +54,9 @@ static const XsdkVertexElement layout[] = {
 
 // A pixel just inside each corner.
 static const Corner corners[] = {
-	{ "red", 320, 80, 8 },
-	{ "green", 100, 410, 16 },
-	{ "blue", 540, 410, 24 },
+	{ "red", 640, 120, 8 },
+	{ "green", 200, 615, 16 },
+	{ "blue", 1080, 615, 24 },
 };
 
 static const uint32_t outside_x = 20;
@@ -99,8 +98,9 @@ static bool frame_holds(volatile const uint32_t *pixels, uint32_t frame, uint32_
 static uint32_t count_drawn(volatile const uint32_t *pixels)
 {
 	uint32_t drawn = 0;
-	for (uint32_t i = 0; i < PIXELS; i++)
-		drawn += pixels[i] != as_stored(CLEAR_ARGB);
+	for (uint32_t y = 0; y < HEIGHT; y++)
+		for (uint32_t x = 0; x < WIDTH; x++)
+			drawn += pixels[tiled_index(x, y, WIDTH)] != as_stored(CLEAR_ARGB);
 	return drawn;
 }
 
@@ -160,8 +160,9 @@ void test_triangle(void)
 		return;
 	uint32_t width = 0;
 	uint32_t height = 0;
-	const bool has_display = NT_SUCCESS(xsdk_display_open(&width, &height)) && width == WIDTH && height == HEIGHT;
-	check("triangle: display open in a 640x480 mode", has_display);
+	const bool has_display =
+		NT_SUCCESS(xsdk_display_open(XSDK_DISPLAY_720P, &width, &height)) && width == WIDTH && height == HEIGHT;
+	check("triangle: display open at 1280x720", has_display);
 	XsdkShader vertex = { .microcode = NULL };
 	XsdkShader pixel = { .microcode = NULL };
 	const bool loaded = NT_SUCCESS(xsdk_shader_load(&vertex, triangle_vertex_shader, sizeof triangle_vertex_shader)) &&
@@ -171,7 +172,8 @@ void test_triangle(void)
 		NT_SUCCESS(xsdk_shader_set_vertex_layout(&vertex, layout, sizeof layout / sizeof layout[0], STRIDE_BYTES));
 	check("triangle: vertex fetches patched for the layout", patched);
 	volatile uint32_t *const vertices = upload_triangle();
-	volatile uint32_t *const buffers[BUFFERS] = { xsdk_gpu_alloc(PIXELS * 4), xsdk_gpu_alloc(PIXELS * 4) };
+	const uint32_t buffer_bytes = xsdk_gpu_resolve_bytes(WIDTH, HEIGHT);
+	volatile uint32_t *const buffers[BUFFERS] = { xsdk_gpu_alloc(buffer_bytes), xsdk_gpu_alloc(buffer_bytes) };
 	check("triangle: vertex and front buffers", vertices && buffers[0] && buffers[1]);
 	// Without a display, as in Xenia, the frames still draw and are checked.
 	if (patched && vertices && buffers[0] && buffers[1])

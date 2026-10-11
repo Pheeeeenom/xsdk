@@ -57,7 +57,8 @@ int main(void)
 	const bool opened = NT_SUCCESS(status) && bar_scene_open(&scene, BAR_ARGB);
 	uint32_t width = 0;
 	uint32_t height = 0;
-	const bool presenting = opened && NT_SUCCESS(xsdk_present_open(BUFFERS, SWAP_INTERVAL, &width, &height));
+	const bool presenting =
+		opened && NT_SUCCESS(xsdk_present_open(XSDK_DISPLAY_720P, BUFFERS, SWAP_INTERVAL, &width, &height));
 	xsdk_log_write("pacing: GPU 0x%08X, display %ux%u", (unsigned)status, (unsigned)width, (unsigned)height);
 	check("pacing: GPU, scene and present open", presenting);
 	if (!presenting)

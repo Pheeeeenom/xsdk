@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include "xsdk/display.h"
 #include "xsdk/kernel.h"
 
 #ifdef __cplusplus
@@ -28,8 +29,9 @@ typedef struct {
 	uint32_t longest_wait_us;
 } XsdkPresentStats;
 
-// Opens the display with buffer_count front buffers, 2 or 3, each frame shown for swap_interval vblanks, 1 or 2.
-NTSTATUS xsdk_present_open(uint32_t buffer_count, uint32_t swap_interval, uint32_t *width, uint32_t *height);
+// Opens the display in this mode with buffer_count front buffers, 2 or 3; each frame shows for swap_interval vblanks.
+NTSTATUS xsdk_present_open(
+	XsdkDisplayMode mode, uint32_t buffer_count, uint32_t swap_interval, uint32_t *width, uint32_t *height);
 // Waits up to timeout_ms for the next front buffer to come off screen, then gives its address to resolve into.
 NTSTATUS xsdk_present_begin(uint32_t *address, uint32_t timeout_ms);
 // The CPU's view of the front buffer at an address xsdk_present_begin gave.

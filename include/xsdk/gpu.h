@@ -50,6 +50,8 @@ void xsdk_gpu_free(volatile uint32_t *memory);
 uint32_t xsdk_gpu_address(volatile const uint32_t *memory);
 // Queues copying the eDRAM colour target to address as tiled k_8_8_8_8, then clearing it; width a multiple of 32.
 void xsdk_gpu_resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t clear_argb);
+// The bytes such a resolve writes, in whole 32-row tiles (xenia:src/xenia/gpu/draw_util.cc:1055-1062).
+uint32_t xsdk_gpu_resolve_bytes(uint32_t width, uint32_t height);
 // Queues the same into a tiled texture, drawn at its size, leaving ARGB words as xsdk_texture_upload does.
 void xsdk_gpu_resolve_texture(const XsdkTexture *texture, uint32_t clear_argb);
 

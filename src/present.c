@@ -91,15 +91,16 @@ static uint32_t elapsed_us(const struct timespec *start)
 	return (uint32_t)((now.tv_sec - start->tv_sec) * MICROSECONDS_PER_SECOND + (now.tv_nsec - start->tv_nsec) / 1000);
 }
 
-NTSTATUS xsdk_present_open(uint32_t buffer_count, uint32_t swap_interval, uint32_t *width, uint32_t *height)
+NTSTATUS xsdk_present_open(
+	XsdkDisplayMode mode, uint32_t buffer_count, uint32_t swap_interval, uint32_t *width, uint32_t *height)
 {
 	assert(!present.open && buffer_count >= 2 && buffer_count <= XSDK_PRESENT_MAX_BUFFERS);
 	assert(swap_interval >= 1 && swap_interval <= 2);
-	const NTSTATUS status = xsdk_display_open(width, height);
+	const NTSTATUS status = xsdk_display_open(mode, width, height);
 	if (!NT_SUCCESS(status))
 		return status;
 	present = (Present){ .buffer_count = buffer_count, .swap_interval = swap_interval, .height = *height };
-	const uint32_t pixels = *width * *height;
+	const uint32_t pixels = xsdk_gpu_resolve_bytes(*width, *height) / 4;
 	for (uint32_t i = 0; i < buffer_count; i++) {
 		present.buffers[i] = xsdk_gpu_alloc(pixels * 4);
 		if (!present.buffers[i]) {

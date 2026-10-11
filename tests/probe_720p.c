@@ -224,7 +224,8 @@ int main(void)
 	const NTSTATUS status = xsdk_gpu_open();
 	uint32_t width = 0;
 	uint32_t height = 0;
-	const NTSTATUS display_status = NT_SUCCESS(status) ? xsdk_display_open(&width, &height) : status;
+	const NTSTATUS display_status =
+		NT_SUCCESS(status) ? xsdk_display_open(XSDK_DISPLAY_KERNEL, &width, &height) : status;
 	volatile uint32_t *const pixels = xsdk_gpu_alloc(PIXELS * 4);
 	VIDEO_MODE mode;
 	VdQueryVideoMode(&mode);

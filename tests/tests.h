@@ -42,6 +42,9 @@ void test_render(void);
 // Frame pacing (milestone 9), each mode briefly; tests/pacing.c runs one for 10 minutes.
 void test_pacing(void);
 
+// 1280x720 on the display's scaler, held on screen for a capture.
+void test_scale(void);
+
 #ifdef __cplusplus
 }
 #endif

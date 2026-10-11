@@ -384,8 +384,8 @@ Each is proven on the user's console, as xost's milestones were.
    - the microcode question (section 3.2) is answered.
 5. **A cleared screen.** Done when the title clears an eDRAM colour target, resolves it to a front buffer in memory,
    and presents it through the display controller, every frame, in a colour that changes over time. The kernel's
-   `VdSwap` doesn't flip on the user's console (docs/HARDWARE.md). The front buffer is 640x480 for now, the kernel's
-   mode scaled to 720p; 1280x720 is a later item.
+   `VdSwap` doesn't flip on the user's console (docs/HARDWARE.md). The front buffer was 640x480, the kernel's mode
+   scaled to the output; 1280x720 came with item 10.
 6. **A triangle.** Done when a xost vertex and pixel shader, loaded by the SDK's own loader with `IM_LOAD`, draw a
    coloured triangle from a vertex buffer, with the vertex format set by fetch constants.
 7. **A textured quad.** Done when a texture uploaded by the SDK samples correctly: linear first, then tiled through the
@@ -394,6 +394,10 @@ Each is proven on the user's console, as xost's milestones were.
    relies on exactly this.
 9. **Frame pacing.** Done when frames are paced to vsync through the interrupt callback and fences, with two frames in
    flight and no stalls or tearing over a 10-minute run.
+10. **720p**, agreed after milestone 9. Done when titles get a 1280x720 front buffer by default, which the display's
+    scaler fits to the console's output (1:1 at 720p, 1.5x at 1080), and can still ask for the kernel's 640x480; the
+    GPU tests pass at 1280x720 on hardware, a capture shows the scaled test image whole, and the console goes back to
+    Aurora. Interlaced outputs keep the kernel's mode until scaling there is tried.
 
 After milestone 9, the SDK and the GPU layer are a complete base. A later translation layer can build on them the way
 vulkan4vita builds on GXM: render passes on eDRAM and resolves, descriptors on fetch and shader constants, and shaders
