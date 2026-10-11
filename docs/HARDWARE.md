@@ -1013,3 +1013,21 @@ lines from the launch, a cropped capture of the purple variant and a full-frame 
   the switch hadn't taken by the first vblank, the counter would still read on the old scale, under 720, and the flip
   would count as late whether or not it tore. So the first 1280x720 show now waits until the counter passes 720 and
   logs how long that took, and a late flip records its vblank and line.
+
+## 720p at 1080p output passes clean, after waiting for the scaler (2026-10-10)
+
+`build/xsdk_test.xex` ran again with the first 1280x720 show waiting until the line counter passed 720, and late flips
+recording where they came (log: `results/2026-10-10-720p-2/xsdk.log`, with the user's screenshot of the scale test at
+1280x720). All 111 checks passed, and the console went back to Aurora.
+
+- **The counter took 18154 to 32559 us to reach 720 after each switch,** never less than a frame (16.7 ms at 60 Hz):
+  nine opens read 27794, 30122, 18154, 30123, 22392, 32559, 30048, 29562 and 24900 us. That fits the new size taking at
+  the next vblank and the counter first reaching 720 at the vblank after, so the first vblank after a switch still
+  counts on the old scale, which is what the late flips needed.
+- **No flip was late.** Three of the four pacing modes made their first flip at vblank 1, where each had one late flip
+  in the run before; all four had 0 missed and 0 late.
+- **The scale test's screenshot shows the image whole and in place:** the blue-grey background, the white border on all
+  four edges, the corner squares in all four corners, and the middle blocks at x 448-832 and y 296-423, as in the
+  source.
+- **Not covered by this run:** a title asking for `XSDK_DISPLAY_KERNEL`, which no test opened, and 1:1 at a 720p output,
+  as the console outputs 1080p.

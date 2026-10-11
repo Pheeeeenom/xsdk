@@ -140,6 +140,32 @@ static bool scaler_matches(const uint32_t *values, const uint32_t *expected, con
 	return matches;
 }
 
+// A title asking for the kernel's mode gets its viewport's size, and the scaler stays as the kernel set it.
+static void check_kernel_mode(const uint32_t *start)
+{
+	uint32_t width = 0;
+	uint32_t height = 0;
+	const bool opened = NT_SUCCESS(xsdk_display_open(XSDK_DISPLAY_KERNEL, &width, &height));
+	const bool kernel_size = opened && width == start[VIEWPORT_SIZE] >> 16 && height == (start[VIEWPORT_SIZE] & 0xFFFF);
+	check("scale: the kernel's mode opens at the kernel's size", kernel_size);
+	volatile uint32_t *const pixels = kernel_size ? xsdk_gpu_alloc(xsdk_gpu_resolve_bytes(width, height)) : NULL;
+	uint32_t values[SCALER_REGISTERS];
+	if (pixels) {
+		for (uint32_t i = 0; i < xsdk_gpu_resolve_bytes(width, height) / 4; i++)
+			pixels[i] = __builtin_bswap32(BACKGROUND);
+		__asm__ volatile("sync" ::: "memory");
+		check("scale: kernel's mode: buffer shown", NT_SUCCESS(xsdk_display_show(xsdk_gpu_address(pixels), width)));
+		(void)xsdk_thread_sleep(SETTLE_MS);
+		read_scaler(values);
+		check("scale: the kernel's mode leaves the scaler alone", scaler_matches(values, start, "kernel's mode", true));
+	}
+	xsdk_display_close();
+	(void)xsdk_thread_sleep(SETTLE_MS);
+	read_scaler(values);
+	check("scale: the kernel's scaler settings are still there", scaler_matches(values, start, "closed again", true));
+	xsdk_gpu_free(pixels);
+}
+
 void test_scale(void)
 {
 	const NTSTATUS status = xsdk_gpu_open();
@@ -187,5 +213,7 @@ void test_scale(void)
 		check("scale: the kernel's scaler settings are back", scaler_matches(values, start, "closed", true));
 	}
 	xsdk_gpu_free(pixels);
+	if (has_display)
+		check_kernel_mode(start);
 	check("scale: GPU close", NT_SUCCESS(xsdk_gpu_close()));
 }
