@@ -1434,3 +1434,24 @@ That title's eight render passes a frame, for 60 frames, ran on the xsdk additio
 - **Xenia differs:** in vulkan4xenon's title, a draw sampling an image resolved into earlier in the run got its
   earlier contents, even across submissions, though `test_render` passes there with an R8G8B8A8 target too. The
   console is right; the cause in Xenia isn't known.
+
+## Sleeps, write speeds, and a set-up that wouldn't run from a cached stream (2026-10-11)
+
+vulkan4xenon's vkbench, at xsdk `8859829` (log: `results/2026-10-11-milestone-19-stream/vkbench.log`), for milestone
+19. Its probes ran before the GPU opened:
+
+- **A 1 ms sleep took 1993 us on average,** from 1839 to 1999 over 100 (`xsdk_thread_sleep(1)`, so
+  `KeDelayExecutionThread`). So the ring's wait for room, which slept 1 ms at a time, cost about 2 ms a wait.
+- **Writing 1 MB, fastest of 8:**
+  - into write-combined memory with volatile 32-bit stores: 291 us, 3603 MB/s;
+  - into write-combined memory with newlib's `memcpy`: 5658 us, 185 MB/s, 20 times slower;
+  - into cached memory with 32-bit stores, 667 us, then `dcbst` over it, 94 us: 1377 MB/s in all.
+- **The set-up never finished from a cached stream.** At that commit every packet, `xsdk_gpu_set_up`'s included,
+  went into 4 MB of cached memory, written out with `dcbst` and run from the ring with `PM4_INDIRECT_BUFFER` after a
+  vertex cache invalidate, as libxenon runs its own (libxenon:drivers/xenos/xe.c:52-75, 83-147). The set-up's fence
+  didn't land within 1 s, so `xsdk_gpu_open` returned `STATUS_IO_TIMEOUT`. Whether the console refused the cached
+  memory or the set-up's packets in an indirect buffer isn't isolated. libxenon loads its own microcode (xe.c:224-252,
+  336-343); the SDK runs the kernel's.
+
+So the set-up goes straight into the ring again, as before, and the stream moved to write-combined memory, where
+milestone 18's recorded buffers ran and 32-bit stores were faster.

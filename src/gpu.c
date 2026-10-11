@@ -36,8 +36,6 @@ enum {
 	BLOCK_DWORDS = STREAM_DWORDS / STREAM_BLOCKS,
 	FENCE_DWORDS = 4,
 	SEGMENT_PACKET_DWORDS = 16,
-	// The CPU's cache line (libxenon:drivers/ppc/cache.S:1).
-	CACHE_LINE_BYTES = 128,
 	// A one-dword packet that does nothing (libxenon:drivers/xenos/xe.c:1217-1221).
 	TYPE2_NOP = 0x80000000,
 	RECTANGLE_FLOATS = 6,
@@ -76,7 +74,7 @@ static uint32_t write_index;
 static uint32_t last_fence;
 static XsdkGpuStats ring_stats;
 
-// Cached, and written out to memory before the ring runs it.
+// Write-combined, as recorded command buffers are, which the console runs (docs/HARDWARE.md).
 static volatile uint32_t *stream;
 static uint32_t stream_physical;
 static uint32_t stream_write;
@@ -85,6 +83,9 @@ static uint32_t segment_start;
 static uint32_t block;
 static uint32_t block_fences[STREAM_BLOCKS];
 static uint32_t last_block_fence;
+// While xsdk_gpu_open sets the GPU up, packets go straight into the ring: the console never finished the set-up from
+// the stream (docs/HARDWARE.md).
+static bool direct;
 
 typedef struct {
 	uint32_t width;
@@ -175,24 +176,15 @@ static volatile uint32_t *ring_reserve(uint32_t dword_count)
 	return packets;
 }
 
-// Writes the CPU's cached copy of the stream out to memory, where the GPU reads it
-// (libxenon:drivers/ppc/cache.S:22-36).
-static void flush_stream(uint32_t first, uint32_t end)
-{
-	const uintptr_t first_line = (uintptr_t)&stream[first] & ~(uintptr_t)(CACHE_LINE_BYTES - 1);
-	for (uintptr_t line = first_line; line < (uintptr_t)&stream[end]; line += CACHE_LINE_BYTES)
-		__asm__ volatile("dcbst 0, %0" : : "r"(line) : "memory");
-	__asm__ volatile("sync" ::: "memory");
-}
-
 // The ring runs the stream written since the last segment, once the vertex cache drops that memory, as libxenon's
-// does (libxenon:drivers/xenos/xe.c:83-95, 108-115).
+// does (libxenon:drivers/xenos/xe.c:83-95, 108-115); then it's kicked, with whatever else it holds.
 static void submit_segment(void)
 {
 	const uint32_t count = stream_write - segment_start;
-	if (!count)
+	if (!count) {
+		kick();
 		return;
-	flush_stream(segment_start, stream_write);
+	}
 	const uint32_t address = stream_physical + segment_start * 4;
 	uint32_t dwords[SEGMENT_PACKET_DWORDS];
 	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = SEGMENT_PACKET_DWORDS };
@@ -283,8 +275,8 @@ NTSTATUS xsdk_gpu_open(void)
 	ring = allocate(RING_BYTES, PAGE_WRITECOMBINE);
 	// Uncached, so the CPU sees what the GPU writes back.
 	writeback = allocate(PAGE_BYTES, PAGE_NOCACHE);
-	// Cached, as libxenon records (libxenon:drivers/xenos/xe.c:61-75, 153).
-	stream = allocate(STREAM_BYTES, 0);
+	// 32-bit stores into write-combined memory outran cached memory flushed with dcbst (docs/HARDWARE.md).
+	stream = allocate(STREAM_BYTES, PAGE_WRITECOMBINE);
 	if (!ring || !writeback || !stream) {
 		free_memory();
 		return STATUS_NO_MEMORY;
@@ -315,8 +307,10 @@ NTSTATUS xsdk_gpu_open(void)
 	VdEnableRingBufferRPtrWriteBack(writeback_physical + RPTR_OFFSET, RPTR_BLOCK_SIZE_LOG2);
 
 	// Without libxenon's set-up, only every third resolve writes (docs/HARDWARE.md).
+	direct = true;
 	xsdk_gpu_set_up();
 	const NTSTATUS status = xsdk_gpu_wait(xsdk_gpu_fence(), SET_UP_TIMEOUT_MS);
+	direct = false;
 	if (!NT_SUCCESS(status))
 		xsdk_log_write("gpu: the set-up didn't finish: 0x%08X", (unsigned)status);
 	return status;
@@ -357,6 +351,8 @@ volatile uint32_t *xsdk_gpu_reserve(uint32_t dword_count)
 {
 	if (recording)
 		return reserve_recorded(dword_count);
+	if (direct)
+		return ring_reserve(dword_count);
 	assert(stream && dword_count <= OVERFLOW_SCRATCH_DWORDS);
 	// Everything reserved before this call has been written, so it can run.
 	if (stream_write - segment_start >= SEGMENT_DWORDS)

@@ -1,0 +1,12 @@
+log: game:\xsdk.log
+vkbench: 10 scenes, each 60 warm-up and 600 measured frames, through xsdk then vulkan4xenon
+vkbench: a 1 ms sleep took 1993 us on average, from 1839 to 1999, over 100
+vkbench: writing 1 MB, fastest of 8: write-combined, 32-bit stores 291 us (3603 MB/s), memcpy 5658 us (185 MB/s); cached, 32-bit stores 667 us then dcbst 94 us (1377 MB/s)
+gpu: the set-up didn't finish: 0xC00000B5
+vkbench: xsdk_gpu_open failed: 0xC00000B5
+FAIL: vkbench: xsdk: opened
+FAIL: vkbench: xsdk: every scene ran its 660 frames with no call failing
+assertion "!ring" failed: file "src/gpu.c", line 281, function: xsdk_gpu_open
+exit: signal 6
+gpu: the GPU didn't finish: 0xC00000B5; keeping it and its memory
+exit: status 134
