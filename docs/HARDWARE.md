@@ -1634,10 +1634,13 @@ and XAM are MSVC's, so this is how they take calls from a title and make them in
 | r14-r31, f14-f31 and v14-v31 kept across the call | pass | fail |
 
 So the console's code (MSVC 16.00.11886) takes each argument in one register, r3 to r10: a 64-bit integer whole, a
-`float` or `double` in f1 to f13 while also taking up an integer register's place, a struct as its bytes, left to
-right across as many registers as it fills. Arguments past the 8th are 8-byte slots from 0x54(r1). It returns 64-bit
-integers and structs of 8 bytes or less in r3, larger structs through a pointer in r3. The callee extends `char` and
-`short` arguments; the caller doesn't. It keeps r14-r31 whole, f14-f31 and v14-v31; it changed CR6.
+`float` or `double` in f1 to f13 while also taking up an integer register's place, a struct as its bytes across as
+many registers as it fills. Structs of 8 and 24 bytes start at a register's high byte; a 1-byte struct sits in the
+low byte (`clrlwi r10,r4,24` in the MSVC half's code); the probe has no other sizes. Arguments past the 8th take
+8-byte slots from 0x50(r1), a 32-bit value in a slot's low word, so the 9th at 0x54. It returns 64-bit integers and
+structs of 8 bytes or less in r3, larger structs through a pointer in r3. Whoever receives a `char` or `short`
+extends it: the callee its arguments, the caller what comes back (`extsb r3,r3` after the call). It keeps r14-r31
+whole, f14-f31 and v14-v31; it changed CR6.
 
 xsdk's GCC, the 32-bit SysV convention, differs in each failing case: register pairs for 64-bit integers, structs by
 pointer, arguments past the 8th 4 bytes apart from 8(r1), doubles in f1 to f8 only, 8-byte structs back in r3 and r4,
@@ -1646,7 +1649,8 @@ values kept across a GCC call came back wrong. Layout agreed for doubles, 64-bit
 bitfield, but not `wchar_t` (2 bytes in MSVC, 4 in GCC) or a struct mixing `u8` and `u32` bitfields (12 bytes in
 MSVC, 4 in GCC). r2 was 0 and r13 0x801B0000, the processor control region, before and after each side's code.
 
-What xsdk does about it:
+What xsdk did about it, until milestone 22 had GCC call as MSVC does ("Calls between GCC and MSVC, with GCC calling as
+MSVC does"):
 - **Imports:** the stubs pass r3 to r10 through and move arguments past the 8th into the kernel's slots, so imports
   take only integers and pointers of 32 bits or less. `gen_imports.py` refuses a declaration with a 64-bit integer,
   floating point or a struct by value, until a stub converts them. An import that takes UTF-16 text takes `uint16_t`,
@@ -1704,6 +1708,109 @@ passed, and both titles exited with status 0.
   where it pulled 95744 while the clock ran slow.
 - **Rumble:** `XamInputSetState` ran controller 1's motors at half strength for 500 ms and stopped them.
 - **Pacing's** longest wait for a buffer reads 17995 us where it read 17949 us: the same wait, at the true rate.
+
+## The console's calling convention, register by register (2026-10-12)
+
+Milestone 22's first step: a title of 195 checks drove the Xbox 360 SDK compiler's own code from both ends, so what
+it measured is MSVC's convention, not GCC's (logs: `results/2026-10-12-convention-model/abi_model.log`, then with the
+stack below r1 measured, `results/2026-10-12-convention-model-2/abi_model.log`, whose file was cut short in copying
+and whose end comes from the title's debug output). MSVC's caller of each case called a stub that recorded r3-r10,
+f1-f13 and 16 stack slots. That image went to MSVC's callee of the same prototype twice: whole, and with only the
+registers and slots below named, garbage in all the rest. Each time the callee read what the caller meant, and
+returns went the other way. All 195 checks passed in both runs, as in Xenia.
+- **Arguments:** one 8-byte slot each, r3 to r10 and then the stack from 0x50(r1), each in the next register, with no
+  padding for alignment, even before 8- and 16-byte-aligned structs. The cases here all fitted in r3 to r10; past
+  them, a struct of more than 8 bytes starts on an even slot of the stack (corrected in "Calls between GCC and MSVC,
+  with GCC calling as MSVC does").
+  - A 32-bit value goes in its slot's low word, and the high half carries nothing: MSVC's caller zero-extended an
+    `int` of -5 to `00000000FFFFFFFB`, and its callee widened arguments with garbage high halves right itself.
+  - 64-bit integers go whole.
+  - `float` and `double` go in f1 to f13 in turn, each also taking a slot, whose register or stack word the callee
+    doesn't read. From the 14th on they go in their slots, a `float` as single precision in the slot's low word.
+  - Structs go as their bytes: 1, 2 and 4 bytes right-justified like integers, every other size from its first
+    slot's high byte across as many slots as it fills. Structs of floats and of doubles go the same way, never in
+    FPRs.
+  - Varargs each take their own slot, a `double` as its bits, past the 8th too. MSVC's caller also copies doubles
+    into f1, f2 and on, but its variadic callee reads only the slots.
+- **Returns:** `float` and `double` in f1, a `float` as a double. Structs of 1, 2, 4 and 8 bytes in r3, 1, 2 and 4
+  right-justified, a struct of one `double` too. Every other size through a pointer the caller passes in r3, which
+  comes back in r3. MSVC's caller widens a returned `int` itself; its callee returned -5 sign-extended.
+- **Registers kept:** f14-f31: MSVC's caller held doubles there across a call, and lost 16 of 18 when the callee
+  clobbered them. It held 18 vectors across a call in VMX128's v110-v127 rather than v14-v31, saved with
+  `__savevmx_110`; GCC can't reach v64-v127. No CR field: conditions MSVC held across a call survived every field
+  clobbered.
+- **Frames:** MSVC's code writes LR at -8(r1) through r12 and its GPR saves under that, before `stwu`, then points r12
+  under the GPR saves for `__savefpr_N` and `__savevmx_N`, which store below r12 (`addi r12,r1,-72` after saving
+  r24-r31; xenia:src/xenia/cpu/xex_module.cc:1341-1455). Its callers keep nothing at 4-15(r1) across a call: a
+  callee that overwrote those words broke nothing. Its callees don't write there.
+- **Below r1:** the console writes there, but never within 1348 bytes of r1, with r1 16-byte aligned.
+  - Callees that write nothing (an empty one, MSVC's leaf for an 8-byte struct, and MSVC's 15-double callee besides
+    its own saves) saw a block from 1348 to 1792 bytes below r1 written in 1 run of 8.
+  - The first run's every case showed it at 1792 bytes, each straight after a line was logged.
+  - A 20 ms spin saw blocks from 1348 down to 2272 bytes in every run.
+  - The blocks hold what looks like a thread's saved state: `801B0000`, the processor control region; addresses in
+    the title; `24FFFF22`, like a CR value.
+  - So code may use up to 1348 bytes below r1 without a frame, as MSVC's saves before `stwu` do. Xenia writes nothing
+    there.
+
+## Calls between GCC and MSVC, with GCC calling as MSVC does (2026-10-12)
+
+Milestone 22's second step: xsdk on the `mcall-xsdk` branch, built with `-mcall-xsdk` from the toolchain patches there
+into `~/xsdk-gcc-next` (logs: `results/2026-10-12-convention-compiler/`).
+
+**Two counts.** MSVC counts the GPRs apart from the parameter area's slots. A struct of more than 8 bytes starts on an
+even slot, a 16-byte boundary, whatever its own alignment; its GPRs, and those of what follows, come from the GPR
+count, which that padding doesn't move. The cases of step 1 never showed it, since they fitted in r3 to r10. MSVC's code
+for the model's new cases showed it (`local/abi/msvc_model.dis`), and the console confirmed it with `abi_model.log`,
+whose callers sent and whose callees read each word where the two counts put it, with garbage in the rest:
+
+| Before the struct | Struct | Its GPRs | Its slots | The int after it |
+|---|---|---|---|---|
+| 5 ints | 24 bytes | r8-r10, all of it | 6-8 | slot 9, 0x5C |
+| 6 ints | 24 bytes | r9-r10, bytes 0-15 | 6-8 | slot 9 |
+| 7 ints | 9, 12 (`u32` aligned), 16 (bytes or two doubles) | r10, bytes 0-7 | 8-9 | slot 10 |
+| 7 ints | 24 bytes | r10, bytes 0-7 | 8-10 | slot 11 |
+| 3 ints | 48 bytes | r6-r10, bytes 0-39 | 4-9 | slot 10 |
+| 9 ints | 24 bytes | none | 10-12 | slot 13 |
+
+A slot that holds part of a struct in a register carries nothing from the caller; the callee spills the register there.
+A variadic callee spills the GPRs left into the slots after its named arguments: after an int and a 24-byte struct, r7
+to r10 into slots 5 to 8, which reaches 0x50(r1), past the 64 bytes a caller always leaves. Its caller passed five
+varargs, so that slot was its own; a caller that passes fewer gets 0x50(r1) written all the same. GCC now does the same
+in both places, so the hazard is shared.
+
+**The probe of 2026-10-11** (`abi_probe.log`): 36 of 36 cases passed, against 9 then. Layout agreed with `ms_struct` on
+GCC's side: the struct mixing `u8` and `u32` bitfields is 12 bytes in both, with the same bytes, and `char16_t` is the 2
+bytes of MSVC's `wchar_t`. MSVC's code changed CR6 across a call, which GCC no longer keeps anything in.
+
+**Both directions** (`abi_model.log`): GCC builds the model's MSVC half too, and each case's caller and callee were
+called across the two compilers. All 176 calls, structs of 1 to 24 bytes as arguments and returns, 15 doubles and 15
+floats, varargs past 8 slots, widening, and every case above, delivered what MSVC's own pair delivers. Built with a GCC
+that has a single count, the 10 cases whose struct is padded failed both ways, in Xenia; 2 of those 20 calls had
+passed anyway until each call first scrubbed the stack below it, on values the previous call had left in the slot.
+
+**xsdk_test** (`xsdk_test.log`): 218 of 219 checks passed.
+- The kernel's way of calling a title, straight into GCC code holding 64-bit values, doubles and vectors, gave back
+  r14-r31 whole, f14-f31 and v14-v31. Threads and the audio callback now take GCC code directly.
+- `setjmp` and `longjmp` gave back all 54 registers after frames below them had overwritten every one.
+- `KeQueryPerformanceFrequency`, declared with its 64-bit return, read 50000000.
+- A C++ exception thrown through those frames gave back none of the 54: the catch's caller found every register as the
+  deepest frame had left it. That run is the only one that did. With the unwinder's view of each frame logged
+  (`repeats.log`), the catching frame held the original values and the catch got them. Then 400 throws a launch, half
+  through the same empty catch as the failing run, kept every register in three launches: after a power cycle, straight
+  after, and after abi_probe and abi_model as in the failing session, where each title also passed in full. The cause
+  is unknown; the 400 throws stay in xsdk_test to catch it if it comes back.
+
+**What xsdk does now.** A title calls an import through the loader's thunk alone, each its own symbol, and declares it
+with its natural types: `imports/imports.txt` lists library, ordinal and name, and `gen_imports.py` checks no
+signatures. The kernel calls a title's threads, audio callback and other callbacks directly, with no trampoline, and
+the toolchain no longer keeps GCC off v14-v19.
+
+**Mixing objects.** The assembler flags each object made under `-mcall-xsdk` (`EF_PPC_XSDK`,
+tools/toolchain/binutils-xsdk.patch), and the linker refuses to put one in with an object without it, either way round
+(binutils:bfd/elf32-ppc.c, `ppc_elf_merge_private_bfd_data`). The convention's own attribute, `.gnu_attribute 12`,
+marks only objects that return small structs. The flag turned away the probe's harness and MSVC objects assembled by
+the old toolchain, and every object in the new toolchain's libc, libstdc++ and libgcc carries it.
 
 ## What the kernel leaves a title (2026-10-12)
 

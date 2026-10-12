@@ -40,9 +40,9 @@ Then, in the repository:
 make
 ```
 
-That makes `build/libxsdk.a`, `build/sdk/crt0.o` and the test title, `build/xsdk_test.xex`, as well as the bring-up
-probes. A title links `crt0.o`, its own objects and `libxsdk.a` with `src/xsdk.ld`, then packs the ELF with
-`tools/elf2xex.py`; vulkan4xenon's Makefile does it that way. CMake projects get the same through
+That makes `build/libxsdk.a` and the test title, `build/xsdk_test.xex`, as well as the bring-up probes. A title links
+its own objects and `libxsdk.a` with `src/xsdk.ld`, which starts it at `xsdk_start` in the library, then packs the ELF
+with `tools/elf2xex.py`; vulkan4xenon's Makefile does it that way. CMake projects get the same through
 `-DCMAKE_TOOLCHAIN_FILE=cmake/xsdk.cmake` and `xsdk_add_xex(<target>)`; `make cmake_check` builds a title that way.
 
 ## Testing
@@ -64,6 +64,7 @@ checks, but the console decides; CLAUDE.md lists where Xenia differs.
 - [vulkan4xenon](https://github.com/Pheeeeenom/vulkan4xenon), a Vulkan 1.0 subset built on xsdk's GPU layer, on the
   way to running Dusklight.
 - [xost](https://github.com/Pheeeeenom/xenos-toolchain), the shader toolchain, checked out in `xenos-toolchain/`.
+- [SDL-xenon](https://github.com/Pheeeeenom/SDL-xenon), SDL 3 with an Xbox 360 platform built on xsdk.
 
 ## Trademarks
 

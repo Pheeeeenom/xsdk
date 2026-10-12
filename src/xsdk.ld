@@ -1,7 +1,9 @@
 /* Lays a title out for elf2xex: read-only, code and writable data each start on their own 64 KB page. */
 OUTPUT_FORMAT("elf32-powerpc")
 OUTPUT_ARCH(powerpc:common)
-ENTRY(_start)
+ENTRY(xsdk_start)
+/* It lives in libxsdk.a, which only the entry point refers to. */
+EXTERN(xsdk_start)
 
 SECTIONS
 {
@@ -22,7 +24,7 @@ SECTIONS
 	. = ALIGN(0x10000);
 	.text : {
 		/* Imports first: Xenia runs a tail call's target as the caller (xenia:src/xenia/cpu/ppc/ppc_scanner.cc:204). */
-		*(.text.xsdk_stub_* .text.xsdk_thunk_*)
+		*(.text.xsdk_thunk_*)
 		*(.text .text.*)
 	}
 

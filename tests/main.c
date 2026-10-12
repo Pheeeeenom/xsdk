@@ -1,10 +1,17 @@
 #include "tests.h"
 
+#include <stdint.h>
+
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
 #include "xsdk/splash.h"
 
 enum { SPLASH_MS = 2000 };
+
+// int32_t and uint32_t are int and unsigned int, as the console's own compiler and desktop compilers have them, so
+// code written for those builds unchanged (rs6000/xsdk.h in tools/toolchain/gcc-xsdk.patch).
+_Static_assert(__builtin_types_compatible_p(int32_t, int) && __builtin_types_compatible_p(uint32_t, unsigned int),
+	"int32_t and uint32_t are int and unsigned int");
 
 static int passed_count;
 static int failed_count;
@@ -34,6 +41,7 @@ int main(void)
 	test_cpp_threads();
 	test_cpp_atomics();
 	test_cpp_exceptions();
+	test_cpp_unwind();
 	test_cpp_chrono();
 	test_cpp_filesystem();
 	test_cpp_format();

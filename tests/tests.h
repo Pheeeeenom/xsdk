@@ -2,6 +2,7 @@
 #define XSDK_TESTS_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,6 +17,33 @@ void test_threads(void);
 void test_pthread(void);
 void test_clocks(void);
 void test_kernel_entry(void);
+
+// The registers the console's code keeps across a call, r14-r31 whole, f14-f31 and v14-v31, as kernel_entry_check.S
+// sets and reads them; bit 14 + i of each mask in EntryChanged stands for register 14 + i.
+enum {
+	ENTRY_REGISTERS = 18,
+	ENTRY_FIRST_KEPT = 14,
+};
+
+typedef struct {
+	uint64_t gpr[ENTRY_REGISTERS];
+	uint64_t fpr[ENTRY_REGISTERS];
+	uint32_t vr[ENTRY_REGISTERS][4];
+} EntryRegs;
+
+typedef struct {
+	uint32_t gpr_low;
+	uint32_t gpr_high;
+	uint32_t fpr;
+	uint32_t vr;
+} EntryChanged;
+
+// Sets them to sentinels, calls fn(arg) as the kernel calls a title's code, and stores what they hold after in *out.
+void test_entry_regs_call(void (*fn)(void *), void *arg, EntryRegs *out);
+// Stores them as they are into *out, 16-byte aligned, and changes none of them.
+void test_entry_snapshot(EntryRegs *out);
+// Which of them differ from the sentinels test_entry_regs_call set.
+EntryChanged test_entry_changed(const EntryRegs *regs);
 void test_files(void);
 // The SDK's memcpy and memmove (milestone 20).
 void test_copy(void);
@@ -27,6 +55,8 @@ void test_cpp_objects(void);
 void test_cpp_threads(void);
 void test_cpp_atomics(void);
 void test_cpp_exceptions(void);
+// Registers a caller keeps, through a C++ exception and through longjmp (milestone 22).
+void test_cpp_unwind(void);
 void test_cpp_chrono(void);
 void test_cpp_filesystem(void);
 void test_cpp_format(void);

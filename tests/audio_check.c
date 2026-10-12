@@ -33,7 +33,6 @@ static const Step steps[] = {
 
 enum { STEP_COUNT = sizeof(steps) / sizeof(steps[0]) };
 
-void audio_check_entry(const uint32_t *context);
 void audio_check_callback(const uint32_t *context);
 
 static uint32_t driver;
@@ -66,7 +65,7 @@ int main(void)
 		audio_frame_fill(frames + (i + 1) * FRAME_FLOATS, steps[i].channels, steps[i].frequency_hz);
 	__atomic_store_n(&playing, frames, __ATOMIC_RELEASE);
 
-	const XAUDIO_RENDER_DRIVER_CLIENT client = { .callback = audio_check_entry, .context = 0 };
+	const XAUDIO_RENDER_DRIVER_CLIENT client = { .callback = audio_check_callback, .context = 0 };
 	uint32_t registered = 0;
 	const uint32_t result = XAudioRegisterRenderDriverClient(&client, &registered);
 	if (result != ERROR_SUCCESS) {

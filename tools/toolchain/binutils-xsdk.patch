@@ -1,0 +1,74 @@
+--- a/include/elf/ppc.h
++++ b/include/elf/ppc.h
+@@ -197,6 +197,10 @@
+ #define	EF_PPC_RELOCATABLE	0x00010000	/* PowerPC -mrelocatable flag.  */
+ #define	EF_PPC_RELOCATABLE_LIB	0x00008000	/* PowerPC -mrelocatable-lib flag.  */
+ 
++/* Xbox 360 SDK: built for the Xbox 360 console's calling convention, GCC's
++   -mcall-xsdk.  */
++#define	EF_PPC_XSDK		0x00000100
++
+ /* Processor specific program headers, p_flags field.  */
+ #define PF_PPC_VLE		0x10000000	/* PowerPC VLE.  */
+ 
+--- a/gas/config/tc-ppc.c
++++ b/gas/config/tc-ppc.c
+@@ -1218,6 +1218,11 @@
+       else if (strcmp (arg, "emb") == 0)
+ 	ppc_flags |= EF_PPC_EMB;
+ 
++      /* Xbox 360 SDK: -mxsdk, set the bit for the console's calling
++	 convention, which GCC passes under -mcall-xsdk.  */
++      else if (strcmp (arg, "xsdk") == 0)
++	ppc_flags |= EF_PPC_XSDK;
++
+       /* -mlittle/-mbig set the endianness.  */
+       else if (strcmp (arg, "little") == 0
+ 	       || strcmp (arg, "little-endian") == 0)
+@@ -1415,6 +1420,8 @@
+   fprintf (stream, _("\
+ -memb                   set PPC_EMB bit in ELF flags\n"));
+   fprintf (stream, _("\
++-mxsdk                  set PPC_XSDK bit in ELF flags (Xbox 360 calls)\n"));
++  fprintf (stream, _("\
+ -mlittle, -mlittle-endian, -le\n\
+                         generate code for a little endian machine\n"));
+   fprintf (stream, _("\
+--- a/bfd/elf32-ppc.c
++++ b/bfd/elf32-ppc.c
+@@ -3834,6 +3834,23 @@
+       new_flags &= ~(EF_PPC_RELOCATABLE | EF_PPC_RELOCATABLE_LIB | EF_PPC_EMB);
+       old_flags &= ~(EF_PPC_RELOCATABLE | EF_PPC_RELOCATABLE_LIB | EF_PPC_EMB);
+ 
++      /* Xbox 360 SDK: code built for the console's calling convention and
++	 code built for another don't call each other right.  */
++      if ((new_flags ^ old_flags) & EF_PPC_XSDK)
++	{
++	  error = true;
++	  if (new_flags & EF_PPC_XSDK)
++	    _bfd_error_handler
++	      (_("%pB: built for the Xbox 360 console's calling convention "
++		 "(-mcall-xsdk), and modules before it for another"), ibfd);
++	  else
++	    _bfd_error_handler
++	      (_("%pB: built for another calling convention than the Xbox 360 "
++		 "console's (-mcall-xsdk), which modules before it use"), ibfd);
++	  new_flags &= ~EF_PPC_XSDK;
++	  old_flags &= ~EF_PPC_XSDK;
++	}
++
+       /* Warn about any other mismatches.  */
+       if (new_flags != old_flags)
+ 	{
+--- a/binutils/readelf.c
++++ b/binutils/readelf.c
+@@ -5493,6 +5493,9 @@
+ 
+ 	  if (e_flags & EF_PPC_RELOCATABLE_LIB)
+ 	    out = stpcpy (out, _(", relocatable-lib"));
++
++	  if (e_flags & EF_PPC_XSDK)
++	    out = stpcpy (out, _(", xsdk call"));
+ 	  break;
+ 
+ 	case EM_PPC64:

@@ -1,0 +1,32 @@
+xsdk_test with the unwind check traced (the first run after the failure in xsdk_test.log), its unwind lines:
+unwind: the deepest frame had changed r14-r31 low halves FFFFC000, high halves FFFFC000, f14-f31 FFFFC000, v14-v31 FFFFC000
+unwind: after, its caller found changed r14-r31 low halves 00000000, high halves 00000000, f14-f31 00000000, v14-v31 00000000
+unwind: frame 0 returns to 820A58A4, CFA 7010EFC0: r14 FFFFFFFFFFFFFFFF, r31 FFFFFFFFFFFFFFFF, f14 0000000000000000
+unwind: frame 1 returns to 820A5888, CFA 7010F260: r14 FFFFFFFFFFFFFFFF, r31 FFFFFFFFFFFFFFFF, f14 0000000000000000
+unwind: frame 2 returns to 820A5888, CFA 7010F500: r14 FFFFFFFFFFFFFFFF, r31 FFFFFFFFFFFFFFFF, f14 0000000000000000
+unwind: frame 3 returns to 820A5888, CFA 7010F7A0: r14 FFFFFFFFFFFFFFFF, r31 FFFFFFFFFFFFFFFF, f14 0000000000000000
+unwind: frame 4 returns to 820A59BC, CFA 7010FA40: r14 5A00000EC300000E, r31 5A00001FC300001F, f14 3FF0000E1234000E
+unwind: frame 5 returns to 820A1BA4, CFA 7010FAA0: r14 5A00000EC300000E, r31 5A00001FC300001F, f14 3FF0000E1234000E
+unwind: deepest frame: r14 FFFFFFFFFFFFFFFF, r31 FFFFFFFFFFFFFFFF, f14 0000000000000000, v14 FFFFFFFF
+unwind: in the catch: r14 5A00000EC300000E, r31 5A00001FC300001F, f14 3FF0000E1234000E, v14 7100000E
+unwind: after: r14 5A00000EC300000E, r31 5A00001FC300001F, f14 3FF0000E1234000E, v14 7100000E
+PASS: unwind: r14-r31 whole, f14-f31 and v14-v31, all overwritten below, come back through a C++ exception
+unwind: the deepest frame had changed r14-r31 low halves FFFFC000, high halves FFFFC000, f14-f31 FFFFC000, v14-v31 FFFFC000
+unwind: after, its caller found changed r14-r31 low halves 00000000, high halves 00000000, f14-f31 00000000, v14-v31 00000000
+PASS: unwind: the same come back through setjmp and longjmp
+
+xsdk_test with 400 throws before the traced one (200 with an empty catch, 200 with a catch that reads the registers),
+launched three times; the user's summaries:
+
+run 1, straight after a power cycle:
+tests: 220 passed, 0 failed
+exit: status 0
+
+run 2, launched again straight after:
+tests: 220 passed, 0 failed
+exit: status 0
+
+run 3, after abi_probe and abi_model, the order of the run that failed:
+abi_probe: tests: 36 passed, 0 failed; exit: status 0
+abi_model: tests: 399 passed, 0 failed; exit: status 0
+xsdk_test: tests: 220 passed, 0 failed; exit: status 0

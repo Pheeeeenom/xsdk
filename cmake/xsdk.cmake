@@ -29,9 +29,9 @@ set(CMAKE_USER_MAKE_RULES_OVERRIDE "${CMAKE_CURRENT_LIST_DIR}/xsdk_rules.cmake")
 # Every executable, try_compile's included, links the SDK's start-up and library, so checks see what titles get.
 set(XSDK_LINK_LIBRARIES "-Wl,--start-group <LINK_LIBRARIES> ${XSDK_ROOT}/build/libxsdk.a -lstdc++ -lc -lm -lgcc -Wl,--end-group")
 set(CMAKE_C_LINK_EXECUTABLE
-	"<CMAKE_C_COMPILER> <FLAGS> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> ${XSDK_ROOT}/build/sdk/crt0.o <OBJECTS> -o <TARGET> ${XSDK_LINK_LIBRARIES}")
+	"<CMAKE_C_COMPILER> <FLAGS> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> ${XSDK_LINK_LIBRARIES}")
 set(CMAKE_CXX_LINK_EXECUTABLE
-	"<CMAKE_CXX_COMPILER> <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> ${XSDK_ROOT}/build/sdk/crt0.o <OBJECTS> -o <TARGET> ${XSDK_LINK_LIBRARIES}")
+	"<CMAKE_CXX_COMPILER> <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> ${XSDK_LINK_LIBRARIES}")
 
 # The console loads no shared libraries, so projects that build one unless told otherwise build static ones.
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries")
@@ -53,7 +53,7 @@ set(ENV{PKG_CONFIG_PATH} "")
 function(xsdk_add_xex target)
 	# The link rule names these outside CMake's view, so a rebuilt SDK would otherwise leave the title linked to the old.
 	set_property(TARGET ${target} APPEND PROPERTY LINK_DEPENDS
-		"${XSDK_ROOT}/build/sdk/crt0.o" "${XSDK_ROOT}/build/libxsdk.a" "${XSDK_ROOT}/src/xsdk.ld")
+		"${XSDK_ROOT}/build/libxsdk.a" "${XSDK_ROOT}/src/xsdk.ld")
 	add_custom_command(TARGET ${target} POST_BUILD
 		COMMAND sh -c "'${CMAKE_OBJDUMP}' -d '$<TARGET_FILE:${target}>' | python3 '${XSDK_ROOT}/tools/xenia_scan.py'"
 		COMMAND python3 "${XSDK_ROOT}/tools/elf2xex.py" "$<TARGET_FILE:${target}>" "$<TARGET_FILE_DIR:${target}>/${target}.xex"

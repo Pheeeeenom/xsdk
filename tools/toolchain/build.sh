@@ -23,11 +23,11 @@ SOURCES=(
 SPECS=(
 	-D__XSDK__                                  # turns on newlib's POSIX thread and dirent declarations (newlib-xsdk.patch)
 	-D__DYNAMIC_REENT__                         # each thread gets its own errno and stdio state through __getreent
-	-mpowerpc64                                 # 64-bit atomics inline with ldarx/stdcx.; libatomic doesn't build for *-elf
+	# Whole 64-bit registers: the console's calling convention (-mcall-xsdk, the target's default) passes and keeps
+	# them, and 64-bit atomics go inline with ldarx/stdcx.; libatomic doesn't build for *-elf.
+	-mpowerpc64
 	# Only CR0 and CR1 to allocate, so GCC rarely copies fields with mcrf, which Xenia skips; CR0 alone breaks GCC.
 	-ffixed-cr2 -ffixed-cr3 -ffixed-cr4 -ffixed-cr5 -ffixed-cr6 -ffixed-cr7
-	# The kernel's code keeps v14-v31 across calls and GCC only v20-v31, so GCC leaves v14-v19 alone (docs/HARDWARE.md).
-	-ffixed-v14 -ffixed-v15 -ffixed-v16 -ffixed-v17 -ffixed-v18 -ffixed-v19
 	'%{!ftree-vectorize:-fno-tree-vectorize}'   # avoids AltiVec ops Xenon lacks (libxenon's gcc-9.2.0.diff)
 	# Xenia misreads where tail-calling or split functions end (xenia:src/xenia/cpu/ppc/ppc_scanner.cc:204).
 	-fno-optimize-sibling-calls -fno-reorder-blocks-and-partition
@@ -68,7 +68,7 @@ fetch() {
 		[ -f "$archive" ] || curl -sSfL -o "$archive" "$url"
 		echo "$sha256  $archive" | sha256sum -c --quiet
 	done
-	unpack "$BINUTILS"
+	unpack "$BINUTILS" binutils-xsdk.patch
 	unpack "$NEWLIB" newlib-xsdk.patch
 	unpack "$GCC" gcc-xsdk.patch
 }
@@ -99,4 +99,23 @@ configure_and_make newlib "$WORK/src/$NEWLIB" all-target-newlib install-target-n
 	--enable-newlib-io-long-long --enable-newlib-io-long-double --enable-newlib-io-c99-formats \
 	--enable-newlib-retargetable-locking --disable-newlib-supplied-syscalls
 configure_and_make gcc "$WORK/src/$GCC" all install -- "${GCC_COMMON[@]}" --enable-languages=c,c++ --enable-threads=posix
+
+# Objects built for the console's calling convention link together, and the linker refuses one built for another with
+# them (EF_PPC_XSDK, binutils-xsdk.patch).
+step "check: the linker refuses objects of another calling convention"
+check="$WORK/build/check"
+rm -rf "$check"
+mkdir -p "$check"
+cd "$check"
+echo 'int other(int x) { return x + 1; }' >other.c
+echo 'int other(int x); int main(void) { return other(1); }' >main.c
+"$TARGET-gcc" -c main.c -o main.o
+"$TARGET-gcc" -c other.c -o other.o
+"$TARGET-gcc" -mcall-sysv -c other.c -o other_sysv.o
+"$TARGET-gcc" -nostdlib -Wl,-e,main -o same.elf main.o other.o
+if "$TARGET-gcc" -nostdlib -Wl,-e,main -o mixed.elf main.o other_sysv.o 2>mixed.log; then
+	echo "linked an object built with -mcall-sysv with -mcall-xsdk ones" >&2
+	exit 1
+fi
+grep -q "calling convention" mixed.log
 step "done: $PREFIX/bin/$TARGET-gcc"
