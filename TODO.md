@@ -77,8 +77,9 @@ it removes.
   `0579b93` and xost `77c7605`). Each draw copied its push blocks into 4 MB of write-combined memory and had the GPU
   load them with `xsdk_gpu_load_*_constants`, as uniform blocks are; xost put push blocks on whole groups of 4 for it.
   - **What it saved:** a pushed cube went from 65.3 dwords to 17.3, and a frame from 64 kicks to 18.
-  - **What it didn't:** `draws_1000` took 1,217 us against 1,215, its submit 974 us both times
-    (vulkan4xenon:docs/ROADMAP.md, milestone 8).
+  - **What it didn't:** `draws_1000` took 1,217 us against 1,215, its submit 974 us both times, and `states_1000` 2,021
+    against 1,975; the revert ran milestone 7's figures again to within 5 us (vulkan4xenon:docs/ROADMAP.md,
+    milestone 8).
   - **When to bring it back:** if push-heavy frames fill the command stream, which `xsdk_gpu_stats` shows as waits, or
     the GPU becomes the bottleneck reading constants. At 65 dwords a cube a frame of about 16,000 pushed draws laps
     the 4 MB stream; at 17, about 60,000.
