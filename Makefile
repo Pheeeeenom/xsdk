@@ -43,10 +43,15 @@ PACING_OBJECTS := $(patsubst tests/%,$(BUILD)/tests/%.o,$(basename $(PACING_SOUR
 PROBES := probe_spin probe_print probe_cp probe_ring probe_interrupt probe_exports probe_engines probe_swap \
 	probe_display probe_guide probe_resolve probe_triangle probe_vblank probe_720p probe_constants probe_mip_tail
 
-.PHONY: all clean
+.PHONY: all clean cmake_check
 # Keep the ELFs and objects that pattern rules build on the way to a .xex.
 .SECONDARY:
 all: $(BUILD)/xsdk_test.xex $(BUILD)/audio_check.xex $(BUILD)/pacing_test.xex $(PROBES:%=$(BUILD)/%.xex)
+
+# A title built through cmake/xsdk.cmake, as CMake projects such as Dusklight build; needs CMake and Ninja.
+cmake_check: $(BUILD)/libxsdk.a $(BUILD)/sdk/crt0.o
+	cmake -S tests/cmake -B $(BUILD)/cmake_check -G Ninja -DCMAKE_TOOLCHAIN_FILE=$(CURDIR)/cmake/xsdk.cmake
+	cmake --build $(BUILD)/cmake_check
 
 $(BUILD)/%.xex: $(BUILD)/%.elf tools/elf2xex.py
 	$(PYTHON) tools/elf2xex.py $< $@

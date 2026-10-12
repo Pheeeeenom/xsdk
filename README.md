@@ -42,7 +42,8 @@ make
 
 That makes `build/libxsdk.a`, `build/sdk/crt0.o` and the test title, `build/xsdk_test.xex`, as well as the bring-up
 probes. A title links `crt0.o`, its own objects and `libxsdk.a` with `src/xsdk.ld`, then packs the ELF with
-`tools/elf2xex.py`; vulkan4xenon's Makefile does it that way.
+`tools/elf2xex.py`; vulkan4xenon's Makefile does it that way. CMake projects get the same through
+`-DCMAKE_TOOLCHAIN_FILE=cmake/xsdk.cmake` and `xsdk_add_xex(<target>)`; `make cmake_check` builds a title that way.
 
 ## Testing
 
