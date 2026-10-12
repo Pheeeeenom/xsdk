@@ -26,6 +26,8 @@ SPECS=(
 	-mpowerpc64                                 # 64-bit atomics inline with ldarx/stdcx.; libatomic doesn't build for *-elf
 	# Only CR0 and CR1 to allocate, so GCC rarely copies fields with mcrf, which Xenia skips; CR0 alone breaks GCC.
 	-ffixed-cr2 -ffixed-cr3 -ffixed-cr4 -ffixed-cr5 -ffixed-cr6 -ffixed-cr7
+	# The kernel's code keeps v14-v31 across calls and GCC only v20-v31, so GCC leaves v14-v19 alone (docs/HARDWARE.md).
+	-ffixed-v14 -ffixed-v15 -ffixed-v16 -ffixed-v17 -ffixed-v18 -ffixed-v19
 	'%{!ftree-vectorize:-fno-tree-vectorize}'   # avoids AltiVec ops Xenon lacks (libxenon's gcc-9.2.0.diff)
 	# Xenia misreads where tail-calling or split functions end (xenia:src/xenia/cpu/ppc/ppc_scanner.cc:204).
 	-fno-optimize-sibling-calls -fno-reorder-blocks-and-partition

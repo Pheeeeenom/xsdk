@@ -25,6 +25,7 @@ int main(void)
 	test_image();
 	test_threads();
 	test_pthread();
+	test_kernel_entry();
 	test_files();
 	test_copy();
 	test_cpp_objects();
