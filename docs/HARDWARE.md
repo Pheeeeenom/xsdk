@@ -1634,10 +1634,13 @@ and XAM are MSVC's, so this is how they take calls from a title and make them in
 | r14-r31, f14-f31 and v14-v31 kept across the call | pass | fail |
 
 So the console's code (MSVC 16.00.11886) takes each argument in one register, r3 to r10: a 64-bit integer whole, a
-`float` or `double` in f1 to f13 while also taking up an integer register's place, a struct as its bytes, left to
-right across as many registers as it fills. Arguments past the 8th are 8-byte slots from 0x54(r1). It returns 64-bit
-integers and structs of 8 bytes or less in r3, larger structs through a pointer in r3. The callee extends `char` and
-`short` arguments; the caller doesn't. It keeps r14-r31 whole, f14-f31 and v14-v31; it changed CR6.
+`float` or `double` in f1 to f13 while also taking up an integer register's place, a struct as its bytes across as
+many registers as it fills. Structs of 8 and 24 bytes start at a register's high byte; a 1-byte struct sits in the
+low byte (`clrlwi r10,r4,24` in the MSVC half's code); the probe has no other sizes. Arguments past the 8th take
+8-byte slots from 0x50(r1), a 32-bit value in a slot's low word, so the 9th at 0x54. It returns 64-bit integers and
+structs of 8 bytes or less in r3, larger structs through a pointer in r3. Whoever receives a `char` or `short`
+extends it: the callee its arguments, the caller what comes back (`extsb r3,r3` after the call). It keeps r14-r31
+whole, f14-f31 and v14-v31; it changed CR6.
 
 xsdk's GCC, the 32-bit SysV convention, differs in each failing case: register pairs for 64-bit integers, structs by
 pointer, arguments past the 8th 4 bytes apart from 8(r1), doubles in f1 to f8 only, 8-byte structs back in r3 and r4,
