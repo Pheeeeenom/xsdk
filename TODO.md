@@ -23,7 +23,10 @@ work begins.
 ## Toolchain
 
 - **The console's calling convention in GCC.** Scoped and agreed on 2026-10-12 as SCOPE.md's milestone 22, with GCC's
-  struct layout kept as the user chose on 2026-10-11.
+  struct layout kept as the user chose on 2026-10-11. Steps 1 and 2 passed on the console on 2026-10-12; step 3, the
+  switch, is next.
+- **C code can't name `char16_t`.** newlib has no `<uchar.h>`, so C code sharing UTF-16 text with MSVC code spells it
+  `__CHAR16_TYPE__` (local/abi's probe does); C++ has the keyword.
 
 - **xost off Python.** Its compiler (`xsc`), assembler (`xasm`) and disassembler (`xdis`) are Python; only the
   combiner generator `xcomb` is C99 (xost:README.md:49-71, docs/xsc.md:1-14). The combined SDK shouldn't need

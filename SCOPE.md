@@ -583,8 +583,9 @@ GCC that calls as MSVC does lets an import take its natural declaration, and the
 
 **The convention,** as the console showed it, settled by step 1 (docs/HARDWARE.md, "Calls between xsdk's GCC and
 the console's MSVC" and "The console's calling convention, register by register"):
-- **Arguments:** one 8-byte slot each, r3 to r10, then the stack from 0x50(r1), each in the next slot with no padding
-  for alignment.
+- **Arguments:** one 8-byte slot each, r3 to r10, then the stack from 0x50(r1). The GPRs are counted apart from the
+  slots: a struct of more than 8 bytes starts on a 16-byte boundary, an even slot, while its GPRs, and those of what
+  follows, come from the GPR count, which that padding doesn't move (step 2, docs/HARDWARE.md).
   - A 32-bit value goes in its slot's low word, its high half carrying nothing: the receiver widens it.
   - 64-bit integers go whole.
   - `float` and `double` go in f1 to f13, each also taking a slot whose register is left alone; from the 14th, in
@@ -594,8 +595,8 @@ the console's MSVC" and "The console's calling convention, register by register"
   through a pointer in r3, which comes back in r3.
 - **Extension:** whoever receives a `char`, `short` or `int` widens it.
 - **Varargs:** each in its own slot, doubles as their bits, also copied into f1 on by the caller. `va_list` is a
-  pointer that walks the 8-byte slots; the callee spills r3 to r10 into the 64 bytes at 0x10(r1) that its caller
-  always leaves.
+  pointer that walks the 8-byte slots; the callee spills the GPRs left into the slots after its named arguments,
+  which are the 64 bytes at 0x10(r1) that its caller always leaves unless a padded struct came before.
 - **Registers kept:** r14-r31 whole, f14-f31 and v14-v31 (and VMX128's v64-v127, which GCC can't reach); no CR field.
 - **Frames:** LR goes at -8(r1) through r12, and saved registers go below the caller's r1 before `stwu`; nothing is kept
   at 4-15(r1). The 1348 bytes below r1 are the code's: the console's own writes there start below them.
@@ -618,7 +619,9 @@ slots and structs by value (rs6000-call.cc:1245-1261, 1781-1869). On top of thos
 - v14-v31 kept (rs6000.cc:10232, rs6000-logue.cc:167-170), which retires `-ffixed-v14` to `-ffixed-v19`;
 - MSVC's frame, with LR at -8(r1);
 - an unwinder that restores 8-byte registers, so a C++ exception gives them back whole (`rs6000_dwarf_frame_reg_mode`
-  in tools/toolchain/gcc-xsdk.patch; libgcc's unwind-dw2.c).
+  in tools/toolchain/gcc-xsdk.patch; libgcc's unwind-dw2.c);
+- objects flagged by the assembler, `EF_PPC_XSDK`, which the linker refuses to mix with objects built for another
+  convention (tools/toolchain/binutils-xsdk.patch; binutils:bfd/elf32-ppc.c, `ppc_elf_merge_private_bfd_data`).
 
 Not chosen: 32-bit pointers on GCC's 64-bit mode.
 - Its objects are ELF64, which the SDK's ELF32 link and `elf2xex` don't take.

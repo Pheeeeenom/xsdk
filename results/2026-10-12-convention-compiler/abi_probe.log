@@ -1,0 +1,82 @@
+log: game:\xsdk.log
+ABI probe: xsdk's GCC against the Xbox 360 SDK's MSVC, each calling the other
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 17958 us
+PASS: splash: the vulkan4xenon logo shown
+PASS: gcc->msvc: 7 ints after a pointer, all in registers
+    received 11010102 12020203 13030304 14040405 15050506 16060607 17070708
+PASS: gcc->msvc: 9 ints after a pointer, the last two on the stack
+    received 11010102 12020203 13030304 14040405 15050506 16060607 17070708 18080809 1909090A
+PASS: gcc->msvc: a uint64_t after a pointer
+    received 01234567 89ABCDEF
+PASS: gcc->msvc: an int, then a uint64_t
+    received 11010102 FEDCBA98 76543210
+PASS: gcc->msvc: a uint64_t returned
+    received 01234567 89ABCDEF
+PASS: gcc->msvc: signed char -5, unsigned char 250, short -1234, unsigned short 60000
+    received FFFFFFFB 000000FA FFFFFB2E 0000EA60
+PASS: gcc->msvc: signed char -5 and short -1234 returned
+    received FFFFFFFB FFFFFB2E
+PASS: gcc->msvc: a float 1.5 and a double 3.75
+    received 3FC00000 400E0000 00000000
+PASS: gcc->msvc: int, float, int, double, int
+    received 11010102 3FC00000 12020203 400E0000 00000000 13030304
+PASS: gcc->msvc: 9 doubles
+    received 400E0000 00000000 400E0000 00000001 400E0000 00000002 400E0000 00000003 400E0000 00000004 400E0000 00000005 400E0000 00000006 400E0000 00000007 400E0000 00000008
+PASS: gcc->msvc: an 8-byte struct by value
+    received 11010102 12020203
+PASS: gcc->msvc: a 1-byte struct by value
+    received 0000005A
+PASS: gcc->msvc: a 24-byte struct by value
+    received 11010102 12020203 13030304 14040405 15050506 16060607
+PASS: gcc->msvc: a struct of two floats by value
+    received 3FC00000 C0100000
+PASS: gcc->msvc: an 8-byte struct returned
+    received 10000001 11010102
+PASS: gcc->msvc: a 24-byte struct returned
+    received 10000001 11010102 12020203 13030304 14040405 15050506
+PASS: gcc->msvc: varargs int, uint64_t, double, int
+    received 00000004 11010102 01234567 89ABCDEF 400E0000 00000000 12020203
+PASS: msvc->gcc: 9 ints, the last on the stack
+    received 10000001 11010102 12020203 13030304 14040405 15050506 16060607 17070708 18080809
+PASS: msvc->gcc: a uint64_t
+    received 01234567 89ABCDEF
+PASS: msvc->gcc: an int, then a uint64_t
+    received 10000001 FEDCBA98 76543210
+PASS: msvc->gcc: a uint64_t returned
+    received 01234567 89ABCDEF
+PASS: msvc->gcc: signed char -5, unsigned char 250, short -1234, unsigned short 60000
+    received FFFFFFFB 000000FA FFFFFB2E 0000EA60
+PASS: msvc->gcc: signed char -5 returned
+    received FFFFFFFB
+PASS: msvc->gcc: a float 1.5 and a double 3.75
+    received 3FC00000 400E0000 00000000
+PASS: msvc->gcc: int, float, int, double, int
+    received 10000001 3FC00000 11010102 400E0000 00000000 12020203
+PASS: msvc->gcc: 9 doubles
+    received 400E0000 00000000 400E0000 00000001 400E0000 00000002 400E0000 00000003 400E0000 00000004 400E0000 00000005 400E0000 00000006 400E0000 00000007 400E0000 00000008
+PASS: msvc->gcc: an 8-byte struct by value
+    received 00000000 82050900
+PASS: msvc->gcc: a 24-byte struct by value
+    received 00000000 82050900 12020203 13030304 14040405 15050506
+PASS: msvc->gcc: a struct of two floats by value
+    received 00000000 82050900
+PASS: msvc->gcc: an 8-byte struct returned
+    received 10000001 11010102
+PASS: msvc->gcc: a 24-byte struct returned
+    received 10000001 11010102 12020203 13030304 14040405 15050506
+PASS: msvc->gcc: varargs int, uint64_t, double, int
+    received 00000004 10000001 01234567 89ABCDEF 400E0000 00000000 11010102
+PASS: msvc->gcc: 12 uint64_t values MSVC keeps across a GCC call come back whole
+    received 00000FFF
+PASS: gcc->msvc: MSVC code keeps the registers GCC's caller relies on
+    changed: r14-r31 low halves 00000000, high halves 00000000; f14-f31 00000000; v14-v31 00000000; CR fields 40
+    must keep: r14-r31 low FFFFC000, high FFFFC000; f FFFFC000; v FFFFC000; CR 00; r2 00000000->00000000, r13 801B0000->801B0000
+PASS: msvc->gcc: GCC code keeps the registers MSVC's caller relies on
+    changed: r14-r31 low halves 00000000, high halves 00000000; f14-f31 00000000; v14-v31 00000000; CR fields 00
+    must keep: r14-r31 low FFFFC000, high FFFFC000; f FFFFC000; v FFFFC000; CR 00; r2 00000000->00000000, r13 801B0000->801B0000
+layout, GCC's with ms_struct then MSVC's: {char, double} size and offset, {char, uint64_t} size and offset, {char, short, char} size and last offset, a 3:7:22 bitfield's size and word, a u8:3, u32:9, u8 struct's size and bytes, then sizeof wchar_t (char16_t on GCC's side), long double, an enum and long
+PASS: layout: struct sizes, offsets, bitfields and type sizes agree
+    received 00000010 00000008 00000010 00000008 00000006 00000004 00000004 B56AAAAA 0000000C A0000000 AA800000 00000002 00000008 00000004 00000004
+tests: 36 passed, 0 failed
+exit: status 0
