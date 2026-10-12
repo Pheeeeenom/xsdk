@@ -565,6 +565,100 @@ platform for the port. What they need of the SDK beyond what it has:
     - Dusklight's `.xex` built through the toolchain file starts, and reaches milestone 9's steps;
     - xsdk_test passes in full, with a test for each piece.
 
+### The console's calling convention
+
+Agreed on 2026-10-12, after the SDL3 port. The user chose on 2026-10-11 to keep GCC's struct layout, so code ported
+meanwhile needn't change (TODO.md), and allowed the Xbox 360 SDK's compiler for the probe's MSVC half throughout.
+
+**Why.** The kernel, XAM and any library built with the console's compiler call by MSVC's convention, and the SDK's
+GCC by 32-bit SysV: on the console, 27 of 36 cases failed between them (docs/HARDWARE.md, "Calls between xsdk's GCC
+and the console's MSVC"). The SDK keeps today's calls inside where they agree:
+- the import stubs move arguments past the 8th into the kernel's slots;
+- `XSDK_KERNEL_ENTRY` saves r14-r31 whole around the kernel's calls into a title;
+- `-ffixed-v14` to `-ffixed-v19` keep GCC off vector registers the kernel's code keeps;
+- `gen_imports.py` refuses the rest.
+
+Two kernel callbacks run unwrapped all the same and lose r14-r31's high halves (src/present.c:57, src/gpu.c:107). A
+GCC that calls as MSVC does lets an import take its natural declaration, and the kernel call a title's code directly.
+
+**The convention,** as the console showed it (docs/HARDWARE.md, and the probe's MSVC half in `local/abi`):
+- **Arguments:** one 8-byte slot each, r3 to r10, then the stack from 0x50(r1), a 32-bit value in a slot's low word.
+  - 64-bit integers go whole.
+  - `float` and `double` go in f1 to f13, each also taking a slot; a variadic one goes in its integer register too.
+  - Structs go as their bytes across registers.
+- **Returns:** 64-bit integers and structs of 8 bytes or less in r3; larger structs through a pointer in r3, which
+  comes back in r3.
+- **Extension:** whoever receives a `char` or `short` extends it.
+- **Varargs:** `va_list` is a pointer that walks the 8-byte slots. The callee spills r3 to r10 into the 64 bytes at
+  0x10(r1) that its caller always leaves.
+- **Registers kept:** r14-r31 whole, f14-f31 and v14-v31; CR6 is not kept.
+- **Frames:** LR goes at -8(r1) through r12, and saved registers go below the caller's r1 before `stwu`.
+
+Layout stays GCC's: `ms_struct` and `char16_t` where code shares structs or text with MSVC code.
+
+**How.** An option in GCC's PowerPC backend, on the 32-bit target the SDK has, not a 64-bit one. Under
+`-m32 -mpowerpc64` GCC already works in 8-byte words and keeps a `long long` in one register
+(gcc:config/rs6000/rs6000.h:646, rs6000.cc:1837-1856); only the calling convention is 4 bytes wide. The option,
+`-mcall-xsdk`, becomes the toolchain's default. It sits on the SysV ABI the target has (no TOC, r13 the processor
+control region) and takes the paths GCC's AIX ABI already has for one slot per argument, f1 to f13 doubling integer
+slots and structs by value (rs6000-call.cc:1245-1261, 1781-1869). On top of those paths:
+- argument slots of 8 bytes, and a parameter area at 0x10 with its 64 bytes always left (rs6000-call.cc:890-903,
+  rs6000.h:698, 1257-1259);
+- no 64-bit value split across two registers, as an argument or a return (rs6000-call.cc:1478-1521,
+  rs6000.cc:23994-24006), and 8-byte structs returned whole in r3;
+- no extending by the sender (rs6000-call.cc:693-704);
+- r14-r31 saved 64 bits wide, so GCC may keep 64-bit values in them across calls (rs6000.cc:2016-2023,
+  rs6000-logue.cc:2997-2998);
+- v14-v31 kept (rs6000.cc:10232, rs6000-logue.cc:167-170), which retires `-ffixed-v14` to `-ffixed-v19`;
+- MSVC's frame, with LR at -8(r1);
+- an unwinder that restores 8-byte registers, so a C++ exception gives them back whole (`rs6000_dwarf_frame_reg_mode`
+  in tools/toolchain/gcc-xsdk.patch; libgcc's unwind-dw2.c).
+
+Not chosen: 32-bit pointers on GCC's 64-bit mode.
+- Its objects are ELF64, which the SDK's ELF32 link and `elf2xex` don't take.
+- It means auditing some 640 uses of the pointer mode.
+- Nothing in GCC does it; AIX's port refuses outright (gcc:config/rs6000/aix73.h:39-42).
+
+The runtime follows:
+- libgcc's out-of-line save and restore routines take MSVC's shape;
+- newlib's `setjmp` saves r14-r31 whole and v14-v31, in a larger `jmp_buf`.
+
+So does the SDK:
+- the import stubs become their thunks, and `check_abi` goes;
+- `XSDK_KERNEL_ENTRY` goes, with its trampolines in crt0, threads, the audio tests and SDL's audio driver.
+
+22. **The console's calling convention.** In three steps, each run on the console:
+    1. **What the probe left open.** The probe gains the cases its first run didn't have:
+       - structs of 2 to 23 bytes, as arguments and returns, and the arguments after them;
+       - `float` and `double` returned;
+       - floating-point arguments past the 13th;
+       - varargs with `float`s, and past 8 slots;
+       - 32-bit arguments with their high halves set;
+       - the CR fields MSVC's callers keep across a call;
+       - what MSVC keeps at 4 to 15(r1), and how far below r1 it writes;
+       - MSVC code that keeps f14-f31 and v14-v31.
+
+       Its MSVC half is built with the Xbox 360 SDK's compiler, which the user allowed for it; its output stays in
+       `local/`, out of git. The answers go into docs/HARDWARE.md and settle the convention above.
+    2. **The compiler, and the SDK on it.** The option, libgcc and newlib are built into a prefix of their own,
+       `~/xsdk-gcc-next`. Meanwhile `~/xsdk-gcc` keeps the SysV toolchain, which Dusklight's port builds with.
+       - On a branch, the SDK's pieces that must change with the compiler: the import stubs, `XSDK_KERNEL_ENTRY` and
+         its users, and the kernel-entry test. That test then checks that GCC code called directly keeps r14-r31
+         whole, f14-f31 and v14-v31.
+       - Objects built for the two conventions don't link together unnoticed.
+    3. **The switch.** `~/xsdk-gcc` becomes the new toolchain, with the old one kept beside it. SDL drops its audio
+       trampoline, and SDL, vulkan4xenon, Aurora and Dusklight are rebuilt.
+
+    Done when, on the console:
+    - the probe built with the new compiler passes every case, the first run's 36 and step 1's, in both directions;
+    - xsdk_test passes in full, with new checks:
+      - a C++ exception thrown through frames that hold 64-bit values in r14-r31, and values in f14-f31 and v14-v31,
+        gives them back;
+      - `setjmp` and `longjmp` keep them;
+      - `KeQueryPerformanceFrequency`, declared with its natural 64-bit return, reads 50 MHz;
+    - sdl_check, vulkan4xenon_test and vkbench pass in full;
+    - Dusklight's port passes its latest step again.
+
 ## 5. Questions for the user first
 
 1. **The GCC:** its version (C++23 needs 13 or later for most of it), target triple, ABI and code model, its C

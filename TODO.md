@@ -22,27 +22,8 @@ work begins.
 
 ## Toolchain
 
-- **The console's calling convention in GCC.** xsdk's GCC passes arguments by the 32-bit SysV convention, which
-  matches the console's MSVC only for up to 8 integer or pointer arguments, plain `float` and `double`, small integer
-  returns and structs returned through a pointer (docs/HARDWARE.md, "Calls between xsdk's GCC and the console's
-  MSVC"). Today the import stubs and `XSDK_KERNEL_ENTRY` keep calls inside that, and `gen_imports.py` refuses the rest.
-  Full compatibility is a calling convention in GCC's PowerPC backend that matches MSVC's, as the console showed it:
-  - one register per argument, r3 to r10, 64-bit integers whole;
-  - `float` and `double` in f1 to f13, each also taking up an integer register's place;
-  - arguments past the 8th in 8-byte slots from 0x54(r1);
-  - structs by value as their bytes across registers;
-  - 64-bit integers and structs of 8 bytes or less returned in r3, larger structs through a pointer in r3;
-  - the callee extending `char` and `short` arguments, not the caller;
-  - varargs as MSVC lays them out;
-  - r14-r31 kept whole, f14-f31 and v14-v31 kept.
-
-  Layout stays GCC's, as the user chose on 2026-10-11 so code ported meanwhile, Dusklight's first, needn't change: a
-  struct shared with MSVC code takes `__attribute__((ms_struct))`, which GCC's PowerPC backend already lays out as MSVC
-  does (gcc-15.3.0/gcc/config/rs6000/rs6000.cc:20785-20789), and UTF-16 text is `char16_t`, `wchar_t` staying 4 bytes.
-
-  Then any import takes its natural C declaration, and a title could link the console's own libraries. The ABI probe in
-  `local/abi` is the acceptance test: all 36 cases pass in both directions. It needs the Xbox 360 SDK's compiler for
-  its other half, so each run takes the user's leave.
+- **The console's calling convention in GCC.** Scoped and agreed on 2026-10-12 as SCOPE.md's milestone 22, with GCC's
+  struct layout kept as the user chose on 2026-10-11.
 
 - **xost off Python.** Its compiler (`xsc`), assembler (`xasm`) and disassembler (`xdis`) are Python; only the
   combiner generator `xcomb` is C99 (xost:README.md:49-71, docs/xsc.md:1-14). The combined SDK shouldn't need
