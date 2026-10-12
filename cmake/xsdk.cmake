@@ -44,6 +44,9 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 
 # Packs a title's ELF into <target>.xex beside it, and lists what Xenia would skip, as the Makefile does.
 function(xsdk_add_xex target)
+	# The link rule names these outside CMake's view, so a rebuilt SDK would otherwise leave the title linked to the old.
+	set_property(TARGET ${target} APPEND PROPERTY LINK_DEPENDS
+		"${XSDK_ROOT}/build/sdk/crt0.o" "${XSDK_ROOT}/build/libxsdk.a" "${XSDK_ROOT}/src/xsdk.ld")
 	add_custom_command(TARGET ${target} POST_BUILD
 		COMMAND sh -c "'${CMAKE_OBJDUMP}' -d '$<TARGET_FILE:${target}>' | python3 '${XSDK_ROOT}/tools/xenia_scan.py'"
 		COMMAND python3 "${XSDK_ROOT}/tools/elf2xex.py" "$<TARGET_FILE:${target}>" "$<TARGET_FILE_DIR:${target}>/${target}.xex"
