@@ -1721,7 +1721,18 @@ the memory test's lines and the summary): all 222 checks passed, and both titles
 - **Heap growth takes free pages:** 16 MB through `sbrk`, every page touched, took 4100 pages, 16 MB and 4 more.
 - **Address space:** the title has 767 MB, and `sbrk`'s 256 MB reservation shows as 256 MB reserved.
 - **The rest of the title's pages,** the same in both: 256 stack (the main thread's 1 MB), 96 heap, 920 physical. The
-  physical pages stay after `xsdk_splash_show` has freed its buffers and closed the GPU; what holds them isn't known.
-  Dusklight's static constructors took 256 KB of newlib's heap.
+  physical pages are taken before the title's first `malloc`, so not by the splash (see the next entry); what holds
+  them isn't known. Dusklight's static constructors took 256 KB of newlib's heap.
 - **`pread`** read at an offset without moving the position and read nothing at the end, and **`flockfile`** kept a
   second thread waiting while `stdout` was locked twice, then once.
+
+## The heap reserves the title's free memory (2026-10-12)
+
+`build/xsdk_test.xex` at `70e79b6` and Dusklight's first-step `dusklight.xex` relinked with it (logs:
+`results/2026-10-12-heap-reservation/`, the xsdk_test one the reservation, the memory lines and the summary): all 223
+checks passed, and both titles exited with status 0.
+- **At the heap's first growth,** before `main`, `sbrk` reserved what `MmQueryStatistics` gave as the title's free
+  memory: 472 MB in xsdk_test and 442 MB in Dusklight, after its 32 MB image. The kernel then shows 472 MB reserved.
+- **The reservation covers what's free later:** the memory test found 120916 pages free, the 472 MB of the first
+  growth, after the splash had run, and Dusklight 442 MB at `main`, as at its first growth. So the 920 physical pages
+  both titles hold were taken before the first `malloc`, not by the splash.

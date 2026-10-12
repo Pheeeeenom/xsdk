@@ -1,0 +1,11 @@
+sbrk: the heap may grow to 472 MB, the title's free memory
+memory: 131072 pages in all, 784 the kernel's, highest page 0x1FFFF
+memory: title: 120916 pages free; 767 MB virtual, 472 MB reserved
+memory: title pages: 920 physical, 2 pool, 256 stack, 656 image, 96 heap
+memory: title pages: 16 virtual, 2 page table, 16 cache
+memory: system: 1503 pages free; 31 MB virtual, 13 MB reserved
+memory: system pages: 857 physical, 167 pool, 322 stack, 2032 image, 2448 heap
+memory: system pages: 13 virtual, 2 page table, 64 cache
+memory: 472 MB free for the title
+tests: 223 passed, 0 failed
+exit: status 0
