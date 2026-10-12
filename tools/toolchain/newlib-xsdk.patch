@@ -1,24 +1,33 @@
---- a/newlib/libc/include/sys/features.h
-+++ b/newlib/libc/include/sys/features.h
-@@ -439,6 +439,18 @@
- #define _POSIX_THREAD_PRIORITY_SCHEDULING	1
+--- a/newlib/configure.host
++++ b/newlib/configure.host
+@@ -823,6 +823,11 @@
+ 	default_newlib_io_long_long="yes"
+ 	newlib_cflags="${newlib_cflags} -DMISSING_SYSCALL_NAMES"
+ 	;;
++  powerpc*-xsdk-*)
++	# The Xbox 360 SDK links titles at a fixed address, so newlib needn't relocate itself (-mrelocatable-lib).
++	default_newlib_io_long_long="yes"
++	newlib_cflags="${newlib_cflags} -mno-eabi -mstrict-align -DMISSING_SYSCALL_NAMES"
++	;;
+   powerpc*-*-eabi* | \
+   powerpc*-*-elf* | \
+   powerpc*-*-linux* | \
+--- a/newlib/libc/include/machine/setjmp.h
++++ b/newlib/libc/include/machine/setjmp.h
+@@ -186,7 +186,12 @@
  #endif
  
-+/* The Xbox 360 SDK supplies POSIX threads, their scheduling, timeouts and clocks on the retail kernel. */
-+#ifdef __XSDK__
-+#define _POSIX_THREADS				1
-+#define _POSIX_PRIORITY_SCHEDULING		1
-+#define _POSIX_THREAD_PRIORITY_SCHEDULING	1
-+#define _POSIX_READER_WRITER_LOCKS		200112L
-+#define _POSIX_TIMEOUTS				1
-+#define _POSIX_TIMERS				1
-+#define _POSIX_MONOTONIC_CLOCK			200112L
-+#define _UNIX98_THREAD_MUTEX_ATTRIBUTES		1
-+#endif
-+
- 
- #ifdef __svr4__
- # define _POSIX_JOB_CONTROL     1
+ #ifdef __PPC__
+-#ifdef __powerpc64__
++#if defined(_CALL_XSDK)
++/* The Xbox 360 SDK's calling convention keeps r14-r31 whole and v14-v31: up
++   to 15 bytes to align, r1, r2, r13-r31, LR and CR in 192, f14-f31 in 144,
++   16 more to align and v14-v31 in 288.  */
++#define _JBLEN 82
++#elif defined(__powerpc64__)
+ #ifdef __ALTIVEC__
+ #define _JBLEN 70
+ #else
 --- a/newlib/libc/include/sys/dirent.h
 +++ b/newlib/libc/include/sys/dirent.h
 @@ -7,7 +7,34 @@
@@ -56,17 +65,118 @@
  #ifdef __cplusplus
  }
  #endif
---- a/newlib/configure.host
-+++ b/newlib/configure.host
-@@ -823,6 +823,11 @@
- 	default_newlib_io_long_long="yes"
- 	newlib_cflags="${newlib_cflags} -DMISSING_SYSCALL_NAMES"
- 	;;
-+  powerpc*-xsdk-*)
-+	# The Xbox 360 SDK links titles at a fixed address, so newlib needn't relocate itself (-mrelocatable-lib).
-+	default_newlib_io_long_long="yes"
-+	newlib_cflags="${newlib_cflags} -mno-eabi -mstrict-align -DMISSING_SYSCALL_NAMES"
-+	;;
-   powerpc*-*-eabi* | \
-   powerpc*-*-elf* | \
-   powerpc*-*-linux* | \
+--- a/newlib/libc/include/sys/features.h
++++ b/newlib/libc/include/sys/features.h
+@@ -439,6 +439,18 @@
+ #define _POSIX_THREAD_PRIORITY_SCHEDULING	1
+ #endif
+ 
++/* The Xbox 360 SDK supplies POSIX threads, their scheduling, timeouts and clocks on the retail kernel. */
++#ifdef __XSDK__
++#define _POSIX_THREADS				1
++#define _POSIX_PRIORITY_SCHEDULING		1
++#define _POSIX_THREAD_PRIORITY_SCHEDULING	1
++#define _POSIX_READER_WRITER_LOCKS		200112L
++#define _POSIX_TIMEOUTS				1
++#define _POSIX_TIMERS				1
++#define _POSIX_MONOTONIC_CLOCK			200112L
++#define _UNIX98_THREAD_MUTEX_ATTRIBUTES		1
++#endif
++
+ 
+ #ifdef __svr4__
+ # define _POSIX_JOB_CONTROL     1
+--- a/newlib/libc/machine/powerpc/setjmp.S
++++ b/newlib/libc/machine/powerpc/setjmp.S
+@@ -49,7 +49,7 @@
+ 	   stored.  Note that we are not adding 168 because the next
+ 	   store instruction uses an offset of 4.  */
+ 	addi	3,3,164
+-#elif __powerpc64__
++#elif __powerpc64__ || defined(_CALL_XSDK)
+ 	/* In the first store, add 8 to r3 so that the subsequent floating
+ 	   point stores are aligned on an 8 byte boundary and the Altivec
+ 	   stores are aligned on a 16 byte boundary.  */
+@@ -102,7 +102,7 @@
+ 	stwu	31,4(3)		# offset 80
+ #endif
+ 
+-#if !__powerpc64__
++#if !__powerpc64__ && !defined(_CALL_XSDK)
+ 	/* If __SPE__, then add 84 to the offset shown from this point on until
+ 	   the end of this function.  This difference comes from the fact that
+ 	   we save 21 64-bit registers instead of 21 32-bit registers above.  */
+@@ -162,10 +162,28 @@
+ 	andis.	5,5,0x200
+ 	beq	1f
+ #endif
++#ifdef _CALL_XSDK
++	/* The Xbox 360 SDK's calling convention keeps v14-v31; its code doesn't
++	   use vrsave.  From offset 352, after the 64-bit layout's FPRs.  */
++	addi	3,3,24
++	stvx	14,0,3
++	addi	3,3,16
++	stvx	15,0,3
++	addi	3,3,16
++	stvx	16,0,3
++	addi	3,3,16
++	stvx	17,0,3
++	addi	3,3,16
++	stvx	18,0,3
++	addi	3,3,16
++	stvx	19,0,3
++	addi	3,3,16
++#else
+ 	/* save Altivec vrsave and vr20-vr31 registers */
+ 	mfspr	4,256		# vrsave register
+ 	stwu	4,16(3)		# offset 248
+ 	addi	3,3,8
++#endif
+ 	stvx	20,0,3		# offset 256
+ 	addi	3,3,16
+ 	stvx	21,0,3		# offset 272
+@@ -242,7 +260,7 @@
+ 	   loaded.  Note that we are not adding 168 because the next
+ 	   load instruction uses an offset of 4.  */
+ 	addi	3,3,164
+-#elif __powerpc64__
++#elif __powerpc64__ || defined(_CALL_XSDK)
+ 	/* In the first load, add 8 to r3 so that the subsequent floating
+ 	   point loades are aligned on an 8 byte boundary and the Altivec
+ 	   loads are aligned on a 16 byte boundary.  */
+@@ -298,7 +316,7 @@
+ 	   the end of this function.  This difference comes from the fact that
+ 	   we restore 22 64-bit registers instead of 22 32-bit registers above.  */
+ 
+-#if !__powerpc64__
++#if !__powerpc64__ && !defined(_CALL_XSDK)
+ 	lwzu	5,4(3)		# offset 84
+ 	mtlr	5
+ 	lwzu	5,4(3)		# offset 88
+@@ -350,10 +368,26 @@
+ 	andis.	5,5,0x200
+ 	beq	1f
+ #endif
++#ifdef _CALL_XSDK
++	addi	3,3,24
++	lvx	14,0,3
++	addi	3,3,16
++	lvx	15,0,3
++	addi	3,3,16
++	lvx	16,0,3
++	addi	3,3,16
++	lvx	17,0,3
++	addi	3,3,16
++	lvx	18,0,3
++	addi	3,3,16
++	lvx	19,0,3
++	addi	3,3,16
++#else
+ 	/* restore Altivec vrsave and v20-v31 registers */
+ 	lwzu	5,16(3)		# offset 248
+ 	mtspr	256,5		# vrsave
+ 	addi	3,3,8
++#endif
+ 	lvx	20,0,3		# offset 256
+ 	addi	3,3,16
+ 	lvx	21,0,3		# offset 272

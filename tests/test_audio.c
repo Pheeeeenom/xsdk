@@ -11,7 +11,6 @@ enum {
 	TONE_MS = 2000,
 };
 
-void test_audio_entry(const uint32_t *context);
 void test_audio_callback(const uint32_t *context);
 
 static float *frame;
@@ -40,7 +39,7 @@ void test_audio(void)
 	}
 	audio_frame_fill(frame, 1u << CHANNEL_FRONT_LEFT | 1u << CHANNEL_FRONT_RIGHT, TONE_HZ);
 
-	const XAUDIO_RENDER_DRIVER_CLIENT client = { .callback = test_audio_entry, .context = 0 };
+	const XAUDIO_RENDER_DRIVER_CLIENT client = { .callback = test_audio_callback, .context = 0 };
 	uint32_t registered = 0;
 	const uint32_t result = XAudioRegisterRenderDriverClient(&client, &registered);
 	if (result != ERROR_SUCCESS) {

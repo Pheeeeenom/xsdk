@@ -7,59 +7,44 @@
 
 #include "xsdk/log.h"
 
-// The registers the kernel's code keeps across a call, as it calls a title's code (docs/HARDWARE.md, "Calls between
-// xsdk's GCC and the console's MSVC").
+// The registers the console's own code keeps across a call: r14-r31 whole, f14-f31 and v14-v31 (docs/HARDWARE.md,
+// "The console's calling convention, register by register"). GCC's code, called as the kernel calls a title's, must
+// give them back.
 
 enum {
-	REGISTERS = 18,
-	FIRST_KEPT = 14,
-	// v14-v19: kept by the kernel's code, used freely by GCC's unless the toolchain reserves them.
-	VR_GCC_FREE = 6,
+	// v14-v19: kept by the console's code, and GCC's only since -mcall-xsdk.
+	VR_NEWLY_KEPT = 6,
 };
 
-typedef struct {
-	uint64_t gpr[REGISTERS];
-	uint64_t fpr[REGISTERS];
-	uint32_t vr[REGISTERS][4];
-} EntryRegs;
-
-void test_entry_regs_call(void (*fn)(void *), void *arg, EntryRegs *out);
-void test_entry_wrapped(void *arg);
-void test_entry_target(void *arg);
-extern const uint64_t test_entry_gpr_sentinels[REGISTERS];
-extern const uint64_t test_entry_fpr_sentinels[REGISTERS];
-extern const uint32_t test_entry_vr_sentinels[REGISTERS][4];
-
-typedef struct {
-	uint32_t gpr_low;
-	uint32_t gpr_high;
-	uint32_t fpr;
-	uint32_t vr;
-} Changed;
+extern const uint64_t test_entry_gpr_sentinels[ENTRY_REGISTERS];
+extern const uint64_t test_entry_fpr_sentinels[ENTRY_REGISTERS];
+extern const uint32_t test_entry_vr_sentinels[ENTRY_REGISTERS][4];
 
 static volatile uint32_t inputs[9] = { 3, 5, 7, 11, 13, 17, 19, 23, 200 };
 static volatile uint64_t sink;
+static volatile double sinkd;
 static vector float vectors[21] __attribute__((aligned(16)));
+// The registers as GCC's code held them, part way through.
+static EntryRegs while_scalars __attribute__((aligned(16)));
+static EntryRegs while_vectors __attribute__((aligned(16)));
 
-__attribute__((noinline)) static void step(void)
-{
-	sink = sink + 1;
-}
-
-// 64-bit values live across calls, which GCC keeps in r14-r31 and restores only by their low halves.
+// 64-bit values and doubles live across calls, which GCC keeps in r14-r31 and f14-f31.
 static uint64_t keep_across_calls(void)
 {
 	uint64_t a = inputs[0], b = inputs[1], c = inputs[2], d = inputs[3], e = inputs[4], f = inputs[5], g = inputs[6];
 	uint64_t h = inputs[7];
+	double x = inputs[0], y = inputs[1], z = inputs[2], w = inputs[3];
 	for (uint32_t i = 0; i < inputs[8]; i++) {
 		a = a * 3 + b, b = b * 5 + c, c = c * 7 + d, d = d * 11 + e, e = e * 13 + f, f = f * 17 + g;
 		g = g * 19 + h, h = h * 23 + a;
-		step();
+		x = x * 1.25 + y, y = y * 0.75 + z, z = z * 1.5 + w, w = w * 0.5 + x;
+		test_entry_snapshot(&while_scalars);
 	}
+	sinkd = x + y + z + w;
 	return a ^ b ^ c ^ d ^ e ^ f ^ g ^ h;
 }
 
-// Twenty vectors live at once, which takes v14-v19 unless the toolchain reserves them.
+// Twenty vectors live across calls, more than v20-v31 hold.
 static vector float many_vectors(void)
 {
 	vector float a = vectors[0], b = vectors[1], c = vectors[2], d = vectors[3], e = vectors[4], f = vectors[5];
@@ -72,57 +57,61 @@ static vector float many_vectors(void)
 		i = vec_madd(i, j, k), j = vec_madd(j, k, l), k = vec_madd(k, l, m), l = vec_madd(l, m, n);
 		m = vec_madd(m, n, o), n = vec_madd(n, o, p), o = vec_madd(o, p, q), p = vec_madd(p, q, r);
 		q = vec_madd(q, r, s), r = vec_madd(r, s, t), s = vec_madd(s, t, a), t = vec_madd(t, a, b);
+		test_entry_snapshot(&while_vectors);
 	}
 	return vec_add(vec_add(vec_add(vec_add(a, b), vec_add(c, d)), vec_add(vec_add(e, f), vec_add(g, h))),
 		vec_add(vec_add(vec_add(i, j), vec_add(k, l)),
 			vec_add(vec_add(vec_add(m, n), vec_add(o, p)), vec_add(vec_add(q, r), vec_add(s, t)))));
 }
 
-void test_entry_target(void *arg)
+static void test_entry_target(void *arg)
 {
 	(void)arg;
 	sink += keep_across_calls();
 	vectors[20] = many_vectors();
 }
 
-static Changed call_and_compare(void (*fn)(void *))
+EntryChanged test_entry_changed(const EntryRegs *regs)
 {
-	static EntryRegs regs __attribute__((aligned(16)));
-	memset(&regs, 0, sizeof regs);
-	test_entry_regs_call(fn, NULL, &regs);
-	Changed changed = { 0, 0, 0, 0 };
-	for (uint32_t i = 0; i < REGISTERS; i++) {
-		const uint32_t bit = 1u << (FIRST_KEPT + i);
-		if ((uint32_t)regs.gpr[i] != (uint32_t)test_entry_gpr_sentinels[i])
+	EntryChanged changed = { 0, 0, 0, 0 };
+	for (uint32_t i = 0; i < ENTRY_REGISTERS; i++) {
+		const uint32_t bit = 1u << (ENTRY_FIRST_KEPT + i);
+		if ((uint32_t)regs->gpr[i] != (uint32_t)test_entry_gpr_sentinels[i])
 			changed.gpr_low |= bit;
-		if (regs.gpr[i] >> 32 != test_entry_gpr_sentinels[i] >> 32)
+		if (regs->gpr[i] >> 32 != test_entry_gpr_sentinels[i] >> 32)
 			changed.gpr_high |= bit;
-		if (regs.fpr[i] != test_entry_fpr_sentinels[i])
+		if (regs->fpr[i] != test_entry_fpr_sentinels[i])
 			changed.fpr |= bit;
-		if (memcmp(regs.vr[i], test_entry_vr_sentinels[i], sizeof regs.vr[i]) != 0)
+		if (memcmp(regs->vr[i], test_entry_vr_sentinels[i], sizeof regs->vr[i]) != 0)
 			changed.vr |= bit;
 	}
 	return changed;
 }
 
-static void log_changed(const char *how, Changed changed)
+static void log_changed(const char *how, EntryChanged changed)
 {
-	xsdk_log_write("kernel entry: %s changed r14-r31 low halves %08X, high halves %08X, f14-f31 %08X, v14-v31 %08X",
-		how, (unsigned)changed.gpr_low, (unsigned)changed.gpr_high, (unsigned)changed.fpr, (unsigned)changed.vr);
+	xsdk_log_write("kernel entry: %s r14-r31 low halves %08X, high halves %08X, f14-f31 %08X, v14-v31 %08X", how,
+		(unsigned)changed.gpr_low, (unsigned)changed.gpr_high, (unsigned)changed.fpr, (unsigned)changed.vr);
 }
 
 void test_kernel_entry(void)
 {
+	static EntryRegs after __attribute__((aligned(16)));
 	for (uint32_t i = 0; i < 20; i++)
 		vectors[i] = (vector float){ 1.0f, 0.5f, 0.25f, 0.125f };
-	const Changed direct = call_and_compare(test_entry_target);
-	const Changed wrapped = call_and_compare(test_entry_wrapped);
-	log_changed("GCC code called directly", direct);
-	log_changed("the same code through XSDK_KERNEL_ENTRY", wrapped);
-	check("kernel entry: the GCC code under test does change r14-r31's high halves when called directly",
-		direct.gpr_high != 0);
-	check("kernel entry: through XSDK_KERNEL_ENTRY, r14-r31 come back whole and f14-f31 and v14-v31 unchanged",
-		!wrapped.gpr_low && !wrapped.gpr_high && !wrapped.fpr && !wrapped.vr);
-	const uint32_t gcc_free_vrs = ((1u << VR_GCC_FREE) - 1) << FIRST_KEPT;
-	check("kernel entry: GCC code using twenty vectors leaves v14-v19 alone", !(direct.vr & gcc_free_vrs));
+	memset(&after, 0, sizeof after);
+	test_entry_regs_call(test_entry_target, NULL, &after);
+
+	const EntryChanged scalars = test_entry_changed(&while_scalars);
+	const EntryChanged vectors_held = test_entry_changed(&while_vectors);
+	const EntryChanged returned = test_entry_changed(&after);
+	log_changed("while holding 64-bit values and doubles, GCC's code had in", scalars);
+	log_changed("while holding twenty vectors, GCC's code had in", vectors_held);
+	log_changed("after it returned, its caller found changed", returned);
+	check("kernel entry: GCC's code held 64-bit values in r14-r31, high halves too", scalars.gpr_high != 0);
+	check("kernel entry: GCC's code held doubles in f14-f31", scalars.fpr != 0);
+	const uint32_t newly_kept = ((1u << VR_NEWLY_KEPT) - 1) << ENTRY_FIRST_KEPT;
+	check("kernel entry: GCC's code held vectors in v14-v19", (vectors_held.vr & newly_kept) != 0);
+	check("kernel entry: called as the kernel calls it, GCC's code gives back r14-r31 whole, f14-f31 and v14-v31",
+		!returned.gpr_low && !returned.gpr_high && !returned.fpr && !returned.vr);
 }

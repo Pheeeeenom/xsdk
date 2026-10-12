@@ -1,3 +1,915 @@
+--- a/gcc/config.gcc
++++ b/gcc/config.gcc
+@@ -3038,6 +3038,12 @@
+ 	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
+ 	use_gcc_stdint=wrap
+ 	;;
++powerpc-xsdk-elf*)
++	# The Xbox 360 SDK: the console's own calling convention, and int32_t as int.
++	tm_file="${tm_file} elfos.h gnu-user.h usegas.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/xsdk.h"
++	extra_options="${extra_options} rs6000/sysv4.opt"
++	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
++	;;
+ powerpc-*-elf*)
+ 	tm_file="${tm_file} elfos.h gnu-user.h usegas.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h"
+ 	extra_options="${extra_options} rs6000/sysv4.opt"
+--- a/gcc/config/rs6000/rs6000-call.cc
++++ b/gcc/config/rs6000/rs6000-call.cc
+@@ -478,6 +478,14 @@
+       && (unsigned HOST_WIDE_INT) int_size_in_bytes (type) <= 16)
+     return false;
+ 
++  /* Xbox 360 SDK: -mcall-xsdk returns aggregates of 1, 2, 4 and 8 bytes in r3,
++     as the console's own compiler does, and any other in memory.  */
++  if (TARGET_XSDK_CALL && AGGREGATE_TYPE_P (type))
++    {
++      HOST_WIDE_INT size = int_size_in_bytes (type);
++      return !(size == 1 || size == 2 || size == 4 || size == 8);
++    }
++
+   if (AGGREGATE_TYPE_P (type)
+       && (aix_struct_return
+ 	  || (unsigned HOST_WIDE_INT) int_size_in_bytes (type) > 8))
+@@ -574,7 +582,7 @@
+   cum->fregno = FP_ARG_MIN_REG;
+   cum->vregno = ALTIVEC_ARG_MIN_REG;
+   cum->prototype = (fntype && prototype_p (fntype));
+-  cum->call_cookie = ((DEFAULT_ABI == ABI_V4 && libcall)
++  cum->call_cookie = ((ABI_V4_ARGS && libcall)
+ 		      ? CALL_LIBCALL : CALL_NORMAL);
+   cum->sysv_gregno = GP_ARG_MIN_REG;
+   cum->stdarg = stdarg_p (fntype);
+@@ -696,6 +704,11 @@
+ 			      int *punsignedp ATTRIBUTE_UNUSED,
+ 			      const_tree, int for_return ATTRIBUTE_UNUSED)
+ {
++  /* Xbox 360 SDK: under -mcall-xsdk the receiver of a narrow value widens it
++     itself, so the sender leaves it as it is.  */
++  if (TARGET_XSDK_CALL)
++    return mode;
++
+   if (GET_MODE_CLASS (mode) == MODE_INT
+       && GET_MODE_SIZE (mode) < (TARGET_32BIT ? 4 : 8))
+     mode = TARGET_32BIT ? SImode : DImode;
+@@ -708,7 +721,8 @@
+ bool
+ rs6000_must_pass_in_stack (const function_arg_info &arg)
+ {
+-  if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2 || TARGET_64BIT)
++  if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2 || TARGET_64BIT
++      || TARGET_XSDK_CALL)
+     return must_pass_in_stack_var_size (arg);
+   else
+     return must_pass_in_stack_var_size_or_pad (arg);
+@@ -818,6 +832,13 @@
+ 
+   rs6000_discover_homogeneous_aggregate (mode, type, &elt_mode, &n_elts);
+ 
++  /* Xbox 360 SDK: -mcall-xsdk places an aggregate of more than 8 bytes on a
++     16-byte boundary of the parameter area, as the console's own compiler
++     does, whether or not it travels in GPRs, which are counted apart.  */
++  if (TARGET_XSDK_CALL && type && AGGREGATE_TYPE_P (type)
++      && int_size_in_bytes (type) > 8)
++    return 128;
++
+   if (DEFAULT_ABI == ABI_V4
+       && (GET_MODE_SIZE (mode) == 8
+ 	  || (TARGET_HARD_FLOAT
+@@ -896,7 +917,7 @@
+   else
+     size = int_size_in_bytes (type);
+ 
+-  if (TARGET_32BIT)
++  if (RS6000_ARG_WORD_SIZE == 4)
+     return (size + 3) >> 2;
+   else
+     return (size + 7) >> 3;
+@@ -1119,7 +1140,7 @@
+ 	     Darwin does the same for variable-argument functions.  */
+ 	  if (((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
+ 	       && TARGET_64BIT)
+-	      || (cum->stdarg && DEFAULT_ABI != ABI_V4))
++	      || (cum->stdarg && !ABI_V4_ARGS))
+ 	    stack = true;
+ 	}
+       else
+@@ -1134,7 +1155,7 @@
+ 	     to the parameter save area.  In 64-bit mode, they just
+ 	     have to start on an even word, since the parameter save
+ 	     area is 16-byte aligned.  */
+-	  if (TARGET_32BIT)
++	  if (RS6000_ARG_WORD_SIZE == 4)
+ 	    align = -(rs6000_parm_offset () + cum->words) & 3;
+ 	  else
+ 	    align = cum->words & 1;
+@@ -1184,7 +1205,7 @@
+ 		       GET_MODE_NAME (mode));
+ 	    }
+     }
+-  else if (DEFAULT_ABI == ABI_V4)
++  else if (ABI_V4_ARGS)
+     {
+       if (abi_v4_pass_in_fpr (mode, named))
+ 	{
+@@ -1250,7 +1271,16 @@
+ 
+       cum->words = align_words + n_words;
+ 
+-      if (SCALAR_FLOAT_MODE_P (elt_mode) && TARGET_HARD_FLOAT)
++      /* Xbox 360 SDK: -mcall-xsdk hands out GPRs one for each 8 bytes,
++	 counting them apart from the parameter area, whose alignment can
++	 skip a word; sysv_gregno is the next.  */
++      if (TARGET_XSDK_CALL)
++	cum->sysv_gregno += n_words;
++
++      /* Xbox 360 SDK: -mcall-xsdk passes aggregates in GPRs only, so a struct
++	 of floating point takes no FPR.  */
++      if (SCALAR_FLOAT_MODE_P (elt_mode) && TARGET_HARD_FLOAT
++	  && !(TARGET_XSDK_CALL && type && AGGREGATE_TYPE_P (type)))
+ 	{
+ 	  /* _Decimal128 must be passed in an even/odd float register pair.
+ 	     This assumes that the register number is odd when fregno is
+@@ -1537,11 +1567,11 @@
+ 
+       if (align_words + n_words > GP_ARG_NUM_REG
+ 	  || mode == BLKmode
+-	  || (TARGET_32BIT && TARGET_POWERPC64))
++	  || (TARGET_32BIT && TARGET_POWERPC64 && !TARGET_XSDK_CALL))
+ 	{
+ 	  /* If this is partially on the stack, then we only
+ 	     include the portion actually in registers here.  */
+-	  machine_mode rmode = TARGET_32BIT ? SImode : DImode;
++	  machine_mode rmode = RS6000_ARG_WORD_SIZE == 4 ? SImode : DImode;
+ 	  int i = 0;
+ 
+ 	  if (align_words + n_words > GP_ARG_NUM_REG)
+@@ -1647,7 +1677,7 @@
+      or compiler generated library calls.  */
+   if (arg.end_marker_p ())
+     {
+-      if (abi == ABI_V4
++      if (ABI_V4_ARGS
+ 	  && (cum->call_cookie & CALL_LIBCALL) == 0
+ 	  && (cum->stdarg
+ 	      || (cum->nargs_prototype < 0
+@@ -1702,7 +1732,7 @@
+ 	       || (type && VECTOR_TYPE_P (type)
+ 		   && int_size_in_bytes (type) == 16)))
+     {
+-      if (named || abi == ABI_V4)
++      if (named || ABI_V4_ARGS)
+ 	return NULL_RTX;
+       else
+ 	{
+@@ -1716,7 +1746,7 @@
+ 	     to the parameter save area.  In 64-bit mode, they just
+ 	     have to start on an even word, since the parameter save
+ 	     area is 16-byte aligned.  */
+-	  if (TARGET_32BIT)
++	  if (RS6000_ARG_WORD_SIZE == 4)
+ 	    align = -(rs6000_parm_offset () + cum->words) & 3;
+ 	  else
+ 	    align = cum->words & 1;
+@@ -1726,7 +1756,7 @@
+ 	  if (align_words >= GP_ARG_NUM_REG)
+ 	    return NULL_RTX;
+ 
+-	  if (TARGET_32BIT && TARGET_POWERPC64)
++	  if (TARGET_32BIT && TARGET_POWERPC64 && !TARGET_XSDK_CALL)
+ 	    return rs6000_mixed_function_arg (mode, type, align_words);
+ 
+ 	  /* The vector value goes in GPRs.  Only the part of the
+@@ -1742,7 +1772,7 @@
+ 	}
+     }
+ 
+-  else if (abi == ABI_V4)
++  else if (ABI_V4_ARGS)
+     {
+       if (abi_v4_pass_in_fpr (mode, named))
+ 	{
+@@ -1781,14 +1811,19 @@
+   else
+     {
+       int align_words = rs6000_parm_start (mode, type, cum->words);
++      /* Xbox 360 SDK: under -mcall-xsdk the GPRs follow their own count, not
++	 the parameter area's words.  */
++      int gpr_words = (TARGET_XSDK_CALL ? cum->sysv_gregno - GP_ARG_MIN_REG
++		       : align_words);
+ 
+       /* _Decimal128 must be passed in an even/odd float register pair.
+ 	 This assumes that the register number is odd when fregno is odd.  */
+       if (elt_mode == TDmode && (cum->fregno % 2) == 1)
+ 	cum->fregno++;
+ 
++      /* Xbox 360 SDK: -mcall-xsdk passes aggregates in GPRs only.  */
+       if (USE_FP_FOR_ARG_P (cum, elt_mode)
+-	  && !(TARGET_AIX && !TARGET_ELF
++	  && !(((TARGET_AIX && !TARGET_ELF) || TARGET_XSDK_CALL)
+ 	       && type != NULL && AGGREGATE_TYPE_P (type)))
+ 	{
+ 	  rtx rvec[GP_ARG_NUM_REG + AGGR_ARG_NUM_REG + 1];
+@@ -1803,7 +1838,7 @@
+ 		       || ((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
+ 			   && TARGET_XL_COMPAT
+ 			   && align_words >= GP_ARG_NUM_REG)))
+-	    k = rs6000_psave_function_arg (mode, type, align_words, rvec);
++	    k = rs6000_psave_function_arg (mode, type, gpr_words, rvec);
+ 
+ 	  /* Describe where this argument goes in the fprs.  */
+ 	  for (i = 0; i < n_elts
+@@ -1836,33 +1871,33 @@
+ 	     For unnamed arguments, we already set up GPRs to cover the
+ 	     whole argument in rs6000_psave_function_arg, so there is
+ 	     nothing further to do at this point.  */
+-	  fpr_words = (i * GET_MODE_SIZE (elt_mode)) / (TARGET_32BIT ? 4 : 8);
+-	  if (i < n_elts && align_words + fpr_words < GP_ARG_NUM_REG
++	  fpr_words = (i * GET_MODE_SIZE (elt_mode)) / RS6000_ARG_WORD_SIZE;
++	  if (i < n_elts && gpr_words + fpr_words < GP_ARG_NUM_REG
+ 	      && cum->nargs_prototype > 0)
+             {
+-	      machine_mode rmode = TARGET_32BIT ? SImode : DImode;
++	      machine_mode rmode = RS6000_ARG_WORD_SIZE == 4 ? SImode : DImode;
+ 	      int n_words = rs6000_arg_size (mode, type);
+ 
+-	      align_words += fpr_words;
++	      gpr_words += fpr_words;
+ 	      n_words -= fpr_words;
+ 
+ 	      do
+ 		{
+-		  r = gen_rtx_REG (rmode, GP_ARG_MIN_REG + align_words);
++		  r = gen_rtx_REG (rmode, GP_ARG_MIN_REG + gpr_words);
+ 		  off = GEN_INT (fpr_words++ * GET_MODE_SIZE (rmode));
+ 		  rvec[k++] = gen_rtx_EXPR_LIST (VOIDmode, r, off);
+ 		}
+-	      while (++align_words < GP_ARG_NUM_REG && --n_words != 0);
++	      while (++gpr_words < GP_ARG_NUM_REG && --n_words != 0);
+ 	    }
+ 
+ 	  return rs6000_finish_function_arg (mode, rvec, k);
+ 	}
+-      else if (align_words < GP_ARG_NUM_REG)
++      else if (gpr_words < GP_ARG_NUM_REG)
+ 	{
+-	  if (TARGET_32BIT && TARGET_POWERPC64)
+-	    return rs6000_mixed_function_arg (mode, type, align_words);
++	  if (TARGET_32BIT && TARGET_POWERPC64 && !TARGET_XSDK_CALL)
++	    return rs6000_mixed_function_arg (mode, type, gpr_words);
+ 
+-	  return gen_rtx_REG (mode, GP_ARG_MIN_REG + align_words);
++	  return gen_rtx_REG (mode, GP_ARG_MIN_REG + gpr_words);
+ 	}
+       else
+ 	return NULL_RTX;
+@@ -1889,7 +1924,7 @@
+   rs6000_discover_homogeneous_aggregate (arg.mode, arg.type,
+ 					 &elt_mode, &n_elts);
+ 
+-  if (DEFAULT_ABI == ABI_V4)
++  if (ABI_V4_ARGS)
+     return 0;
+ 
+   if (USE_ALTIVEC_FOR_ARG_P (cum, elt_mode, arg.named))
+@@ -1915,9 +1950,13 @@
+     return 0;
+ 
+   align_words = rs6000_parm_start (arg.mode, arg.type, cum->words);
++  /* Xbox 360 SDK: under -mcall-xsdk the GPRs follow their own count.  */
++  if (TARGET_XSDK_CALL)
++    align_words = cum->sysv_gregno - GP_ARG_MIN_REG;
+ 
+   if (USE_FP_FOR_ARG_P (cum, elt_mode)
+-      && !(TARGET_AIX && !TARGET_ELF && arg.aggregate_type_p ()))
++      && !(((TARGET_AIX && !TARGET_ELF) || TARGET_XSDK_CALL)
++	   && arg.aggregate_type_p ()))
+     {
+       unsigned long n_fpreg = (GET_MODE_SIZE (elt_mode) + 7) >> 3;
+ 
+@@ -1945,7 +1984,7 @@
+ 	     the GPR code below to compute the appropriate value.  */
+ 	  int fpr = ((FP_ARG_MAX_REG + 1 - cum->fregno)
+ 		     * MIN (8, GET_MODE_SIZE (elt_mode)));
+-	  int fpr_words = fpr / (TARGET_32BIT ? 4 : 8);
++	  int fpr_words = fpr / RS6000_ARG_WORD_SIZE;
+ 
+ 	  if (align_words + fpr_words < GP_ARG_NUM_REG)
+ 	    passed_in_gprs = true;
+@@ -1957,7 +1996,7 @@
+   if (passed_in_gprs
+       && align_words < GP_ARG_NUM_REG
+       && GP_ARG_NUM_REG < align_words + rs6000_arg_size (arg.mode, arg.type))
+-    ret = (GP_ARG_NUM_REG - align_words) * (TARGET_32BIT ? 4 : 8);
++    ret = (GP_ARG_NUM_REG - align_words) * RS6000_ARG_WORD_SIZE;
+ 
+   if (ret != 0 && TARGET_DEBUG_ARG)
+     fprintf (stderr, "rs6000_arg_partial_bytes: %d\n", ret);
+@@ -1993,7 +2032,7 @@
+       return 1;
+     }
+ 
+-  if (DEFAULT_ABI == ABI_V4 && AGGREGATE_TYPE_P (arg.type))
++  if (ABI_V4_ARGS && AGGREGATE_TYPE_P (arg.type))
+     {
+       if (TARGET_DEBUG_ARG)
+ 	fprintf (stderr, "function_arg_pass_by_reference: V4 aggregate\n");
+@@ -2176,7 +2215,9 @@
+   switch (DEFAULT_ABI)
+     {
+     default:
+-      reg_parm_stack_space = 0;
++      /* Xbox 360 SDK: -mcall-xsdk leaves 64 bytes, a slot for each of r3-r10,
++	 for the callee to spill them into.  */
++      reg_parm_stack_space = TARGET_XSDK_CALL ? 64 : 0;
+       break;
+ 
+     case ABI_AIX:
+@@ -2201,7 +2242,7 @@
+ rs6000_move_block_from_reg (int regno, rtx x, int nregs)
+ {
+   int i;
+-  machine_mode reg_mode = TARGET_32BIT ? SImode : DImode;
++  machine_mode reg_mode = RS6000_ARG_WORD_SIZE == 4 ? SImode : DImode;
+ 
+   if (nregs == 0)
+     return;
+@@ -2246,7 +2287,7 @@
+ 			int *pretend_size ATTRIBUTE_UNUSED, int no_rtl)
+ {
+   CUMULATIVE_ARGS next_cum;
+-  int reg_size = TARGET_32BIT ? 4 : 8;
++  int reg_size = RS6000_ARG_WORD_SIZE;
+   rtx save_area = NULL_RTX, mem;
+   int first_reg_offset;
+   alias_set_type set;
+@@ -2258,7 +2299,7 @@
+     rs6000_function_arg_advance_1 (&next_cum, arg.mode, arg.type, arg.named,
+ 				   0);
+ 
+-  if (DEFAULT_ABI == ABI_V4)
++  if (ABI_V4_ARGS)
+     {
+       first_reg_offset = next_cum.sysv_gregno - GP_ARG_MIN_REG;
+ 
+@@ -2335,11 +2376,16 @@
+ 	first_reg_offset += rs6000_arg_size (TYPE_MODE (arg.type), arg.type);
+     }
+ 
++  /* Xbox 360 SDK: under -mcall-xsdk the GPRs left follow their own count,
++     and go to the parameter area's words.  */
++  int first_gpr = (TARGET_XSDK_CALL && !ABI_V4_ARGS
++		   ? next_cum.sysv_gregno - GP_ARG_MIN_REG : first_reg_offset);
++
+   set = get_varargs_alias_set ();
+-  if (! no_rtl && first_reg_offset < GP_ARG_NUM_REG
++  if (! no_rtl && first_gpr < GP_ARG_NUM_REG
+       && cfun->va_list_gpr_size)
+     {
+-      int n_gpr, nregs = GP_ARG_NUM_REG - first_reg_offset;
++      int n_gpr, nregs = GP_ARG_NUM_REG - first_gpr;
+ 
+       if (va_list_gpr_counter_field)
+ 	/* V4 va_list_gpr_size counts number of registers needed.  */
+@@ -2358,12 +2404,11 @@
+       set_mem_alias_set (mem, set);
+       set_mem_align (mem, BITS_PER_WORD);
+ 
+-      rs6000_move_block_from_reg (GP_ARG_MIN_REG + first_reg_offset, mem,
+-				  nregs);
++      rs6000_move_block_from_reg (GP_ARG_MIN_REG + first_gpr, mem, nregs);
+     }
+ 
+   /* Save FP registers if needed.  */
+-  if (DEFAULT_ABI == ABI_V4
++  if (ABI_V4_ARGS
+       && TARGET_HARD_FLOAT
+       && ! no_rtl
+       && next_cum.fregno <= FP_ARG_V4_MAX_REG
+@@ -2409,8 +2454,8 @@
+   tree f_gpr, f_fpr, f_res, f_ovf, f_sav, record, type_decl;
+ 
+   /* For AIX, prefer 'char *' because that's what the system
+-     header files like.  */
+-  if (DEFAULT_ABI != ABI_V4)
++     header files like.  So does -mcall-xsdk.  */
++  if (!ABI_V4_ARGS)
+     return build_pointer_type (char_type_node);
+ 
+   record = (*lang_hooks.types.make_type) (RECORD_TYPE);
+@@ -2465,7 +2510,7 @@
+   tree gpr, fpr, ovf, sav, t;
+ 
+   /* Only SVR4 needs something special.  */
+-  if (DEFAULT_ABI != ABI_V4)
++  if (!ABI_V4_ARGS)
+     {
+       std_expand_builtin_va_start (valist, nextarg);
+       return;
+@@ -2609,7 +2654,7 @@
+       return build_va_arg_indirect_ref (valist_tmp);
+     }
+ 
+-  if (DEFAULT_ABI != ABI_V4)
++  if (!ABI_V4_ARGS)
+     {
+       if (targetm.calls.split_complex_arg && TREE_CODE (type) == COMPLEX_TYPE)
+ 	{
+--- a/gcc/config/rs6000/rs6000.cc
++++ b/gcc/config/rs6000/rs6000.cc
+@@ -1698,8 +1698,13 @@
+ #define TARGET_LIBGCC_CMP_RETURN_MODE rs6000_abi_word_mode
+ #undef TARGET_LIBGCC_SHIFT_COUNT_MODE
+ #define TARGET_LIBGCC_SHIFT_COUNT_MODE rs6000_abi_word_mode
++static scalar_int_mode rs6000_unwind_word_mode (void);
+ #undef TARGET_UNWIND_WORD_MODE
+-#define TARGET_UNWIND_WORD_MODE rs6000_abi_word_mode
++#define TARGET_UNWIND_WORD_MODE rs6000_unwind_word_mode
++
++static machine_mode rs6000_dwarf_frame_reg_mode (int);
++#undef TARGET_DWARF_FRAME_REG_MODE
++#define TARGET_DWARF_FRAME_REG_MODE rs6000_dwarf_frame_reg_mode
+ 
+ #undef TARGET_OFFLOAD_OPTIONS
+ #define TARGET_OFFLOAD_OPTIONS rs6000_offload_options
+@@ -2014,6 +2019,7 @@
+ {
+   if (TARGET_32BIT
+       && TARGET_POWERPC64
++      && !TARGET_XSDK_CALL
+       && GET_MODE_SIZE (mode) > 4
+       && INT_REGNO_P (regno))
+     return true;
+@@ -10225,7 +10231,10 @@
+ 
+   if (TARGET_ALTIVEC_ABI)
+     {
+-      for (i = FIRST_ALTIVEC_REGNO; i < FIRST_ALTIVEC_REGNO + 20; ++i)
++      /* Xbox 360 SDK: -mcall-xsdk keeps v14-v31, as the console's own code
++	 does.  */
++      for (i = FIRST_ALTIVEC_REGNO;
++	   i < FIRST_ALTIVEC_REGNO + (TARGET_XSDK_CALL ? 14 : 20); ++i)
+ 	call_used_regs[i] = 1;
+ 
+       /* AIX reserves VR20:31 in non-extended ABI mode.  */
+@@ -17044,22 +17053,25 @@
+       emit_unlikely_jump (x, label1);
+     }
+ 
+-  if (!is_mm_relaxed (mod_f))
+-    emit_label (XEXP (label2, 0));
++  /* Xbox 360 SDK: the Xbox 360 needs every load-locked paired with a
++     store-conditional to the same address before the next reservation.  On
++     failure, store back the word just loaded, which leaves memory as it was.
++     Each path sets BOOLVAL itself, so no condition register crosses the join;
++     copying one would take an mcrf, which the Xenia emulator skips.  */
++  emit_insn (gen_rtx_SET (boolval, gen_rtx_EQ (SImode, cond, const0_rtx)));
++  rtx_code_label *label3 = gen_label_rtx ();
++  emit_jump (label3);
++  emit_label (XEXP (label2, 0));
++  emit_store_conditional (orig_mode, gen_reg_rtx (CCmode), mem, retval);
++  emit_move_insn (boolval, const0_rtx);
++  emit_label (label3);
+ 
+   rs6000_post_atomic_barrier (mod_s);
+ 
+-  if (is_mm_relaxed (mod_f))
+-    emit_label (XEXP (label2, 0));
+-
+   if (shift)
+     rs6000_finish_atomic_subword (operands[1], retval, shift);
+   else if (mode != GET_MODE (operands[1]))
+     convert_move (operands[1], retval, 1);
+-
+-  /* In all cases, CR0 contains EQ on success, and NE on failure.  */
+-  x = gen_rtx_EQ (SImode, cond, const0_rtx);
+-  emit_insn (gen_rtx_SET (boolval, x));
+ }
+ 
+ /* Expand an atomic exchange operation.  */
+@@ -17276,6 +17288,31 @@
+   return TARGET_32BIT ? SImode : DImode;
+ }
+ 
++/* Xbox 360 SDK: 32-bit frames save GPRs, LR, CTR and VRSAVE as words even
++   with -mpowerpc64.  The default sizes those registers for the unwinder as
++   8 bytes, or as 0 for call-clobbered GPRs, so installing a handler's
++   context copied the wrong amount and C++ exceptions crashed.  Under
++   -mcall-xsdk the GPRs are saved whole, as 8 bytes.  */
++
++static machine_mode
++rs6000_dwarf_frame_reg_mode (int regno)
++{
++  if (TARGET_32BIT
++      && ((INT_REGNO_P (regno) && !TARGET_XSDK_CALL) || regno == LR_REGNO
++	  || regno == CTR_REGNO || regno == VRSAVE_REGNO))
++    return SImode;
++  return default_dwarf_frame_reg_mode (regno);
++}
++
++/* Xbox 360 SDK: the unwinder's word, which holds a GPR: 8 bytes under
++   -mcall-xsdk, which saves them whole.  */
++
++static scalar_int_mode
++rs6000_unwind_word_mode (void)
++{
++  return TARGET_32BIT && !TARGET_XSDK_CALL ? SImode : DImode;
++}
++
+ /* Implement the TARGET_OFFLOAD_OPTIONS hook.  */
+ static char *
+ rs6000_offload_options (void)
+@@ -21419,7 +21456,12 @@
+       if (rs6000_passes_vector)
+ 	fprintf (asm_out_file, "\t.gnu_attribute 8, %d\n",
+ 		 (TARGET_ALTIVEC_ABI ? 2 : 1));
+-      if (rs6000_returns_struct)
++      /* Xbox 360 SDK: every -mcall-xsdk object says small structs don't come
++	 back in r3 and r4, so the linker refuses one built for the V.4
++	 ABI's convention that says they do.  */
++      if (TARGET_XSDK_CALL)
++	fprintf (asm_out_file, "\t.gnu_attribute 12, 2\n");
++      else if (rs6000_returns_struct)
+ 	fprintf (asm_out_file, "\t.gnu_attribute 12, %d\n",
+ 		 aix_struct_return ? 2 : 1);
+     }
+@@ -23969,8 +24011,9 @@
+       return rs6000_parallel_return (mode, n_elts, elt_mode, first_reg, n_regs);
+     }
+ 
+-  /* Some return value types need be split in -mpowerpc64, 32bit ABI.  */
+-  if (TARGET_32BIT && TARGET_POWERPC64)
++  /* Some return value types need be split in -mpowerpc64, 32bit ABI.  Not
++     under -mcall-xsdk, which returns 8 bytes whole in r3.  */
++  if (TARGET_32BIT && TARGET_POWERPC64 && !TARGET_XSDK_CALL)
+     switch (mode)
+       {
+       default:
+@@ -23983,9 +24026,11 @@
+ 	return rs6000_parallel_return (mode, count, SImode, GP_ARG_RETURN, 1);
+       }
+ 
+-  if ((INTEGRAL_TYPE_P (valtype)
+-       && GET_MODE_BITSIZE (mode) < (TARGET_32BIT ? 32 : 64))
+-      || POINTER_TYPE_P (valtype))
++  /* Xbox 360 SDK: under -mcall-xsdk the caller widens a narrow value.  */
++  if (!TARGET_XSDK_CALL
++      && ((INTEGRAL_TYPE_P (valtype)
++	   && GET_MODE_BITSIZE (mode) < (TARGET_32BIT ? 32 : 64))
++	  || POINTER_TYPE_P (valtype)))
+     mode = TARGET_32BIT ? SImode : DImode;
+ 
+   if (DECIMAL_FLOAT_MODE_P (mode) && TARGET_HARD_FLOAT)
+@@ -24018,7 +24063,7 @@
+   unsigned int regno;
+ 
+   /* Long long return value need be split in -mpowerpc64, 32bit ABI.  */
+-  if (TARGET_32BIT && TARGET_POWERPC64 && mode == DImode)
++  if (TARGET_32BIT && TARGET_POWERPC64 && !TARGET_XSDK_CALL && mode == DImode)
+     return rs6000_parallel_return (mode, 2, SImode, GP_ARG_RETURN, 1);
+ 
+   if (DECIMAL_FLOAT_MODE_P (mode) && TARGET_HARD_FLOAT)
+--- a/gcc/config/rs6000/rs6000-c.cc
++++ b/gcc/config/rs6000/rs6000-c.cc
+@@ -743,6 +743,8 @@
+     {
+     case ABI_V4:
+       builtin_define ("_CALL_SYSV");
++      if (TARGET_XSDK_CALL)
++	builtin_define ("_CALL_XSDK");
+       break;
+     case ABI_AIX:
+       builtin_define ("_CALL_AIXDESC");
+--- a/gcc/config/rs6000/rs6000.h
++++ b/gcc/config/rs6000/rs6000.h
+@@ -681,6 +681,24 @@
+    word.  */
+ #define LONG_TYPE_SIZE (TARGET_32BIT ? 32 : 64)
+ 
++/* Xbox 360 SDK: -mcall-xsdk is the calling convention of the Xbox 360's own
++   compiler, on the V.4 ABI in 32-bit mode with -mpowerpc64.  Arguments go in
++   8-byte slots as the AIX ABI passes them, whole and with floating point in
++   f1-f13, from a parameter save area at 16 whose 64 bytes a caller always
++   leaves; the receiver of a narrow value widens it; aggregates come back in
++   r3 only if 1, 2, 4 or 8 bytes; r14-r31 are kept whole and v14-v31 kept.  */
++#define TARGET_XSDK_CALL (rs6000_xsdk_call != 0)
++
++/* The V.4 ABI's own argument passing, which -mcall-xsdk replaces.  */
++#define ABI_V4_ARGS (DEFAULT_ABI == ABI_V4 && !TARGET_XSDK_CALL)
++
++/* The size of an argument slot, the unit of the parameter save area.  */
++#define RS6000_ARG_WORD_SIZE (TARGET_32BIT && !TARGET_XSDK_CALL ? 4 : 8)
++
++/* The mode and size in which the prologue saves r14-r31.  */
++#define RS6000_GPR_SAVE_MODE (TARGET_XSDK_CALL ? DImode : Pmode)
++#define RS6000_GPR_SAVE_SIZE (TARGET_32BIT && !TARGET_XSDK_CALL ? 4 : 8)
++
+ /* A C expression for the size in bits of the type `long long' on the
+    target machine.  If you don't define this, the default is two
+    words.  */
+@@ -695,7 +713,7 @@
+ #define POINTER_SIZE rs6000_pointer_size
+ 
+ /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
+-#define PARM_BOUNDARY (TARGET_32BIT ? 32 : 64)
++#define PARM_BOUNDARY (TARGET_32BIT && !TARGET_XSDK_CALL ? 32 : 64)
+ 
+ /* Boundary (in *bits*) on which stack pointer should be aligned.  */
+ #define STACK_BOUNDARY	\
+@@ -1253,9 +1271,11 @@
+ #define FRAME_GROWS_DOWNWARD (flag_stack_protect != 0			\
+ 			      || (flag_sanitize & SANITIZE_ADDRESS) != 0)
+ 
+-/* Size of the fixed area on the stack */
++/* Size of the fixed area on the stack.  -mcall-xsdk keeps 16 bytes, so the
++   parameter save area starts at 16 as the console's own code has it.  */
+ #define RS6000_SAVE_AREA \
+-  ((DEFAULT_ABI == ABI_V4 ? 8 : DEFAULT_ABI == ABI_ELFv2 ? 16 : 24)	\
++  ((DEFAULT_ABI == ABI_V4 ? (TARGET_XSDK_CALL ? 16 : 8)		\
++    : DEFAULT_ABI == ABI_ELFv2 ? 16 : 24)				\
+    << (TARGET_64BIT ? 1 : 0))
+ 
+ /* Stack offset for toc save slot.  */
+@@ -1370,7 +1390,7 @@
+ #define FP_ARG_MIN_REG 33
+ #define	FP_ARG_AIX_MAX_REG 45
+ #define	FP_ARG_V4_MAX_REG  40
+-#define	FP_ARG_MAX_REG (DEFAULT_ABI == ABI_V4				\
++#define	FP_ARG_MAX_REG (ABI_V4_ARGS					\
+ 			? FP_ARG_V4_MAX_REG : FP_ARG_AIX_MAX_REG)
+ #define FP_ARG_NUM_REG (FP_ARG_MAX_REG - FP_ARG_MIN_REG + 1)
+ 
+--- a/gcc/config/rs6000/rs6000-logue.cc
++++ b/gcc/config/rs6000/rs6000-logue.cc
+@@ -166,8 +166,9 @@
+       && ! TARGET_ALTIVEC)
+     return FIRST_ALTIVEC_REGNO + 20;
+ 
+-  /* Find lowest numbered live register.  */
+-  for (i = FIRST_ALTIVEC_REGNO + 20; i <= LAST_ALTIVEC_REGNO; ++i)
++  /* Find lowest numbered live register.  -mcall-xsdk keeps v14-v31.  */
++  for (i = FIRST_ALTIVEC_REGNO + (TARGET_XSDK_CALL ? 14 : 20);
++       i <= LAST_ALTIVEC_REGNO; ++i)
+     if (save_reg_p (i))
+       break;
+ 
+@@ -324,6 +325,12 @@
+ {
+   int strategy = 0;
+ 
++  /* Xbox 360 SDK: -mcall-xsdk saves registers inline, since libgcc's
++     out-of-line routines save GPRs as words.  */
++  if (TARGET_XSDK_CALL)
++    return (SAVE_INLINE_FPRS | REST_INLINE_FPRS | SAVE_INLINE_GPRS
++	    | REST_INLINE_GPRS | SAVE_INLINE_VRS | REST_INLINE_VRS);
++
+   /* Select between in-line and out-of-line save and restore of regs.
+      First, all the obvious cases where we don't use out-of-line.  */
+   if (crtl->calls_eh_return
+@@ -703,7 +710,7 @@
+   else
+     first_gp = info->first_gp_reg_save;
+ 
+-  info->gp_size = reg_size * (32 - first_gp);
++  info->gp_size = RS6000_GPR_SAVE_SIZE * (32 - first_gp);
+ 
+   info->first_fp_reg_save = first_fp_reg_to_save ();
+   info->fp_size = 8 * (64 - info->first_fp_reg_save);
+@@ -2612,7 +2619,7 @@
+   sbitmap components = sbitmap_alloc (cfun->machine->n_components);
+   bitmap_clear (components);
+ 
+-  int reg_size = TARGET_32BIT ? 4 : 8;
++  int gpr_size = RS6000_GPR_SAVE_SIZE;
+   int fp_reg_size = 8;
+ 
+   /* The GPRs we need saved to the frame.  */
+@@ -2629,7 +2636,7 @@
+ 	      && save_reg_p (regno))
+ 	    bitmap_set_bit (components, regno);
+ 
+-	  offset += reg_size;
++	  offset += gpr_size;
+ 	}
+     }
+ 
+@@ -2756,7 +2763,8 @@
+ 				      : STACK_POINTER_REGNUM);
+ 
+   machine_mode reg_mode = Pmode;
+-  int reg_size = TARGET_32BIT ? 4 : 8;
++  machine_mode gpr_mode = RS6000_GPR_SAVE_MODE;
++  int gpr_size = RS6000_GPR_SAVE_SIZE;
+   machine_mode fp_reg_mode = TARGET_HARD_FLOAT ? DFmode : SFmode;
+   int fp_reg_size = 8;
+ 
+@@ -2796,14 +2804,14 @@
+     {
+       if (bitmap_bit_p (components, i))
+ 	{
+-	  rtx reg = gen_rtx_REG (reg_mode, i);
++	  rtx reg = gen_rtx_REG (gpr_mode, i);
+ 	  rtx_insn *insn = emit_insn (gen_frame_store (reg, ptr_reg, offset));
+ 	  RTX_FRAME_RELATED_P (insn) = 1;
+ 	  rtx set = copy_rtx (single_set (insn));
+ 	  add_reg_note (insn, REG_CFA_OFFSET, set);
+ 	}
+ 
+-      offset += reg_size;
++      offset += gpr_size;
+     }
+ 
+   /* Prologue for the FPRs.  */
+@@ -2836,7 +2844,8 @@
+ 				      : STACK_POINTER_REGNUM);
+ 
+   machine_mode reg_mode = Pmode;
+-  int reg_size = TARGET_32BIT ? 4 : 8;
++  machine_mode gpr_mode = RS6000_GPR_SAVE_MODE;
++  int gpr_size = RS6000_GPR_SAVE_SIZE;
+ 
+   machine_mode fp_reg_mode = TARGET_HARD_FLOAT ? DFmode : SFmode;
+   int fp_reg_size = 8;
+@@ -2868,13 +2877,13 @@
+     {
+       if (bitmap_bit_p (components, i))
+ 	{
+-	  rtx reg = gen_rtx_REG (reg_mode, i);
++	  rtx reg = gen_rtx_REG (gpr_mode, i);
+ 	  rtx_insn *insn = emit_insn (gen_frame_load (reg, ptr_reg, offset));
+ 	  RTX_FRAME_RELATED_P (insn) = 1;
+ 	  add_reg_note (insn, REG_CFA_RESTORE, reg);
+ 	}
+ 
+-      offset += reg_size;
++      offset += gpr_size;
+     }
+ 
+   /* Epilogue for LR.  */
+@@ -2996,6 +3005,8 @@
+   rs6000_stack_t *info = rs6000_stack_info ();
+   machine_mode reg_mode = Pmode;
+   int reg_size = TARGET_32BIT ? 4 : 8;
++  machine_mode gpr_mode = RS6000_GPR_SAVE_MODE;
++  int gpr_size = RS6000_GPR_SAVE_SIZE;
+   machine_mode fp_reg_mode = TARGET_HARD_FLOAT ? DFmode : SFmode;
+   int fp_reg_size = 8;
+   rtx sp_reg_rtx = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
+@@ -3406,10 +3417,10 @@
+ 	{
+ 	  if (save_reg_p (i)
+ 	      && !cfun->machine->gpr_is_wrapped_separately[i])
+-	    emit_frame_save (frame_reg_rtx, reg_mode, i, offset,
++	    emit_frame_save (frame_reg_rtx, gpr_mode, i, offset,
+ 			     sp_off - frame_off);
+ 
+-	  offset += reg_size;
++	  offset += gpr_size;
+ 	}
+     }
+ 
+@@ -3434,9 +3445,9 @@
+ 	    break;
+ 
+ 	  rtx set
+-	    = gen_frame_store (gen_rtx_REG (reg_mode, regno),
++	    = gen_frame_store (gen_rtx_REG (gpr_mode, regno),
+ 			       sp_reg_rtx,
+-			       info->ehrd_offset + sp_off + reg_size * (int) i);
++			       info->ehrd_offset + sp_off + gpr_size * (int) i);
+ 	  RTVEC_ELT (p, i) = set;
+ 	  RTX_FRAME_RELATED_P (set) = 1;
+ 	}
+@@ -4301,6 +4312,8 @@
+   rtx cr_save_reg = NULL_RTX;
+   machine_mode reg_mode = Pmode;
+   int reg_size = TARGET_32BIT ? 4 : 8;
++  machine_mode gpr_mode = RS6000_GPR_SAVE_MODE;
++  int gpr_size = RS6000_GPR_SAVE_SIZE;
+   machine_mode fp_reg_mode = TARGET_HARD_FLOAT ? DFmode : SFmode;
+   int fp_reg_size = 8;
+   int i;
+@@ -4872,11 +4885,11 @@
+ 	  if (regno == INVALID_REGNUM)
+ 	    break;
+ 
+-	  mem = gen_frame_mem_offset (reg_mode, frame_reg_rtx,
++	  mem = gen_frame_mem_offset (gpr_mode, frame_reg_rtx,
+ 				      info->ehrd_offset + frame_off
+-				      + reg_size * (int) i);
++				      + gpr_size * (int) i);
+ 
+-	  emit_move_insn (gen_rtx_REG (reg_mode, regno), mem);
++	  emit_move_insn (gen_rtx_REG (gpr_mode, regno), mem);
+ 	}
+     }
+ 
+@@ -4932,11 +4945,11 @@
+ 	  if (save_reg_p (i)
+ 	      && !cfun->machine->gpr_is_wrapped_separately[i])
+ 	    {
+-	      rtx reg = gen_rtx_REG (reg_mode, i);
++	      rtx reg = gen_rtx_REG (gpr_mode, i);
+ 	      emit_insn (gen_frame_load (reg, frame_reg_rtx, offset));
+ 	    }
+ 
+-	  offset += reg_size;
++	  offset += gpr_size;
+ 	}
+     }
+ 
+@@ -4975,7 +4988,7 @@
+ 	if (save_reg_p (i)
+ 	    && !cfun->machine->gpr_is_wrapped_separately[i])
+ 	  {
+-	    rtx reg = gen_rtx_REG (reg_mode, i);
++	    rtx reg = gen_rtx_REG (gpr_mode, i);
+ 	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
+ 	  }
+     }
+--- a/gcc/config/rs6000/rs6000.opt
++++ b/gcc/config/rs6000/rs6000.opt
+@@ -36,6 +36,10 @@
+ TargetSave
+ HOST_WIDE_INT x_rs6000_isa_flags_explicit
+ 
++;; Xbox 360 SDK: -mcall-xsdk, the console's own calling convention
++Variable
++int rs6000_xsdk_call
++
+ ;; Current processor
+ TargetVariable
+ enum processor_type rs6000_cpu = PROCESSOR_PPC603
+--- a/gcc/config/rs6000/sysv4.h
++++ b/gcc/config/rs6000/sysv4.h
+@@ -78,6 +78,13 @@
+ 									\
+   if (!strcmp (rs6000_abi_name, "sysv"))				\
+     rs6000_current_abi = ABI_V4;					\
++  else if (!strcmp (rs6000_abi_name, "xsdk"))				\
++    {									\
++      rs6000_current_abi = ABI_V4;					\
++      rs6000_xsdk_call = 1;						\
++      if (TARGET_64BIT || !TARGET_POWERPC64)				\
++	error ("%<-mcall-xsdk%> needs %<-m32%> and %<-mpowerpc64%>");	\
++    }									\
+   else if (!strcmp (rs6000_abi_name, "sysv-noeabi"))			\
+     {									\
+       rs6000_current_abi = ABI_V4;					\
+--- /dev/null
++++ b/gcc/config/rs6000/xsdk.h
+@@ -0,0 +1,52 @@
++/* Definitions for the Xbox 360 SDK's target, powerpc-xsdk-elf: titles for
++   the Xbox 360's retail kernel.
++
++   This file is part of GCC.
++
++   GCC is free software; you can redistribute it and/or modify it
++   under the terms of the GNU General Public License as published
++   by the Free Software Foundation; either version 3, or (at your
++   option) any later version.
++
++   GCC is distributed in the hope that it will be useful, but WITHOUT
++   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
++   License for more details.
++
++   Under Section 7 of GPL version 3, you are granted additional
++   permissions described in the GCC Runtime Library Exception, version
++   3.1, as published by the Free Software Foundation.
++
++   You should have received a copy of the GNU General Public License and
++   a copy of the GCC Runtime Library Exception along with this program;
++   see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
++   <http://www.gnu.org/licenses/>.  */
++
++/* Call as the console's own compiler does (-mcall-xsdk, rs6000.h).  */
++#undef RS6000_ABI_NAME
++#define RS6000_ABI_NAME "xsdk"
++
++/* Pad a struct in registers as the argument itself is padded: 1, 2 and 4
++   bytes at the low end, other sizes from the high byte, and the last part of
++   a longer one from its register's high byte, as the console's own compiler
++   passes them.  Without this, any block smaller than a register goes at its
++   low end.  */
++#define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
++  (!(FIRST) ? PAD_UPWARD : targetm.calls.function_arg_padding (MODE, TYPE))
++
++/* int32_t and uint32_t are int and unsigned int, as the console's own
++   compiler and desktop compilers have them, rather than long, which
++   newlib-stdint.h picks whenever long is 32 bits.  Code written for those
++   compilers assumes int.  */
++#undef STDINT_LONG32
++#define STDINT_LONG32 0
++
++/* Under the console's calling convention, have the assembler flag each
++   object (-mxsdk, EF_PPC_XSDK), so that the linker refuses to link it with
++   one built for another convention.  sysv4.h's spec, with -mxsdk added.  */
++#undef ASM_SPEC
++#define ASM_SPEC "%(asm_cpu) \
++%{,assembler|,assembler-with-cpp: %{mregnames} %{mno-regnames}} \
++%{mrelocatable} %{mrelocatable-lib} %{" FPIE_OR_FPIC_SPEC ":-K PIC} \
++%{memb|msdata=eabi: -memb} %{!mcall-*: -mxsdk} %{mcall-xsdk: -mxsdk}" \
++ENDIAN_SELECT(" -mbig", " -mlittle", DEFAULT_ASM_ENDIAN)
 --- a/libstdc++-v3/acinclude.m4
 +++ b/libstdc++-v3/acinclude.m4
 @@ -1792,6 +1792,15 @@
@@ -34,73 +946,3 @@
        freebsd*|netbsd*|dragonfly*|rtems*)
          ac_has_clock_monotonic=yes
          ac_has_clock_realtime=yes
---- a/gcc/config/rs6000/rs6000.cc
-+++ b/gcc/config/rs6000/rs6000.cc
-@@ -1701,6 +1701,10 @@
- #undef TARGET_UNWIND_WORD_MODE
- #define TARGET_UNWIND_WORD_MODE rs6000_abi_word_mode
- 
-+static machine_mode rs6000_dwarf_frame_reg_mode (int);
-+#undef TARGET_DWARF_FRAME_REG_MODE
-+#define TARGET_DWARF_FRAME_REG_MODE rs6000_dwarf_frame_reg_mode
-+
- #undef TARGET_OFFLOAD_OPTIONS
- #define TARGET_OFFLOAD_OPTIONS rs6000_offload_options
- 
-@@ -17044,22 +17048,25 @@
-       emit_unlikely_jump (x, label1);
-     }
- 
--  if (!is_mm_relaxed (mod_f))
--    emit_label (XEXP (label2, 0));
-+  /* Xbox 360 SDK: the Xbox 360 needs every load-locked paired with a
-+     store-conditional to the same address before the next reservation.  On
-+     failure, store back the word just loaded, which leaves memory as it was.
-+     Each path sets BOOLVAL itself, so no condition register crosses the join;
-+     copying one would take an mcrf, which the Xenia emulator skips.  */
-+  emit_insn (gen_rtx_SET (boolval, gen_rtx_EQ (SImode, cond, const0_rtx)));
-+  rtx_code_label *label3 = gen_label_rtx ();
-+  emit_jump (label3);
-+  emit_label (XEXP (label2, 0));
-+  emit_store_conditional (orig_mode, gen_reg_rtx (CCmode), mem, retval);
-+  emit_move_insn (boolval, const0_rtx);
-+  emit_label (label3);
- 
-   rs6000_post_atomic_barrier (mod_s);
- 
--  if (is_mm_relaxed (mod_f))
--    emit_label (XEXP (label2, 0));
--
-   if (shift)
-     rs6000_finish_atomic_subword (operands[1], retval, shift);
-   else if (mode != GET_MODE (operands[1]))
-     convert_move (operands[1], retval, 1);
--
--  /* In all cases, CR0 contains EQ on success, and NE on failure.  */
--  x = gen_rtx_EQ (SImode, cond, const0_rtx);
--  emit_insn (gen_rtx_SET (boolval, x));
- }
- 
- /* Expand an atomic exchange operation.  */
-@@ -17276,6 +17283,21 @@
-   return TARGET_32BIT ? SImode : DImode;
- }
- 
-+/* Xbox 360 SDK: 32-bit frames save GPRs, LR, CTR and VRSAVE as words even
-+   with -mpowerpc64.  The default sizes those registers for the unwinder as
-+   8 bytes, or as 0 for call-clobbered GPRs, so installing a handler's
-+   context copied the wrong amount and C++ exceptions crashed.  */
-+
-+static machine_mode
-+rs6000_dwarf_frame_reg_mode (int regno)
-+{
-+  if (TARGET_32BIT
-+      && (INT_REGNO_P (regno) || regno == LR_REGNO || regno == CTR_REGNO
-+	  || regno == VRSAVE_REGNO))
-+    return SImode;
-+  return default_dwarf_frame_reg_mode (regno);
-+}
-+
- /* Implement the TARGET_OFFLOAD_OPTIONS hook.  */
- static char *
- rs6000_offload_options (void)

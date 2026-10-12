@@ -4,9 +4,9 @@
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
 
-void xsdk_thread_entry(XsdkThreadEntry entry, void *context);
 void xsdk_thread_run(XsdkThreadEntry entry, void *context);
 
+// The kernel calls it with the thread's start address and context (xenia:src/xenia/kernel/xthread.cc:518-521).
 void xsdk_thread_run(XsdkThreadEntry entry, void *context)
 {
 	const uint32_t exit_code = entry(context);
@@ -18,7 +18,7 @@ NTSTATUS xsdk_thread_create(HANDLE *thread, uint32_t stack_bytes, XsdkThreadEntr
 {
 	uint32_t thread_id;
 	NTSTATUS status =
-		ExCreateThread(thread, stack_bytes, &thread_id, (void *)xsdk_thread_entry, (void *)entry, context, 0);
+		ExCreateThread(thread, stack_bytes, &thread_id, (void *)xsdk_thread_run, (void *)entry, context, 0);
 	if (!NT_SUCCESS(status))
 		xsdk_log_write("ExCreateThread failed: 0x%08X", (unsigned)status);
 	return status;

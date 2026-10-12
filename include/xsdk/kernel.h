@@ -247,7 +247,7 @@ NTSTATUS ExCreateThread(HANDLE *thread, uint32_t stack_bytes, uint32_t *thread_i
 void ExTerminateThread(uint32_t exit_code);
 NTSTATUS KeDelayExecutionThread(uint32_t processor_mode, uint32_t alertable, const int64_t *interval);
 // Xenia returns it as 32 bits (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_threading.cc:312-315).
-uint32_t KeQueryPerformanceFrequency(void);
+uint64_t KeQueryPerformanceFrequency(void);
 // 100 ns units since 1601, as NT counts.
 void KeQuerySystemTime(uint64_t *time);
 // Returns TLS_OUT_OF_INDEXES when no slot is free.

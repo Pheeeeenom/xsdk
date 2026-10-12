@@ -1,17 +1,15 @@
-#include "xsdk/kernel_entry.inc"
-
-// test_kernel_entry.c's GCC code, called as the kernel calls a title's.
-	XSDK_KERNEL_ENTRY test_entry_wrapped, test_entry_target
-
-// Sets r14-r31 whole, f14-f31 and v14-v31 to known values, calls fn(arg), and stores what they hold afterwards.
+// Sets r14-r31 whole, f14-f31 and v14-v31 to known values, calls fn(arg) as the kernel calls a title's code, and
+// stores what they hold afterwards.
 // void test_entry_regs_call(void (*fn)(void *), void *arg, EntryRegs *out)
+//
+// Its own slots sit above 0x50(r1): the 64 bytes at 0x10 are the callee's to spill r3-r10 into.
 
 	.set FRAME, 704
-	.set SLOT_FN, 16
-	.set SLOT_ARG, 20
-	.set SLOT_OUT, 24
-	.set SLOT_CR, 28
-	.set SAVE_GPR, 48
+	.set SLOT_FN, 0x50
+	.set SLOT_ARG, 0x54
+	.set SLOT_OUT, 0x58
+	.set SLOT_CR, 0x5C
+	.set SAVE_GPR, 0x60
 	.set SAVE_FPR, SAVE_GPR + 18 * 8
 	.set SAVE_VR, SAVE_FPR + 18 * 8 + 16
 	.set OUT_FPR, 18 * 8
@@ -106,3 +104,49 @@ test_entry_regs_call:
 	mtlr r0
 	blr
 	.size test_entry_regs_call, . - test_entry_regs_call
+
+// Stores r14-r31, f14-f31 and v14-v31 as they are into *out, 16-byte aligned, and changes none of them.
+// void test_entry_snapshot(EntryRegs *out)
+	.section .text.test_entry_snapshot, "ax"
+	.balign 4
+	.globl test_entry_snapshot
+	.type test_entry_snapshot, @function
+test_entry_snapshot:
+	.irp n, 14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31
+	std r\n, 8 * (\n - 14)(r3)
+	stfd f\n, OUT_FPR + 8 * (\n - 14)(r3)
+	.endr
+	addi r11, r3, OUT_VR
+	.irp n, 14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31
+	stvx v\n, 0, r11
+	addi r11, r11, 16
+	.endr
+	blr
+	.size test_entry_snapshot, . - test_entry_snapshot
+
+// Calls setjmp(test_jump), then fn, which longjmps back; returns setjmp's second value. It keeps nothing in r14-r31,
+// f14-f31 or v14-v31 itself, so what its caller holds there comes back only through setjmp and longjmp.
+// int test_run_setjmp(void (*fn)(void))
+	.section .text.test_run_setjmp, "ax"
+	.balign 4
+	.globl test_run_setjmp
+	.type test_run_setjmp, @function
+test_run_setjmp:
+	mflr r0
+	stw r0, 4(r1)
+	stwu r1, -96(r1)
+	stw r3, 0x50(r1)
+	lis r3, test_jump@ha
+	addi r3, r3, test_jump@l
+	bl setjmp
+	cmpwi r3, 0
+	bne 1f
+	lwz r12, 0x50(r1)
+	mtctr r12
+	bctrl
+	li r3, 0
+1:	addi r1, r1, 96
+	lwz r0, 4(r1)
+	mtlr r0
+	blr
+	.size test_run_setjmp, . - test_run_setjmp

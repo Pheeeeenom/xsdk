@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <time.h>
 
+#include "xsdk/kernel.h"
 #include "xsdk/log.h"
 
 enum {
@@ -77,7 +78,8 @@ static void check_rate(void)
 		wait_realtime_step(&realtime_end, &monotonic_end);
 	const int64_t realtime_span = realtime_end - realtime_start;
 	const int64_t monotonic_span = monotonic_end - monotonic_start;
-	const int64_t error_ppm = read && realtime_span > 0 ? (monotonic_span - realtime_span) * 1000000 / realtime_span : 0;
+	const int64_t error_ppm =
+		read && realtime_span > 0 ? (monotonic_span - realtime_span) * 1000000 / realtime_span : 0;
 	xsdk_log_write("clocks: over %lld ns of the kernel's system time CLOCK_MONOTONIC counted %lld ns, %lld ppm off",
 		(long long)realtime_span, (long long)monotonic_span, (long long)error_ppm);
 	check("clocks: CLOCK_MONOTONIC keeps the kernel's time to 0.05%",
@@ -125,4 +127,10 @@ void test_clocks(void)
 
 	check_rate();
 	check_sleeps();
+
+	// Its 64 bits come back whole in r3; it reports 50 MHz, the time base's nominal rate, in Xenia and on the console
+	// (results/2026-10-10-probe-vblank/xsdk.log).
+	const uint64_t reported = KeQueryPerformanceFrequency();
+	xsdk_log_write("clocks: KeQueryPerformanceFrequency reports %llu Hz", (unsigned long long)reported);
+	check("clocks: KeQueryPerformanceFrequency, declared with its 64-bit return, reads 50 MHz", reported == 50000000);
 }

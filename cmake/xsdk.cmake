@@ -28,9 +28,9 @@ set(CMAKE_EXE_LINKER_FLAGS_INIT "-static -nostdlib -T ${XSDK_ROOT}/src/xsdk.ld")
 # Every executable, try_compile's included, links the SDK's start-up and library, so checks see what titles get.
 set(XSDK_LINK_LIBRARIES "-Wl,--start-group <LINK_LIBRARIES> ${XSDK_ROOT}/build/libxsdk.a -lstdc++ -lc -lm -lgcc -Wl,--end-group")
 set(CMAKE_C_LINK_EXECUTABLE
-	"<CMAKE_C_COMPILER> <FLAGS> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> ${XSDK_ROOT}/build/sdk/crt0.o <OBJECTS> -o <TARGET> ${XSDK_LINK_LIBRARIES}")
+	"<CMAKE_C_COMPILER> <FLAGS> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> ${XSDK_LINK_LIBRARIES}")
 set(CMAKE_CXX_LINK_EXECUTABLE
-	"<CMAKE_CXX_COMPILER> <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> ${XSDK_ROOT}/build/sdk/crt0.o <OBJECTS> -o <TARGET> ${XSDK_LINK_LIBRARIES}")
+	"<CMAKE_CXX_COMPILER> <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> ${XSDK_LINK_LIBRARIES}")
 
 # pthreads are libxsdk's; FindThreads's probe also calls pthread_atfork and pthread_exit, which it doesn't have.
 set(CMAKE_HAVE_LIBC_PTHREAD 1)
@@ -46,7 +46,7 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 function(xsdk_add_xex target)
 	# The link rule names these outside CMake's view, so a rebuilt SDK would otherwise leave the title linked to the old.
 	set_property(TARGET ${target} APPEND PROPERTY LINK_DEPENDS
-		"${XSDK_ROOT}/build/sdk/crt0.o" "${XSDK_ROOT}/build/libxsdk.a" "${XSDK_ROOT}/src/xsdk.ld")
+		"${XSDK_ROOT}/build/libxsdk.a" "${XSDK_ROOT}/src/xsdk.ld")
 	add_custom_command(TARGET ${target} POST_BUILD
 		COMMAND sh -c "'${CMAKE_OBJDUMP}' -d '$<TARGET_FILE:${target}>' | python3 '${XSDK_ROOT}/tools/xenia_scan.py'"
 		COMMAND python3 "${XSDK_ROOT}/tools/elf2xex.py" "$<TARGET_FILE:${target}>" "$<TARGET_FILE_DIR:${target}>/${target}.xex"

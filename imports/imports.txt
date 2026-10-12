@@ -1,60 +1,59 @@
-# Kernel and XAM imports the SDK uses, one per line: library, ordinal, export name, argument count.
+# Kernel and XAM imports the SDK uses, one per line: library, ordinal, export name.
 # Ordinals come from xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_table.inc and xenia:src/xenia/kernel/xam/xam_table.inc.
-# Argument counts come from each export's shim in Xenia (xenia:src/xenia/kernel/xboxkrnl/*.cc, xam/*.cc).
-# Every argument is a 32-bit value; "..." marks variadic calls, which take integer and pointer arguments only.
-# "variable" marks an exported variable: the import is a pointer to it, under the export's name.
+# Each is called as declared: the SDK's GCC calls by the console's own convention (docs/HARDWARE.md).
+# "variable" after the name marks an exported variable: the import is a pointer to it, under the export's name.
 
-xboxkrnl.exe  0x003  DbgPrint                            ...
-xboxkrnl.exe  0x00D  ExCreateThread                      7
-xboxkrnl.exe  0x019  ExTerminateThread                   1
-xboxkrnl.exe  0x05A  KeDelayExecutionThread              3
-xboxkrnl.exe  0x083  KeQueryPerformanceFrequency         0
-xboxkrnl.exe  0x084  KeQuerySystemTime                   1
-xboxkrnl.exe  0x0BA  MmAllocatePhysicalMemoryEx          6
-xboxkrnl.exe  0x0BD  MmFreePhysicalMemory                2
-xboxkrnl.exe  0x0BE  MmGetPhysicalAddress                1
-xboxkrnl.exe  0x0CC  NtAllocateVirtualMemory             5
-xboxkrnl.exe  0x0CF  NtClose                             1
-xboxkrnl.exe  0x0D1  NtCreateEvent                       4
-xboxkrnl.exe  0x0D2  NtCreateFile                        9
-xboxkrnl.exe  0x0D5  NtCreateSemaphore                   4
-xboxkrnl.exe  0x0E4  NtQueryDirectoryFile                9
-xboxkrnl.exe  0x0E7  NtQueryFullAttributesFile           2
-xboxkrnl.exe  0x0E8  NtQueryInformationFile              5
-xboxkrnl.exe  0x0F0  NtReadFile                          8
-xboxkrnl.exe  0x0F3  NtReleaseSemaphore                  3
-xboxkrnl.exe  0x0F6  NtSetEvent                          2
-xboxkrnl.exe  0x0F7  NtSetInformationFile                5
-xboxkrnl.exe  0x0FD  NtWaitForSingleObjectEx             4
-xboxkrnl.exe  0x0FF  NtWriteFile                         8
-xboxkrnl.exe  0x101  NtYieldExecution                    0
-xboxkrnl.exe  0x125  RtlEnterCriticalSection             1
-xboxkrnl.exe  0x12E  RtlInitializeCriticalSection        1
-xboxkrnl.exe  0x130  RtlLeaveCriticalSection             1
-xboxkrnl.exe  0x141  RtlTryEnterCriticalSection          1
-xboxkrnl.exe  0x152  KeTlsAlloc                          0
-xboxkrnl.exe  0x153  KeTlsFree                           1
-xboxkrnl.exe  0x154  KeTlsGetValue                       1
-xboxkrnl.exe  0x155  KeTlsSetValue                       2
-xboxkrnl.exe  0x18A  XeCryptRandom                       2
-xboxkrnl.exe  0x195  XexGetModuleHandle                  2
-xboxkrnl.exe  0x197  XexGetProcedureAddress              3
-xboxkrnl.exe  0x1B6  VdEnableRingBufferRPtrWriteBack     2
-xboxkrnl.exe  0x1BA  VdGetCurrentDisplayInformation      1
-xboxkrnl.exe  0x1BD  VdGetSystemCommandBuffer            2
+xboxkrnl.exe  0x003  DbgPrint
+xboxkrnl.exe  0x00D  ExCreateThread
+xboxkrnl.exe  0x019  ExTerminateThread
+xboxkrnl.exe  0x05A  KeDelayExecutionThread
+xboxkrnl.exe  0x083  KeQueryPerformanceFrequency
+xboxkrnl.exe  0x084  KeQuerySystemTime
+xboxkrnl.exe  0x0BA  MmAllocatePhysicalMemoryEx
+xboxkrnl.exe  0x0BD  MmFreePhysicalMemory
+xboxkrnl.exe  0x0BE  MmGetPhysicalAddress
+xboxkrnl.exe  0x0CC  NtAllocateVirtualMemory
+xboxkrnl.exe  0x0CF  NtClose
+xboxkrnl.exe  0x0D1  NtCreateEvent
+xboxkrnl.exe  0x0D2  NtCreateFile
+xboxkrnl.exe  0x0D5  NtCreateSemaphore
+xboxkrnl.exe  0x0E4  NtQueryDirectoryFile
+xboxkrnl.exe  0x0E7  NtQueryFullAttributesFile
+xboxkrnl.exe  0x0E8  NtQueryInformationFile
+xboxkrnl.exe  0x0F0  NtReadFile
+xboxkrnl.exe  0x0F3  NtReleaseSemaphore
+xboxkrnl.exe  0x0F6  NtSetEvent
+xboxkrnl.exe  0x0F7  NtSetInformationFile
+xboxkrnl.exe  0x0FD  NtWaitForSingleObjectEx
+xboxkrnl.exe  0x0FF  NtWriteFile
+xboxkrnl.exe  0x101  NtYieldExecution
+xboxkrnl.exe  0x125  RtlEnterCriticalSection
+xboxkrnl.exe  0x12E  RtlInitializeCriticalSection
+xboxkrnl.exe  0x130  RtlLeaveCriticalSection
+xboxkrnl.exe  0x141  RtlTryEnterCriticalSection
+xboxkrnl.exe  0x152  KeTlsAlloc
+xboxkrnl.exe  0x153  KeTlsFree
+xboxkrnl.exe  0x154  KeTlsGetValue
+xboxkrnl.exe  0x155  KeTlsSetValue
+xboxkrnl.exe  0x18A  XeCryptRandom
+xboxkrnl.exe  0x195  XexGetModuleHandle
+xboxkrnl.exe  0x197  XexGetProcedureAddress
+xboxkrnl.exe  0x1B6  VdEnableRingBufferRPtrWriteBack
+xboxkrnl.exe  0x1BA  VdGetCurrentDisplayInformation
+xboxkrnl.exe  0x1BD  VdGetSystemCommandBuffer
 xboxkrnl.exe  0x1BE  VdGlobalDevice                      variable
 xboxkrnl.exe  0x1BF  VdGlobalXamDevice                   variable
-xboxkrnl.exe  0x1C2  VdInitializeEngines                 5
-xboxkrnl.exe  0x1C3  VdInitializeRingBuffer              2
-xboxkrnl.exe  0x1CA  VdQueryVideoMode                    1
-xboxkrnl.exe  0x1D3  VdSetDisplayMode                    1
-xboxkrnl.exe  0x1D5  VdSetGraphicsInterruptCallback      2
-xboxkrnl.exe  0x1D9  VdSetSystemCommandBufferGpuIdentifierAddress 1
-xboxkrnl.exe  0x1DC  VdShutdownEngines                   0
-xboxkrnl.exe  0x1F3  XAudioRegisterRenderDriverClient    2
-xboxkrnl.exe  0x1F4  XAudioUnregisterRenderDriverClient  1
-xboxkrnl.exe  0x1F5  XAudioSubmitRenderDriverFrame       2
-xboxkrnl.exe  0x25B  VdSwap                              10
-xam.xex       0x191  XamInputGetState                    3
-xam.xex       0x192  XamInputSetState                    3
-xam.xex       0x1A9  XamLoaderTerminateTitle             0
+xboxkrnl.exe  0x1C2  VdInitializeEngines
+xboxkrnl.exe  0x1C3  VdInitializeRingBuffer
+xboxkrnl.exe  0x1CA  VdQueryVideoMode
+xboxkrnl.exe  0x1D3  VdSetDisplayMode
+xboxkrnl.exe  0x1D5  VdSetGraphicsInterruptCallback
+xboxkrnl.exe  0x1D9  VdSetSystemCommandBufferGpuIdentifierAddress
+xboxkrnl.exe  0x1DC  VdShutdownEngines
+xboxkrnl.exe  0x1F3  XAudioRegisterRenderDriverClient
+xboxkrnl.exe  0x1F4  XAudioUnregisterRenderDriverClient
+xboxkrnl.exe  0x1F5  XAudioSubmitRenderDriverFrame
+xboxkrnl.exe  0x25B  VdSwap
+xam.xex       0x191  XamInputGetState
+xam.xex       0x192  XamInputSetState
+xam.xex       0x1A9  XamLoaderTerminateTitle
