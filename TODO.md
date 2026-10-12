@@ -68,6 +68,20 @@ work begins.
 - **Mipped linear textures.** `xsdk_texture_create` returns `STATUS_NOT_IMPLEMENTED` for them. Xenia keeps their rows
   256-byte aligned (texture_util.cc:209-449). Vulkan rarely needs them.
 
+## Costs measured but not chased
+
+- **A pushed draw's extra 0.47 us at submit (vulkan4xenon).** Through the layer a pushed cube and a uniform one write
+  the same 17.3 dwords and 18 kicks a frame, yet the pushed one's submit costs 0.97 us and the uniform one's 0.50
+  (vulkan4xenon:docs/ROADMAP.md, milestone 8). That's 0.47 ms a frame for every 1,000 pushed draws, 2.8% of a 60 fps
+  frame. It isn't the command stream: milestone 8 cut those dwords by three quarters and the submit didn't move.
+  - **What the push path does beyond the uniform one:** the replay copies each `vkCmdPushConstants` into its push
+    array, then copies each block back out into constants (vulkan4xenon:src/queue.c). Which part costs the time is
+    unmeasured.
+  - **Left because** encounter's Aurora, which Dusklight draws through, passes per-draw data in dynamic uniform buffers
+    and pushes 16 bytes a draw (vulkan4xenon:docs/ROADMAP.md, section 5); its uniform path costs 1.17 times xsdk's.
+  - **When to take it up:** if a push-heavy app, or Dusklight, shows the replay's CPU time crowding the frame. Then a
+    vkbench build that times each part of the replay with the time base, run on the console, says where it goes.
+
 ## Tried and reverted
 
 Changes that worked but weren't faster on the console. Each stays in history, to bring back if a run shows the cost
