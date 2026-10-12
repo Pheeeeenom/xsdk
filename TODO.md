@@ -22,6 +22,25 @@ work begins.
 
 ## Toolchain
 
+- **The console's calling convention in GCC.** xsdk's GCC passes arguments by the 32-bit SysV convention, which
+  matches the console's MSVC only for up to 8 integer or pointer arguments, plain `float` and `double`, small integer
+  returns and structs returned through a pointer (docs/HARDWARE.md, "Calls between xsdk's GCC and the console's
+  MSVC"). Today the import stubs and `XSDK_KERNEL_ENTRY` keep calls inside that, and `gen_imports.py` refuses the rest.
+  Full compatibility is a calling convention in GCC's PowerPC backend that matches MSVC's, as the console showed it:
+  - one register per argument, r3 to r10, 64-bit integers whole;
+  - `float` and `double` in f1 to f13, each also taking up an integer register's place;
+  - arguments past the 8th in 8-byte slots from 0x54(r1);
+  - structs by value as their bytes across registers;
+  - 64-bit integers and structs of 8 bytes or less returned in r3, larger structs through a pointer in r3;
+  - the callee extending `char` and `short` arguments, not the caller;
+  - varargs as MSVC lays them out;
+  - r14-r31 kept whole, f14-f31 and v14-v31 kept;
+  - `wchar_t` as 2 bytes, and bitfields laid out as MSVC lays them.
+
+  Then any import takes its natural C declaration, and a title could link the console's own libraries. The ABI probe in
+  `local/abi` is the acceptance test: all 36 cases pass in both directions. It needs the Xbox 360 SDK's compiler for
+  its other half, so each run takes the user's leave.
+
 - **xost off Python.** Its compiler (`xsc`), assembler (`xasm`) and disassembler (`xdis`) are Python; only the
   combiner generator `xcomb` is C99 (xost:README.md:49-71, docs/xsc.md:1-14). The combined SDK shouldn't need
   Python. Until then, the Vulkan layer compiles shaders offline and looks them up by their SPIR-V, as vulkan4vita

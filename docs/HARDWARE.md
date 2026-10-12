@@ -1609,3 +1609,47 @@ vulkan4xenon:results/2026-10-11-milestone-7/):
   uniform data read by the CPU.
 
 So the GPU loads float constants from memory for titles, in whole groups of 4 from a multiple of 4.
+
+## Calls between xsdk's GCC and the console's MSVC (2026-10-11)
+
+A probe title of 36 cases, built once with the user's leave to compile its other half with the Xbox 360 SDK's own
+compiler: GCC code called that MSVC code with each case and it called GCC code back, each side recording what
+arrived (log: `results/2026-10-11-abi-probe/abi_probe.log`). The MSVC half stays in `local/`, out of git. The kernel
+and XAM are MSVC's, so this is how they take calls from a title and make them into one. Xenia gave the same results.
+
+| Case | GCC calls MSVC | MSVC calls GCC |
+|---|---|---|
+| 8 or fewer int or pointer arguments | pass | pass |
+| arguments past the 8th | fail | fail |
+| a `uint64_t` argument, or one returned | fail | fail |
+| `char` and `short` arguments | pass | fail |
+| `char` and `short` returned | pass | pass |
+| a `float` and a `double` | pass | pass |
+| int, float, int, double, int | fail | fail |
+| 9 doubles | fail | fail |
+| structs of 1, 8 and 24 bytes and of two floats, by value | fail | fail |
+| an 8-byte struct returned | fail | fail |
+| a 24-byte struct returned | pass | pass |
+| varargs of int, `uint64_t`, double, int | fail | fail |
+| r14-r31, f14-f31 and v14-v31 kept across the call | pass | fail |
+
+So the console's code (MSVC 16.00.11886) takes each argument in one register, r3 to r10: a 64-bit integer whole, a
+`float` or `double` in f1 to f13 while also taking up an integer register's place, a struct as its bytes, left to
+right across as many registers as it fills. Arguments past the 8th are 8-byte slots from 0x54(r1). It returns 64-bit
+integers and structs of 8 bytes or less in r3, larger structs through a pointer in r3. The callee extends `char` and
+`short` arguments; the caller doesn't. It keeps r14-r31 whole, f14-f31 and v14-v31; it changed CR6.
+
+xsdk's GCC, the 32-bit SysV convention, differs in each failing case: register pairs for 64-bit integers, structs by
+pointer, arguments past the 8th 4 bytes apart from 8(r1), doubles in f1 to f8 only, 8-byte structs back in r3 and r4,
+callers that extend, and r14-r31 kept by their low halves only, v20-v31 only. In real MSVC code, 3 of 12 `uint64_t`
+values kept across a GCC call came back wrong. Layout agreed for doubles, 64-bit integers, padding and a 3:7:22
+bitfield, but not `wchar_t` (2 bytes in MSVC, 4 in GCC) or a struct mixing `u8` and `u32` bitfields (12 bytes in
+MSVC, 4 in GCC). r2 was 0 and r13 0x801B0000, the processor control region, before and after each side's code.
+
+What xsdk does about it:
+- **Imports:** the stubs pass r3 to r10 through and move arguments past the 8th into the kernel's slots, so imports
+  take only integers and pointers of 32 bits or less. `gen_imports.py` refuses a declaration with a 64-bit integer,
+  floating point or a struct by value, until a stub converts them. An import that takes UTF-16 text takes `uint16_t`,
+  not `wchar_t`; none does yet.
+- **The kernel calling a title:** `XSDK_KERNEL_ENTRY` saves r14-r31 whole around the title's code, and the toolchain
+  keeps GCC off v14-v19 (`-ffixed-v14` to `-ffixed-v19`).
