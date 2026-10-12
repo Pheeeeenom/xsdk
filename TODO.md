@@ -50,8 +50,7 @@ work begins.
   `__CHAR16_TYPE__` (local/abi's probe does); C++ has the keyword.
 - **xost off Python.** Its compiler (`xsc`), assembler (`xasm`) and disassembler (`xdis`) are Python; only the
   combiner generator `xcomb` is C99 (xost:README.md:49-71, docs/xsc.md:1-14). The combined SDK shouldn't need
-  Python. Until then, the Vulkan layer compiles shaders offline and looks them up by their SPIR-V, as vulkan4vita
-  does.
+  Python. Until then, the Vulkan layer compiles shaders offline and looks them up by their SPIR-V.
 
 ## GPU features SCOPE.md left out of milestones 11 to 18
 

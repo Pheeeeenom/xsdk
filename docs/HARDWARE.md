@@ -1366,8 +1366,8 @@ What the first run showed:
   00).
 - **The present chain kept going afterwards.** The splash's buffers are freed a vblank after the first flip; that
   step isn't logged. All 120 later frames were shown: 121 flips over 132 vblanks, none late. The 10 vblanks missed
-  came from the title, which waits for each frame and reads it back before presenting it. vulkan4vita hung when its
-  logo's frame was freed too early (vulkan4vita:docs/ROADMAP.md:729-733); this didn't.
+  came from the title, which waits for each frame and reads it back before presenting it. The logo's frame was freed
+  only after it had left the screen, and nothing hung.
 - **`D1GRPH_PRIMARY_SURFACE_ADDRESS` reads back the buffer on screen** (`xsdk_display_shown_address`): each read
   matched the buffer the test expected.
 - **On screen,** the user reported for the first run: the logo faded in, held for a second or two, the app's dark

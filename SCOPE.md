@@ -1,8 +1,8 @@
 # Xbox 360 SDK: scope of the SDK layer and the Xenos GPU layer
 
 **Goal.** A from-scratch Xbox 360 homebrew SDK that builds `.xex` executables that the retail kernel and dashboard
-launch, on a modded console (RGH/JTAG). On top of it comes a GPU layer that drives Xenos directly. A translation layer
-like vulkan4vita comes later and is out of this scope. So are games.
+launch, on a modded console (RGH/JTAG). On top of it comes a GPU layer that drives Xenos directly. A Vulkan
+translation layer comes later and is out of this scope. So are games.
 
 **Constraints.**
 - No Microsoft tooling and no leaked SDK material.
@@ -194,8 +194,8 @@ What the SDK supplies, piece by piece:
 - **Atomics** (`std::atomic`, including 64-bit). GCC emits the CPU's load-reserved/store-conditional pairs inline,
   `lwarx`/`stwcx.` and `ldarx`/`stdcx.`. libatomic covers anything wider.
 - **`std::atomic::wait` and `notify`** (C++20). libstdc++ implements them over a futex on Linux and over its own
-  mutex and condition variable elsewhere. The SDK gets the latter through gthreads. On the Vita that path spun and
-  yielded before sleeping, which cost real CPU (vulkan4vita milestone 25). Test that it sleeps promptly.
+  mutex and condition variable elsewhere. The SDK gets the latter through gthreads. That path can spin and yield
+  before sleeping, which costs real CPU, so test that it sleeps promptly.
 - **Exceptions and RTTI.** RTTI needs only the compiler. Exceptions need libgcc's DWARF unwinder, and that needs:
   - `elf2xex` keeping `.eh_frame` and `.gcc_except_table`;
   - `crt0` registering the frames with `__register_frame_info`, since there's no `dl_iterate_phdr` without an ELF
@@ -223,8 +223,8 @@ What the SDK supplies, piece by piece:
   dashboard's FTP server and launcher, or a USB drive.
 - **Logging:** how logs come back without a debug kit. `DbgPrint` output needs a debug channel that a retail kernel
   may not expose, which is unverified. A log file on USB or HDD always works, and is the recommended first channel.
-- **Recommendation:** a host-side script that uploads, launches and fetches the log in one step, as the Vita project
-  does through FTP and a command port.
+- **Recommendation:** a host-side script that uploads, launches and fetches the log in one step, through FTP and a
+  command port.
 
 ## 3. The Xenos GPU layer
 
@@ -400,9 +400,9 @@ Each is proven on the user's console, as xost's milestones were.
     GPU tests pass at 1280x720 on hardware, a capture shows the scaled test image whole, and the console goes back to
     Aurora. Interlaced outputs keep the kernel's mode until scaling there is tried.
 
-After milestone 9, the SDK and the GPU layer are a complete base. A later translation layer can build on them the way
-vulkan4vita builds on GXM: render passes on eDRAM and resolves, descriptors on fetch and shader constants, and shaders
-from xost's GLSL path. That layer is vulkan4xenon, scoped in its own repository's docs/ROADMAP.md (Z:ulkan4xenon).
+After milestone 9, the SDK and the GPU layer are a complete base. A later translation layer can build on them: render
+passes on eDRAM and resolves, descriptors on fetch and shader constants, and shaders from xost's GLSL path. That layer
+is vulkan4xenon, scoped in its own repository's docs/ROADMAP.md (Z:\vulkan4xenon).
 
 ### GPU milestones before a Vulkan translation layer
 
