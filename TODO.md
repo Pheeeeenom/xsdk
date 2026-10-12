@@ -68,6 +68,21 @@ work begins.
 - **Mipped linear textures.** `xsdk_texture_create` returns `STATUS_NOT_IMPLEMENTED` for them. Xenia keeps their rows
   256-byte aligned (texture_util.cc:209-449). Vulkan rarely needs them.
 
+## Tried and reverted
+
+Changes that worked but weren't faster on the console. Each stays in history, to bring back if a run shows the cost
+it removes.
+
+- **A ring the GPU loads push constants from** (vulkan4xenon `2e94c05` and xost `af5bb8b`, reverted by vulkan4xenon
+  `0579b93` and xost `77c7605`). Each draw copied its push blocks into 4 MB of write-combined memory and had the GPU
+  load them with `xsdk_gpu_load_*_constants`, as uniform blocks are; xost put push blocks on whole groups of 4 for it.
+  - **What it saved:** a pushed cube went from 65.3 dwords to 17.3, and a frame from 64 kicks to 18.
+  - **What it didn't:** `draws_1000` took 1,217 us against 1,215, its submit 974 us both times
+    (vulkan4xenon:docs/ROADMAP.md, milestone 8).
+  - **When to bring it back:** if push-heavy frames fill the command stream, which `xsdk_gpu_stats` shows as waits, or
+    the GPU becomes the bottleneck reading constants. At 65 dwords a cube a frame of about 16,000 pushed draws laps
+    the 4 MB stream; at 17, about 60,000.
+
 ## Questions the console hasn't answered
 
 - **The depth-bias slope.** `XsdkRaster` takes it, but milestone 14 tested only the constant term.
