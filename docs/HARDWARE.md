@@ -1811,3 +1811,30 @@ tools/toolchain/binutils-xsdk.patch), and the linker refuses to put one in with 
 (binutils:bfd/elf32-ppc.c, `ppc_elf_merge_private_bfd_data`). The convention's own attribute, `.gnu_attribute 12`,
 marks only objects that return small structs. The flag turned away the probe's harness and MSVC objects assembled by
 the old toolchain, and every object in the new toolchain's libc, libstdc++ and libgcc carries it.
+
+## The switch to the console's calling convention (2026-10-12)
+
+Milestone 22's third step: `~/xsdk-gcc` became the `-mcall-xsdk` toolchain, built from xsdk `8a349aa`, with the SysV
+one kept at `~/xsdk-gcc-sysv`. Everything was rebuilt from clean on it and run on the console:
+- **sdl_check** (`results/2026-10-12-switch/sdl_check-tail.log`), from the SDL fork at `c86389c89`, where the kernel
+  now calls the audio callback directly: all 16 checks passed.
+- **vulkan4xenon's test title** and **vkbench** (vulkan4xenon:results/2026-10-12-mcall-xsdk/), with titles no longer
+  linking `crt0.o`: all 58 and all 14 checks passed. Against the run before the clock fix
+  (vulkan4xenon:results/2026-10-11-milestone-8-reverted/), its times taken as 0.25% short:
+  - `stream_8000`'s simulation took 1592 us through xsdk, from 1853, and 1596 through vulkan4xenon, from 1856.
+  - xsdk's own recording ran 2 to 3% faster in every draw and state scene.
+  - vulkan4xenon's recording ran 10.5 to 12% slower in the draw and state scenes, and its submit about 1% faster, so
+    draws and submits together took 0.5 to 1.7% longer. Two runs of the same code before differed by up to 5% in
+    recording. The layer's recording functions are the same instructions under both compilers; each non-leaf frame
+    now reserves the 64-byte parameter area, so `vkCmdDraw`'s grew from 32 to 96 bytes. The cause is open (TODO.md).
+  - GPU times moved within the 8% two runs of the same code differed by.
+  - Frames read 16667 us, the true 60 Hz; vkbench prints that as 59.9 fps, cutting off to tenths.
+- **Dusklight** (the Dusklight session's branch `claude/distracted-hodgkin-4e5aac` at `a06daa3`, its
+  results/2026-10-12-dusklight-mcall-xsdk/), rebuilt with its SDL, Aurora and Dusklight sources unchanged: its title
+  started with the whole game linked and its static constructors run, showed the splash, had 442 MB free at `main`, and
+  exited with status 0, as in vulkan4xenon's milestone 9, step 1. Its image is 8192 pages, 80 fewer than on the SysV
+  toolchain. With `int32_t` as `int`, zlib-ng, imgui's FreeType glue, zstd's legacy decoders, Aurora and Dusklight
+  built without the type errors they had. That branch's xsdk_test passed all 228 of its checks.
+
+With that, milestone 22 is done: xsdk's GCC calls as the console's own compiler does, by default, and every title
+built with it passes on the console.

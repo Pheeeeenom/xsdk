@@ -557,7 +557,7 @@ platform for the port. What they need of the SDK beyond what it has:
 
 21. **The platform for Dusklight.** Each piece as the port reaches it, each with a test in xsdk_test:
     - **A CMake toolchain file** that builds and links a title as the Makefile does: `-fno-pic`, `-static`, `src/xsdk.ld`,
-      `crt0.o` and `libxsdk.a`, and `elf2xex` after the link;
+      `libxsdk.a` (and `crt0.o`, until milestone 22 retired it), and `elf2xex` after the link;
     - **the heap's reservation** sized from what the console leaves a title, measured first;
     - **the pthread pieces** SDL3 and the game use.
 

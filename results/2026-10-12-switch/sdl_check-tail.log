@@ -1,0 +1,3 @@
+sdl_check.xex from the SDL fork at c86389c89, on xsdk 8a349aa with the -mcall-xsdk toolchain:
+tests: 16 passed, 0 failed
+exit: status 0

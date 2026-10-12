@@ -22,12 +22,15 @@ work begins.
 
 ## Toolchain
 
-- **The console's calling convention in GCC.** Scoped and agreed on 2026-10-12 as SCOPE.md's milestone 22, with GCC's
-  struct layout kept as the user chose on 2026-10-11. Steps 1 and 2 passed on the console on 2026-10-12; step 3, the
-  switch, is next.
+- **Vulkan command recording 10-12% slower since the calling-convention switch** (milestone 22, docs/HARDWARE.md,
+  "The switch to the console's calling convention"). vkbench on the console (vulkan4xenon
+  results/2026-10-12-mcall-xsdk/, against 2026-10-11-milestone-8-reverted, scaled for the clock fix): the layer's
+  draw and state scenes record 10.5-12% slower, record plus submit 0.5-1.7% slower; the 8000-object simulation runs
+  14% faster and xsdk's own recording 2-3% faster. The recording functions are the same instructions under both
+  compilers; every non-leaf frame now reserves the 64-byte parameter area (vkCmdDraw's grew from 32 to 96 bytes), a
+  candidate cause not yet checked. The user put it off until the Dusklight session has it rendering.
 - **C code can't name `char16_t`.** newlib has no `<uchar.h>`, so C code sharing UTF-16 text with MSVC code spells it
   `__CHAR16_TYPE__` (local/abi's probe does); C++ has the keyword.
-
 - **xost off Python.** Its compiler (`xsc`), assembler (`xasm`) and disassembler (`xdis`) are Python; only the
   combiner generator `xcomb` is C99 (xost:README.md:49-71, docs/xsc.md:1-14). The combined SDK shouldn't need
   Python. Until then, the Vulkan layer compiles shaders offline and looks them up by their SPIR-V, as vulkan4vita
