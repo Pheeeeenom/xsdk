@@ -34,8 +34,11 @@ work begins.
   - 64-bit integers and structs of 8 bytes or less returned in r3, larger structs through a pointer in r3;
   - the callee extending `char` and `short` arguments, not the caller;
   - varargs as MSVC lays them out;
-  - r14-r31 kept whole, f14-f31 and v14-v31 kept;
-  - `wchar_t` as 2 bytes, and bitfields laid out as MSVC lays them.
+  - r14-r31 kept whole, f14-f31 and v14-v31 kept.
+
+  Layout stays GCC's, as the user chose on 2026-10-11 so code ported meanwhile, Dusklight's first, needn't change: a
+  struct shared with MSVC code takes `__attribute__((ms_struct))`, which GCC's PowerPC backend already lays out as MSVC
+  does (gcc-15.3.0/gcc/config/rs6000/rs6000.cc:20785-20789), and UTF-16 text is `char16_t`, `wchar_t` staying 4 bytes.
 
   Then any import takes its natural C declaration, and a title could link the console's own libraries. The ABI probe in
   `local/abi` is the acceptance test: all 36 cases pass in both directions. It needs the Xbox 360 SDK's compiler for
