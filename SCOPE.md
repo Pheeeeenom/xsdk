@@ -668,6 +668,33 @@ So does the SDK:
     - sdl_check, vulkan4xenon_test and vkbench pass in full;
     - Dusklight's port passes its latest step again.
 
+23. **Floating point at any address.** Dusklight found it on the console (docs/HARDWARE.md, "Dusklight runs the title
+    scene"): a float load from an address that isn't a multiple of 4 raised an alignment exception, 0x80000002, where
+    integer loads from the same stream ran. Xenia doesn't check alignment. GCC puts float-register loads and stores on
+    unaligned memory under both of xsdk's toolchains, the SysV one and `-mcall-xsdk`'s:
+    - `memcpy` into a `float` or `double`, or into an integer that `std::bit_cast` then turns into one, becomes `lfs`
+      or `lfd` at the source: GCC's `combine` folds the integer load and the conversion into one float load that still
+      records the source's byte alignment;
+    - a `double` stored to a packed struct becomes `stfd` at its offset: the expander stores it as a 64-bit integer,
+      and the register allocator keeps that integer in a float register.
+
+    `-mstrict-align` stops them, but it also makes every unaligned integer access go byte by byte through the stack,
+    where today one `lwz` reads it and the console takes it.
+
+    So on xsdk's target, GCC moves a `float` or `double` between a float register and memory only where it knows the
+    memory is aligned to the value's size; any other goes through the integer registers, which take unaligned
+    addresses as they do now. In rs6000: a memory constraint on the float-register alternatives of the move and
+    conversion patterns, and `rs6000_legitimate_combined_insn` refusing what `combine` folds otherwise.
+
+    Done when:
+    - an option that makes each such access a compile error finds none in xsdk, SDL, vulkan4xenon, Aurora and
+      Dusklight;
+    - xsdk_test writes floats and doubles to every offset from 0 to 7 and reads them back, through `memcpy`,
+      `std::bit_cast` and packed structs, and gets every value on the console; built with today's compiler, the same
+      check faults there;
+    - xsdk_test, sdl_check, vulkan4xenon_test, vkbench and Dusklight's title scene pass on the console, with vkbench's
+      times within the noise of milestone 22's run.
+
 ## 5. Questions for the user first
 
 1. **The GCC:** its version (C++23 needs 13 or later for most of it), target triple, ABI and code model, its C

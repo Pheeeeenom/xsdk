@@ -44,6 +44,7 @@ int main(int argc, char **argv)
 	test_cpp_atomics();
 	test_cpp_exceptions();
 	test_cpp_unwind();
+	test_fp_align();
 	test_cpp_chrono();
 	test_cpp_filesystem();
 	test_cpp_format();

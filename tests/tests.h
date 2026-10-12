@@ -57,6 +57,8 @@ void test_cpp_atomics(void);
 void test_cpp_exceptions(void);
 // Registers a caller keeps, through a C++ exception and through longjmp (milestone 22).
 void test_cpp_unwind(void);
+// Floats and doubles at every byte offset, which the console faults on in float registers (milestone 23).
+void test_fp_align(void);
 void test_cpp_chrono(void);
 void test_cpp_filesystem(void);
 void test_cpp_format(void);

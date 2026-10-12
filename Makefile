@@ -28,7 +28,7 @@ SDK_OBJECTS := $(patsubst src/%,$(BUILD)/sdk/%.o,$(basename $(SDK_SOURCES))) $(I
 TEST_SOURCES := tests/main.c tests/test_image.c tests/test_memory.c tests/test_threads.c tests/test_pthread.c tests/test_clocks.c \
 	tests/test_kernel_entry.c tests/kernel_entry_check.S tests/test_files.c tests/test_input.c \
 	tests/test_audio.c tests/audio_frame.c tests/test_cpp_objects.cpp tests/test_cpp_threads.cpp \
-	tests/test_cpp_atomics.cpp tests/test_cpp_exceptions.cpp tests/test_cpp_unwind.cpp \
+	tests/test_cpp_atomics.cpp tests/test_cpp_exceptions.cpp tests/test_cpp_unwind.cpp tests/test_fp_align.cpp \
 	tests/test_cpp_chrono.cpp tests/test_cpp_filesystem.cpp \
 	tests/test_cpp_format.cpp tests/test_gpu.c tests/test_present.c tests/test_triangle.c tests/test_texture.c \
 	tests/test_render.c tests/test_pacing.c tests/bar_scene.c tests/test_scale.c tests/test_constants.c \

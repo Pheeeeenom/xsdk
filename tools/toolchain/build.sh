@@ -118,4 +118,10 @@ if "$TARGET-gcc" -nostdlib -Wl,-e,main -o mixed.elf main.o other_sysv.o 2>mixed.
 	exit 1
 fi
 grep -q "calling convention" mixed.log
+
+# A float read from any byte goes through the integer registers: the console faults on a float register load at an
+# address not aligned to its size, and -mcheck-fpr-alignment makes any such load an error (SCOPE.md, milestone 23).
+step "check: no float register load at memory not known to be aligned"
+printf '#include <string.h>\nfloat read_float(const unsigned char *p) { float f; memcpy(&f, p, 4); return f; }\n' >float.c
+"$TARGET-gcc" -O2 -mcheck-fpr-alignment -c float.c -o float.o
 step "done: $PREFIX/bin/$TARGET-gcc"

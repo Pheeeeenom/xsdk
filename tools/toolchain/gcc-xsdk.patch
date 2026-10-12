@@ -13,6 +13,21 @@
  powerpc-*-elf*)
  	tm_file="${tm_file} elfos.h gnu-user.h usegas.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h"
  	extra_options="${extra_options} rs6000/sysv4.opt"
+--- a/gcc/config/rs6000/constraints.md
++++ b/gcc/config/rs6000/constraints.md
+@@ -289,3 +289,12 @@
+ (define_constraint "j"
+   "@internal The zero vector constant."
+   (match_test "op == const0_rtx || op == CONST0_RTX (mode)"))
++
++;; Xbox 360 SDK: memory a floating-point register may load from or store to,
++;; which where RS6000_ALIGNED_FPR_MEMORY is set must be aligned to the access's
++;; size.  A special memory constraint, so the register allocator never makes
++;; other memory to fit: an access it rejects goes through the GPRs.
++(define_special_memory_constraint "wG"
++  "@internal Memory a floating-point register may load from or store to."
++  (and (match_code "mem")
++       (match_test "rs6000_fpr_mem_aligned_p (op)")))
 --- a/gcc/config/rs6000/rs6000-call.cc
 +++ b/gcc/config/rs6000/rs6000-call.cc
 @@ -478,6 +478,14 @@
@@ -416,7 +431,15 @@
  	{
 --- a/gcc/config/rs6000/rs6000.cc
 +++ b/gcc/config/rs6000/rs6000.cc
-@@ -1698,8 +1698,13 @@
+@@ -81,6 +81,7 @@
+ #include "ppc-auxv.h"
+ #include "rs6000-internal.h"
+ #include "opts.h"
++#include "rtl-iter.h"
+ 
+ /* This file should be included last.  */
+ #include "target-def.h"
+@@ -1698,8 +1699,13 @@
  #define TARGET_LIBGCC_CMP_RETURN_MODE rs6000_abi_word_mode
  #undef TARGET_LIBGCC_SHIFT_COUNT_MODE
  #define TARGET_LIBGCC_SHIFT_COUNT_MODE rs6000_abi_word_mode
@@ -431,7 +454,7 @@
  
  #undef TARGET_OFFLOAD_OPTIONS
  #define TARGET_OFFLOAD_OPTIONS rs6000_offload_options
-@@ -2014,6 +2019,7 @@
+@@ -2014,6 +2020,7 @@
  {
    if (TARGET_32BIT
        && TARGET_POWERPC64
@@ -439,7 +462,107 @@
        && GET_MODE_SIZE (mode) > 4
        && INT_REGNO_P (regno))
      return true;
-@@ -10225,7 +10231,10 @@
+@@ -9468,6 +9475,78 @@
+   return false;
+ }
+ 
++/* Xbox 360 SDK: whether a floating-point register may load from or store to
++   MEM.  Where RS6000_ALIGNED_FPR_MEMORY is set, the processor faults on such
++   an access at an address not aligned to its size, so MEM must be known to
++   be aligned that far; a value in other memory goes through the GPRs, which
++   take any address.  */
++
++bool
++rs6000_fpr_mem_aligned_p (rtx mem)
++{
++  if (!RS6000_ALIGNED_FPR_MEMORY || !MEM_P (mem))
++    return true;
++  return known_ge (MEM_ALIGN (mem), GET_MODE_BITSIZE (GET_MODE (mem)));
++}
++
++/* Whether X mentions a floating-point register.  */
++
++static bool
++rs6000_fpr_mentioned_p (const_rtx x)
++{
++  subrtx_iterator::array_type array;
++  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
++    if (REG_P (*iter) && FP_REGNO_P (REGNO (*iter)))
++      return true;
++  return false;
++}
++
++/* The first MEM in X, or NULL_RTX.  */
++
++static rtx
++rs6000_first_mem (rtx x)
++{
++  subrtx_var_iterator::array_type array;
++  FOR_EACH_SUBRTX_VAR (iter, array, x, NONCONST)
++    if (MEM_P (*iter))
++      return *iter;
++  return NULL_RTX;
++}
++
++/* Xbox 360 SDK: for -mcheck-fpr-alignment, report as an error each
++   floating-point register load or store in INSN at memory not known to be
++   aligned to its size, which the console's processor faults on.  */
++
++void
++rs6000_check_fpr_alignment (rtx_insn *insn)
++{
++  rtx pat = PATTERN (insn);
++  if (CALL_P (insn) || asm_noperands (pat) >= 0)
++    return;
++  int n = GET_CODE (pat) == PARALLEL ? XVECLEN (pat, 0) : 1;
++  for (int i = 0; i < n; i++)
++    {
++      rtx set = GET_CODE (pat) == PARALLEL ? XVECEXP (pat, 0, i) : pat;
++      if (GET_CODE (set) != SET)
++	continue;
++      rtx mem = NULL_RTX;
++      if (MEM_P (SET_DEST (set)) && rs6000_fpr_mentioned_p (SET_SRC (set)))
++	mem = SET_DEST (set);
++      else if (rs6000_fpr_mentioned_p (SET_DEST (set)))
++	mem = rs6000_first_mem (SET_SRC (set));
++      if (!mem
++	  || known_ge (MEM_ALIGN (mem), GET_MODE_BITSIZE (GET_MODE (mem))))
++	continue;
++      location_t loc = INSN_LOCATION (insn);
++      if (loc == UNKNOWN_LOCATION)
++	loc = DECL_SOURCE_LOCATION (current_function_decl);
++      error_at (loc, "floating-point register load or store in %qD at "
++		"memory not known to be aligned to its %wu bytes",
++		current_function_decl,
++		(unsigned HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (mem)));
++    }
++}
++
+ /* Implement the TARGET_LEGITIMATE_COMBINED_INSN hook.  */
+ 
+ static bool
+@@ -9508,6 +9587,20 @@
+ 	  || icode == CODE_FOR_bdnztf_di))
+     return false;
+ 
++  /* Xbox 360 SDK: keep floating-point values in memory not known to be
++     aligned to their size out of what combine makes, as from an integer load
++     and a conversion, so they never reach a float register
++     (rs6000_fpr_mem_aligned_p).  */
++  if (RS6000_ALIGNED_FPR_MEMORY)
++    {
++      subrtx_iterator::array_type array;
++      FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
++	if (MEM_P (*iter)
++	    && SCALAR_FLOAT_MODE_P (GET_MODE (*iter))
++	    && !rs6000_fpr_mem_aligned_p (CONST_CAST_RTX (*iter)))
++	  return false;
++    }
++
+   return true;
+ }
+ 
+@@ -10225,7 +10318,10 @@
  
    if (TARGET_ALTIVEC_ABI)
      {
@@ -451,7 +574,7 @@
  	call_used_regs[i] = 1;
  
        /* AIX reserves VR20:31 in non-extended ABI mode.  */
-@@ -17044,22 +17053,25 @@
+@@ -17044,22 +17140,25 @@
        emit_unlikely_jump (x, label1);
      }
  
@@ -486,7 +609,7 @@
  }
  
  /* Expand an atomic exchange operation.  */
-@@ -17276,6 +17288,31 @@
+@@ -17276,6 +17375,31 @@
    return TARGET_32BIT ? SImode : DImode;
  }
  
@@ -518,7 +641,7 @@
  /* Implement the TARGET_OFFLOAD_OPTIONS hook.  */
  static char *
  rs6000_offload_options (void)
-@@ -21419,7 +21456,12 @@
+@@ -21419,7 +21543,12 @@
        if (rs6000_passes_vector)
  	fprintf (asm_out_file, "\t.gnu_attribute 8, %d\n",
  		 (TARGET_ALTIVEC_ABI ? 2 : 1));
@@ -532,7 +655,7 @@
  	fprintf (asm_out_file, "\t.gnu_attribute 12, %d\n",
  		 aix_struct_return ? 2 : 1);
      }
-@@ -23969,8 +24011,9 @@
+@@ -23969,8 +24098,9 @@
        return rs6000_parallel_return (mode, n_elts, elt_mode, first_reg, n_regs);
      }
  
@@ -544,7 +667,7 @@
      switch (mode)
        {
        default:
-@@ -23983,9 +24026,11 @@
+@@ -23983,9 +24113,11 @@
  	return rs6000_parallel_return (mode, count, SImode, GP_ARG_RETURN, 1);
        }
  
@@ -559,7 +682,7 @@
      mode = TARGET_32BIT ? SImode : DImode;
  
    if (DECIMAL_FLOAT_MODE_P (mode) && TARGET_HARD_FLOAT)
-@@ -24018,7 +24063,7 @@
+@@ -24018,7 +24150,7 @@
    unsigned int regno;
  
    /* Long long return value need be split in -mpowerpc64, 32bit ABI.  */
@@ -581,7 +704,7 @@
        builtin_define ("_CALL_AIXDESC");
 --- a/gcc/config/rs6000/rs6000.h
 +++ b/gcc/config/rs6000/rs6000.h
-@@ -681,6 +681,24 @@
+@@ -681,6 +681,29 @@
     word.  */
  #define LONG_TYPE_SIZE (TARGET_32BIT ? 32 : 64)
  
@@ -603,10 +726,15 @@
 +#define RS6000_GPR_SAVE_MODE (TARGET_XSDK_CALL ? DImode : Pmode)
 +#define RS6000_GPR_SAVE_SIZE (TARGET_32BIT && !TARGET_XSDK_CALL ? 4 : 8)
 +
++/* Xbox 360 SDK: nonzero where a floating-point register may load from or
++   store to memory only if it is aligned to the access's size, as the
++   processor faults otherwise (rs6000/xsdk.h, rs6000_fpr_mem_aligned_p).  */
++#define RS6000_ALIGNED_FPR_MEMORY 0
++
  /* A C expression for the size in bits of the type `long long' on the
     target machine.  If you don't define this, the default is two
     words.  */
-@@ -695,7 +713,7 @@
+@@ -695,7 +718,7 @@
  #define POINTER_SIZE rs6000_pointer_size
  
  /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
@@ -615,7 +743,7 @@
  
  /* Boundary (in *bits*) on which stack pointer should be aligned.  */
  #define STACK_BOUNDARY	\
-@@ -1253,9 +1271,11 @@
+@@ -1253,9 +1276,11 @@
  #define FRAME_GROWS_DOWNWARD (flag_stack_protect != 0			\
  			      || (flag_sanitize & SANITIZE_ADDRESS) != 0)
  
@@ -629,7 +757,7 @@
     << (TARGET_64BIT ? 1 : 0))
  
  /* Stack offset for toc save slot.  */
-@@ -1370,7 +1390,7 @@
+@@ -1370,7 +1395,7 @@
  #define FP_ARG_MIN_REG 33
  #define	FP_ARG_AIX_MAX_REG 45
  #define	FP_ARG_V4_MAX_REG  40
@@ -637,6 +765,15 @@
 +#define	FP_ARG_MAX_REG (ABI_V4_ARGS					\
  			? FP_ARG_V4_MAX_REG : FP_ARG_AIX_MAX_REG)
  #define FP_ARG_NUM_REG (FP_ARG_MAX_REG - FP_ARG_MIN_REG + 1)
+ 
+@@ -2469,6 +2494,8 @@
+   {									\
+     if (TARGET_PREFIXED)						\
+       rs6000_final_prescan_insn (INSN, OPERANDS, NOPERANDS);		\
++    if (rs6000_check_fpr_align)						\
++      rs6000_check_fpr_alignment (INSN);				\
+   }									\
+ while (0)
  
 --- a/gcc/config/rs6000/rs6000-logue.cc
 +++ b/gcc/config/rs6000/rs6000-logue.cc
@@ -674,7 +811,21 @@
  
    info->first_fp_reg_save = first_fp_reg_to_save ();
    info->fp_size = 8 * (64 - info->first_fp_reg_save);
-@@ -2612,7 +2619,7 @@
+@@ -2143,6 +2150,13 @@
+ 
+   addr = gen_rtx_PLUS (Pmode, frame_reg, GEN_INT (offset));
+   mem = gen_frame_mem (GET_MODE (reg), addr);
++  /* Xbox 360 SDK: the frame is 16-byte aligned and floating-point registers
++     are saved at multiples of their size; say so, for
++     rs6000_fpr_mem_aligned_p.  */
++  if (RS6000_ALIGNED_FPR_MEMORY
++      && FP_REGNO_P (REGNO (reg))
++      && offset % GET_MODE_SIZE (GET_MODE (reg)) == 0)
++    set_mem_align (mem, GET_MODE_ALIGNMENT (GET_MODE (reg)));
+   return gen_rtx_SET (store ? mem : reg, store ? reg : mem);
+ }
+ 
+@@ -2612,7 +2626,7 @@
    sbitmap components = sbitmap_alloc (cfun->machine->n_components);
    bitmap_clear (components);
  
@@ -683,7 +834,7 @@
    int fp_reg_size = 8;
  
    /* The GPRs we need saved to the frame.  */
-@@ -2629,7 +2636,7 @@
+@@ -2629,7 +2643,7 @@
  	      && save_reg_p (regno))
  	    bitmap_set_bit (components, regno);
  
@@ -692,7 +843,7 @@
  	}
      }
  
-@@ -2756,7 +2763,8 @@
+@@ -2756,7 +2770,8 @@
  				      : STACK_POINTER_REGNUM);
  
    machine_mode reg_mode = Pmode;
@@ -702,7 +853,7 @@
    machine_mode fp_reg_mode = TARGET_HARD_FLOAT ? DFmode : SFmode;
    int fp_reg_size = 8;
  
-@@ -2796,14 +2804,14 @@
+@@ -2796,14 +2811,14 @@
      {
        if (bitmap_bit_p (components, i))
  	{
@@ -719,7 +870,7 @@
      }
  
    /* Prologue for the FPRs.  */
-@@ -2836,7 +2844,8 @@
+@@ -2836,7 +2851,8 @@
  				      : STACK_POINTER_REGNUM);
  
    machine_mode reg_mode = Pmode;
@@ -729,7 +880,7 @@
  
    machine_mode fp_reg_mode = TARGET_HARD_FLOAT ? DFmode : SFmode;
    int fp_reg_size = 8;
-@@ -2868,13 +2877,13 @@
+@@ -2868,13 +2884,13 @@
      {
        if (bitmap_bit_p (components, i))
  	{
@@ -745,7 +896,7 @@
      }
  
    /* Epilogue for LR.  */
-@@ -2996,6 +3005,8 @@
+@@ -2996,6 +3012,8 @@
    rs6000_stack_t *info = rs6000_stack_info ();
    machine_mode reg_mode = Pmode;
    int reg_size = TARGET_32BIT ? 4 : 8;
@@ -754,7 +905,7 @@
    machine_mode fp_reg_mode = TARGET_HARD_FLOAT ? DFmode : SFmode;
    int fp_reg_size = 8;
    rtx sp_reg_rtx = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
-@@ -3406,10 +3417,10 @@
+@@ -3406,10 +3424,10 @@
  	{
  	  if (save_reg_p (i)
  	      && !cfun->machine->gpr_is_wrapped_separately[i])
@@ -767,7 +918,7 @@
  	}
      }
  
-@@ -3434,9 +3445,9 @@
+@@ -3434,9 +3452,9 @@
  	    break;
  
  	  rtx set
@@ -779,7 +930,7 @@
  	  RTVEC_ELT (p, i) = set;
  	  RTX_FRAME_RELATED_P (set) = 1;
  	}
-@@ -4301,6 +4312,8 @@
+@@ -4301,6 +4319,8 @@
    rtx cr_save_reg = NULL_RTX;
    machine_mode reg_mode = Pmode;
    int reg_size = TARGET_32BIT ? 4 : 8;
@@ -788,7 +939,7 @@
    machine_mode fp_reg_mode = TARGET_HARD_FLOAT ? DFmode : SFmode;
    int fp_reg_size = 8;
    int i;
-@@ -4872,11 +4885,11 @@
+@@ -4872,11 +4892,11 @@
  	  if (regno == INVALID_REGNUM)
  	    break;
  
@@ -803,7 +954,7 @@
  	}
      }
  
-@@ -4932,11 +4945,11 @@
+@@ -4932,11 +4952,11 @@
  	  if (save_reg_p (i)
  	      && !cfun->machine->gpr_is_wrapped_separately[i])
  	    {
@@ -817,7 +968,7 @@
  	}
      }
  
-@@ -4975,7 +4988,7 @@
+@@ -4975,7 +4995,7 @@
  	if (save_reg_p (i)
  	    && !cfun->machine->gpr_is_wrapped_separately[i])
  	  {
@@ -826,12 +977,142 @@
  	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
  	  }
      }
+--- a/gcc/config/rs6000/rs6000.md
++++ b/gcc/config/rs6000/rs6000.md
+@@ -5237,7 +5237,7 @@
+ 
+ (define_insn_and_split "*extendsfdf2_fpr"
+   [(set (match_operand:DF 0 "gpc_reg_operand" "=d,?d,d,wa,?wa,wa,v")
+-	(float_extend:DF (match_operand:SF 1 "reg_or_mem_operand" "0,f,m,0,wa,Z,wY")))]
++	(float_extend:DF (match_operand:SF 1 "reg_or_mem_operand" "0,f,wG,0,wa,Z,wY")))]
+   "TARGET_HARD_FLOAT && !HONOR_SNANS (SFmode)"
+   "@
+    #
+@@ -6337,7 +6337,8 @@
+     tmp = gen_reg_rtx (DImode);
+ 
+   emit_insn (gen_fctiwz_<mode> (tmp, src));
+-  if (MEM_P (dest) && (TARGET_MFCRF || MEM_ALIGN (dest) >= 32))
++  if (MEM_P (dest) && (TARGET_MFCRF || MEM_ALIGN (dest) >= 32)
++      && rs6000_fpr_mem_aligned_p (dest))
+     {
+       dest = rs6000_force_indexed_or_indirect_mem (dest);
+       emit_insn (gen_stfiwx (dest, tmp));
+@@ -6479,7 +6480,7 @@
+     tmp = gen_reg_rtx (DImode);
+ 
+   emit_insn (gen_fctiwuz_<mode> (tmp, src));
+-  if (MEM_P (dest))
++  if (MEM_P (dest) && rs6000_fpr_mem_aligned_p (dest))
+     {
+       dest = rs6000_force_indexed_or_indirect_mem (dest);
+       emit_insn (gen_stfiwx (dest, tmp));
+@@ -8247,11 +8248,11 @@
+ 
+ (define_insn "movsf_hardfloat"
+   [(set (match_operand:SF 0 "nonimmediate_operand"
+-	 "=!r,       f,         v,          wa,        m,         wY,
++	 "=!r,       f,         v,          wa,        wG,        wY,
+ 	  Z,         m,         wa,         !r,        f,         wa,
+ 	  !r,        *c*l,      !r,         *h,        wa")
+ 	(match_operand:SF 1 "input_operand"
+-	 "m,         m,         wY,         Z,         f,         v,
++	 "m,         wG,        wY,         Z,         f,         v,
+ 	  wa,        r,         j,          j,         f,         wa,
+ 	  r,         r,         *h,         0,         eP"))]
+   "(register_operand (operands[0], SFmode)
+@@ -8565,11 +8566,11 @@
+ 
+ (define_insn "*mov<mode>_hardfloat32"
+   [(set (match_operand:FMOVE64 0 "nonimmediate_operand"
+-            "=m,          d,          d,          <f64_p9>,   wY,
++            "=wG,         d,          d,          <f64_p9>,   wY,
+               <f64_av>,   Z,          <f64_vsx>,  <f64_vsx>,  !r,
+               Y,          r,          !r,         wa")
+ 	(match_operand:FMOVE64 1 "input_operand"
+-             "d,          m,          d,          wY,         <f64_p9>,
++             "d,          wG,         d,          wY,         <f64_p9>,
+               Z,          <f64_av>,   <f64_vsx>,  <zero_fp>,  <zero_fp>,
+               r,          Y,          r,          eP"))]
+   "! TARGET_POWERPC64 && TARGET_HARD_FLOAT
+@@ -8637,12 +8638,12 @@
+ 
+ (define_insn "*mov<mode>_hardfloat64"
+   [(set (match_operand:FMOVE64 0 "nonimmediate_operand"
+-           "=m,           d,          d,          <f64_p9>,   wY,
++           "=wG,          d,          d,          <f64_p9>,   wY,
+              <f64_av>,    Z,          <f64_vsx>,  <f64_vsx>,  !r,
+              YZ,          r,          !r,         *c*l,       !r,
+             *h,           r,          <f64_dm>,   wa")
+ 	(match_operand:FMOVE64 1 "input_operand"
+-            "d,           m,          d,          wY,         <f64_p9>,
++            "d,           wG,         d,          wY,         <f64_p9>,
+              Z,           <f64_av>,   <f64_vsx>,  <zero_fp>,  <zero_fp>,
+              r,           YZ,         r,          r,          *h,
+              0,           <f64_dm>,   r,          eP"))]
+@@ -9783,12 +9784,12 @@
+ 
+ (define_insn "*movdi_internal32"
+   [(set (match_operand:DI 0 "nonimmediate_operand"
+-         "=Y,        r,         r,         m,         ^d,        ^d,
++         "=Y,        r,         r,         wG,        ^d,        ^d,
+           r,         wY,        Z,         ^v,        $v,        ^wa,
+           wa,        wa,        v,         wa,        *i,        v,
+           v")
+ 	(match_operand:DI 1 "input_operand"
+-         "r,         Y,         r,         ^d,        m,         ^d,
++         "r,         Y,         r,         ^d,        wG,        ^d,
+           IJKnF,     ^v,        $v,        wY,        Z,         ^wa,
+           Oj,        wM,        OjwM,      Oj,        wM,        wS,
+           wB"))]
+@@ -9874,7 +9875,7 @@
+   [(set (match_operand:DI 0 "nonimmediate_operand"
+ 	  "=YZ,        r,          r,
+ 	   r,          r,          r,          r,
+-	   m,          ^d,         ^d,
++	   wG,         ^d,         ^d,
+ 	   wY,         Z,          $v,         $v,         ^wa,
+ 	   wa,         wa,         v,          wa,         wa,
+ 	   v,          v,
+@@ -9883,7 +9884,7 @@
+ 	(match_operand:DI 1 "input_operand"
+ 	  "r,          YZ,         r,
+ 	   I,          L,          eI,         nF,
+-	   ^d,         m,          ^d,
++	   ^d,         wG,         ^d,
+ 	   ^v,         $v,         wY,         Z,          ^wa,
+ 	   Oj,         wM,         OjwM,       Oj,         wM,
+ 	   wS,         wB,
+@@ -10468,7 +10469,7 @@
+ 			  (match_operand:P 2 "reg_or_short_operand" "r,I"))))
+    (set (match_operand:P 0 "gpc_reg_operand" "=b,b")
+ 	(plus:P (match_dup 1) (match_dup 2)))]
+-  "TARGET_HARD_FLOAT && TARGET_UPDATE
++  "TARGET_HARD_FLOAT && TARGET_UPDATE && !RS6000_ALIGNED_FPR_MEMORY
+    && (!avoiding_indexed_address_p (<SFDF:MODE>mode)
+        || !gpc_reg_operand (operands[2], Pmode))"
+   "@
+@@ -10485,7 +10486,7 @@
+ 	(match_operand:SFDF 3 "gpc_reg_operand" "d,d"))
+    (set (match_operand:P 0 "gpc_reg_operand" "=b,b")
+ 	(plus:P (match_dup 1) (match_dup 2)))]
+-  "TARGET_HARD_FLOAT && TARGET_UPDATE
++  "TARGET_HARD_FLOAT && TARGET_UPDATE && !RS6000_ALIGNED_FPR_MEMORY
+    && (!avoiding_indexed_address_p (<SFDF:MODE>mode)
+        || !gpc_reg_operand (operands[2], Pmode))"
+   "@
 --- a/gcc/config/rs6000/rs6000.opt
 +++ b/gcc/config/rs6000/rs6000.opt
-@@ -36,6 +36,10 @@
+@@ -36,6 +36,16 @@
  TargetSave
  HOST_WIDE_INT x_rs6000_isa_flags_explicit
  
++;; Xbox 360 SDK: report a floating-point register load or store at memory not
++;; known to be aligned to its size, which the console's processor faults on.
++mcheck-fpr-alignment
++Target Var(rs6000_check_fpr_align)
++Report each floating-point register load or store at memory not known to be aligned to its size as an error.
++
 +;; Xbox 360 SDK: -mcall-xsdk, the console's own calling convention
 +Variable
 +int rs6000_xsdk_call
@@ -839,6 +1120,17 @@
  ;; Current processor
  TargetVariable
  enum processor_type rs6000_cpu = PROCESSOR_PPC603
+--- a/gcc/config/rs6000/rs6000-protos.h
++++ b/gcc/config/rs6000/rs6000-protos.h
+@@ -59,6 +59,8 @@
+ extern const char *rs6000_output_move_128bit (rtx *);
+ extern bool rs6000_move_128bit_ok_p (rtx []);
+ extern bool rs6000_split_128bit_ok_p (rtx []);
++extern bool rs6000_fpr_mem_aligned_p (rtx);
++extern void rs6000_check_fpr_alignment (rtx_insn *);
+ extern void rs6000_expand_float128_convert (rtx, rtx, bool);
+ extern void rs6000_expand_vector_init (rtx, rtx);
+ extern void rs6000_expand_vector_set (rtx, rtx, rtx);
 --- a/gcc/config/rs6000/sysv4.h
 +++ b/gcc/config/rs6000/sysv4.h
 @@ -78,6 +78,13 @@
@@ -857,7 +1149,7 @@
        rs6000_current_abi = ABI_V4;					\
 --- /dev/null
 +++ b/gcc/config/rs6000/xsdk.h
-@@ -0,0 +1,52 @@
+@@ -0,0 +1,59 @@
 +/* Definitions for the Xbox 360 SDK's target, powerpc-xsdk-elf: titles for
 +   the Xbox 360's retail kernel.
 +
@@ -904,6 +1196,13 @@
 +/* Under the console's calling convention, have the assembler flag each
 +   object (-mxsdk, EF_PPC_XSDK), so that the linker refuses to link it with
 +   one built for another convention.  sysv4.h's spec, with -mxsdk added.  */
++/* The console's processor raises an alignment exception for a
++   floating-point register load or store at an address not aligned to its
++   size, where integer loads and stores take any address, so a float register
++   meets only memory GCC knows is aligned.  */
++#undef RS6000_ALIGNED_FPR_MEMORY
++#define RS6000_ALIGNED_FPR_MEMORY 1
++
 +#undef ASM_SPEC
 +#define ASM_SPEC "%(asm_cpu) \
 +%{,assembler|,assembler-with-cpp: %{mregnames} %{mno-regnames}} \
