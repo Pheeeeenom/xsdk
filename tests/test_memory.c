@@ -76,6 +76,9 @@ void test_memory(void)
 	log_statistics(&statistics);
 	check("MmQueryStatistics: the title's free pages lie within the total",
 		statistics.title.available_pages > 0 && statistics.title.available_pages <= statistics.total_physical_pages);
+	// sbrk reserved the title's free memory at the heap's first growth, before main, and free memory has only shrunk.
+	check("sbrk: the heap's reservation covers the title's free memory",
+		statistics.title.reserved_virtual_memory_bytes >= statistics.title.available_pages * PAGE_BYTES);
 
 	uint32_t before = statistics.title.available_pages;
 	uint32_t after = available_after_growth();
