@@ -61,10 +61,10 @@ checks, but the console decides; CLAUDE.md lists where Xenia differs.
 
 ## Related
 
-- [vulkan4xenon](https://github.com/Pheeeeenom/vulkan4xenon), a Vulkan 1.0 subset built on xsdk's GPU layer, on the
+- [vulkan4xenon](https://github.com/xenosworks/vulkan4xenon), a Vulkan 1.0 subset built on xsdk's GPU layer, on the
   way to running Dusklight.
-- [xost](https://github.com/Pheeeeenom/xenos-toolchain), the shader toolchain, checked out in `xenos-toolchain/`.
-- [SDL-xenon](https://github.com/Pheeeeenom/SDL-xenon), SDL 3 with an Xbox 360 platform built on xsdk.
+- [xost](https://github.com/xenosworks/xenos-toolchain), the shader toolchain, checked out in `xenos-toolchain/`.
+- [SDL-xenon](https://github.com/xenosworks/SDL-xenon), SDL 3 with an Xbox 360 platform built on xsdk.
 
 ## Trademarks
 
