@@ -541,6 +541,29 @@ GPU layer's uploads go through it into write-combined memory, and so do Vulkan a
     - vkbench's `stream_8000` draw time falls to match, from 5.5 ms;
     - xsdk_test, vulkan4xenon_test and vkbench pass in full.
 
+### What Dusklight needs from the platform
+
+Agreed on 2026-10-11 with vulkan4xenon's milestone 9, Dusklight on Aurora's null backend
+(vulkan4xenon:docs/ROADMAP.md).
+
+**Why.** Dusklight and encounter's Aurora build with CMake, and reach the console through SDL3, which gets an xsdk
+platform for the port. What they need of the SDK beyond what it has:
+- a way to build with CMake: Aurora and Dusklight are CMake projects, and the SDK builds titles only with its Makefile;
+- a heap past 256 MB: the game asks for 280 MB of GameCube memory and ARAM before Aurora's pools
+  (dusklight:src/m_Do/m_Do_main.cpp:705-706), and `sbrk` reserves 256 MB (src/sbrk.c);
+- what SDL3's threads and the game's ask of pthreads beyond the SDK's today, settled as SDL's thread backend is built
+  against it: stack sizes, priority and affinity, semaphores.
+
+21. **The platform for Dusklight.** Each piece as the port reaches it, each with a test in xsdk_test:
+    - **A CMake toolchain file** that builds and links a title as the Makefile does: `-fno-pic`, `-static`, `src/xsdk.ld`,
+      `crt0.o` and `libxsdk.a`, and `elf2xex` after the link;
+    - **the heap's reservation** sized from what the console leaves a title, measured first;
+    - **the pthread pieces** SDL3 and the game use.
+
+    Done when, on the console:
+    - Dusklight's `.xex` built through the toolchain file starts, and reaches milestone 9's steps;
+    - xsdk_test passes in full, with a test for each piece.
+
 ## 5. Questions for the user first
 
 1. **The GCC:** its version (C++23 needs 13 or later for most of it), target triple, ABI and code model, its C
