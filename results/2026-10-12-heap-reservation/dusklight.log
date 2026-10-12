@@ -1,0 +1,9 @@
+log: game:\xsdk.log
+sbrk: the heap may grow to 442 MB, the title's free memory
+dusklight: started, with the game linked and its static constructors run
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 24884 us
+dusklight: 512 MB in all, 3 MB the kernel's; the title has 442 MB free
+dusklight: title pages: 8272 image, 96 heap, 256 stack, 920 physical, 64 virtual, 2 pool
+dusklight: the heap holds 256 KB, 238 KB of it in use
+exit: status 0

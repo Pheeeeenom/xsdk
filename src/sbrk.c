@@ -7,26 +7,48 @@
 
 // newlib's malloc grows its heap through sbrk; this one reserves address space once and commits it as it grows.
 enum {
-	HEAP_RESERVE_BYTES = 256 * 1024 * 1024,
 	HEAP_COMMIT_BYTES = 64 * 1024,
+	// MmQueryStatistics counts 4 KB pages (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_memory.cc:496).
+	PAGE_BYTES = 4096,
 };
 
 void *sbrk(ptrdiff_t increment);
 
 static uintptr_t heap_base;
+static uintptr_t heap_end;
 static uintptr_t heap_break;
 static uintptr_t heap_committed;
 
-static NTSTATUS reserve_heap(void)
+// The heap may grow into all the memory the title has free at its first growth (docs/HARDWARE.md).
+static NTSTATUS free_bytes(uint32_t *size_bytes)
 {
-	void *base = NULL;
-	uint32_t size_bytes = HEAP_RESERVE_BYTES;
-	NTSTATUS status = NtAllocateVirtualMemory(&base, &size_bytes, MEM_RESERVE, PAGE_READWRITE, 0);
+	MM_QUERY_STATISTICS_RESULT statistics = { .size = sizeof(statistics) };
+	NTSTATUS status = MmQueryStatistics(&statistics);
 	if (!NT_SUCCESS(status)) {
-		xsdk_log_write("sbrk: NtAllocateVirtualMemory(reserve) failed: 0x%08X", (unsigned)status);
+		xsdk_log_write("sbrk: MmQueryStatistics failed: 0x%08X", (unsigned)status);
 		return status;
 	}
+	const uint32_t available_bytes = statistics.title.available_pages * PAGE_BYTES;
+	*size_bytes = (available_bytes + HEAP_COMMIT_BYTES - 1) & ~(uint32_t)(HEAP_COMMIT_BYTES - 1);
+	return status;
+}
+
+static NTSTATUS reserve_heap(void)
+{
+	uint32_t size_bytes;
+	NTSTATUS status = free_bytes(&size_bytes);
+	if (!NT_SUCCESS(status))
+		return status;
+	void *base = NULL;
+	status = NtAllocateVirtualMemory(&base, &size_bytes, MEM_RESERVE, PAGE_READWRITE, 0);
+	if (!NT_SUCCESS(status)) {
+		xsdk_log_write("sbrk: NtAllocateVirtualMemory(reserve %u MB) failed: 0x%08X", (unsigned)(size_bytes >> 20),
+			(unsigned)status);
+		return status;
+	}
+	xsdk_log_write("sbrk: the heap may grow to %u MB, the title's free memory", (unsigned)(size_bytes >> 20));
 	heap_base = (uintptr_t)base;
+	heap_end = heap_base + size_bytes;
 	heap_break = heap_base;
 	heap_committed = heap_base;
 	return status;
@@ -55,7 +77,7 @@ void *sbrk(ptrdiff_t increment)
 		errno = EINVAL;
 		return (void *)-1;
 	}
-	if (increment > 0 && (uintptr_t)increment > heap_base + HEAP_RESERVE_BYTES - heap_break) {
+	if (increment > 0 && (uintptr_t)increment > heap_end - heap_break) {
 		errno = ENOMEM;
 		return (void *)-1;
 	}

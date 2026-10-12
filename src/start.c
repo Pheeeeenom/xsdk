@@ -49,6 +49,8 @@ void xsdk_start(void)
 	// Registered first, so it runs after the static destructors the constructors registered.
 	(void)atexit(run_fini_array);
 
-	char *argv[] = { NULL };
-	exit(main(0, argv));
+	// argv[0] empty is C's "no program name" (C11 5.1.2.2.1); desktop code reads its arguments from argv[1].
+	static char program_name[] = "";
+	char *argv[] = { program_name, NULL };
+	exit(main(1, argv));
 }

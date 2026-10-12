@@ -12,6 +12,7 @@ xboxkrnl.exe  0x084  KeQuerySystemTime
 xboxkrnl.exe  0x0BA  MmAllocatePhysicalMemoryEx
 xboxkrnl.exe  0x0BD  MmFreePhysicalMemory
 xboxkrnl.exe  0x0BE  MmGetPhysicalAddress
+xboxkrnl.exe  0x0C6  MmQueryStatistics
 xboxkrnl.exe  0x0CC  NtAllocateVirtualMemory
 xboxkrnl.exe  0x0CF  NtClose
 xboxkrnl.exe  0x0D1  NtCreateEvent

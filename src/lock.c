@@ -1,5 +1,6 @@
 #include "lock_private.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <sys/lock.h>
 
@@ -91,4 +92,17 @@ void __retarget_lock_release(_LOCK_T lock)
 void __retarget_lock_release_recursive(_LOCK_T lock)
 {
 	__retarget_lock_release(lock);
+}
+
+// POSIX's stdio locks, which newlib declares but doesn't define, on the lock newlib gives each FILE.
+void flockfile(FILE *file)
+{
+	// The standard streams get their locks on their first stdio call, which fileno is.
+	(void)fileno(file);
+	_flockfile(file);
+}
+
+void funlockfile(FILE *file)
+{
+	_funlockfile(file);
 }

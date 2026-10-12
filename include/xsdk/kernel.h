@@ -140,6 +140,30 @@ typedef struct {
 	uint16_t actual_display_width;
 } DISPLAY_INFO;
 
+// Pages are 4 KB here (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_memory.cc:451-473, 496).
+typedef struct {
+	uint32_t available_pages;
+	uint32_t total_virtual_memory_bytes;
+	uint32_t reserved_virtual_memory_bytes;
+	uint32_t physical_pages;
+	uint32_t pool_pages;
+	uint32_t stack_pages;
+	uint32_t image_pages;
+	uint32_t heap_pages;
+	uint32_t virtual_pages;
+	uint32_t page_table_pages;
+	uint32_t cache_pages;
+} MM_QUERY_STATISTICS_SECTION;
+
+typedef struct {
+	uint32_t size;
+	uint32_t total_physical_pages;
+	uint32_t kernel_pages;
+	MM_QUERY_STATISTICS_SECTION title;
+	MM_QUERY_STATISTICS_SECTION system;
+	uint32_t highest_physical_page;
+} MM_QUERY_STATISTICS_RESULT;
+
 // The kernel calls back with a pointer to a word holding context (xenia:src/xenia/apu/audio_system.cc:189-192).
 typedef struct {
 	void (*callback)(const uint32_t *context);
@@ -260,6 +284,8 @@ void *MmAllocatePhysicalMemoryEx(uint32_t flags, uint32_t size_bytes, uint32_t p
 void MmFreePhysicalMemory(uint32_t type, void *base);
 // The address the GPU uses for memory from MmAllocatePhysicalMemoryEx.
 uint32_t MmGetPhysicalAddress(const void *address);
+// size must be the struct's; Xenia refuses any other (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_memory.cc:483).
+NTSTATUS MmQueryStatistics(MM_QUERY_STATISTICS_RESULT *statistics);
 NTSTATUS NtAllocateVirtualMemory(
 	void **base, uint32_t *size_bytes, uint32_t allocation_type, uint32_t protect, uint32_t debug_memory);
 NTSTATUS NtClose(HANDLE handle);

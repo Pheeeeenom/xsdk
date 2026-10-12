@@ -229,6 +229,19 @@ int close(int fd)
 	return NT_SUCCESS(status) ? 0 : fail_with_status("close", fd, status);
 }
 
+static ssize_t read_at(
+	const char *call, int fd, const FileSlot *file, void *buffer, size_t length_bytes, uint64_t position)
+{
+	IO_STATUS_BLOCK io_status;
+	const NTSTATUS status =
+		NtReadFile(file->handle, 0, NULL, NULL, &io_status, buffer, (uint32_t)length_bytes, &position);
+	if (status == STATUS_END_OF_FILE)
+		return 0;
+	if (!NT_SUCCESS(status))
+		return fail_with_status(call, fd, status);
+	return (ssize_t)io_status.information;
+}
+
 ssize_t read(int fd, void *buffer, size_t length_bytes)
 {
 	FileSlot *file = find_slot(fd);
@@ -236,15 +249,24 @@ ssize_t read(int fd, void *buffer, size_t length_bytes)
 		errno = EBADF;
 		return -1;
 	}
-	IO_STATUS_BLOCK io_status;
-	const NTSTATUS status =
-		NtReadFile(file->handle, 0, NULL, NULL, &io_status, buffer, (uint32_t)length_bytes, &file->position);
-	if (status == STATUS_END_OF_FILE)
-		return 0;
-	if (!NT_SUCCESS(status))
-		return fail_with_status("read", fd, status);
-	file->position += io_status.information;
-	return (ssize_t)io_status.information;
+	const ssize_t read_bytes = read_at("read", fd, file, buffer, length_bytes, file->position);
+	if (read_bytes > 0)
+		file->position += (uint64_t)read_bytes;
+	return read_bytes;
+}
+
+ssize_t pread(int fd, void *buffer, size_t length_bytes, off_t offset)
+{
+	const FileSlot *file = find_slot(fd);
+	if (!file) {
+		errno = is_console(fd) ? ESPIPE : EBADF;
+		return -1;
+	}
+	if (offset < 0) {
+		errno = EINVAL;
+		return -1;
+	}
+	return read_at("pread", fd, file, buffer, length_bytes, (uint64_t)offset);
 }
 
 ssize_t write(int fd, const void *buffer, size_t length_bytes)

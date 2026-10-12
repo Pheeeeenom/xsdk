@@ -1812,6 +1812,49 @@ tools/toolchain/binutils-xsdk.patch), and the linker refuses to put one in with 
 marks only objects that return small structs. The flag turned away the probe's harness and MSVC objects assembled by
 the old toolchain, and every object in the new toolchain's libc, libstdc++ and libgcc carries it.
 
+## What the kernel leaves a title (2026-10-12)
+
+`build/xsdk_test.xex` at `a6b5743` and Dusklight's first-step `dusklight.xex` (Dusklight `e7e916c`, built with
+`int32_t` predefined as `int` until the compiler makes it so; logs: `results/2026-10-12-memory/`, the xsdk_test one
+the memory test's lines and the summary): all 222 checks passed, and both titles exited with status 0.
+- **`MmQueryStatistics`** answers with the 104-byte result Xenia lays out
+  (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_memory.cc:451-473) and refuses one 4 bytes short. Pages are 4 KB: 131072
+  of them, 512 MB, the highest 0x1FFFF.
+- **The pages add up:** the kernel holds 784 (3 MB) and the system 7408 (29 MB, 1503 of them free), which leaves the
+  title 122880 pages, 480 MB, used and free together. xsdk_test, with 1964 in use, had 120916 free (472 MB); Dusklight
+  442 MB.
+- **The image** counts whole, in elf2xex's 64 KB pages: xsdk_test's 656 pages, and Dusklight's 8272, its 517 64 KB pages
+  (33882112 bytes).
+- **Heap growth takes free pages:** 16 MB through `sbrk`, every page touched, took 4100 pages, 16 MB and 4 more.
+- **Address space:** the title has 767 MB, and `sbrk`'s 256 MB reservation shows as 256 MB reserved.
+- **The rest of the title's pages,** the same in both: 256 stack (the main thread's 1 MB), 96 heap, 920 physical. The
+  physical pages are taken before the title's first `malloc`, so not by the splash (see the next entry); what holds
+  them isn't known. Dusklight's static constructors took 256 KB of newlib's heap.
+- **`pread`** read at an offset without moving the position and read nothing at the end, and **`flockfile`** kept a
+  second thread waiting while `stdout` was locked twice, then once.
+
+## The heap reserves the title's free memory (2026-10-12)
+
+`build/xsdk_test.xex` at `70e79b6` and Dusklight's first-step `dusklight.xex` relinked with it (logs:
+`results/2026-10-12-heap-reservation/`, the xsdk_test one the reservation, the memory lines and the summary): all 223
+checks passed, and both titles exited with status 0.
+- **At the heap's first growth,** before `main`, `sbrk` reserved what `MmQueryStatistics` gave as the title's free
+  memory: 472 MB in xsdk_test and 442 MB in Dusklight, after its 32 MB image. The kernel then shows 472 MB reserved.
+- **The reservation covers what's free later:** the memory test found 120916 pages free, the 472 MB of the first
+  growth, after the splash had run, and Dusklight 442 MB at `main`, as at its first growth. So the 920 physical pages
+  both titles hold were taken before the first `malloc`, not by the splash.
+
+## Dusklight's first step on the console's calling convention (2026-10-12)
+
+`build/xsdk_test.xex` at `4302e7c`, this branch with main's `-mcall-xsdk` toolchain merged, and Dusklight's first-step
+`dusklight.xex` (Dusklight `e7e916c`, SDL-xenon `c86389c89`), every object rebuilt from scratch with that toolchain and
+no source changed (logs: `results/2026-10-12-dusklight-mcall-xsdk/`, the xsdk_test one its summary): all 228 checks
+passed, and both titles exited with status 0.
+- **Dusklight** started with the whole game linked, its heap reserving 443 MB at its first growth, and had 442 MB free
+  at `main`, as on the old toolchain.
+- **Its image** is 8192 pages, exactly 32 MB: 80 pages smaller than the old toolchain's, and again the image elf2xex
+  packed, the 33570816-byte `.xex` less its 16 KB of headers.
+
 ## The switch to the console's calling convention (2026-10-12)
 
 Milestone 22's third step: `~/xsdk-gcc` became the `-mcall-xsdk` toolchain, built from xsdk `8a349aa`, with the SysV
@@ -1829,12 +1872,9 @@ one kept at `~/xsdk-gcc-sysv`. Everything was rebuilt from clean on it and run o
     now reserves the 64-byte parameter area, so `vkCmdDraw`'s grew from 32 to 96 bytes. The cause is open (TODO.md).
   - GPU times moved within the 8% two runs of the same code differed by.
   - Frames read 16667 us, the true 60 Hz; vkbench prints that as 59.9 fps, cutting off to tenths.
-- **Dusklight** (the Dusklight session's branch `claude/distracted-hodgkin-4e5aac` at `a06daa3`, its
-  results/2026-10-12-dusklight-mcall-xsdk/), rebuilt with its SDL, Aurora and Dusklight sources unchanged: its title
-  started with the whole game linked and its static constructors run, showed the splash, had 442 MB free at `main`, and
-  exited with status 0, as in vulkan4xenon's milestone 9, step 1. Its image is 8192 pages, 80 fewer than on the SysV
-  toolchain. With `int32_t` as `int`, zlib-ng, imgui's FreeType glue, zstd's legacy decoders, Aurora and Dusklight
-  built without the type errors they had. That branch's xsdk_test passed all 228 of its checks.
+- **Dusklight** ("Dusklight's first step on the console's calling convention", above): its first step passed
+  again, its sources unchanged; `int32_t` as `int` cleared the type errors zlib-ng, imgui's FreeType glue, zstd's
+  legacy decoders, Aurora and Dusklight had.
 
 With that, milestone 22 is done: xsdk's GCC calls as the console's own compiler does, by default, and every title
 built with it passes on the console.
