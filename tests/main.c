@@ -25,10 +25,12 @@ void check(const char *name, bool passed)
 		failed_count++;
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
 	xsdk_log_write("xsdk test title");
 	check("splash: the vulkan4xenon logo shown", NT_SUCCESS(xsdk_splash_show(SPLASH_MS)));
+	check("start: main gets argc 1, an empty argv[0] and a null argv[1]",
+		argc == 1 && argv[0] && argv[0][0] == '\0' && !argv[1]);
 	test_image();
 	test_memory();
 	test_threads();
