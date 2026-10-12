@@ -1,10 +1,17 @@
+#include <fcntl.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
+#include <unistd.h>
 
 #include "tests.h"
 #include "xsdk/log.h"
 
-enum { PATH_BYTES = 64 };
+enum {
+	PATH_BYTES = 64,
+	HOLD_MS = 50,
+};
 
 // game: is the launch folder on the console; Xenia mounts it read-only but lets titles write to cache:.
 static const char *const directories[] = { "game:\\", "cache:\\" };
@@ -35,6 +42,60 @@ static long file_size(const char *path)
 	return size;
 }
 
+// The test file holds "line one\nline 2\nline three\n": "line 2" starts at byte 9, and the file is 27 bytes.
+static void check_pread(const char *path)
+{
+	char bytes[8] = "";
+	const int fd = open(path, O_RDONLY);
+	const bool read_at_offset = fd >= 0 && pread(fd, bytes, 6, 9) == 6 && memcmp(bytes, "line 2", 6) == 0;
+	const bool position_kept = fd >= 0 && lseek(fd, 0, SEEK_CUR) == 0;
+	const bool nothing_at_end = fd >= 0 && pread(fd, bytes, 1, 27) == 0;
+	if (fd >= 0)
+		close(fd);
+	check("pread: reads at an offset and leaves the position", read_at_offset && position_kept);
+	check("pread: reads nothing at the end", nothing_at_end);
+}
+
+static volatile bool thread_has_lock;
+
+static void *lock_file(void *file)
+{
+	flockfile(file);
+	thread_has_lock = true;
+	funlockfile(file);
+	return NULL;
+}
+
+static void hold(void)
+{
+	const struct timespec delay = { .tv_nsec = HOLD_MS * 1000000 };
+	nanosleep(&delay, NULL);
+}
+
+// The standard streams are each thread's own, so the other thread is handed this one's stdout.
+static void check_flockfile(void)
+{
+	FILE *file = stdout;
+	flockfile(file);
+	flockfile(file);
+	pthread_t thread;
+	if (pthread_create(&thread, NULL, lock_file, file) != 0) {
+		funlockfile(file);
+		funlockfile(file);
+		check("flockfile: another thread waits while the lock is held, twice and then once", false);
+		return;
+	}
+	hold();
+	const bool waited_while_held_twice = !thread_has_lock;
+	funlockfile(file);
+	hold();
+	const bool waited_while_held_once = !thread_has_lock;
+	funlockfile(file);
+	pthread_join(thread, NULL);
+	check("flockfile: another thread waits while the lock is held, twice and then once",
+		waited_while_held_twice && waited_while_held_once && thread_has_lock);
+}
+
 void test_files(void)
 {
 	char path[PATH_BYTES];
@@ -61,4 +122,6 @@ void test_files(void)
 	file = fopen(path, "a");
 	const bool appended = file && fputs("line three\n", file) >= 0 && fclose(file) == 0;
 	check("file append", appended && file_size(path) == 27);
+	check_pread(path);
+	check_flockfile();
 }
