@@ -695,6 +695,34 @@ So does the SDK:
     - xsdk_test, sdl_check, vulkan4xenon_test, vkbench and Dusklight's title scene pass on the console, with vkbench's
       times within the noise of milestone 22's run.
 
+24. **Pixel shaders past 16 registers.** A pixel shader that uses r16 or above hangs the GPU, so xost stops at 16
+    (xost:xasm/program.py:453-457, "r16 hangs, r15 runs"), and Dusklight's title scene has a program that needs 18,
+    left out of its shader pack (vulkan4xenon:docs/ROADMAP.md, milestone 10). The 16 is xsdk's set-up, not the GPU:
+    - `SQ_GPR_MANAGEMENT` splits the shader unit's registers between the two kinds of shader, pixel shaders' share in
+      bits 4-11 and vertex shaders' in bits 12-19 (Linux:drivers/gpu/drm/msm/registers/adreno/a2xx.xml:1231-1235,
+      Adreno 2xx's register file, which has it at Xenos's 0x0D00, xenia:src/xenia/gpu/register_table.inc:139);
+    - the kernel leaves it at 0x00040400, 64 and 64, and xsdk's set-up, libxenon's, steps it from 0x10 to 0x70 and
+      ends at 0x00070100: 16 for pixel shaders and 112 for vertex shaders (docs/HARDWARE.md, "libxenon's set-up makes
+      the resolves work"; libxenon:drivers/xenos/xe.c:443-452, 527-528).
+
+    So:
+    - xsdk's set-up steps the split as libxenon does, since which part of the set-up makes the resolves work isn't
+      isolated, but stops at the kernel's 64 and 64 (src/gpu_setup.c, `put_register_split`);
+    - xost takes each kind of shader's register budget as an option, defaulting to libxenon's 16 and 112 for its own
+      apps, and refuses a shader over it, where today it only warns that a pixel shader will hang; xsdk's and
+      vulkan4xenon's shader builds pass 64 and 64;
+    - Dusklight's shader pack is rebuilt with the program it left out (Dusklight's fork,
+      `platforms/xenon/glsl_pack.c`).
+
+    Done when:
+    - xsdk_test draws with pixel shaders that use 18 and 64 registers and a vertex shader that uses 64, each carrying
+      a value through every register it uses into the colour, and reads back the right colours on the console; built
+      with libxenon's split, the same check fails there, the 18-register draw's fence never landing;
+    - xsdk_test, vulkan4xenon_test and vkbench pass on the console, with vkbench's GPU times compared with milestone
+      23's run, as the split changes how the shader unit shares its registers;
+    - Dusklight's pack holds all 69 programs recorded, and its title scene runs on the console without leaving a
+      program out for its registers.
+
 ## 5. Questions for the user first
 
 1. **The GCC:** its version (C++23 needs 13 or later for most of it), target triple, ABI and code model, its C
