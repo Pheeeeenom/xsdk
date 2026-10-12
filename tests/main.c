@@ -23,6 +23,7 @@ int main(void)
 	xsdk_log_write("xsdk test title");
 	check("splash: the vulkan4xenon logo shown", NT_SUCCESS(xsdk_splash_show(SPLASH_MS)));
 	test_image();
+	test_memory();
 	test_threads();
 	test_pthread();
 	test_clocks();

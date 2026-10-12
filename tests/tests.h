@@ -10,6 +10,8 @@ extern "C" {
 void check(const char *name, bool passed);
 
 void test_image(void);
+// The memory the kernel leaves a title (milestone 21).
+void test_memory(void);
 void test_threads(void);
 void test_pthread(void);
 void test_clocks(void);

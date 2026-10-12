@@ -25,7 +25,7 @@ IMPORT_NAMES := $(shell $(PYTHON) tools/gen_imports.py --list imports/imports.tx
 IMPORT_SOURCES := $(IMPORT_NAMES:%=$(BUILD)/imports/%.S)
 SDK_OBJECTS := $(patsubst src/%,$(BUILD)/sdk/%.o,$(basename $(SDK_SOURCES))) $(IMPORT_NAMES:%=$(BUILD)/imports/%.o)
 
-TEST_SOURCES := tests/main.c tests/test_image.c tests/test_threads.c tests/test_pthread.c tests/test_clocks.c \
+TEST_SOURCES := tests/main.c tests/test_image.c tests/test_memory.c tests/test_threads.c tests/test_pthread.c tests/test_clocks.c \
 	tests/test_kernel_entry.c tests/kernel_entry_check.S tests/test_files.c tests/test_input.c \
 	tests/test_audio.c tests/audio_entry.S tests/audio_frame.c tests/test_cpp_objects.cpp tests/test_cpp_threads.cpp \
 	tests/test_cpp_atomics.cpp tests/test_cpp_exceptions.cpp tests/test_cpp_chrono.cpp tests/test_cpp_filesystem.cpp \
