@@ -10,7 +10,7 @@ namespace
 {
 
 constexpr std::chrono::milliseconds DELAY{ 250 };
-// The kernel's sleep can run a little long, never short.
+// sleep_for is nanosleep, which runs a little long, never short.
 constexpr std::chrono::milliseconds LATEST{ 400 };
 
 } // namespace
@@ -23,7 +23,7 @@ extern "C" void test_cpp_chrono(void)
 	const auto elapsed = duration_cast<milliseconds>(steady_clock::now() - start);
 	xsdk_log_write("chrono: a %lld ms sleep took %lld ms on steady_clock", static_cast<long long>(DELAY.count()),
 		static_cast<long long>(elapsed.count()));
-	check("steady_clock times a known delay", elapsed >= DELAY - milliseconds(5) && elapsed < LATEST);
+	check("steady_clock times a known delay", elapsed >= DELAY && elapsed < LATEST);
 
 	const auto now = floor<seconds>(system_clock::now());
 	const std::string date = std::format("{:%Y-%m-%d %H:%M:%S}", now);

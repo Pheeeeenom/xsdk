@@ -1,0 +1,36 @@
+log: game:\xsdk.log
+SDL check title
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 24496 us
+PASS: splash: the vulkan4xenon logo shown
+PASS: sdl: SDL_Init with audio, gamepads and events
+sdl: platform Xbox 360, SDL 3.4.10
+PASS: sdl: the platform is the Xbox 360
+sdl: base path game:\
+PASS: sdl: the base path is game:\
+sdl: pref path game:\xsdk\sdl_check\
+PASS: sdl: the pref path game:\xsdk\sdl_check\ is made, and a file written there reads back
+sdl: SDL_Delay(100) took 101000 us; SDL_DelayPrecise(16 ms) took 16000 us
+PASS: sdl: SDL_Delay(100) takes 100 to 150 ms by SDL_GetTicksNS
+PASS: sdl: a thread runs and returns its value
+PASS: sdl: a gamepad is connected
+PASS: sdl: the gamepad opens
+sdl: gamepad "Xbox 360 Controller", player 0, type xbox360
+PASS: sdl: SDL takes it for an Xbox 360 controller
+sdl: reading the gamepad for 3000 ms; press some buttons and move the sticks
+sdl: gamepad button leftshoulder pressed
+sdl: gamepad button rightshoulder pressed
+sdl: gamepad button a pressed
+sdl: left stick x ran -32768 to 32767; left trigger reads 7195
+PASS: sdl: the gamepad is still connected after reading it
+sdl: the heavy motor rumbles for 500 ms, then the light one
+PASS: sdl: the gamepad rumbles
+sdl: audio driver xsdk
+PASS: sdl: the audio driver is xsdk's
+PASS: sdl: an audio stream opens on the default device
+sdl: the device runs 6 channels of format 0x9120 at 48000 Hz, 256 frames a buffer
+sdl: playing a 750 Hz tone for 2000 ms
+sdl: the stream asked for 95744 frames of the tone, 96000 expected
+PASS: sdl: SDL pulled the tone at 48 kHz, within a tenth
+tests: 15 passed, 0 failed
+exit: status 0

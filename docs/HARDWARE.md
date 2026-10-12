@@ -90,9 +90,9 @@ The test title, built with the GCC 15 toolchain, passed all 30 checks on the con
 - **Atomics.** Four threads counting 10,000 times each give exact 32-bit and 64-bit totals, so the inline
   `lwarx`/`stwcx.` and `ldarx`/`stdcx.` loops work. Over a 200 ms `std::atomic::wait` the waiter yielded 16 times and
   blocked once, so it sleeps.
-- **Time.** A 250 ms `sleep_for` measured 249 ms and 250 ms on `steady_clock` in two runs, so
-  `KeQueryPerformanceFrequency` gives the time base's rate to within that. `system_clock` reads the right date from
-  `KeQuerySystemTime`.
+- **Time.** A 250 ms `sleep_for` measured 249 ms and 250 ms on `steady_clock` in two runs. That was too coarse to show
+  that `KeQueryPerformanceFrequency` overstates the time base's rate by 0.25%, nor that the sleep can end early (see
+  "The time base runs at 49.875 MHz (2026-10-11)"). `system_clock` reads the right date from `KeQuerySystemTime`.
 - **File system.** `std::filesystem` creates, lists and removes a directory under `game:`:
   - `NtCreateFile` with `FILE_CREATE` and `FILE_DIRECTORY_FILE` creates it;
   - `NtQueryDirectoryFile`, given the pattern `*` on the first call and none after, lists it;
@@ -1665,3 +1665,27 @@ What xsdk does about it:
   as before.
 - **Threads' stacks:** a thread's stack, read from its processor control region, is 1 MB by default
   (`ExCreateThread` with a size of 0); asked for 384 KB through pthread attributes, it is 393216 bytes.
+
+## The time base runs at 49.875 MHz (2026-10-11)
+
+SDL's check title (`test/xsdk/sdl_check.c` in the SDL fork; logs: `results/2026-10-11-sdl-check/xsdk.log`, then
+`results/2026-10-11-sdl-check-2/xsdk.log`) found three things wrong with the SDK's clocks:
+- **`CLOCK_MONOTONIC_RAW` was refused.** SDL's timer reads it wherever the C library defines it, and fell back to
+  `gettimeofday`, the kernel's system time: `SDL_Delay(100)` took 101000 us and `SDL_DelayPrecise(16 ms)` 16000 us,
+  whole milliseconds, and every check passed. The SDK now reads the raw clock from the time base, and the title checks
+  that SDL's clock steps finer than 0.1 ms.
+- **The time base runs 0.25% slower than the kernel reports.** Read from the time base, the second run's
+  `SDL_Delay(100)` took 99774 us. `KeQueryPerformanceFrequency` gives 50000000 Hz
+  (`results/2026-10-10-probe-vblank/xsdk.log`), and at that rate the 60 Hz vblank there lasts 16624 us (930 + 15694),
+  and vkbench's frames, 20 scenes of 600 paced to it, 16625 to 16627 us
+  (vulkan4xenon:results/2026-10-11-milestone-8-reverted/vkbench_summary.csv). 16667 us times 49.875/50 is 16625 us:
+  the time base runs at the CPU's 3192 MHz over 64, as libxenon has it (libxenon:libxenon/drivers/ppc/timebase.h:6),
+  while the display and the kernel's sleeps keep true time. The SDK's monotonic clocks now count at 49875000 Hz. Times
+  logged before read 0.25% short: those 16625 us frames are 16667 us. Xenia runs its time base at the 50 MHz the kernel
+  reports (xenia:src/xenia/emulator.cc:151), so there the clocks run 0.25% fast, and the check that they keep the
+  kernel's time fails.
+- **The kernel's sleep ends early.** At the true rate, the 250 ms `sleep_for` of earlier runs, logged as 248 to 250 ms
+  (248 in `results/2026-10-10-milestone-12/xsdk.log`, 249 or 250 in most), took 248.6 to 251.6 ms: a relative
+  `KeDelayExecutionThread` can end up to 1.4 ms before the time asked for, which fits a wait counted from the kernel's
+  last clock tick. `nanosleep`, and so `sleep_for` and `SDL_Delay`, now waits again until `CLOCK_MONOTONIC` passes its
+  deadline.

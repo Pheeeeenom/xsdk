@@ -205,8 +205,9 @@ What the SDK supplies, piece by piece:
   checks a throw across threads and across a kernel callback.
 - **`std::chrono`.**
   - `system_clock` comes from `KeQuerySystemTime` (0x084), NT time: 100 ns since 1601.
-  - `steady_clock` comes from the CPU's time base (`mftb`), scaled by its frequency. The frequency is unverified:
-    read it from `KeQueryPerformanceFrequency` (0x083) at start-up rather than hard-coding it.
+  - `steady_clock` comes from the CPU's time base (`mftb`), scaled by its frequency: 49.875 MHz, the CPU's 3192 MHz
+    over 64, measured against the display on the console. `KeQueryPerformanceFrequency` (0x083) reports 50 MHz, 0.25%
+    fast (docs/HARDWARE.md, "The time base runs at 49.875 MHz").
 - **`std::filesystem`.** libstdc++'s implementation sits on POSIX calls. The SDK maps `stat`, `opendir`/`readdir` and
   `mkdir` onto `NtQueryFullAttributesFile`, `NtQueryDirectoryFile` and `NtCreateFile` (section 2.3), and drive
   letters onto device paths with `ObCreateSymbolicLink`.

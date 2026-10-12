@@ -20,10 +20,11 @@ enum {
 	NT_TICKS_PER_SECOND = 10000000,
 	NANOSECONDS_PER_SECOND = 1000000000,
 	NANOSECONDS_PER_NT_TICK = 100,
+	// The CPU's 3192 MHz over 64 (libxenon:libxenon/drivers/ppc/timebase.h:6). KeQueryPerformanceFrequency reports
+	// 50 MHz (results/2026-10-10-probe-vblank/xsdk.log:3), which reads the console's 60 Hz vblank 0.25% short
+	// (docs/HARDWARE.md, "The time base runs at 49.875 MHz"). Xenia runs it at 50 MHz (xenia:src/xenia/emulator.cc:151).
+	TIME_BASE_HZ = 49875000,
 };
-
-// Read once; the kernel reports the time base's rate (SCOPE.md section 2.5).
-static uint32_t time_base_hz;
 
 static uint64_t time_base(void)
 {
@@ -63,11 +64,9 @@ int clock_gettime(clockid_t clock, struct timespec *time)
 		return 0;
 	}
 	if (clock == CLOCK_MONOTONIC || clock == CLOCK_MONOTONIC_RAW) {
-		if (!time_base_hz)
-			time_base_hz = KeQueryPerformanceFrequency();
 		const uint64_t ticks = time_base();
-		time->tv_sec = (time_t)(ticks / time_base_hz);
-		time->tv_nsec = (long)(ticks % time_base_hz * NANOSECONDS_PER_SECOND / time_base_hz);
+		time->tv_sec = (time_t)(ticks / TIME_BASE_HZ);
+		time->tv_nsec = (long)(ticks % TIME_BASE_HZ * NANOSECONDS_PER_SECOND / TIME_BASE_HZ);
 		return 0;
 	}
 	errno = EINVAL;
@@ -84,16 +83,31 @@ int gettimeofday(struct timeval *time, void *zone)
 	return 0;
 }
 
+static int64_t monotonic_ns(void)
+{
+	struct timespec now;
+	(void)clock_gettime(CLOCK_MONOTONIC, &now);
+	return (int64_t)now.tv_sec * NANOSECONDS_PER_SECOND + now.tv_nsec;
+}
+
 int nanosleep(const struct timespec *request, struct timespec *remaining)
 {
 	if (request->tv_nsec < 0 || request->tv_nsec >= NANOSECONDS_PER_SECOND || request->tv_sec < 0) {
 		errno = EINVAL;
 		return -1;
 	}
-	// A negative interval is relative; round up so the sleep is never short.
-	const int64_t interval = -((int64_t)request->tv_sec * NT_TICKS_PER_SECOND +
-		(request->tv_nsec + NANOSECONDS_PER_NT_TICK - 1) / NANOSECONDS_PER_NT_TICK);
-	(void)KeDelayExecutionThread(USER_MODE, 0, &interval);
+	// The kernel's relative wait ends on its clock tick, up to a tick before the time asked for (docs/HARDWARE.md,
+	// "The time base runs at 49.875 MHz"), so wait again for what's left until CLOCK_MONOTONIC passes the deadline.
+	const int64_t start = monotonic_ns();
+	// A sleep past what the clock can count is as good as forever.
+	const int64_t deadline = request->tv_sec < (INT64_MAX - start) / NANOSECONDS_PER_SECOND
+		? start + (int64_t)request->tv_sec * NANOSECONDS_PER_SECOND + request->tv_nsec
+		: INT64_MAX;
+	for (int64_t left = deadline - start; left > 0; left = deadline - monotonic_ns()) {
+		// A negative interval is relative.
+		const int64_t interval = -((left + NANOSECONDS_PER_NT_TICK - 1) / NANOSECONDS_PER_NT_TICK);
+		(void)KeDelayExecutionThread(USER_MODE, 0, &interval);
+	}
 	if (remaining) {
 		remaining->tv_sec = 0;
 		remaining->tv_nsec = 0;

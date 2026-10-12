@@ -17,7 +17,9 @@ layer that drives Xenos directly. Scope, sources and milestones are in SCOPE.md.
   checks only. Launch it with the `.xex` path; it stays open after the title exits, so stop it after a few seconds.
   The test log lands in its `cache\xsdk.log`, and `DbgPrint` output in its `xenia.log`. For the GPU tests add
   `--readback_resolve=full`, so the CPU sees what resolves write, and `--async_shader_compilation=false`, or Xenia
-  skips draws while it compiles a new shader. Xenia has no display controller, so the display checks fail there.
+  skips draws while it compiles a new shader. Xenia has no display controller, so the display checks fail there. It
+  runs the time base at the 50 MHz the kernel reports, not the console's 49.875 MHz, so the check that the SDK's
+  clock keeps the kernel's time fails there too (docs/HARDWARE.md, "The time base runs at 49.875 MHz").
 - Xenia skips instructions it doesn't implement, silently (xenia:src/xenia/cpu/ppc/ppc_emit_*.cc,
   `XEINSTRNOTIMPLEMENTED`). GCC emits some of them: `mcrf`, rare now that the toolchain reserves CR2-CR7, and `rldic`
   under `-mpowerpc64`. Each link runs `tools/xenia_scan.py`, which lists such instructions by function; treat any Xenia
