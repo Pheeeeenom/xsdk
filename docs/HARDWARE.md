@@ -1843,3 +1843,14 @@ checks passed, and both titles exited with status 0.
 - **The reservation covers what's free later:** the memory test found 120916 pages free, the 472 MB of the first
   growth, after the splash had run, and Dusklight 442 MB at `main`, as at its first growth. So the 920 physical pages
   both titles hold were taken before the first `malloc`, not by the splash.
+
+## Dusklight's first step on the console's calling convention (2026-10-12)
+
+`build/xsdk_test.xex` at `4302e7c`, this branch with main's `-mcall-xsdk` toolchain merged, and Dusklight's first-step
+`dusklight.xex` (Dusklight `e7e916c`, SDL-xenon `c86389c89`), every object rebuilt from scratch with that toolchain and
+no source changed (logs: `results/2026-10-12-dusklight-mcall-xsdk/`, the xsdk_test one its summary): all 228 checks
+passed, and both titles exited with status 0.
+- **Dusklight** started with the whole game linked, its heap reserving 443 MB at its first growth, and had 442 MB free
+  at `main`, as on the old toolchain.
+- **Its image** is 8192 pages, exactly 32 MB: 80 pages smaller than the old toolchain's, and again the image elf2xex
+  packed, the 33570816-byte `.xex` less its 16 KB of headers.
