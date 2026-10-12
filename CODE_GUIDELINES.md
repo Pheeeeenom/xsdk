@@ -1,7 +1,7 @@
 # Code guidelines
 
-These rules apply to all code in this repository. Their purpose is to keep the SDK small, predictable and correct on
-real hardware.
+These rules apply to all code in this repository, and to the ports' forks as section 14 says. Their purpose is to keep
+the SDK small, predictable and correct on real hardware.
 
 If a rule gets in the way of correct code, change the rule in this file first, in its own commit. Don't quietly break it.
 
@@ -161,3 +161,15 @@ static NTSTATUS open_log(HANDLE *handle, const char *path)
 - Message: an imperative summary under 72 characters, then a body explaining why. Include console numbers for
   performance changes.
 - Every commit builds.
+
+## 14. Ports
+
+Dusklight and Aurora are forks of other projects (vulkan4xenon:docs/ROADMAP.md, section 5), kept close to upstream so
+their changes merge.
+
+- Their language, layout and naming are theirs: C++20 and the fork's `.clang-format`, not sections 2 to 5.
+  Dusklight's own rule holds: game code changed for the port sits under a target `#if`, the original kept
+  (dusklight:docs/code-conventions.md).
+- Everything else here applies: the principles, errors, comments, citations, measuring, testing on the console and
+  commits.
+- Libraries a fork brings stay as upstream ships them; each one kept is listed with its reason.
