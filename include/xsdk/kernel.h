@@ -71,6 +71,25 @@ typedef struct {
 	uint64_t end_of_file;
 } FILE_END_OF_FILE_INFORMATION;
 
+// INPUT_GAMEPAD's buttons (xenia:src/xenia/hid/input.h:32-46).
+enum {
+	INPUT_GAMEPAD_DPAD_UP = 0x0001,
+	INPUT_GAMEPAD_DPAD_DOWN = 0x0002,
+	INPUT_GAMEPAD_DPAD_LEFT = 0x0004,
+	INPUT_GAMEPAD_DPAD_RIGHT = 0x0008,
+	INPUT_GAMEPAD_START = 0x0010,
+	INPUT_GAMEPAD_BACK = 0x0020,
+	INPUT_GAMEPAD_LEFT_THUMB = 0x0040,
+	INPUT_GAMEPAD_RIGHT_THUMB = 0x0080,
+	INPUT_GAMEPAD_LEFT_SHOULDER = 0x0100,
+	INPUT_GAMEPAD_RIGHT_SHOULDER = 0x0200,
+	INPUT_GAMEPAD_GUIDE = 0x0400,
+	INPUT_GAMEPAD_A = 0x1000,
+	INPUT_GAMEPAD_B = 0x2000,
+	INPUT_GAMEPAD_X = 0x4000,
+	INPUT_GAMEPAD_Y = 0x8000,
+};
+
 // xenia:src/xenia/hid/input.h:57-72
 typedef struct {
 	uint16_t buttons;
@@ -86,6 +105,12 @@ typedef struct {
 	uint32_t packet_number;
 	INPUT_GAMEPAD gamepad;
 } INPUT_STATE;
+
+// xenia:src/xenia/hid/input.h:74-77
+typedef struct {
+	uint16_t left_motor_speed;
+	uint16_t right_motor_speed;
+} INPUT_VIBRATION;
 
 // xenia:src/xenia/xbox.h:257-269
 typedef struct {
@@ -301,6 +326,7 @@ NTSTATUS XexGetProcedureAddress(HANDLE module, uint32_t ordinal, void **address)
 
 // xam.xex
 uint32_t XamInputGetState(uint32_t user_index, uint32_t flags, INPUT_STATE *state);
+uint32_t XamInputSetState(uint32_t user_index, uint32_t flags, const INPUT_VIBRATION *vibration);
 void XamLoaderTerminateTitle(void);
 
 #ifdef __cplusplus

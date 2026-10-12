@@ -56,4 +56,5 @@ xboxkrnl.exe  0x1F4  XAudioUnregisterRenderDriverClient  1
 xboxkrnl.exe  0x1F5  XAudioSubmitRenderDriverFrame       2
 xboxkrnl.exe  0x25B  VdSwap                              10
 xam.xex       0x191  XamInputGetState                    3
+xam.xex       0x192  XamInputSetState                    3
 xam.xex       0x1A9  XamLoaderTerminateTitle             0
