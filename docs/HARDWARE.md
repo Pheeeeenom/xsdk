@@ -1653,3 +1653,15 @@ What xsdk does about it:
   not `wchar_t`; none does yet.
 - **The kernel calling a title:** `XSDK_KERNEL_ENTRY` saves r14-r31 whole around the title's code, and the toolchain
   keeps GCC off v14-v19 (`-ffixed-v14` to `-ffixed-v19`).
+
+## The kernel's calls into a title keep its registers (2026-10-11)
+
+`build/xsdk_test.xex` at `c806a87`, built with the toolchain that leaves v14-v19 alone (log:
+`results/2026-10-11-kernel-entry/xsdk_test.log`): all 210 checks passed, and the title exited with status 0.
+- **XSDK_KERNEL_ENTRY:** GCC code that keeps 64-bit values across calls and twenty vectors live, called directly,
+  changed the high halves of r27-r31; called through the trampoline, r14-r31 came back whole, and f14-f31 and v14-v31
+  unchanged. GCC's code touched none of v14-v19.
+- **The audio callback,** which the kernel calls through the trampoline, ran 376 times in 2000 ms and played its tone,
+  as before.
+- **Threads' stacks:** a thread's stack, read from its processor control region, is 1 MB by default
+  (`ExCreateThread` with a size of 0); asked for 384 KB through pthread attributes, it is 393216 bytes.
