@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <string>
 #include <system_error>
 
 #include "tests.h"
@@ -46,6 +47,20 @@ extern "C" void test_cpp_filesystem(void)
 	if (error)
 		xsdk_log_write("filesystem: directory_iterator: %s", error.message().c_str());
 	check("filesystem lists a directory", !error && entries == 1 && found_file);
+
+	// libstdc++ takes "game:/..." for a relative path, so these put the current directory, game:\, in front of it.
+	std::error_code absolute_error;
+	std::error_code canonical_error;
+	const fs::path absolute = fs::absolute(directory / "file.txt", absolute_error);
+	const fs::path canonical = fs::weakly_canonical(directory / "file.txt", canonical_error);
+	xsdk_log_write("filesystem: absolute() gives %s, weakly_canonical() %s", absolute.c_str(), canonical.c_str());
+	const auto reads_hello = [](const fs::path &path) {
+		std::string word;
+		std::ifstream(path) >> word;
+		return word == "hello";
+	};
+	check("filesystem reaches a file through absolute() and weakly_canonical()",
+		!absolute_error && !canonical_error && reads_hello(absolute) && reads_hello(canonical));
 
 	const std::uintmax_t removed = fs::remove_all(directory, error);
 	if (error)

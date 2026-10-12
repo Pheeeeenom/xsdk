@@ -31,6 +31,16 @@ static size_t root_bytes(const char *resolved)
 	return (size_t)(strchr(resolved, '\\') - resolved) + 1;
 }
 
+// Starts resolved at a drive: "game:" becomes "game:\".
+static bool start_at_drive(char resolved[XSDK_PATH_BYTES], const char *drive, size_t drive_bytes)
+{
+	if (drive_bytes + 2 > XSDK_PATH_BYTES)
+		return false;
+	memcpy(resolved, drive, drive_bytes);
+	strcpy(resolved + drive_bytes, "\\");
+	return true;
+}
+
 // Starts resolved at the path's own root, or at base for a relative path, and returns the rest of the path.
 static const char *start_path(const char *path, const char *base, char resolved[XSDK_PATH_BYTES])
 {
@@ -38,14 +48,8 @@ static const char *start_path(const char *path, const char *base, char resolved[
 	while (*first_end && !is_separator(*first_end))
 		first_end++;
 	const char *colon = memchr(path, ':', (size_t)(first_end - path));
-	if (colon) {
-		const size_t drive_bytes = (size_t)(colon - path) + 1;
-		if (drive_bytes + 2 > XSDK_PATH_BYTES)
-			return NULL;
-		memcpy(resolved, path, drive_bytes);
-		strcpy(resolved + drive_bytes, "\\");
-		return colon + 1;
-	}
+	if (colon)
+		return start_at_drive(resolved, path, (size_t)(colon - path) + 1) ? colon + 1 : NULL;
 	if (is_separator(path[0])) {
 		strcpy(resolved, "\\");
 		return path;
@@ -57,14 +61,20 @@ static const char *start_path(const char *path, const char *base, char resolved[
 // Appends the path's names to resolved, dropping "." and stepping back for "..".
 static int append_names(char resolved[XSDK_PATH_BYTES], const char *path)
 {
-	const size_t root = root_bytes(resolved);
+	size_t root = root_bytes(resolved);
 	size_t length = strlen(resolved);
 	while (*path) {
 		const char *end = path;
 		while (*end && !is_separator(*end))
 			end++;
 		const size_t name_bytes = (size_t)(end - path);
-		if (name_bytes == 2 && path[0] == '.' && path[1] == '.') {
+		if (name_bytes > 0 && path[name_bytes - 1] == ':') {
+			// A drive starts over, as in "game:\/game:\file", std::filesystem's absolute() of "game:\file".
+			if (!start_at_drive(resolved, path, name_bytes))
+				return ENAMETOOLONG;
+			root = name_bytes + 1;
+			length = root;
+		} else if (name_bytes == 2 && path[0] == '.' && path[1] == '.') {
 			while (length > root && resolved[length - 1] != '\\')
 				length--;
 			if (length > root)
