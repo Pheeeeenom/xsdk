@@ -22,6 +22,7 @@ set(CMAKE_CXX_FLAGS_INIT "-mcpu=cell -fno-pic")
 set(CMAKE_ASM_FLAGS_INIT "-mcpu=cell -Wa,-mregnames")
 set(CMAKE_C_STANDARD_INCLUDE_DIRECTORIES "${XSDK_ROOT}/include")
 set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES "${XSDK_ROOT}/include")
+set(CMAKE_ASM_STANDARD_INCLUDE_DIRECTORIES "${XSDK_ROOT}/include")
 set(CMAKE_EXE_LINKER_FLAGS_INIT "-static -nostdlib -T ${XSDK_ROOT}/src/xsdk.ld")
 
 # Every executable, try_compile's included, links the SDK's start-up and library, so checks see what titles get.
