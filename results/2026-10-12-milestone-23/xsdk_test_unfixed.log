@@ -1,0 +1,92 @@
+log: game:\xsdk.log
+sbrk: the heap may grow to 472 MB, the title's free memory
+xsdk test title
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 22345 us
+PASS: splash: the vulkan4xenon logo shown
+PASS: start: main gets argc 1, an empty argv[0] and a null argv[1]
+PASS: read-only data
+PASS: initialised data
+PASS: zeroed data
+PASS: data is writable
+PASS: MmQueryStatistics: a wrong size refused
+PASS: MmQueryStatistics: answers
+memory: 131072 pages in all, 784 the kernel's, highest page 0x1FFFF
+memory: title: 120916 pages free; 767 MB virtual, 472 MB reserved
+memory: title pages: 920 physical, 2 pool, 256 stack, 656 image, 96 heap
+memory: title pages: 16 virtual, 2 page table, 16 cache
+memory: system: 1403 pages free; 31 MB virtual, 13 MB reserved
+memory: system pages: 920 physical, 204 pool, 322 stack, 2032 image, 2448 heap
+memory: system pages: 13 virtual, 2 page table, 64 cache
+memory: 472 MB free for the title
+PASS: MmQueryStatistics: the title's free pages lie within the total
+PASS: sbrk: the heap's reservation covers the title's free memory
+memory: 120916 pages free before 16 MB of heap growth, 116816 after
+PASS: MmQueryStatistics: heap growth takes free pages
+threads: producer queued 100 items
+threads: consumer summed 100 items
+threads: done event 0x00000000, sum 5050
+PASS: threads hand work over
+PASS: threads exit
+pthread: a thread's stack is 1048576 bytes by default, 393216 when 393216 are asked for
+PASS: pthread: a thread gets the stack size its attributes ask for
+PASS: pthread: a thread made detached runs
+PASS: pthread: a bad detach state and a one-byte stack are refused
+PASS: pthread: priorities report one level and refuse a change
+PASS: clocks: CLOCK_MONOTONIC_RAW reads the time base CLOCK_MONOTONIC does
+clocks: steps of 101 ns monotonic, 120 ns raw, 1000000 ns realtime
+PASS: clocks: CLOCK_MONOTONIC and CLOCK_MONOTONIC_RAW step finer than 0.1 ms
+clocks: over 252000000 ns of the kernel's system time CLOCK_MONOTONIC counted 251998255 ns, -6 ppm off
+PASS: clocks: CLOCK_MONOTONIC keeps the kernel's time to 0.05%
+clocks: 20 sleeps of 2000000 ns took 2032181 to 3000902 ns
+PASS: clocks: nanosleep never returns early
+clocks: KeQueryPerformanceFrequency reports 50000000 Hz
+PASS: clocks: KeQueryPerformanceFrequency, declared with its 64-bit return, reads 50 MHz
+kernel entry: while holding 64-bit values and doubles, GCC's code had in r14-r31 low halves FFE00000, high halves FFE00000, f14-f31 FF000000, v14-v31 00000000
+kernel entry: while holding twenty vectors, GCC's code had in r14-r31 low halves FF800000, high halves FF800000, f14-f31 F0000000, v14-v31 FFFFC000
+kernel entry: after it returned, its caller found changed r14-r31 low halves 00000000, high halves 00000000, f14-f31 00000000, v14-v31 00000000
+PASS: kernel entry: GCC's code held 64-bit values in r14-r31, high halves too
+PASS: kernel entry: GCC's code held doubles in f14-f31
+PASS: kernel entry: GCC's code held vectors in v14-v19
+PASS: kernel entry: called as the kernel calls it, GCC's code gives back r14-r31 whole, f14-f31 and v14-v31
+files: game:\xsdk_file_test.txt
+PASS: file written
+PASS: file read back
+PASS: file size from seek
+PASS: file append
+PASS: pread: reads at an offset and leaves the position
+PASS: pread: reads nothing at the end
+PASS: flockfile: another thread waits while the lock is held, twice and then once
+PASS: copies: memcpy, 0 to 300 bytes at every source and destination alignment
+PASS: copies: memcpy, 1 MB at four alignments
+PASS: copies: memcpy into write-combined memory, 0 to 300 bytes at every destination alignment, from two sources
+PASS: copies: memmove, ranges moved up and down over themselves
+PASS: static constructors run before main
+PASS: aligned and over-aligned allocation
+PASS: jthreads share a mutex and condition variable
+PASS: thread_local differs per thread
+PASS: 32-bit atomic count
+PASS: 64-bit atomic count
+atomics: over a 200 ms wait the waiter yielded 16 times and blocked 1 times
+PASS: atomic wait sleeps until notified
+PASS: exception thrown and caught
+PASS: exception passed between threads
+PASS: dynamic_cast and typeid
+unwind: of 200 throws, 0 lost registers with an empty catch (first run 200), 0 with a catch that reads them (first run 200)
+PASS: unwind: every one of 400 throws gives back r14-r31 whole, f14-f31 and v14-v31
+unwind: the deepest frame had changed r14-r31 low halves FFFFC000, high halves FFFFC000, f14-f31 FFFFC000, v14-v31 FFFFC000
+unwind: after, its caller found changed r14-r31 low halves 00000000, high halves 00000000, f14-f31 00000000, v14-v31 00000000
+unwind: frame 0 returns to 820A5E94, CFA 7010EF90: r14 FFFFFFFFFFFFFFFF, r31 FFFFFFFFFFFFFFFF, f14 0000000000000000
+unwind: frame 1 returns to 820A5E78, CFA 7010F230: r14 FFFFFFFFFFFFFFFF, r31 FFFFFFFFFFFFFFFF, f14 0000000000000000
+unwind: frame 2 returns to 820A5E78, CFA 7010F4D0: r14 FFFFFFFFFFFFFFFF, r31 FFFFFFFFFFFFFFFF, f14 0000000000000000
+unwind: frame 3 returns to 820A5E78, CFA 7010F770: r14 FFFFFFFFFFFFFFFF, r31 FFFFFFFFFFFFFFFF, f14 0000000000000000
+unwind: frame 4 returns to 820A5FAC, CFA 7010FA10: r14 5A00000EC300000E, r31 5A00001FC300001F, f14 3FF0000E1234000E
+unwind: frame 5 returns to 820A1F2C, CFA 7010FA70: r14 5A00000EC300000E, r31 5A00001FC300001F, f14 3FF0000E1234000E
+unwind: deepest frame: r14 FFFFFFFFFFFFFFFF, r31 FFFFFFFFFFFFFFFF, f14 0000000000000000, v14 FFFFFFFF
+unwind: in the catch: r14 5A00000EC300000E, r31 5A00001FC300001F, f14 3FF0000E1234000E, v14 7100000E
+unwind: after: r14 5A00000EC300000E, r31 5A00001FC300001F, f14 3FF0000E1234000E, v14 7100000E
+PASS: unwind: r14-r31 whole, f14-f31 and v14-v31, all overwritten below, come back through a C++ exception
+unwind: the deepest frame had changed r14-r31 low halves FFFFC000, high halves FFFFC000, f14-f31 FFFFC000, v14-v31 FFFFC000
+unwind: after, its caller found changed r14-r31 low halves 00000000, high halves 00000000, f14-f31 00000000, v14-v31 00000000
+PASS: unwind: the same come back through setjmp and longjmp
+fp align: writing and reading floats and doubles at offsets 0 to 7

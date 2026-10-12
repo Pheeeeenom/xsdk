@@ -1929,3 +1929,33 @@ at `c98ceb8`, with Twilight Princess's GameCube disc (GZ2E01) beside it as `game
   message queues and freed the queues, mutexes included, before those threads relocked them. The title then crashed
   in `_free_r` (newlib's `_mallocr.c:2723`) with a write to 0xC, an unlink through a null link. With the queues kept
   (Dusklight `33e94c7`) it exited cleanly. Xenia never showed it.
+
+## Floats at any address, milestone 23 (2026-10-12)
+
+`~/xsdk-gcc` became milestone 23's toolchain, built from tools/toolchain/gcc-xsdk.patch at xsdk `e2a48fb`, with
+milestone 22's kept at `~/xsdk-gcc-m22`. On xsdk's target GCC now moves a `float` or `double` between a float register
+and memory only where it knows the memory is aligned to the value's size, as the console requires ("Dusklight runs the
+title scene", above); any other goes through the integer registers, and an unaligned read reaches its float register
+through the stack (`lwz`, `stw`, `lfs`). `-mcheck-fpr-alignment` makes any other float register access a compile
+error. Logs: `results/2026-10-12-milestone-23/` and vulkan4xenon:results/2026-10-12-milestone-23/.
+- **The check found none** in xsdk, SDL-xenon (`c86389c89`), vulkan4xenon (`a863279`), Aurora (`82dfa81`) or
+  Dusklight (`a2aa9cc`), every object of each compiled with it.
+- **xsdk_test passed 231 of 231** (`xsdk_test.log`), among them its new check: floats and doubles written at every
+  offset from 0 to 7 and read back through `memcpy`, `std::bit_cast` and packed structs, 76 reads, none wrong.
+- **Built with milestone 22's compiler, the same test stopped there** (`xsdk_test_unfixed.log`): the log ends at the
+  check's first line, and nothing after it ran. That build has 14 float register loads and stores on the test's
+  buffer, the fixed build none; offset 0 is aligned, so the first to fault is offset 1's `lfs f1,0(r3)` in
+  `read_float_memcpy`. The exception itself wasn't captured.
+- **sdl_check** passed 16 of 16 (`sdl_check.log`), **vulkan4xenon_test** 64 of 64 and **vkbench** 14 of 14
+  (vulkan4xenon:results/2026-10-12-milestone-23/). Against milestone 22's vkbench run
+  (vulkan4xenon:results/2026-10-12-mcall-xsdk/), on the same clock: the layer's draws and submits together took 0.4 to
+  0.9% less in its draw and state scenes, xsdk's own within 1.2% either way, and GPU times within 2.6%. The larger
+  percentages in the summary are of values of 3 to 5 us, where 1 us of rounding reads as 20%.
+- **Dusklight ran as at vulkan4xenon's milestone 10** (`dusklight.log`, against
+  vulkan4xenon:results/2026-10-12-milestone-10-step-2/dusklight.log): the boot screens at 50 fps, the title scene at
+  29.7 to 30.0 fps once loaded, and exit status 0, with the same unsupported-feature errors and 9 MB free at the end,
+  from 7. Aurora `33c1b47`'s integer read of the command stream's floats is still in, so the run shows that nothing
+  else regressed; xsdk_test's `read_float_bits` is that read.
+
+With that, milestone 23 is done: xsdk's GCC keeps float registers off memory it doesn't know is aligned, and every
+title built with it passes on the console.

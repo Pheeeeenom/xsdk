@@ -14,6 +14,23 @@ work begins.
   interlaced output isn't tried. Likely pieces: libxenon writes `AVIVO_D1MODE_DATA_FORMAT` 1 for interlaced modes
   (libxenon:drivers/xenos/xenos.c:391), and xenon-emu names a second vertical start phase, 0x65DC,
   `D1SCL_VERT_FILTER_INIT_BOT` (XenosRegisters.h:935).
+- **Mutexes holding their critical section.** A `pthread_mutex_t` is newlib's 32-bit word, which xsdk makes a pointer
+  to a critical section `malloc`ed on first lock (src/pthread.c, `mutex_section`). Keeping the critical section in the
+  mutex, with a newlib patch making `pthread_mutex_t` that big and every C++ library rebuilt again, would end two costs:
+  - a mutex locked after its memory is freed takes newlib's free-list link there for its critical section and corrupts
+    the heap, where a desktop's mutex would only touch dead memory (Dusklight's, in docs/HARDWARE.md, "Dusklight runs
+    the title scene");
+  - `std::mutex` has no destructor when its type has a static initializer (libstdc++ bits/std_mutex.h), so each one
+    ever locked leaks its 28-byte critical section when it goes.
+- **`rename`.** It always fails with `ENOSYS`, `std::filesystem::rename` included, so Dusklight can't save its config
+  (vulkan4xenon results/2026-10-12-milestone-10-step-2/dusklight-preset.log). The xsdk target doesn't define
+  `HAVE_RENAME`, so newlib's `_rename_r` falls back to `link` and `unlink` (newlib:libc/reent/renamer.c), and xsdk's
+  `link` is `ENOSYS` (src/path.c). The likely fix is a `_rename`, with newlib-xsdk.patch defining `HAVE_RENAME`, over
+  `NtSetInformationFile`'s rename class, which Xenia takes as a 16-byte structure
+  (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_io_info.cc:170-172).
+- **Small GPU allocations.** `xsdk_gpu_alloc` rounds each one up to a 64 KiB large page (src/gpu.c, `allocate`), so
+  vulkan4xenon's pipelines take at least 128 KiB each for their two shaders. Dusklight's title scene has about 30 and
+  ends with 7 MB free. Shaders and other small buffers could share pages.
 - **A sharper scaler filter at 1080p.** 1280x720 is scaled with the built-in 2-tap filter, the only setting that came
   out whole. Every variant on the kernel's coefficient table scrambled the image, and 2 taps on the table wasn't tried.
   More taps would mean loading our own coefficients through 0x6578 and 0x657C, in the layout AMD's
