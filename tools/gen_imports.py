@@ -2,8 +2,15 @@
 """Generate one assembly file per kernel or XAM import listed in imports/imports.txt."""
 
 import argparse
+import re
 import sys
 from pathlib import Path
+
+# The stubs pass r3-r10 through as they are, and the console's MSVC code and xsdk's GCC agree there only on integers
+# and pointers of 32 bits or less: 64-bit integers, floating point and structs by value travel differently
+# (docs/HARDWARE.md, "Calls between xsdk's GCC and the console's MSVC").
+BY_VALUE_TYPES = re.compile(r"\b(u?int64_t|LONGLONG|ULONGLONG|LARGE_INTEGER|double|float|struct|union)\b")
+QUALIFIERS = re.compile(r"\b(const|volatile|extern|static|inline)\b")
 
 # Kernel calls read arguments 9 and up from 8-byte slots at r1+0x54 (xenia:src/xenia/kernel/util/shim_utils.h:52).
 KERNEL_FRAME_HEADER = 0x50
@@ -141,6 +148,76 @@ def generate(entry):
     return "\n".join(lines)
 
 
+def declarations_text(root):
+    files = sorted((root / "include" / "xsdk").glob("*.h")) + sorted((root / "src").glob("*.[ch]"))
+    text = "\n".join(path.read_text() for path in files)
+    text = re.sub(r"/\*.*?\*/", " ", text, flags=re.S)
+    return re.sub(r"//[^\n]*", " ", text)
+
+
+def closing(text, start, open_char, close_char):
+    depth = 0
+    for at in range(start, len(text)):
+        depth += {open_char: 1, close_char: -1}.get(text[at], 0)
+        if depth == 0:
+            return at
+    return len(text)
+
+
+def struct_typedefs(text):
+    """Names typedef'd to a struct or a union, which go by value only through a pointer."""
+    names = set(re.findall(r"typedef\s+(?:struct|union)\s+\w+\s+(\w+)\s*;", text))
+    for match in re.finditer(r"typedef\s+(?:struct|union)\b[^{;]*\{", text):
+        end = closing(text, match.end() - 1, "{", "}")
+        name = re.match(r"\s*(\w+)", text[end + 1:])
+        if name:
+            names.add(name.group(1))
+    return names
+
+
+def by_value(declaration, structs):
+    """Whether a return type or parameter carries a 64-bit integer, floating point or a struct by value."""
+    if "*" in declaration or "(" in declaration:
+        return False
+    plain = QUALIFIERS.sub(" ", declaration)
+    return bool(BY_VALUE_TYPES.search(plain)) or any(word in structs for word in re.findall(r"\w+", plain))
+
+
+def split_parameters(text):
+    parameters, depth, start = [], 0, 0
+    for at, char in enumerate(text):
+        depth += {"(": 1, ")": -1}.get(char, 0)
+        if char == "," and depth == 0:
+            parameters.append(text[start:at])
+            start = at + 1
+    parameters.append(text[start:])
+    return [parameter.strip() for parameter in parameters if parameter.strip() not in ("", "void", "...")]
+
+
+def check_abi(imports, root):
+    """Refuses an import whose declaration passes or returns what the console's code doesn't take as GCC passes it."""
+    text = declarations_text(root)
+    structs = struct_typedefs(text)
+    problems = []
+    for entry in imports:
+        if entry["variable"]:
+            continue
+        match = re.search(rf"([^;{{}}#]*?)\b{entry['name']}\s*\(", text)
+        if not match:
+            problems.append(f"{entry['name']}: no declaration in include/xsdk or src to check")
+            continue
+        end = closing(text, match.end() - 1, "(", ")")
+        returns = match.group(1).split("\n")[-1]
+        if by_value(returns, structs):
+            problems.append(f"{entry['name']}: returns {returns.strip()} by value")
+        for parameter in split_parameters(text[match.end():end]):
+            if by_value(parameter, structs):
+                problems.append(f"{entry['name']}: takes {parameter} by value")
+    if problems:
+        sys.exit("gen_imports: these imports need a stub that converts between GCC's and the console's conventions, "
+                 "which none does yet; pass them by pointer:\n  " + "\n  ".join(problems))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--list", action="store_true", help="print the import names instead of generating files")
@@ -154,6 +231,7 @@ def main():
         return
     if args.output is None:
         parser.error("output directory required")
+    check_abi(imports, args.table.resolve().parent.parent)
     args.output.mkdir(parents=True, exist_ok=True)
     for entry in imports:
         path = args.output / f"{entry['name']}.S"

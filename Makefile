@@ -74,7 +74,8 @@ $(BUILD)/libxsdk.a: $(SDK_OBJECTS)
 	rm -f $@
 	$(AR) rcs $@ $^
 
-$(IMPORT_SOURCES) &: imports/imports.txt tools/gen_imports.py
+# gen_imports.py also checks each import's declaration, so a changed one runs it again.
+$(IMPORT_SOURCES) &: imports/imports.txt tools/gen_imports.py $(wildcard include/xsdk/*.h src/*.h src/*.c)
 	$(PYTHON) tools/gen_imports.py imports/imports.txt $(BUILD)/imports
 
 $(BUILD)/imports/%.o: $(BUILD)/imports/%.S
