@@ -581,18 +581,24 @@ and the console's MSVC"). The SDK keeps today's calls inside where they agree:
 Two kernel callbacks run unwrapped all the same and lose r14-r31's high halves (src/present.c:57, src/gpu.c:107). A
 GCC that calls as MSVC does lets an import take its natural declaration, and the kernel call a title's code directly.
 
-**The convention,** as the console showed it (docs/HARDWARE.md, and the probe's MSVC half in `local/abi`):
-- **Arguments:** one 8-byte slot each, r3 to r10, then the stack from 0x50(r1), a 32-bit value in a slot's low word.
+**The convention,** as the console showed it, settled by step 1 (docs/HARDWARE.md, "Calls between xsdk's GCC and
+the console's MSVC" and "The console's calling convention, register by register"):
+- **Arguments:** one 8-byte slot each, r3 to r10, then the stack from 0x50(r1), each in the next slot with no padding
+  for alignment.
+  - A 32-bit value goes in its slot's low word, its high half carrying nothing: the receiver widens it.
   - 64-bit integers go whole.
-  - `float` and `double` go in f1 to f13, each also taking a slot; a variadic one goes in its integer register too.
-  - Structs go as their bytes across registers.
-- **Returns:** 64-bit integers and structs of 8 bytes or less in r3; larger structs through a pointer in r3, which
-  comes back in r3.
-- **Extension:** whoever receives a `char` or `short` extends it.
-- **Varargs:** `va_list` is a pointer that walks the 8-byte slots. The callee spills r3 to r10 into the 64 bytes at
-  0x10(r1) that its caller always leaves.
-- **Registers kept:** r14-r31 whole, f14-f31 and v14-v31; CR6 is not kept.
-- **Frames:** LR goes at -8(r1) through r12, and saved registers go below the caller's r1 before `stwu`.
+  - `float` and `double` go in f1 to f13, each also taking a slot whose register is left alone; from the 14th, in
+    their slots, a `float` as single precision in the low word.
+  - Structs go as their bytes: 1, 2 and 4 bytes right-justified, other sizes from the first slot's high byte on.
+- **Returns:** 64-bit integers, and structs of 1, 2, 4 and 8 bytes, in r3; `float` and `double` in f1; other structs
+  through a pointer in r3, which comes back in r3.
+- **Extension:** whoever receives a `char`, `short` or `int` widens it.
+- **Varargs:** each in its own slot, doubles as their bits, also copied into f1 on by the caller. `va_list` is a
+  pointer that walks the 8-byte slots; the callee spills r3 to r10 into the 64 bytes at 0x10(r1) that its caller
+  always leaves.
+- **Registers kept:** r14-r31 whole, f14-f31 and v14-v31 (and VMX128's v64-v127, which GCC can't reach); no CR field.
+- **Frames:** LR goes at -8(r1) through r12, and saved registers go below the caller's r1 before `stwu`; nothing is kept
+  at 4-15(r1). The 1348 bytes below r1 are the code's: the console's own writes there start below them.
 
 Layout stays GCC's: `ms_struct` and `char16_t` where code shares structs or text with MSVC code.
 

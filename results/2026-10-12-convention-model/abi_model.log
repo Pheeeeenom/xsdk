@@ -1,0 +1,360 @@
+log: game:\xsdk.log
+convention model: the Xbox 360 SDK's MSVC, register by register
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 23923 us
+PASS: splash: the vulkan4xenon logo shown
+model: B1, 1 bytes, as an argument: right-justified from r3, the int after it in slot 1
+    sent 0000000000000040 0000000011010102
+PASS: model: B1 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: B1 as an argument: MSVC's callee reads what its caller sent
+    B1's callee wrote 1792 bytes below its caller's r1
+PASS: model: B1 as an argument: MSVC's callee reads its slots alone
+model: B1 returned right-justified in r3; r3 0000000000000040, f1 0000000000000000
+PASS: model: B1 returned: MSVC's callee gives it back in one place
+PASS: model: B1 returned: MSVC's caller reads it back
+model: B2, 2 bytes, as an argument: right-justified from r3, the int after it in slot 1
+    sent 0000000000004041 0000000012020203
+PASS: model: B2 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: B2 as an argument: MSVC's callee reads what its caller sent
+    B2's callee wrote 1792 bytes below its caller's r1
+PASS: model: B2 as an argument: MSVC's callee reads its slots alone
+model: B2 returned right-justified in r3; r3 0000000000004041, f1 0000000000000000
+PASS: model: B2 returned: MSVC's callee gives it back in one place
+PASS: model: B2 returned: MSVC's caller reads it back
+model: B3, 3 bytes, as an argument: left-justified from r3, the int after it in slot 1
+    sent 4041420000000000 0000000013030304
+PASS: model: B3 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: B3 as an argument: MSVC's callee reads what its caller sent
+    B3's callee wrote 1792 bytes below its caller's r1
+PASS: model: B3 as an argument: MSVC's callee reads its slots alone
+model: B3 returned through the pointer in r3, which comes back in r3; r3 00000000820610B0, f1 0000000000000000
+PASS: model: B3 returned: MSVC's callee gives it back in one place
+PASS: model: B3 returned: MSVC's caller reads it back
+model: B4, 4 bytes, as an argument: right-justified from r3, the int after it in slot 1
+    sent 0000000040414243 0000000014040405
+PASS: model: B4 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: B4 as an argument: MSVC's callee reads what its caller sent
+    B4's callee wrote 1792 bytes below its caller's r1
+PASS: model: B4 as an argument: MSVC's callee reads its slots alone
+model: B4 returned right-justified in r3; r3 0000000040414243, f1 0000000000000000
+PASS: model: B4 returned: MSVC's callee gives it back in one place
+PASS: model: B4 returned: MSVC's caller reads it back
+model: B5, 5 bytes, as an argument: left-justified from r3, the int after it in slot 1
+    sent 4041424344000000 0000000015050506
+PASS: model: B5 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: B5 as an argument: MSVC's callee reads what its caller sent
+    B5's callee wrote 1792 bytes below its caller's r1
+PASS: model: B5 as an argument: MSVC's callee reads its slots alone
+model: B5 returned through the pointer in r3, which comes back in r3; r3 00000000820610B0, f1 0000000000000000
+PASS: model: B5 returned: MSVC's callee gives it back in one place
+PASS: model: B5 returned: MSVC's caller reads it back
+model: B6, 6 bytes, as an argument: left-justified from r3, the int after it in slot 1
+    sent 4041424344450000 0000000016060607
+PASS: model: B6 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: B6 as an argument: MSVC's callee reads what its caller sent
+    B6's callee wrote 1792 bytes below its caller's r1
+PASS: model: B6 as an argument: MSVC's callee reads its slots alone
+model: B6 returned through the pointer in r3, which comes back in r3; r3 00000000820610B0, f1 0000000000000000
+PASS: model: B6 returned: MSVC's callee gives it back in one place
+PASS: model: B6 returned: MSVC's caller reads it back
+model: B7, 7 bytes, as an argument: left-justified from r3, the int after it in slot 1
+    sent 4041424344454600 0000000017070708
+PASS: model: B7 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: B7 as an argument: MSVC's callee reads what its caller sent
+    B7's callee wrote 1792 bytes below its caller's r1
+PASS: model: B7 as an argument: MSVC's callee reads its slots alone
+model: B7 returned through the pointer in r3, which comes back in r3; r3 00000000820610B0, f1 0000000000000000
+PASS: model: B7 returned: MSVC's callee gives it back in one place
+PASS: model: B7 returned: MSVC's caller reads it back
+model: B8, 8 bytes, as an argument: left-justified from r3, the int after it in slot 1
+    sent 4041424344454647 0000000018080809
+PASS: model: B8 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: B8 as an argument: MSVC's callee reads what its caller sent
+    B8's callee wrote 1792 bytes below its caller's r1
+PASS: model: B8 as an argument: MSVC's callee reads its slots alone
+model: B8 returned left-justified in r3; r3 4041424344454647, f1 0000000000000000
+PASS: model: B8 returned: MSVC's callee gives it back in one place
+PASS: model: B8 returned: MSVC's caller reads it back
+model: B9, 9 bytes, as an argument: left-justified from r3, the int after it in slot 2
+    sent 4041424344454647 4800000000000000 000000001909090A
+PASS: model: B9 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: B9 as an argument: MSVC's callee reads what its caller sent
+    B9's callee wrote 1792 bytes below its caller's r1
+PASS: model: B9 as an argument: MSVC's callee reads its slots alone
+model: B9 returned through the pointer in r3, which comes back in r3; r3 00000000820610B0, f1 0000000000000000
+PASS: model: B9 returned: MSVC's callee gives it back in one place
+PASS: model: B9 returned: MSVC's caller reads it back
+model: B10, 10 bytes, as an argument: left-justified from r3, the int after it in slot 2
+    sent 4041424344454647 4849000000000000 000000001A0A0A0B
+PASS: model: B10 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: B10 as an argument: MSVC's callee reads what its caller sent
+    B10's callee wrote 1792 bytes below its caller's r1
+PASS: model: B10 as an argument: MSVC's callee reads its slots alone
+model: B10 returned through the pointer in r3, which comes back in r3; r3 00000000820610B0, f1 0000000000000000
+PASS: model: B10 returned: MSVC's callee gives it back in one place
+PASS: model: B10 returned: MSVC's caller reads it back
+model: B11, 11 bytes, as an argument: left-justified from r3, the int after it in slot 2
+    sent 4041424344454647 48494A0000000000 000000001B0B0B0C
+PASS: model: B11 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: B11 as an argument: MSVC's callee reads what its caller sent
+    B11's callee wrote 1792 bytes below its caller's r1
+PASS: model: B11 as an argument: MSVC's callee reads its slots alone
+model: B11 returned through the pointer in r3, which comes back in r3; r3 00000000820610B0, f1 0000000000000000
+PASS: model: B11 returned: MSVC's callee gives it back in one place
+PASS: model: B11 returned: MSVC's caller reads it back
+model: B12, 12 bytes, as an argument: left-justified from r3, the int after it in slot 2
+    sent 4041424344454647 48494A4B00000000 000000001C0C0C0D
+PASS: model: B12 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: B12 as an argument: MSVC's callee reads what its caller sent
+    B12's callee wrote 1792 bytes below its caller's r1
+PASS: model: B12 as an argument: MSVC's callee reads its slots alone
+model: B12 returned through the pointer in r3, which comes back in r3; r3 00000000820610B0, f1 0000000000000000
+PASS: model: B12 returned: MSVC's callee gives it back in one place
+PASS: model: B12 returned: MSVC's caller reads it back
+model: B13, 13 bytes, as an argument: left-justified from r3, the int after it in slot 2
+    sent 4041424344454647 48494A4B4C000000 000000001D0D0D0E
+PASS: model: B13 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: B13 as an argument: MSVC's callee reads what its caller sent
+    B13's callee wrote 1792 bytes below its caller's r1
+PASS: model: B13 as an argument: MSVC's callee reads its slots alone
+model: B13 returned through the pointer in r3, which comes back in r3; r3 00000000820610B0, f1 0000000000000000
+PASS: model: B13 returned: MSVC's callee gives it back in one place
+PASS: model: B13 returned: MSVC's caller reads it back
+model: B14, 14 bytes, as an argument: left-justified from r3, the int after it in slot 2
+    sent 4041424344454647 48494A4B4C4D0000 000000001E0E0E0F
+PASS: model: B14 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: B14 as an argument: MSVC's callee reads what its caller sent
+    B14's callee wrote 1792 bytes below its caller's r1
+PASS: model: B14 as an argument: MSVC's callee reads its slots alone
+model: B14 returned through the pointer in r3, which comes back in r3; r3 00000000820610B0, f1 0000000000000000
+PASS: model: B14 returned: MSVC's callee gives it back in one place
+PASS: model: B14 returned: MSVC's caller reads it back
+model: B15, 15 bytes, as an argument: left-justified from r3, the int after it in slot 2
+    sent 4041424344454647 48494A4B4C4D4E00 000000001F0F0F10
+PASS: model: B15 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: B15 as an argument: MSVC's callee reads what its caller sent
+    B15's callee wrote 1792 bytes below its caller's r1
+PASS: model: B15 as an argument: MSVC's callee reads its slots alone
+model: B15 returned through the pointer in r3, which comes back in r3; r3 00000000820610B0, f1 0000000000000000
+PASS: model: B15 returned: MSVC's callee gives it back in one place
+PASS: model: B15 returned: MSVC's caller reads it back
+model: B16, 16 bytes, as an argument: left-justified from r3, the int after it in slot 2
+    sent 4041424344454647 48494A4B4C4D4E4F 0000000020101011
+PASS: model: B16 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: B16 as an argument: MSVC's callee reads what its caller sent
+    B16's callee wrote 1792 bytes below its caller's r1
+PASS: model: B16 as an argument: MSVC's callee reads its slots alone
+model: B16 returned through the pointer in r3, which comes back in r3; r3 00000000820610B0, f1 0000000000000000
+PASS: model: B16 returned: MSVC's callee gives it back in one place
+PASS: model: B16 returned: MSVC's caller reads it back
+model: B17, 17 bytes, as an argument: left-justified from r3, the int after it in slot 3
+    sent 4041424344454647 48494A4B4C4D4E4F 5000000000000000 0000000021111112
+PASS: model: B17 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: B17 as an argument: MSVC's callee reads what its caller sent
+    B17's callee wrote 1792 bytes below its caller's r1
+PASS: model: B17 as an argument: MSVC's callee reads its slots alone
+model: B17 returned through the pointer in r3, which comes back in r3; r3 00000000820610B0, f1 0000000000000000
+PASS: model: B17 returned: MSVC's callee gives it back in one place
+PASS: model: B17 returned: MSVC's caller reads it back
+model: B18, 18 bytes, as an argument: left-justified from r3, the int after it in slot 3
+    sent 4041424344454647 48494A4B4C4D4E4F 5051000000000000 0000000022121213
+PASS: model: B18 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: B18 as an argument: MSVC's callee reads what its caller sent
+    B18's callee wrote 1792 bytes below its caller's r1
+PASS: model: B18 as an argument: MSVC's callee reads its slots alone
+model: B18 returned through the pointer in r3, which comes back in r3; r3 00000000820610B0, f1 0000000000000000
+PASS: model: B18 returned: MSVC's callee gives it back in one place
+PASS: model: B18 returned: MSVC's caller reads it back
+model: B19, 19 bytes, as an argument: left-justified from r3, the int after it in slot 3
+    sent 4041424344454647 48494A4B4C4D4E4F 5051520000000000 0000000023131314
+PASS: model: B19 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: B19 as an argument: MSVC's callee reads what its caller sent
+    B19's callee wrote 1792 bytes below its caller's r1
+PASS: model: B19 as an argument: MSVC's callee reads its slots alone
+model: B19 returned through the pointer in r3, which comes back in r3; r3 00000000820610B0, f1 0000000000000000
+PASS: model: B19 returned: MSVC's callee gives it back in one place
+PASS: model: B19 returned: MSVC's caller reads it back
+model: B20, 20 bytes, as an argument: left-justified from r3, the int after it in slot 3
+    sent 4041424344454647 48494A4B4C4D4E4F 5051525300000000 0000000024141415
+PASS: model: B20 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: B20 as an argument: MSVC's callee reads what its caller sent
+    B20's callee wrote 1792 bytes below its caller's r1
+PASS: model: B20 as an argument: MSVC's callee reads its slots alone
+model: B20 returned through the pointer in r3, which comes back in r3; r3 00000000820610B0, f1 0000000000000000
+PASS: model: B20 returned: MSVC's callee gives it back in one place
+PASS: model: B20 returned: MSVC's caller reads it back
+model: B21, 21 bytes, as an argument: left-justified from r3, the int after it in slot 3
+    sent 4041424344454647 48494A4B4C4D4E4F 5051525354000000 0000000025151516
+PASS: model: B21 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: B21 as an argument: MSVC's callee reads what its caller sent
+    B21's callee wrote 1792 bytes below its caller's r1
+PASS: model: B21 as an argument: MSVC's callee reads its slots alone
+model: B21 returned through the pointer in r3, which comes back in r3; r3 00000000820610B0, f1 0000000000000000
+PASS: model: B21 returned: MSVC's callee gives it back in one place
+PASS: model: B21 returned: MSVC's caller reads it back
+model: B22, 22 bytes, as an argument: left-justified from r3, the int after it in slot 3
+    sent 4041424344454647 48494A4B4C4D4E4F 5051525354550000 0000000026161617
+PASS: model: B22 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: B22 as an argument: MSVC's callee reads what its caller sent
+    B22's callee wrote 1792 bytes below its caller's r1
+PASS: model: B22 as an argument: MSVC's callee reads its slots alone
+model: B22 returned through the pointer in r3, which comes back in r3; r3 00000000820610B0, f1 0000000000000000
+PASS: model: B22 returned: MSVC's callee gives it back in one place
+PASS: model: B22 returned: MSVC's caller reads it back
+model: B23, 23 bytes, as an argument: left-justified from r3, the int after it in slot 3
+    sent 4041424344454647 48494A4B4C4D4E4F 5051525354555600 0000000027171718
+PASS: model: B23 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: B23 as an argument: MSVC's callee reads what its caller sent
+    B23's callee wrote 1792 bytes below its caller's r1
+PASS: model: B23 as an argument: MSVC's callee reads its slots alone
+model: B23 returned through the pointer in r3, which comes back in r3; r3 00000000820610B0, f1 0000000000000000
+PASS: model: B23 returned: MSVC's callee gives it back in one place
+PASS: model: B23 returned: MSVC's caller reads it back
+model: B24, 24 bytes, as an argument: left-justified from r3, the int after it in slot 3
+    sent 4041424344454647 48494A4B4C4D4E4F 5051525354555657 0000000028181819
+PASS: model: B24 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: B24 as an argument: MSVC's callee reads what its caller sent
+    B24's callee wrote 1792 bytes below its caller's r1
+PASS: model: B24 as an argument: MSVC's callee reads its slots alone
+model: B24 returned through the pointer in r3, which comes back in r3; r3 00000000820610B0, f1 0000000000000000
+PASS: model: B24 returned: MSVC's callee gives it back in one place
+PASS: model: B24 returned: MSVC's caller reads it back
+model: A12, 12 bytes, as an argument: left-justified from r3, the int after it in slot 2
+    sent 4041424344454647 48494A4B00000000 000000001C0C0C0D
+PASS: model: A12 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: A12 as an argument: MSVC's callee reads what its caller sent
+    A12's callee wrote 1792 bytes below its caller's r1
+PASS: model: A12 as an argument: MSVC's callee reads its slots alone
+model: A12 returned through the pointer in r3, which comes back in r3; r3 00000000820610B0, f1 0000000000000000
+PASS: model: A12 returned: MSVC's callee gives it back in one place
+PASS: model: A12 returned: MSVC's caller reads it back
+model: A16, 16 bytes, as an argument: left-justified from r3, the int after it in slot 2
+    sent 4041424344454647 48494A4B4C4D4E4F 0000000020101011
+PASS: model: A16 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: A16 as an argument: MSVC's callee reads what its caller sent
+    A16's callee wrote 1792 bytes below its caller's r1
+PASS: model: A16 as an argument: MSVC's callee reads its slots alone
+model: A16 returned through the pointer in r3, which comes back in r3; r3 00000000820610B0, f1 0000000000000000
+PASS: model: A16 returned: MSVC's callee gives it back in one place
+PASS: model: A16 returned: MSVC's caller reads it back
+model: Q16, 16 bytes, as an argument: left-justified from r3, the int after it in slot 2
+    sent 4041424344454647 48494A4B4C4D4E4F 0000000020101011
+PASS: model: Q16 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: Q16 as an argument: MSVC's callee reads what its caller sent
+    Q16's callee wrote 1792 bytes below its caller's r1
+PASS: model: Q16 as an argument: MSVC's callee reads its slots alone
+model: Q16 returned through the pointer in r3, which comes back in r3; r3 00000000820610B0, f1 0000000000000000
+PASS: model: Q16 returned: MSVC's callee gives it back in one place
+PASS: model: Q16 returned: MSVC's caller reads it back
+model: D8, 8 bytes, as an argument: left-justified from r3, the int after it in slot 1
+    sent 4041424344454647 0000000018080809
+PASS: model: D8 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: D8 as an argument: MSVC's callee reads what its caller sent
+    D8's callee wrote 1792 bytes below its caller's r1
+PASS: model: D8 as an argument: MSVC's callee reads its slots alone
+model: D8 returned left-justified in r3; r3 4041424344454647, f1 0000000000000000
+PASS: model: D8 returned: MSVC's callee gives it back in one place
+PASS: model: D8 returned: MSVC's caller reads it back
+model: D16, 16 bytes, as an argument: left-justified from r3, the int after it in slot 2
+    sent 4041424344454647 48494A4B4C4D4E4F 0000000020101011
+PASS: model: D16 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: D16 as an argument: MSVC's callee reads what its caller sent
+    D16's callee wrote 1792 bytes below its caller's r1
+PASS: model: D16 as an argument: MSVC's callee reads its slots alone
+model: D16 returned through the pointer in r3, which comes back in r3; r3 00000000820610B0, f1 0000000000000000
+PASS: model: D16 returned: MSVC's callee gives it back in one place
+PASS: model: D16 returned: MSVC's caller reads it back
+model: F2, 8 bytes, as an argument: left-justified from r3, the int after it in slot 1
+    sent 4041424344454647 0000000018080809
+PASS: model: F2 as an argument: MSVC's caller fills its slots, then the int after it
+PASS: model: F2 as an argument: MSVC's callee reads what its caller sent
+    F2's callee wrote 1792 bytes below its caller's r1
+PASS: model: F2 as an argument: MSVC's callee reads its slots alone
+model: F2 returned left-justified in r3; r3 4041424344454647, f1 0000000000000000
+PASS: model: F2 returned: MSVC's callee gives it back in one place
+PASS: model: F2 returned: MSVC's caller reads it back
+model: int, B3, int: the struct left-justified from slot 1, the int after in slot 2
+    sent 0000000074646465 4041420000000000 0000000013030304
+PASS: model: int, B3, int: MSVC's caller sends each in the next slots
+PASS: model: int, B3, int: MSVC's callee reads what its caller sent
+    B3's callee wrote 1792 bytes below its caller's r1
+PASS: model: int, B3, int: MSVC's callee reads their slots alone
+model: int, B12, int: the struct left-justified from slot 1, the int after in slot 3
+    sent 0000000074646465 4041424344454647 48494A4B00000000 000000001C0C0C0D
+PASS: model: int, B12, int: MSVC's caller sends each in the next slots
+PASS: model: int, B12, int: MSVC's callee reads what its caller sent
+    B12's callee wrote 1792 bytes below its caller's r1
+PASS: model: int, B12, int: MSVC's callee reads their slots alone
+model: int, A12, int: the struct left-justified from slot 1, the int after in slot 3+slot 16
+    sent 0000000074646465 4041424344454647 48494A4B00000000 000000001C0C0C0D
+PASS: model: int, A12, int: MSVC's caller sends each in the next slots
+PASS: model: int, A12, int: MSVC's callee reads what its caller sent
+    A12's callee wrote 1792 bytes below its caller's r1
+PASS: model: int, A12, int: MSVC's callee reads their slots alone
+model: int, Q16, int: the struct left-justified from slot 1, the int after in slot 3
+    sent 0000000074646465 4041424344454647 48494A4B4C4D4E4F 0000000020101011
+PASS: model: int, Q16, int: MSVC's caller sends each in the next slots
+PASS: model: int, Q16, int: MSVC's callee reads what its caller sent
+    Q16's callee wrote 1792 bytes below its caller's r1
+PASS: model: int, Q16, int: MSVC's callee reads their slots alone
+model: int, D16, int: the struct left-justified from slot 1, the int after in slot 3+slot 16
+    sent 0000000074646465 4041424344454647 48494A4B4C4D4E4F 0000000020101011
+PASS: model: int, D16, int: MSVC's caller sends each in the next slots
+PASS: model: int, D16, int: MSVC's callee reads what its caller sent
+    D16's callee wrote 1792 bytes below its caller's r1
+PASS: model: int, D16, int: MSVC's callee reads their slots alone
+model: int, B24, int: the struct left-justified from slot 1, the int after in slot 4
+    sent 0000000074646465 4041424344454647 48494A4B4C4D4E4F 5051525354555657 0000000028181819
+PASS: model: int, B24, int: MSVC's caller sends each in the next slots
+PASS: model: int, B24, int: MSVC's callee reads what its caller sent
+    B24's callee wrote 1792 bytes below its caller's r1
+PASS: model: int, B24, int: MSVC's callee reads their slots alone
+model: 15 doubles: d1 f1+slot 3, d2 f2+slot 4, d3 f3+slot 5, d4 f4+slot 6, d5 f5+slot 7, d6 f6, d7 f7+slot 0, d8 f8+slot 1+slot 23, d9 f9+slot 2+slot 22, d10 f10+slot 21, d11 f11+slot 20, d12 f12+slot 19, d13 f13+slot 18, d14 slot 13+slot 17, d15 slot 14+slot 16
+PASS: model: 15 doubles: MSVC's caller puts the first 13 in f1-f13 and the rest in their own slots
+PASS: model: 15 doubles: MSVC's callee reads what its caller sent
+    d15's callee wrote 1792 bytes below its caller's r1
+PASS: model: 15 doubles: MSVC's callee reads f1-f13 and slots 13-14 alone
+model: 15 floats: f1 f1, f2 f2, f3 f3, f4 f4, f5 f5, f6 f6, f7 f7, f8 f8, f9 f9, f10 f10, f11 f11, f12 f12, f13 f13, f14 slot 13+slot 16 as a float, f15 slot 14 as a float
+PASS: model: 15 floats: MSVC's caller puts the first 13 in f1-f13 as doubles, the rest as floats in their slots
+PASS: model: 15 floats: MSVC's callee reads what its caller sent
+    f15's callee wrote 1792 bytes below its caller's r1
+PASS: model: 15 floats: MSVC's callee reads f1-f13 and slots 13-14 alone
+model: 7 ints and 7 doubles in turn: int 1 slot 0, double 1 f1+slot 20, int 2 slot 2, double 2 f2+slot 3+slot 19, int 3 slot 4, double 3 f3+slot 18, int 4 slot 6, double 4 f4+slot 17, int 5 slot 5+slot 8, double 5 f5+slot 16, int 6 slot 7+slot 10, double 6 f6+slot 15, int 7 slot 12, double 7 f7+slot 14
+PASS: model: 7 ints and 7 doubles in turn: each takes a slot, the doubles f1-f7
+PASS: model: 7 ints and 7 doubles in turn: MSVC's callee reads what its caller sent
+    mix14's callee wrote 1792 bytes below its caller's r1
+PASS: model: 7 ints and 7 doubles in turn: MSVC's callee reads the ints' slots and f1-f7 alone
+model: a float returned: f1 4008000000000000, r3 0000000000000000
+PASS: model: a float returned: MSVC's callee gives it back in f1, as a double
+PASS: model: a float returned: MSVC's caller reads it from f1
+model: a double returned: f1 4020000000000000, r3 0000000000000000
+PASS: model: a double returned: MSVC's callee gives it back in f1
+PASS: model: a double returned: MSVC's caller reads it from f1
+model: varargs past 8 slots: the float f1+slot 1, int 0 slot 2, double 0 f2+slot 3+slot 19, int 1 slot 4, double 1 f3+slot 5+slot 18, int 2 slot 6, double 2 f4+slot 7+slot 17, int 3 slot 8, double 3 f5+slot 9+slot 16, int 4 slot 10, double 4 f6+slot 11+slot 15, the uint64_t slot 12
+PASS: model: varargs past 8 slots: MSVC's caller puts each in its own slot, doubles too
+PASS: model: varargs past 8 slots: MSVC's callee reads what its caller sent
+    va's callee wrote 1792 bytes below its caller's r1
+PASS: model: varargs past 8 slots: MSVC's callee reads the slots alone, no FPRs
+PASS: model: 32-bit arguments extended: MSVC's callee widens int -5 and uint32 0xFFFFFFF0 right
+model: with garbage high halves MSVC's callee made int FFFFFFFFFFFFFFFB, uint32 00000000FFFFFFF0, compare 1
+PASS: model: 32-bit arguments with garbage high halves: MSVC's callee widens them itself
+model: MSVC's caller passes int -5 as 00000000FFFFFFFB, uint32 0xFFFFFFF0 as 00000000FFFFFFF0, int 7 as 0000000000000007
+model: MSVC's callee returns int -5 as FFFFFFFFFFFFFFFB
+PASS: model: an int returned with a garbage high half: MSVC's caller widens it itself
+model: MSVC's caller entered its callee with CR 24000022
+model: conditions held across a call: B, B with every CR field clobbered
+PASS: model: MSVC's caller keeps no condition in a CR field across a call
+model: 18 doubles held across a call: kept 3FFFF; f14-f31 changed 00000000 after
+PASS: model: MSVC's code keeps f14-f31 for its caller, and its doubles across a call
+model: with f14-f31 clobbered by the callee: kept 20002, 16 of 18 lost
+PASS: model: MSVC's caller holds doubles in f14-f31 across a call
+model: 18 vectors held across a call: kept 3FFFF; v14-v31 changed 00000000 after
+PASS: model: MSVC's code keeps v14-v31 for its caller, and its vectors across a call
+model: with v14-v31 clobbered by the callee: kept 3FFFF, 0 of 18 lost; MSVC held them in v110-v127 (its code saves them with __savevmx_110)
+PASS: model: MSVC's caller holds its vectors outside v14-v31, in VMX128's v64-v127
+model: MSVC's caller had 30000234 00002444 00000000 at 4-15(r1)
+PASS: model: MSVC's callers keep nothing at 4-15(r1) across a call
+model: MSVC's callees wrote at most 1792 bytes below their caller's r1 (B1)
+PASS: model: MSVC's callees leave 4-15(r1) of their caller alone
+tests: 195 passed, 0 failed
+exit: status 0

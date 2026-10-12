@@ -1707,3 +1707,45 @@ passed, and both titles exited with status 0.
   where it pulled 95744 while the clock ran slow.
 - **Rumble:** `XamInputSetState` ran controller 1's motors at half strength for 500 ms and stopped them.
 - **Pacing's** longest wait for a buffer reads 17995 us where it read 17949 us: the same wait, at the true rate.
+
+## The console's calling convention, register by register (2026-10-12)
+
+Milestone 22's first step: a title of 195 checks drove the Xbox 360 SDK compiler's own code from both ends, so what
+it measured is MSVC's convention, not GCC's (logs: `results/2026-10-12-convention-model/abi_model.log`, then with the
+stack below r1 measured, `results/2026-10-12-convention-model-2/abi_model.log`, whose file was cut short in copying
+and whose end comes from the title's debug output). MSVC's caller of each case called a stub that recorded r3-r10,
+f1-f13 and 16 stack slots. That image went to MSVC's callee of the same prototype twice: whole, and with only the
+registers and slots below named, garbage in all the rest. Each time the callee read what the caller meant, and
+returns went the other way. All 195 checks passed in both runs, as in Xenia.
+- **Arguments:** one 8-byte slot each, r3 to r10 and then the stack from 0x50(r1), each in the next slot, with no
+  padding for alignment, even before 8- and 16-byte-aligned structs.
+  - A 32-bit value goes in its slot's low word, and the high half carries nothing: MSVC's caller zero-extended an
+    `int` of -5 to `00000000FFFFFFFB`, and its callee widened arguments with garbage high halves right itself.
+  - 64-bit integers go whole.
+  - `float` and `double` go in f1 to f13 in turn, each also taking a slot, whose register or stack word the callee
+    doesn't read. From the 14th on they go in their slots, a `float` as single precision in the slot's low word.
+  - Structs go as their bytes: 1, 2 and 4 bytes right-justified like integers, every other size from its first
+    slot's high byte across as many slots as it fills. Structs of floats and of doubles go the same way, never in
+    FPRs.
+  - Varargs each take their own slot, a `double` as its bits, past the 8th too. MSVC's caller also copies doubles
+    into f1, f2 and on, but its variadic callee reads only the slots.
+- **Returns:** `float` and `double` in f1, a `float` as a double. Structs of 1, 2, 4 and 8 bytes in r3, 1, 2 and 4
+  right-justified, a struct of one `double` too. Every other size through a pointer the caller passes in r3, which
+  comes back in r3. MSVC's caller widens a returned `int` itself; its callee returned -5 sign-extended.
+- **Registers kept:** f14-f31: MSVC's caller held doubles there across a call, and lost 16 of 18 when the callee
+  clobbered them. It held 18 vectors across a call in VMX128's v110-v127 rather than v14-v31, saved with
+  `__savevmx_110`; GCC can't reach v64-v127. No CR field: conditions MSVC held across a call survived every field
+  clobbered.
+- **Frames:** MSVC's code writes LR at -8(r1) through r12 and its GPR saves under that, before `stwu`, then points r12
+  under the GPR saves for `__savefpr_N` and `__savevmx_N`, which store below r12 (`addi r12,r1,-72` after saving
+  r24-r31; xenia:src/xenia/cpu/xex_module.cc:1341-1455). Its callers keep nothing at 4-15(r1) across a call: a
+  callee that overwrote those words broke nothing. Its callees don't write there.
+- **Below r1:** the console writes there, but never within 1348 bytes of r1, with r1 16-byte aligned.
+  - Callees that write nothing (an empty one, MSVC's leaf for an 8-byte struct, and MSVC's 15-double callee besides
+    its own saves) saw a block from 1348 to 1792 bytes below r1 written in 1 run of 8.
+  - The first run's every case showed it at 1792 bytes, each straight after a line was logged.
+  - A 20 ms spin saw blocks from 1348 down to 2272 bytes in every run.
+  - The blocks hold what looks like a thread's saved state: `801B0000`, the processor control region; addresses in
+    the title; `24FFFF22`, like a CR value.
+  - So code may use up to 1348 bytes below r1 without a frame, as MSVC's saves before `stwu` do. Xenia writes nothing
+    there.
