@@ -1814,7 +1814,7 @@ the old toolchain, and every object in the new toolchain's libc, libstdc++ and l
 
 ## What the kernel leaves a title (2026-10-12)
 
-`build/xsdk_test.xex` at `a6b5743` and Dusklight's first-step `dusklight.xex` (Dusklight `e7e916c`, built with
+`build/xsdk_test.xex` at `a6b5743` and Dusklight's first-step `dusklight.xex` (Dusklight `1b68017`, built with
 `int32_t` predefined as `int` until the compiler makes it so; logs: `results/2026-10-12-memory/`, the xsdk_test one
 the memory test's lines and the summary): all 222 checks passed, and both titles exited with status 0.
 - **`MmQueryStatistics`** answers with the 104-byte result Xenia lays out
@@ -1847,7 +1847,7 @@ checks passed, and both titles exited with status 0.
 ## Dusklight's first step on the console's calling convention (2026-10-12)
 
 `build/xsdk_test.xex` at `4302e7c`, this branch with main's `-mcall-xsdk` toolchain merged, and Dusklight's first-step
-`dusklight.xex` (Dusklight `e7e916c`, SDL-xenon `c86389c89`), every object rebuilt from scratch with that toolchain and
+`dusklight.xex` (Dusklight `1b68017`, SDL-xenon `c86389c89`), every object rebuilt from scratch with that toolchain and
 no source changed (logs: `results/2026-10-12-dusklight-mcall-xsdk/`, the xsdk_test one its summary): all 228 checks
 passed, and both titles exited with status 0.
 - **Dusklight** started with the whole game linked, its heap reserving 443 MB at its first growth, and had 442 MB free
@@ -1881,7 +1881,7 @@ built with it passes on the console.
 
 ## Dusklight runs up to the disc (2026-10-12)
 
-`build/xsdk_test.xex` at `f770193` and Dusklight's second-step `dusklight.xex` (Dusklight `3adfb33`, Aurora `933efa4`,
+`build/xsdk_test.xex` at `f770193` and Dusklight's second-step `dusklight.xex` (Dusklight `cc1ed7a`, Aurora `58f9fb3`,
 SDL-xenon `c86389c89`) linked with it, run with no disc image beside it (logs: `results/2026-10-12-dusklight-step-2/`,
 the xsdk_test one its summary): all 230 checks passed and xsdk_test exited with status 0. Dusklight ended with status
 1, as it does without a disc.
@@ -1895,7 +1895,7 @@ the xsdk_test one its summary): all 230 checks passed and xsdk_test exited with 
   for a relative path and puts the current directory, `game:\`, in front of it. xsdk turned that into
   `game:\game:\TwilitRealm\Dusk`, which the kernel refused (0xC0000033, `STATUS_OBJECT_NAME_INVALID`;
   xenia:src/xenia/xbox.h:59). The run before the fix (`dusklight-before.log`: the same Dusklight, its `Build:` line
-  naming `4559590`, the commit `3adfb33` amended, linked with xsdk `6ea8d10`) logged 16 such `stat` failures, from
+  naming `4559590`, the commit `cc1ed7a` amended, linked with xsdk `6ea8d10`) logged 16 such `stat` failures, from
   borealis comparing its data folders through `weakly_canonical` (dusklight:extern/borealis/src/data.cpp:34-56). xsdk
   now starts a path over at a drive anywhere in it: this run logged none, and xsdk_test reads a file back through
   `absolute()` and `weakly_canonical()`.
@@ -1908,7 +1908,7 @@ the xsdk_test one its summary): all 230 checks passed and xsdk_test exited with 
 
 ## Dusklight runs the title scene (2026-10-12)
 
-vulkan4xenon's milestone 9, step 3: Dusklight at `33e94c7` (Aurora `33c1b47`, SDL-xenon `c86389c89`), linked with xsdk
+vulkan4xenon's milestone 9, step 3: Dusklight at `ecfef9f` (Aurora `600815f`, SDL-xenon `c86389c89`), linked with xsdk
 at `c98ceb8`, with Twilight Princess's GameCube disc (GZ2E01) beside it as `game:\dusklight.iso` (logs:
 `results/2026-10-12-dusklight-step-3/`, each the part of the log that was sent). xsdk hasn't changed since its 230 of
 230 above.
@@ -1921,14 +1921,14 @@ at `c98ceb8`, with Twilight Princess's GameCube disc (GZ2E01) beside it as `game
 - **A float load from the command stream raised an alignment exception** (`dusklight-float-load.log`): 0x80000002 at
   an `lfsx` in Aurora's `handle_aurora`, loading a viewport's floats, which Aurora's stream packs at any byte. The
   integer loads from the same stream before it ran. GCC had merged an integer load and a `std::bit_cast` to float into
-  that one float load, as it does where nothing swaps between them; Aurora `33c1b47` keeps it an integer load. Xenia
+  that one float load, as it does where nothing swaps between them; Aurora `600815f` keeps it an integer load. Xenia
   doesn't check alignment, so it ran there.
 - **A mutex relocked after its memory is freed corrupts the heap** (`dusklight-shutdown.log`): an xsdk mutex is a
   pointer to a critical section allocated on first use, and once its memory is freed that word is newlib's free-list
   link, which a lock then takes for the critical section. Dusklight's `OSResetSystem` woke the threads waiting on its
   message queues and freed the queues, mutexes included, before those threads relocked them. The title then crashed
   in `_free_r` (newlib's `_mallocr.c:2723`) with a write to 0xC, an unlink through a null link. With the queues kept
-  (Dusklight `33e94c7`) it exited cleanly. Xenia never showed it.
+  (Dusklight `ecfef9f`) it exited cleanly. Xenia never showed it.
 
 ## Floats at any address, milestone 23 (2026-10-12)
 
@@ -1938,8 +1938,8 @@ and memory only where it knows the memory is aligned to the value's size, as the
 title scene", above); any other goes through the integer registers, and an unaligned read reaches its float register
 through the stack (`lwz`, `stw`, `lfs`). `-mcheck-fpr-alignment` makes any other float register access a compile
 error. Logs: `results/2026-10-12-milestone-23/` and vulkan4xenon:results/2026-10-12-milestone-23/.
-- **The check found none** in xsdk, SDL-xenon (`c86389c89`), vulkan4xenon (`a863279`), Aurora (`82dfa81`) or
-  Dusklight (`a2aa9cc`), every object of each compiled with it.
+- **The check found none** in xsdk, SDL-xenon (`c86389c89`), vulkan4xenon (`a863279`), Aurora (`b8edd5c`) or
+  Dusklight (`bc6327f`), every object of each compiled with it.
 - **xsdk_test passed 231 of 231** (`xsdk_test.log`), among them its new check: floats and doubles written at every
   offset from 0 to 7 and read back through `memcpy`, `std::bit_cast` and packed structs, 76 reads, none wrong.
 - **Built with milestone 22's compiler, the same test stopped there** (`xsdk_test_unfixed.log`): the log ends at the
@@ -1954,7 +1954,7 @@ error. Logs: `results/2026-10-12-milestone-23/` and vulkan4xenon:results/2026-10
 - **Dusklight ran as at vulkan4xenon's milestone 10** (`dusklight.log`, against
   vulkan4xenon:results/2026-10-12-milestone-10-step-2/dusklight.log): the boot screens at 50 fps, the title scene at
   29.7 to 30.0 fps once loaded, and exit status 0, with the same unsupported-feature errors and 9 MB free at the end,
-  from 7. Aurora `33c1b47`'s integer read of the command stream's floats is still in, so the run shows that nothing
+  from 7. Aurora `600815f`'s integer read of the command stream's floats is still in, so the run shows that nothing
   else regressed; xsdk_test's `read_float_bits` is that read.
 
 With that, milestone 23 is done: xsdk's GCC keeps float registers off memory it doesn't know is aligned, and every
@@ -1967,7 +1967,7 @@ pixel shaders and 64 for vertex shaders (xsdk `2562309`), where libxenon's steps
 ("libxenon's set-up makes the resolves work", above). The fields are Adreno 2xx's: pixel shaders' share in bits 4-11
 of `SQ_GPR_MANAGEMENT`, vertex shaders' in bits 12-19 (Linux:drivers/gpu/drm/msm/registers/adreno/a2xx.xml:1231-1235).
 xost builds for that split and refuses a shader past its share (xost `67994ad`), as do vulkan4xenon's builds
-(vulkan4xenon `3368b84`) and Dusklight's shader pack (Aurora `28a3bc1`, Dusklight `6e6c9c6`). Logs:
+(vulkan4xenon `3368b84`) and Dusklight's shader pack (Aurora `4ede080`, Dusklight `1eb70f5`). Logs:
 `results/2026-10-12-milestone-24/` and vulkan4xenon:results/2026-10-12-milestone-24/.
 - **xsdk_test passed 241 of 241** (`xsdk_test.log`). Its new checks draw with pixel shaders using 18 and 64 registers
   and a vertex shader using 64, each filling every register with a constant of its own and adding the square of how far
