@@ -1689,3 +1689,18 @@ SDL's check title (`test/xsdk/sdl_check.c` in the SDL fork; logs: `results/2026-
   `KeDelayExecutionThread` can end up to 1.4 ms before the time asked for, which fits a wait counted from the kernel's
   last clock tick. `nanosleep`, and so `sleep_for` and `SDL_Delay`, now waits again until `CLOCK_MONOTONIC` passes its
   deadline.
+
+## SDL's drivers and the fixed clocks on the console (2026-10-11)
+
+`sdl_check.xex` from the SDL fork at `3d6afe95b` and `build/xsdk_test.xex`, both on the SDK at `ac1747b` (logs:
+`results/2026-10-11-sdl-check-3/xsdk.log` and `results/2026-10-11-clocks/xsdk_test.log`): all 16 and all 215 checks
+passed, and both titles exited with status 0.
+- **SDL:** the platform reads "Xbox 360". `game:\` is the base path, and `game:\xsdk\sdl_check\` was made and a file
+  written there read back. A thread ran. The controller showed up as an Xbox 360 controller, its buttons and sticks
+  read, and both motors rumbled. Audio opened at 6 channels of big-endian floats at 48 kHz and played a 750 Hz tone.
+- **The clocks:** `CLOCK_MONOTONIC` kept the kernel's system time to 7 ppm over 252 ms, where it was 2500 ppm off, and
+  the system time stepped 1 ms at a time. Twenty 2 ms `nanosleep`s took 2.05 to 3.00 ms, none early, and
+  `SDL_Delay(100)` 100016 us, with SDL's clock stepping 221 ns. Over the 2000 ms tone SDL pulled exactly 96000 frames,
+  where it pulled 95744 while the clock ran slow.
+- **Rumble:** `XamInputSetState` ran controller 1's motors at half strength for 500 ms and stopped them.
+- **Pacing's** longest wait for a buffer reads 17995 us where it read 17949 us: the same wait, at the true rate.
