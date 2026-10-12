@@ -1,7 +1,8 @@
 # Builds titles with the SDK as its Makefile does: cmake -DCMAKE_TOOLCHAIN_FILE=<xsdk>/cmake/xsdk.cmake, after make.
-# Code tells the target apart by the compiler's own __XSDK__.
+# Code tells the target apart by the compiler's own __XSDK__, and CMake projects by XSDK.
 set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_SYSTEM_PROCESSOR powerpc)
+set(XSDK TRUE)
 
 get_filename_component(XSDK_ROOT "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
 set(XSDK_TOOLCHAIN "$ENV{HOME}/xsdk-gcc" CACHE PATH "Where tools/toolchain/build.sh installed the toolchain")
