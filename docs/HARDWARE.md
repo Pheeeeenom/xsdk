@@ -1878,3 +1878,30 @@ one kept at `~/xsdk-gcc-sysv`. Everything was rebuilt from clean on it and run o
 
 With that, milestone 22 is done: xsdk's GCC calls as the console's own compiler does, by default, and every title
 built with it passes on the console.
+
+## Dusklight runs up to the disc (2026-10-12)
+
+`build/xsdk_test.xex` at `f770193` and Dusklight's second-step `dusklight.xex` (Dusklight `3adfb33`, Aurora `933efa4`,
+SDL-xenon `c86389c89`) linked with it, run with no disc image beside it (logs: `results/2026-10-12-dusklight-step-2/`,
+the xsdk_test one its summary): all 230 checks passed and xsdk_test exited with status 0. Dusklight ended with status
+1, as it does without a disc.
+- **Dusklight's own startup ran** on Aurora's null backend. It read its config (none yet, so the defaults), started
+  Aurora with no window, and loaded RmlUi's eight font faces from `res\`. It then found no `game:\dusklight.iso`
+  (0xC0000034, `STATUS_OBJECT_NAME_NOT_FOUND`; xenia:src/xenia/xbox.h:60) and ended there, since the game reads the
+  disc's ID before `OSInit`.
+- **`main` gets argc 1 and an empty `argv[0]`** (`6ea8d10`), which xsdk_test checks; Dusklight reads its options from
+  `argv[1]` on.
+- **Paths that `std::filesystem` makes absolute reach the file** (`f770193`). libstdc++ takes `game:\TwilitRealm\Dusk`
+  for a relative path and puts the current directory, `game:\`, in front of it. xsdk turned that into
+  `game:\game:\TwilitRealm\Dusk`, which the kernel refused (0xC0000033, `STATUS_OBJECT_NAME_INVALID`;
+  xenia:src/xenia/xbox.h:59). The run before the fix (`dusklight-before.log`: the same Dusklight, its `Build:` line
+  naming `4559590`, the commit `3adfb33` amended, linked with xsdk `6ea8d10`) logged 16 such `stat` failures, from
+  borealis comparing its data folders through `weakly_canonical` (dusklight:extern/borealis/src/data.cpp:34-56). xsdk
+  now starts a path over at a drive anywhere in it: this run logged none, and xsdk_test reads a file back through
+  `absolute()` and `weakly_canonical()`.
+- **Left as they are:**
+  - The `mkdir` line is a folder that was already there (0xC0000035, `STATUS_OBJECT_NAME_COLLISION`;
+    xenia:src/xenia/xbox.h:61).
+  - The pipeline cache opens no database, since sqlite here has no VFS, and says "out of memory".
+  - The window keeps its title, with no video subsystem.
+  - The log carries Dusklight's colour codes.

@@ -1,0 +1,56 @@
+log: game:\xsdk.log
+sbrk: the heap may grow to 443 MB, the title's free memory
+dusklight: started, with the game linked and its static constructors run
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 26119 us
+dusklight: 512 MB in all, 3 MB the kernel's; the title has 442 MB free
+dusklight: title pages: 8192 image, 96 heap, 256 stack, 920 physical, 64 virtual, 2 pool
+dusklight: the heap holds 256 KB, 238 KB of it in use
+mkdir: NtCreateFile(game:\TwilitRealm) failed: 0xC0000035
+mkdir: NtCreateFile(game:\TwilitRealm\Dusklight) failed: 0xC0000035
+mkdir: NtCreateFile(game:\TwilitRealm) failed: 0xC0000035
+stat: NtQueryFullAttributesFile(game:\game:\TwilitRealm\Dusk) failed: 0xC0000033
+stat: NtQueryFullAttributesFile(game:\game:\TwilitRealm\Dusklight) failed: 0xC0000033
+stat: NtQueryFullAttributesFile(game:\game:) failed: 0xC0000033
+stat: NtQueryFullAttributesFile(game:\game:\TwilitRealm\Dusklight) failed: 0xC0000033
+stat: NtQueryFullAttributesFile(game:\game:\TwilitRealm\Dusk) failed: 0xC0000033
+stat: NtQueryFullAttributesFile(game:\game:\TwilitRealm\Dusklight) failed: 0xC0000033
+stat: NtQueryFullAttributesFile(game:\game:) failed: 0xC0000033
+stat: NtQueryFullAttributesFile(game:\game:\TwilitRealm\Dusk) failed: 0xC0000033
+stat: NtQueryFullAttributesFile(game:\game:\TwilitRealm\Dusklight) failed: 0xC0000033
+stat: NtQueryFullAttributesFile(game:\game:\TwilitRealm\Dusk) failed: 0xC0000033
+stat: NtQueryFullAttributesFile(game:\game:\TwilitRealm\Dusk) failed: 0xC0000033
+stat: NtQueryFullAttributesFile(game:\game:\TwilitRealm\Dusklight) failed: 0xC0000033
+stat: NtQueryFullAttributesFile(game:\game:\TwilitRealm\Dusk) failed: 0xC0000033
+stat: NtQueryFullAttributesFile(game:\game:\TwilitRealm\Dusklight) failed: 0xC0000033
+stat: NtQueryFullAttributesFile(game:\game:\TwilitRealm\Dusk) failed: 0xC0000033
+stat: NtQueryFullAttributesFile(game:\game:\TwilitRealm\Dusklight) failed: 0xC0000033
+[0m[INFO | dusk][0m Build: UNKNOWN-VERSION (rev 45595909c5de61f00deeb621b9c98ae73afb66cf, built Mon Oct 12 03:34:27 2026 -0400, type RelWithDebInfo)
+[0m[INFO | dusk][0m Platform: generic
+[0m[INFO | dusk::config][0m Loading config from 'game:\TwilitRealm\Dusklight\/config.json'
+open: NtCreateFile(game:\TwilitRealm\Dusklight\config.json) failed: 0xC0000034
+[0m[INFO | dusk::config][0m Config file did not exist, staying with defaults
+[0m[INFO | aurora][0m Aurora initializing
+[0m[INFO | aurora::system_info][0m CPU model: Unknown
+[0m[INFO | aurora::system_info][0m Memory: 0 MiB
+[0m[INFO | aurora::system_info][0m Architecture: Unknown
+[0m[INFO | aurora::system_info][0m OS: Unknown
+[0m[INFO | aurora::gfx::null][0m Null backend: GX work is recorded and discarded, with no window
+[0m[INFO | aurora::gfx::pipeline_cache][0m Pipeline compilation: 4 at a time
+[31m[ERROR | aurora::gfx::pipeline_cache][0m Failed to open pipeline cache database: out of memory
+[0m[INFO | aurora][0m Using framebuffer size 1216x896 scale 1
+[33m[WARNING | aurora::window][0m Failed to set window title: Video subsystem has not been initialized
+[33m[WARNING | aurora::gfx::texture_replacement][0m Texture packs and dumps are supported only by the Dawn backend
+[0m[INFO | dusk][0m Texture replacement directory loaded: 0 registration(s)
+[0m[INFO | aurora::rmlui][0m Loaded font face 'Fira Sans' [regular] from 'res/FiraSans-Regular.ttf'.
+[0m[INFO | aurora::rmlui][0m Loaded font face 'Fira Sans' [bold] from 'res/FiraSans-Bold.ttf'.
+[0m[INFO | aurora::rmlui][0m Loaded font face 'Fira Sans Condensed' [regular] from 'res/FiraSansCondensed-Regular.ttf'.
+[0m[INFO | aurora::rmlui][0m Loaded font face 'Fira Sans Condensed' [bold] from 'res/FiraSansCondensed-Bold.ttf'.
+[0m[INFO | aurora::rmlui][0m Loaded font face 'Alegreya SC' [regular] from 'res/AlegreyaSC-Regular.ttf'.
+[0m[INFO | aurora::rmlui][0m Loaded font face 'Alegreya SC' [bold] from 'res/AlegreyaSC-Bold.ttf'.
+[0m[INFO | aurora::rmlui][0m Loaded font face 'Material Symbols Rounded' [regular] from 'res/MaterialSymbolsRounded-Regular.ttf'.
+[0m[INFO | aurora::rmlui][0m Loaded font face 'Noto Mono' [regular] from 'res/NotoMono-Regular.ttf'.
+[0m[INFO | dusk][0m Loading DVD image: game:\dusklight.iso
+open: NtCreateFile(game:\dusklight.iso) failed: 0xC0000034
+[31m[ERROR | dusk][0m Failed to open DVD image: game:\dusklight.iso; the disc is missing
+exit: status 1
