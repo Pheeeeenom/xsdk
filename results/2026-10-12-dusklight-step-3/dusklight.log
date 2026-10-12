@@ -1,0 +1,15 @@
+[0m[INFO | dusk][0m A minute into the title scene. The heaps at their peaks:
+[0m[INFO | dusk][0m   root: 140176 KB of 262127 KB
+[0m[INFO | dusk][0m   system: 32739 KB of 32767 KB
+[0m[INFO | dusk][0m   zelda: 5163 KB of 32030 KB
+[0m[INFO | dusk][0m   game: 17634 KB of 88159 KB
+[0m[INFO | dusk][0m   archive: 7110 KB of 18169 KB
+[0m[INFO | dusk][0m   j2d: 41 KB of 999 KB
+[0m[INFO | dusk][0m   command: 1 KB of 7 KB
+[0m[INFO | dusk][0m   dbPrint: 0 KB of 5 KB
+[0m[INFO | dusk][0m   hostIO: 0 KB of 0 KB
+[0m[INFO | dusk][0m   audio: 2667 KB of 2667 KB
+[0m[INFO | dusk][0m   newlib's: 385684 KB
+[0m[INFO | dusk::mods::loader][0m all mods unloaded
+[0m[INFO | dusk::osReport][0m [PC] OSResetSystem called (reset=2, code=0)
+exit: status 0

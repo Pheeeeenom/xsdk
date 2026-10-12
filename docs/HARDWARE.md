@@ -1905,3 +1905,27 @@ the xsdk_test one its summary): all 230 checks passed and xsdk_test exited with 
   - The pipeline cache opens no database, since sqlite here has no VFS, and says "out of memory".
   - The window keeps its title, with no video subsystem.
   - The log carries Dusklight's colour codes.
+
+## Dusklight runs the title scene (2026-10-12)
+
+vulkan4xenon's milestone 9, step 3: Dusklight at `33e94c7` (Aurora `33c1b47`, SDL-xenon `c86389c89`), linked with xsdk
+at `c98ceb8`, with Twilight Princess's GameCube disc (GZ2E01) beside it as `game:\dusklight.iso` (logs:
+`results/2026-10-12-dusklight-step-3/`, each the part of the log that was sent). xsdk hasn't changed since its 230 of
+230 above.
+- **The title scene ran its minute** on Aurora's null backend, and the title exited with status 0 (`dusklight.log`).
+  The game logs that minute only once stage F_SP102 has started. The run before the last fix
+  (`dusklight-shutdown.log`), the same game up to its shutdown, gives the frame rate: 19.1 fps over the first 10
+  seconds, as the scene loaded, then 29.6 to 30.0, as in Xenia.
+- **At their peaks,** the game's root heap held 140176 KB of its 262127 and newlib's heap 385684 KB, 377 MB of the
+  443 MB it reserves. The game's own heaps peaked as in Xenia, to the KB.
+- **A float load from the command stream raised an alignment exception** (`dusklight-float-load.log`): 0x80000002 at
+  an `lfsx` in Aurora's `handle_aurora`, loading a viewport's floats, which Aurora's stream packs at any byte. The
+  integer loads from the same stream before it ran. GCC had merged an integer load and a `std::bit_cast` to float into
+  that one float load, as it does where nothing swaps between them; Aurora `33c1b47` keeps it an integer load. Xenia
+  doesn't check alignment, so it ran there.
+- **A mutex relocked after its memory is freed corrupts the heap** (`dusklight-shutdown.log`): an xsdk mutex is a
+  pointer to a critical section allocated on first use, and once its memory is freed that word is newlib's free-list
+  link, which a lock then takes for the critical section. Dusklight's `OSResetSystem` woke the threads waiting on its
+  message queues and freed the queues, mutexes included, before those threads relocked them. The title then crashed
+  in `_free_r` (newlib's `_mallocr.c:2723`) with a write to 0xC, an unlink through a null link. With the queues kept
+  (Dusklight `33e94c7`) it exited cleanly. Xenia never showed it.

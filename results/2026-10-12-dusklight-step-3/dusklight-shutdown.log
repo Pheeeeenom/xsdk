@@ -1,0 +1,100 @@
+[0m[INFO | dusk::osReport][0m [PC-OSThread] Thread system initialized (multi-threaded mode)
+[0m[INFO | dusk][0m 191 frames in 10.0 s, 19.1 fps
+[36m[DEBUG | dusk][0m fapGm_Execute frame=300
+[33m[WARNING | aurora::gx::fifo][0m 65538 bytes written between publishes, more than a 65536 byte chunk: given a chunk of their own
+[0m[INFO | dusk][0m 297 frames in 10.0 s, 29.6 fps
+[36m[DEBUG | dusk][0m fapGm_Execute frame=600
+[0m[INFO | dusk][0m 301 frames in 10.0 s, 30.0 fps
+[36m[DEBUG | dusk][0m fapGm_Execute frame=900
+[0m[INFO | dusk][0m 301 frames in 10.0 s, 30.0 fps
+[36m[DEBUG | dusk][0m fapGm_Execute frame=1200
+[0m[INFO | dusk][0m 300 frames in 10.0 s, 30.0 fps
+[36m[DEBUG | dusk][0m fapGm_Execute frame=1500
+[0m[INFO | dusk][0m 300 frames in 10.0 s, 30.0 fps
+[36m[DEBUG | dusk][0m fapGm_Execute frame=1800
+[0m[INFO | dusk][0m A minute into the title scene. The heaps at their peaks:
+[0m[INFO | dusk][0m   root: 140176 KB of 262127 KB
+[0m[INFO | dusk][0m   system: 32740 KB of 32767 KB
+[0m[INFO | dusk][0m   zelda: 5163 KB of 32030 KB
+[0m[INFO | dusk][0m   game: 17634 KB of 88159 KB
+[0m[INFO | dusk][0m   archive: 7110 KB of 18169 KB
+[0m[INFO | dusk][0m   j2d: 41 KB of 999 KB
+[0m[INFO | dusk][0m   command: 1 KB of 7 KB
+[0m[INFO | dusk][0m   dbPrint: 0 KB of 5 KB
+[0m[INFO | dusk][0m   hostIO: 0 KB of 0 KB
+[0m[INFO | dusk][0m   audio: 2667 KB of 2667 KB
+[0m[INFO | dusk][0m   newlib's: 385685 KB
+[0m[INFO | dusk::mods::loader][0m all mods unloaded
+[0m[INFO | dusk::osReport][0m [PC] OSResetSystem called (reset=2, code=0)
+Exception : 4177526784 3221225477 2212747304 FirstChance
+------------------------------------------------------------------------
+TIME: 09:30:45 GMT Mon, Oct 12, 2026
+------------------------------------------------------------------------
+Unhandled Exception (last chance):
+
+it does not have access for which
+------------------------------------------------------------------------
+Faulting Module Info:
+	FullName       : \Device\Harddisk0\Partition1\dusklight\dusklight.xex
+	BaseName       : dusklight.xex
+	ImageBase      : 82000000
+	SizeOfFullImage: 02000000
+	EntryPoint     : 83D28080
+------------------------------------------------------------------------
+	EADDR: 0x83E3D828
+	ECODE: 0xC0000005
+	EFLAG: 0 (cont)
+	NPARM: 2
+	     PARAM 00: 0x00000001
+	     PARAM 01: 0x0000000C
+	CFLAG: 0x00000017
+------------------------------------------------------------------------
+Control Registers:
+	MSR: 0x0000B030 IAR: 0x83E3D828
+	LR : 0x83E3D714 CTR: 0xFFFFFFFF80088FA0
+------------------------------------------------------------------------
+Integer Registers:
+	CR : 0x48000042 XER: 0x20000000
+	r0 : 0x0000000083E3D714 r1 : 0x000000007010EA80 r2 : 0x0000000020000000
+	r3 : 0x0000000000000000 r4 : 0x0000000000000000 r5 : 0x0000000000000011
+	r6 : 0x0000000000000000 r7 : 0x00000000048F6D98 r8 : 0x0000000028766172
+	r9 : 0x0000000000000010 r10: 0x00000000048F6D88 r11: 0xFFFFFFFF80088FA0
+	r12: 0x0000000083D2B34C r13: 0x00000000801B0000 r14: 0x0000000000000000
+	r15: 0x0000000000000000 r16: 0x0000000000000000 r17: 0x0000000000000000
+	r18: 0x0000000000000000 r19: 0x0000000000000000 r20: 0x00000000000A5DF8
+	r21: 0x00000000000A5B98 r22: 0x0000000000000001 r23: 0x0000000000000000
+	r24: 0x00000000000A8038 r25: 0x00000000000002A0 r26: 0x0000000088000042
+	r27: 0x0000000000000540 r28: 0x00000000048E85C8 r29: 0x0000000000000019
+	r30: 0x0000000000000020 r31: 0x00000000048F6DA0
+------------------------------------------------------------------------
+Call Stack:
+	0x83E3D828 (EADDR)
+	0x83E3D714 (LR)
+	0x00000000
+	0x800A7004
+	0x00000000
+	0x8006F708
+	0x00000000
+	0x00000000
+	0x00000000
+	0x00000000
+	0x00000000
+	0x00000000
+	0x00000000
+	0x00000000
+	0x00000000
+	0x00000000
+	0x00000000
+	0x00000000
+	0x00000000
+	0x00000000
+	0x00000000
+	0x00000000
+	0x00000000
+	0x00000000
+	0x00000000
+	0x00000000
+	0x00004548
+------------------------------------------------------------------------
+Dump Done
+------------------------------------------------------------------------

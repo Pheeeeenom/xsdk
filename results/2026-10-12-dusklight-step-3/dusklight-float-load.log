@@ -1,0 +1,27 @@
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=47 profname=fpcNm_Tag_Attp_e (346) profile=0x8212638c procSize=1396 unkSize=0
+[36m[DEBUG | dusk][0m Loading Resource: al_sha.bmd (Size: 24288)
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=255 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=255
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=48 profname=fpcNm_MIDNA_e (255) profile=0x82125ac4 procSize=2584 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x6e3a760
+[36m[DEBUG | dusk][0m Loading Resource: s_md_hands.bmd (Size: 19776)
+[36m[DEBUG | dusk][0m Loading Resource: s_md_mask.bmd (Size: 15424)
+[36m[DEBUG | dusk][0m Loading Resource: s_md_gokou.bmd (Size: 3008)
+[36m[DEBUG | dusk][0m Loading Resource: s_md.bmd (Size: 69984)
+[36m[DEBUG | dusk][0m Loading Resource: s_md_hair_hand.bmd (Size: 18944)
+[36m[DEBUG | dusk][0m Loading Resource: s_md_appear.brk (Size: 352)
+[36m[DEBUG | dusk][0m Loading Resource: s_md_gokou_appear.brk (Size: 256)
+[36m[DEBUG | dusk][0m Loading Resource: s_md_hair_hand_appear.brk (Size: 288)
+[36m[DEBUG | dusk][0m Loading Resource: s_md_mask_appear.brk (Size: 256)
+[36m[DEBUG | dusk][0m Loading Resource: s_md_hair_hand_moya.btk (Size: 544)
+[36m[DEBUG | dusk][0m Loading Resource: s_md_hands_moya.btk (Size: 608)
+[36m[DEBUG | dusk][0m Loading Resource: s_md_mask_moya.btk (Size: 320)
+[36m[DEBUG | dusk][0m Loading Resource: s_md_moya.btk (Size: 512)
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=50 profname=fpcNm_DEMO00_e (718) profile=0x82124920 procSize=10652 unkSize=0
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=52 profname=fpcNm_DEMO00_e (718) profile=0x82124920 procSize=10652 unkSize=0
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=54 profname=fpcNm_DEMO00_e (718) profile=0x82124920 procSize=10652 unkSize=0
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=56 profname=fpcNm_DEMO00_e (718) profile=0x82124920 procSize=10652 unkSize=0
+[36m[DEBUG | dusk][0m frameInterp: onTypeChange 41 -> 40 (event_type_id=40, leaving_event=false, entering_event=true)
+[0m[INFO | dusk::osReport][0m [PC-OSThread] Thread system initialized (multi-threaded mode)
+Exception : 4177526808 2147483650 2203029960 FirstChance
+Exception from HRESULT: 0x82DA0100Exception : 4177526808 2147483650 2203029960 FirstChance
