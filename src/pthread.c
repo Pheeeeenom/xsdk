@@ -22,6 +22,8 @@ enum {
 	THREAD_DETACHED = 1,
 	THREAD_ENDED = 2,
 	ONCE_DONE = 1,
+	// glibc's PTHREAD_STACK_MIN; newlib defines one only for Xilinx's kernel.
+	STACK_MIN_BYTES = 16 * 1024,
 };
 
 // One millisecond, relative, in 100 ns units.
@@ -177,6 +179,63 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start)
 	return 0;
 }
 
+int pthread_attr_init(pthread_attr_t *attr)
+{
+	*attr = (pthread_attr_t){ .is_initialized = 1, .detachstate = PTHREAD_CREATE_JOINABLE };
+	return 0;
+}
+
+int pthread_attr_destroy(pthread_attr_t *attr)
+{
+	attr->is_initialized = 0;
+	return 0;
+}
+
+int pthread_attr_setdetachstate(pthread_attr_t *attr, int state)
+{
+	if (state != PTHREAD_CREATE_JOINABLE && state != PTHREAD_CREATE_DETACHED)
+		return EINVAL;
+	attr->detachstate = state;
+	return 0;
+}
+
+int pthread_attr_setstacksize(pthread_attr_t *attr, size_t stack_bytes)
+{
+	if (stack_bytes < STACK_MIN_BYTES || stack_bytes > INT32_MAX)
+		return EINVAL;
+	attr->stacksize = (int)stack_bytes;
+	return 0;
+}
+
+// Threads keep the kernel's priority: what its levels do on the console is untested, so POSIX sees one level.
+int sched_get_priority_min(int policy)
+{
+	(void)policy;
+	return 0;
+}
+
+int sched_get_priority_max(int policy)
+{
+	(void)policy;
+	return 0;
+}
+
+int pthread_getschedparam(pthread_t thread, int *policy, struct sched_param *param)
+{
+	(void)thread;
+	*policy = SCHED_OTHER;
+	*param = (struct sched_param){ .sched_priority = 0 };
+	return 0;
+}
+
+int pthread_setschedparam(pthread_t thread, int policy, const struct sched_param *param)
+{
+	(void)thread;
+	(void)policy;
+	(void)param;
+	return ENOTSUP;
+}
+
 int pthread_join(pthread_t thread, void **result)
 {
 	Thread *target = (Thread *)(uintptr_t)thread;
@@ -229,6 +288,16 @@ int pthread_setcancelstate(int state, int *old_state)
 		return EINVAL;
 	if (old_state)
 		*old_state = PTHREAD_CANCEL_ENABLE;
+	return 0;
+}
+
+// SDL3 asks for asynchronous cancellation in its threads; with no cancellation, the type changes nothing either.
+int pthread_setcanceltype(int type, int *old_type)
+{
+	if (type != PTHREAD_CANCEL_DEFERRED && type != PTHREAD_CANCEL_ASYNCHRONOUS)
+		return EINVAL;
+	if (old_type)
+		*old_type = PTHREAD_CANCEL_DEFERRED;
 	return 0;
 }
 

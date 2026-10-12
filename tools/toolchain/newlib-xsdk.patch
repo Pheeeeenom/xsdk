@@ -1,12 +1,14 @@
 --- a/newlib/libc/include/sys/features.h
 +++ b/newlib/libc/include/sys/features.h
-@@ -439,6 +439,16 @@
+@@ -439,6 +439,18 @@
  #define _POSIX_THREAD_PRIORITY_SCHEDULING	1
  #endif
  
-+/* The Xbox 360 SDK supplies POSIX threads, timeouts and clocks on the retail kernel. */
++/* The Xbox 360 SDK supplies POSIX threads, their scheduling, timeouts and clocks on the retail kernel. */
 +#ifdef __XSDK__
 +#define _POSIX_THREADS				1
++#define _POSIX_PRIORITY_SCHEDULING		1
++#define _POSIX_THREAD_PRIORITY_SCHEDULING	1
 +#define _POSIX_READER_WRITER_LOCKS		200112L
 +#define _POSIX_TIMEOUTS				1
 +#define _POSIX_TIMERS				1

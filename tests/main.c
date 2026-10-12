@@ -24,6 +24,7 @@ int main(void)
 	check("splash: the vulkan4xenon logo shown", NT_SUCCESS(xsdk_splash_show(SPLASH_MS)));
 	test_image();
 	test_threads();
+	test_pthread();
 	test_files();
 	test_copy();
 	test_cpp_objects();
