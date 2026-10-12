@@ -39,6 +39,7 @@ xboxkrnl.exe  0x155  KeTlsSetValue
 xboxkrnl.exe  0x18A  XeCryptRandom
 xboxkrnl.exe  0x195  XexGetModuleHandle
 xboxkrnl.exe  0x197  XexGetProcedureAddress
+xboxkrnl.exe  0x1AF  ExLoadedImageName                   variable
 xboxkrnl.exe  0x1B6  VdEnableRingBufferRPtrWriteBack
 xboxkrnl.exe  0x1BA  VdGetCurrentDisplayInformation
 xboxkrnl.exe  0x1BD  VdGetSystemCommandBuffer

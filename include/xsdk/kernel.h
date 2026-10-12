@@ -269,6 +269,10 @@ NTSTATUS DbgPrint(const char *format, ...);
 NTSTATUS ExCreateThread(HANDLE *thread, uint32_t stack_bytes, uint32_t *thread_id, void *xapi_thread_startup,
 	void *start_address, void *start_context, uint32_t creation_flags);
 void ExTerminateThread(uint32_t exit_code);
+// The running .xex's path, which the loader writes into the kernel's 256 bytes as it starts the title; custom
+// dashboards read their own path there (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_module.cc:177-185,
+// xenia:src/xenia/kernel/kernel_state.cc:351-360).
+extern const char *const ExLoadedImageName;
 NTSTATUS KeDelayExecutionThread(uint32_t processor_mode, uint32_t alertable, const int64_t *interval);
 // Xenia returns it as 32 bits (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_threading.cc:312-315).
 uint64_t KeQueryPerformanceFrequency(void);
