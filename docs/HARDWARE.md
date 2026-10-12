@@ -1704,3 +1704,24 @@ passed, and both titles exited with status 0.
   where it pulled 95744 while the clock ran slow.
 - **Rumble:** `XamInputSetState` ran controller 1's motors at half strength for 500 ms and stopped them.
 - **Pacing's** longest wait for a buffer reads 17995 us where it read 17949 us: the same wait, at the true rate.
+
+## What the kernel leaves a title (2026-10-12)
+
+`build/xsdk_test.xex` at `a6b5743` and Dusklight's first-step `dusklight.xex` (Dusklight `e7e916c`, built with
+`int32_t` predefined as `int` until the compiler makes it so; logs: `results/2026-10-12-memory/`, the xsdk_test one
+the memory test's lines and the summary): all 222 checks passed, and both titles exited with status 0.
+- **`MmQueryStatistics`** answers with the 104-byte result Xenia lays out
+  (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_memory.cc:451-473) and refuses one 4 bytes short. Pages are 4 KB: 131072
+  of them, 512 MB, the highest 0x1FFFF.
+- **The pages add up:** the kernel holds 784 (3 MB) and the system 7408 (29 MB, 1503 of them free), which leaves the
+  title 122880 pages, 480 MB, used and free together. xsdk_test, with 1964 in use, had 120916 free (472 MB); Dusklight
+  442 MB.
+- **The image** counts whole, in elf2xex's 64 KB pages: xsdk_test's 656 pages, and Dusklight's 8272, its 517 64 KB pages
+  (33882112 bytes).
+- **Heap growth takes free pages:** 16 MB through `sbrk`, every page touched, took 4100 pages, 16 MB and 4 more.
+- **Address space:** the title has 767 MB, and `sbrk`'s 256 MB reservation shows as 256 MB reserved.
+- **The rest of the title's pages,** the same in both: 256 stack (the main thread's 1 MB), 96 heap, 920 physical. The
+  physical pages stay after `xsdk_splash_show` has freed its buffers and closed the GPU; what holds them isn't known.
+  Dusklight's static constructors took 256 KB of newlib's heap.
+- **`pread`** read at an offset without moving the position and read nothing at the end, and **`flockfile`** kept a
+  second thread waiting while `stdout` was locked twice, then once.
