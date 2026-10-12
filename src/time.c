@@ -1,3 +1,6 @@
+// newlib declares CLOCK_MONOTONIC_RAW only to GNU code.
+#define _GNU_SOURCE
+
 #include "time_private.h"
 
 #include <errno.h>
@@ -7,7 +10,8 @@
 
 #include "xsdk/kernel.h"
 
-// POSIX clocks: CLOCK_REALTIME from the kernel's system time, CLOCK_MONOTONIC from the CPU's time base.
+// POSIX clocks: CLOCK_REALTIME from the kernel's system time, which steps a millisecond at a time on the console;
+// CLOCK_MONOTONIC and CLOCK_MONOTONIC_RAW from the CPU's time base, which nothing adjusts.
 
 // 100 ns intervals from 1601, where NT time starts, to 1970.
 static const int64_t NT_UNIX_EPOCH = 116444736000000000LL;
@@ -58,7 +62,7 @@ int clock_gettime(clockid_t clock, struct timespec *time)
 		*time = xsdk_time_from_nt(now);
 		return 0;
 	}
-	if (clock == CLOCK_MONOTONIC) {
+	if (clock == CLOCK_MONOTONIC || clock == CLOCK_MONOTONIC_RAW) {
 		if (!time_base_hz)
 			time_base_hz = KeQueryPerformanceFrequency();
 		const uint64_t ticks = time_base();
