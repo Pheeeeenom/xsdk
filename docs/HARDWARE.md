@@ -1959,3 +1959,42 @@ error. Logs: `results/2026-10-12-milestone-23/` and vulkan4xenon:results/2026-10
 
 With that, milestone 23 is done: xsdk's GCC keeps float registers off memory it doesn't know is aligned, and every
 title built with it passes on the console.
+
+## Pixel shaders past 16 registers, milestone 24 (2026-10-12)
+
+xsdk's set-up now stops stepping the shader unit's register split at the kernel's own 0x00040400, 64 registers for
+pixel shaders and 64 for vertex shaders (xsdk `2562309`), where libxenon's steps go on to 0x00070100, 16 and 112
+("libxenon's set-up makes the resolves work", above). The fields are Adreno 2xx's: pixel shaders' share in bits 4-11
+of `SQ_GPR_MANAGEMENT`, vertex shaders' in bits 12-19 (Linux:drivers/gpu/drm/msm/registers/adreno/a2xx.xml:1231-1235).
+xost builds for that split and refuses a shader past its share (xost `67994ad`), as do vulkan4xenon's builds
+(vulkan4xenon `3368b84`) and Dusklight's shader pack (Aurora `28a3bc1`, Dusklight `6e6c9c6`). Logs:
+`results/2026-10-12-milestone-24/` and vulkan4xenon:results/2026-10-12-milestone-24/.
+- **xsdk_test passed 241 of 241** (`xsdk_test.log`). Its new checks draw with pixel shaders using 18 and 64 registers
+  and a vertex shader using 64, each filling every register with a constant of its own and adding the square of how far
+  each is off into its colour (tools/gen_register_shaders.py): all three quads held their colours in every one of the
+  59 frames checked.
+- **Under libxenon's split the 18-register draw hung the GPU** (`xsdk_test_libxenon_split.log`): its fence never
+  landed in the first frame, and the GPU hadn't finished at close (0xC00000B5, so xsdk kept it and its memory); the
+  231 checks before it passed. That is xost's "r16 hangs, r15 runs"
+  (xost:xasm/program.py), from the split.
+- **Broken on purpose,** the 18-register shader writing r17's fill into r16, as two registers sharing would, washed
+  that quad to white in every frame, FFFFFFFF where 208020FF was due, and passed the other two
+  (`xsdk_test_alias.log`).
+- **vulkan4xenon_test** passed 64 of 64 and **vkbench** 14 of 14 (vulkan4xenon:results/2026-10-12-milestone-24/).
+  Against milestone 23's run the CPU's draw and submit times moved within 1.4%, and most GPU times within 2% though
+  vertex shaders went from 112 registers to 64; the state scenes' GPU times fell, xsdk's `states_250` from 793 to 591 us and
+  `states_1000` from 842 to 665, and vulkan4xenon's `states_250` from 608 to 420, while vulkan4xenon's `states_1000`
+  stayed at 305. Why the split helps those three and not the fourth isn't looked into.
+- **Dusklight** (`dusklight.log`), with its pack's 69th program, the 18-register `e3fba406929fde97.frag`, ran the boot
+  screens and the title scene as at milestone 23 and exited with status 0; the backend no longer reports that program
+  missing from the pack, and its other errors are milestone 23's.
+
+With that, milestone 24 is done: pixel shaders get 64 registers, and every title built for it passes on the console.
+
+## Each title's log is named after its .xex (2026-10-12)
+
+xsdk names a title's log after the `.xex` the loader started (xsdk `7b23184`), from the path the kernel leaves in
+`ExLoadedImageName`, xboxkrnl's export 0x1AF (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_module.cc:177-185). On the
+console it held the path the title was launched from: `\Device\Harddisk0\Partition1\XSDK\xsdk_test.xex` and
+`\Device\Harddisk0\Partition1\dusklight\dusklight.xex`, so the logs came out as `game:\xsdk_test.log` and
+`game:\dusklight.log` (`results/2026-10-12-milestone-24/`).
