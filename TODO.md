@@ -28,9 +28,9 @@ work begins.
   `link` is `ENOSYS` (src/path.c). The likely fix is a `_rename`, with newlib-xsdk.patch defining `HAVE_RENAME`, over
   `NtSetInformationFile`'s rename class, which Xenia takes as a 16-byte structure
   (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_io_info.cc:170-172).
-- **Small GPU allocations.** `xsdk_gpu_alloc` rounds each one up to a 64 KiB large page (src/gpu.c, `allocate`), so
-  vulkan4xenon's pipelines take at least 128 KiB each for their two shaders. Dusklight's title scene has about 30 and
-  ends with 7 MB free. Shaders and other small buffers could share pages.
+- **Small GPU allocations other than shaders.** `xsdk_gpu_alloc` rounds each one up to a 64 KiB large page (src/gpu.c,
+  `allocate`). Shaders' microcode shares pages since milestone 25; the rest, three small ones in Dusklight's title
+  scene (results/2026-10-12-gpu-allocations/), still take a page each.
 - **A sharper scaler filter at 1080p.** 1280x720 is scaled with the built-in 2-tap filter, the only setting that came
   out whole. Every variant on the kernel's coefficient table scrambled the image, and 2 taps on the table wasn't tried.
   More taps would mean loading our own coefficients through 0x6578 and 0x657C, in the layout AMD's

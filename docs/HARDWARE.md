@@ -2016,3 +2016,26 @@ and the read at `c[a0 + n]`, and a pixel shader's `gl_FragCoord.xy` from the pix
   pixel's column and row at every sample, 0 to 1279 and 0 to 719 (D4). Xenia names the bit
   (xenia:src/xenia/gpu/registers.h:156) but doesn't say what it does.
 - **vulkan4xenon_test passed 72 of 72** with both, its bands right either side of their edges.
+
+## Shaders' microcode in shared pages, milestone 25 (2026-10-12)
+
+xsdk loads each shader's microcode into 256-byte blocks of shared 64 KiB pages (xsdk `4bcc93f`, src/microcode.c),
+the alignment libxenon gives it (libxenon:drivers/xenos/xe.c:943), where `xsdk_gpu_alloc` had given each shader a
+page. Logs: `results/2026-10-12-milestone-25/` and vulkan4xenon:results/2026-10-12-milestone-25/.
+- **xsdk_test passed 248 of 248** (`xsdk_test.log`). Its 200 pixel shaders, each reading a constant of its own
+  (tools/gen_microcode_shaders.py), and a vertex shader took 16 of the kernel's 4 KB pages, one shared page, where a
+  page each took 3,216; each drew its own tile in its own colour in every frame checked, and freeing them gave the
+  pages back.
+- **Broken on purpose,** two shaders handed overlapping blocks, shader 98's tile drew shader 99's colour, failing only
+  that check (`xsdk_test_overlap.log`); and with a page each again, the shaders took 3,216 pages, failing only the
+  page check, every tile right (`xsdk_test_page_each.log`). Xenia doesn't count the pages: the check passes there
+  either way.
+- **IM_LOAD takes microcode from 256-byte blocks:** every shader drew right from its block, whatever block of the page
+  it had.
+- **vulkan4xenon_test** passed 72 of 72 and **vkbench** 14 of 14, with the same command stream as milestone 24's run:
+  the CPU's draw and submit times within 1%, the GPU's within 3.5%, most of them lower.
+- **Dusklight's title scene** (`dusklight.log`, saved from xbWatson, as the console's copy was cut short) ended with
+  13 MB free, from 9 at vulkan4xenon's milestone 11, step 2, the title holding 69 MB of physical pages from 73; it ran
+  at 29.2 to 29.8 fps once loaded, as at step 2, and exited with status 0.
+
+With that, milestone 25 is done: shaders' microcode shares pages, and every title built with it passes on the console.
