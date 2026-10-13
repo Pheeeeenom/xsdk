@@ -108,6 +108,9 @@ void test_vertex(void);
 // Recorded command buffers (milestone 18).
 void test_replay(void);
 
+// Shaders' microcode in shared pages (milestone 25).
+void test_microcode(void);
+
 // Shaders past 16 registers (milestone 24). Last, as without xsdk's register split it hangs the GPU.
 void test_registers(void);
 

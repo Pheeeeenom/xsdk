@@ -65,6 +65,7 @@ int main(int argc, char **argv)
 	test_formats();
 	test_vertex();
 	test_replay();
+	test_microcode();
 	test_registers();
 	xsdk_log_write("tests: %d passed, %d failed", passed_count, failed_count);
 	return failed_count;

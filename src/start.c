@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "lock_private.h"
+#include "microcode_private.h"
 #include "pthread_private.h"
 #include "reent_private.h"
 #include "xsdk/log.h"
@@ -37,6 +38,7 @@ static void run_fini_array(void)
 void xsdk_start(void)
 {
 	xsdk_lock_init();
+	xsdk_microcode_init();
 	xsdk_pthread_init();
 	xsdk_reent_init();
 	(void)xsdk_log_open();

@@ -35,6 +35,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "microcode_private.h"
 #include "xsdk/gpu.h"
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
@@ -165,7 +166,7 @@ NTSTATUS xsdk_shader_load(XsdkShader *shader, const uint32_t *container, uint32_
 			return reject("fetch patch records out of bounds");
 	}
 
-	volatile uint32_t *const microcode = xsdk_gpu_alloc(microcode_bytes);
+	volatile uint32_t *const microcode = xsdk_microcode_alloc(microcode_bytes);
 	if (!microcode)
 		return STATUS_NO_MEMORY;
 	const uint32_t dword_count = microcode_bytes / 4;
@@ -240,6 +241,6 @@ NTSTATUS xsdk_shader_set_vertex_layout(
 
 void xsdk_shader_free(XsdkShader *shader)
 {
-	xsdk_gpu_free(shader->microcode);
+	xsdk_microcode_free(shader->microcode, shader->dword_count * 4);
 	*shader = (XsdkShader){ .microcode = NULL };
 }
