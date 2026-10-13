@@ -783,6 +783,20 @@ So does the SDK:
       log opened unshared, the check fails on the console;
     - xsdk_test, vulkan4xenon_test and vkbench pass on the console.
 
+28. **32-bit float textures.** Dusklight's range fog works out, for every pixel, a factor that depends only on the
+    pixel's column: about 2.4 ms of the title's logo shot's 22 ms of GPU time a frame, measured with it taken out
+    (vulkan4xenon:docs/ROADMAP.md, milestone 11). A row of 32-bit floats, one a column, holds it exactly, read with
+    one fetch; xsdk's formats stop at half floats. Decided with the user on 2026-10-13, as step 2 of the shader work.
+
+    So:
+    - `XSDK_FORMAT_R32F`, the TextureFormat `k_32_FLOAT` (xenia:src/xenia/gpu/xenos.h:512), 32-bit units swapped
+      8-in-32 like the other 32-bit formats, read as red with green and blue 0 and alpha 1.
+
+    Done when:
+    - xsdk_test draws an R32F texture, linear and tiled, and reads back the values written, 0 to 1 in eighths and
+      past both ends clamped; broken on purpose, with its units unswapped, the check fails on the console;
+    - xsdk_test, vulkan4xenon_test and vkbench pass on the console.
+
 ## 5. Questions for the user first
 
 1. **The GCC:** its version (C++23 needs 13 or later for most of it), target triple, ABI and code model, its C
