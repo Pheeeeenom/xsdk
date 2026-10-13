@@ -2072,3 +2072,18 @@ src/thread.c). Logs:
 
 With that, milestone 26 is done: a title places its threads on the six hardware threads, and every title built with it
 passes on the console.
+
+## The log, read while it's open, milestone 27 (2026-10-13)
+
+xsdk opened a title's log with no share access, and on the console a second open of it, for reading while the title
+ran, failed with error 5, access denied. Opened shared for reading (src/log.c), it can be followed as the title writes
+it. Xenia ignores share access (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_io.cc:102-145), so only the console tells the
+two apart. Logs: `results/2026-10-13-milestone-27/`.
+- **xsdk_test** opened its own log for reading while it was open, status 0, and read its first line's "log: "
+  (`xsdk_test.log`). It passed 253 of 255. The two failures are the controller's: it was disconnected for this run,
+  and `XamInputGetState` returned 0x48F, device not connected, so the button and rumble checks failed.
+- **Broken on purpose,** with the log opened unshared, the second open failed with 0xC0000043, a sharing violation,
+  and only that check failed besides the controller's (`xsdk_test_log_unshared.log`).
+- **vulkan4xenon_test** passed 72 of 72 and **vkbench** 14 of 14.
+
+With that, milestone 27 is done but for the controller's two checks, which need it connected.
