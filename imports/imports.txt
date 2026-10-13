@@ -9,6 +9,7 @@ xboxkrnl.exe  0x019  ExTerminateThread
 xboxkrnl.exe  0x05A  KeDelayExecutionThread
 xboxkrnl.exe  0x083  KeQueryPerformanceFrequency
 xboxkrnl.exe  0x084  KeQuerySystemTime
+xboxkrnl.exe  0x097  KeSetAffinityThread
 xboxkrnl.exe  0x0BA  MmAllocatePhysicalMemoryEx
 xboxkrnl.exe  0x0BD  MmFreePhysicalMemory
 xboxkrnl.exe  0x0BE  MmGetPhysicalAddress

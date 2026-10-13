@@ -278,6 +278,9 @@ NTSTATUS KeDelayExecutionThread(uint32_t processor_mode, uint32_t alertable, con
 uint64_t KeQueryPerformanceFrequency(void);
 // 100 ns units since 1601, as NT counts.
 void KeQuerySystemTime(uint64_t *time);
+// Places a thread, given by its thread object, on the hardware threads the mask names, one bit each; the mask it had
+// comes back through previous (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_threading.cc:240-256).
+NTSTATUS KeSetAffinityThread(void *thread, uint32_t affinity, uint32_t *previous);
 // Returns TLS_OUT_OF_INDEXES when no slot is free.
 uint32_t KeTlsAlloc(void);
 uint32_t KeTlsFree(uint32_t slot);

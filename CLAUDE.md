@@ -23,6 +23,8 @@ layer that drives Xenos directly. Scope, sources and milestones are in SCOPE.md.
   clock keeps the kernel's time fails there too (docs/HARDWARE.md, "The time base runs at 49.875 MHz"). Its
   `MmQueryStatistics` guesses reserved bytes and counts free pages in its physical heaps only, so the heap
   reservation and heap growth checks fail there as well (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_memory.cc:500-525).
+  It runs each of the title's threads on a host thread of its own (xenia:src/xenia/kernel/xthread.cc:378), so two
+  busy threads placed on one hardware thread don't share it there, and that placement check fails too.
 - Xenia skips instructions it doesn't implement, silently (xenia:src/xenia/cpu/ppc/ppc_emit_*.cc,
   `XEINSTRNOTIMPLEMENTED`). GCC emits some of them: `mcrf`, rare now that the toolchain reserves CR2-CR7, and `rldic`
   under `-mpowerpc64`. Each link runs `tools/xenia_scan.py`, which lists such instructions by function; treat any Xenia

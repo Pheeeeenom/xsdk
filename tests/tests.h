@@ -14,6 +14,8 @@ void test_image(void);
 // The memory the kernel leaves a title (milestone 21).
 void test_memory(void);
 void test_threads(void);
+// Threads placed on the six hardware threads (milestone 26).
+void test_placement(void);
 void test_pthread(void);
 void test_clocks(void);
 void test_kernel_entry(void);

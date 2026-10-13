@@ -34,6 +34,7 @@ int main(int argc, char **argv)
 	test_image();
 	test_memory();
 	test_threads();
+	test_placement();
 	test_pthread();
 	test_clocks();
 	test_kernel_entry();
