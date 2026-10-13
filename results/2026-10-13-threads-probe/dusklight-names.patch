@@ -1,0 +1,21 @@
+diff --git a/src/dusk/OSThread.cpp b/src/dusk/OSThread.cpp
+index ac86a0ecce..bbf2047368 100644
+--- a/src/dusk/OSThread.cpp
++++ b/src/dusk/OSThread.cpp
+@@ -126,7 +126,16 @@ static OSSwitchThreadCallback sSwitchThreadCallback = nullptr;
+ // ============================================================================
+ 
+ // Thread entry wrapper - runs on the new std::thread
++#ifdef __XSDK__
++#include <xsdk/kernel.h>
++#include <xsdk/log.h>
++#endif
++
+ static void ThreadEntryWrapper(OSThread* thread, PCThreadData* data) {
++#ifdef __XSDK__
++    xsdk_log_write("threads: OSThread %p (priority %d) on hardware thread %u", static_cast<void*>(thread),
++        static_cast<int>(thread->priority), static_cast<unsigned>(xsdk_current_hardware_thread()));
++#endif
+     // Set thread-local pointer
+     tls_currentThread = thread;
+ 

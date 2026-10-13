@@ -1,0 +1,27 @@
+diff --git a/lib/thread.cpp b/lib/thread.cpp
+index 348b0ec..ecc63e7 100644
+--- a/lib/thread.cpp
++++ b/lib/thread.cpp
+@@ -25,6 +25,11 @@
+ #include <pthread.h>
+ #endif
+ 
++#ifdef __XSDK__
++#include <xsdk/kernel.h>
++#include <xsdk/log.h>
++#endif
++
+ namespace aurora::thread {
+ namespace {
+ struct Processor {
+@@ -282,6 +287,10 @@ void set_thread_name(const std::string& name) noexcept {
+ } // namespace
+ 
+ void set_current(const Options& options) noexcept {
++#ifdef __XSDK__
++  xsdk_log_write("threads: Aurora's %s on hardware thread %u", options.name.c_str(),
++                 static_cast<unsigned>(xsdk_current_hardware_thread()));
++#endif
+   if (!options.name.empty()) {
+     set_thread_name(options.name);
+ #ifdef TRACY_ENABLE

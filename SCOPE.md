@@ -743,6 +743,32 @@ So does the SDK:
     - xsdk_test, vulkan4xenon_test and vkbench pass on the console;
     - Dusklight's title scene ends with about 4 MB more free than at vulkan4xenon's milestone 11, step 2.
 
+26. **Threads on all six hardware threads.** A thread the SDK starts stays on its creator's hardware thread. On the
+    console on 2026-10-13 (`results/2026-10-13-threads-probe/`, tests/probe_threads.c), a title's main thread ran on
+    hardware thread 0 and so did every thread it started: two busy ones got half of one thread's work done each, six
+    about a fifth. Dusklight starts about twenty, all on that one hardware thread, and its title scene ran at 17 to 22
+    fps (vulkan4xenon:docs/ROADMAP.md, milestone 11, step 5). Placed, they run apart: `KeSetAffinityThread` moved a
+    running thread and `ExCreateThread`'s processor bits started one where asked; two busy threads on two cores got 100%
+    and 93% done, and on one core's two hardware threads half each. Decided with the user on 2026-10-13: the kernel's
+    placement stays the default, and a title places the threads it knows of.
+
+    So:
+    - xsdk starts a thread on a given hardware thread (`ExCreateThread`'s processor bits,
+      xenia:src/xenia/kernel/xthread.cc:355-356), moves the calling thread to one (`KeSetAffinityThread`,
+      xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_threading.cc:240-256), and says which one a thread runs on (the
+      processor control region at r13, xenia:src/xenia/kernel/xthread.h:81-83);
+    - Aurora places its threads by name, from a list a game can change, and Dusklight places its own. To begin with:
+      the game thread on hardware thread 0; the GPU waiter, audio and the game's threads on 1; the render worker on 2;
+      texture preconversion and pipeline compiles on 3; the FIFO processor on 4; the decode helper on 5.
+
+    Done when:
+    - xsdk_test starts a thread on each hardware thread and moves one to each, and finds it there; an unplaced thread
+      runs where its creator does; two busy threads on two cores each get at least 80% of one's work done, and on one
+      hardware thread at most 60%; broken on purpose, with the placement ignored, those checks fail;
+    - xsdk_test, vulkan4xenon_test and vkbench pass on the console;
+    - Dusklight's title scene runs on the console with each placed thread where the list puts it, and its frame rate is
+      measured against step 5's 17 to 22 fps.
+
 ## 5. Questions for the user first
 
 1. **The GCC:** its version (C++23 needs 13 or later for most of it), target triple, ABI and code model, its C

@@ -1,0 +1,90 @@
+--- /mnt/z/Xbox-360-SDK/imports/imports.txt	2026-10-12 15:52:19.508974500 -0400
++++ imports/imports.txt	2026-10-13 01:48:47.289999920 -0400
+@@ -9,6 +9,7 @@
+ xboxkrnl.exe  0x05A  KeDelayExecutionThread
+ xboxkrnl.exe  0x083  KeQueryPerformanceFrequency
+ xboxkrnl.exe  0x084  KeQuerySystemTime
++xboxkrnl.exe  0x097  KeSetAffinityThread
+ xboxkrnl.exe  0x0BA  MmAllocatePhysicalMemoryEx
+ xboxkrnl.exe  0x0BD  MmFreePhysicalMemory
+ xboxkrnl.exe  0x0BE  MmGetPhysicalAddress
+--- /mnt/z/Xbox-360-SDK/include/xsdk/kernel.h	2026-10-12 15:52:18.911429200 -0400
++++ include/xsdk/kernel.h	2026-10-13 01:48:47.294265949 -0400
+@@ -274,6 +274,25 @@
+ // xenia:src/xenia/kernel/kernel_state.cc:351-360).
+ extern const char *const ExLoadedImageName;
+ NTSTATUS KeDelayExecutionThread(uint32_t processor_mode, uint32_t alertable, const int64_t *interval);
++// Places a thread, by its KTHREAD, on the hardware threads the mask names; the mask it had through previous
++// (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_threading.cc:240-256).
++NTSTATUS KeSetAffinityThread(void *thread, uint32_t affinity, uint32_t *previous);
++// The processor control region, which r13 points at (docs/HARDWARE.md, 0x801B0000): the caller's hardware thread and
++// its KTHREAD (xenia:src/xenia/kernel/xthread.h:81-83). The toolchain never allocates r13 (GCC's System V target).
++static inline volatile uint8_t *xsdk_processor_control_region(void)
++{
++	uint32_t region;
++	__asm__ volatile("mr %0, 13" : "=r"(region));
++	return (volatile uint8_t *)(uintptr_t)region;
++}
++static inline uint32_t xsdk_current_hardware_thread(void)
++{
++	return xsdk_processor_control_region()[0x10C];
++}
++static inline void *xsdk_current_kthread(void)
++{
++	return (void *)(uintptr_t)*(volatile uint32_t *)(xsdk_processor_control_region() + 0x100);
++}
+ // Xenia returns it as 32 bits (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_threading.cc:312-315).
+ uint64_t KeQueryPerformanceFrequency(void);
+ // 100 ns units since 1601, as NT counts.
+--- /mnt/z/Xbox-360-SDK/src/thread.c	2026-10-12 02:41:52.380840600 -0400
++++ src/thread.c	2026-10-13 01:48:47.294265949 -0400
+@@ -9,6 +9,8 @@
+ // The kernel calls it with the thread's start address and context (xenia:src/xenia/kernel/xthread.cc:518-521).
+ void xsdk_thread_run(XsdkThreadEntry entry, void *context)
+ {
++	xsdk_log_write("threads: a thread starts on hardware thread %u (entry 0x%08X, context 0x%08X)",
++		(unsigned)xsdk_current_hardware_thread(), (unsigned)(uintptr_t)entry, (unsigned)(uintptr_t)context);
+ 	const uint32_t exit_code = entry(context);
+ 	xsdk_pthread_thread_end();
+ 	ExTerminateThread(exit_code);
+--- /mnt/z/Xbox-360-SDK/src/pthread.c	2026-10-11 21:33:59.099788900 -0400
++++ src/pthread.c	2026-10-13 01:48:47.294265949 -0400
+@@ -142,6 +142,9 @@
+ {
+ 	Thread *self = context;
+ 	(void)KeTlsSetValue(self_slot, self);
++	xsdk_log_write("threads: pthread 0x%08X runs 0x%08X(0x%08X) on hardware thread %u", (unsigned)(uintptr_t)self,
++		(unsigned)(uintptr_t)self->start, (unsigned)(uintptr_t)self->argument,
++		(unsigned)xsdk_current_hardware_thread());
+ 	self->result = self->start(self->argument);
+ 	run_key_destructors();
+ 	(void)KeTlsSetValue(self_slot, NULL);
+--- /mnt/z/Xbox-360-SDK/src/start.c	2026-10-12 20:28:18.707688800 -0400
++++ src/start.c	2026-10-13 01:48:47.294265949 -0400
+@@ -6,6 +6,7 @@
+ #include "microcode_private.h"
+ #include "pthread_private.h"
+ #include "reent_private.h"
++#include "xsdk/kernel.h"
+ #include "xsdk/log.h"
+ 
+ int main(int argc, char **argv);
+@@ -42,6 +43,7 @@
+ 	xsdk_pthread_init();
+ 	xsdk_reent_init();
+ 	(void)xsdk_log_open();
++	xsdk_log_write("threads: main on hardware thread %u", (unsigned)xsdk_current_hardware_thread());
+ 	__register_frame_info(__eh_frame_start, eh_frame_object);
+ 
+ 	for (void (**function)(void) = __preinit_array_start; function < __preinit_array_end; function++)
+--- /mnt/z/Xbox-360-SDK/Makefile	2026-10-12 20:28:17.214326700 -0400
++++ Makefile	2026-10-13 01:48:47.294265949 -0400
+@@ -43,7 +43,7 @@
+ PACING_OBJECTS := $(patsubst tests/%,$(BUILD)/tests/%.o,$(basename $(PACING_SOURCES)))
+ # Bring-up probes: titles that each answer one question on the console.
+ PROBES := probe_spin probe_print probe_cp probe_ring probe_interrupt probe_exports probe_engines probe_swap \
+-	probe_display probe_guide probe_resolve probe_triangle probe_vblank probe_720p probe_constants probe_mip_tail
++	probe_display probe_guide probe_resolve probe_triangle probe_vblank probe_720p probe_constants probe_mip_tail probe_threads
+ 
+ .PHONY: all clean cmake_check
+ # Keep the ELFs and objects that pattern rules build on the way to a .xex.

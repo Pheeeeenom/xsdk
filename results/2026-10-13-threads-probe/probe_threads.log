@@ -1,0 +1,61 @@
+log: game:\probe_threads.log
+log: named after \Device\Harddisk0\Partition1\XSDK\probe_threads.xex
+threads: main on hardware thread 0
+sbrk: the heap may grow to 474 MB, the title's free memory
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 30983 us
+threads: main on hardware thread 0, its KTHREAD at 0x300001A0
+threads: a thread starts on hardware thread 0 (entry 0x820304D8, context 0x7010FCD0)
+threads: one worker, unplaced
+threads:   worker 0: started on 0, ran on 0, ended on 0; placed -1 (0x00000000, was 0x00); 31080448 passes, 100% of one alone
+threads: a thread starts on hardware thread 0 (entry 0x820304D8, context 0x7010FCD0)
+threads: a thread starts on hardware thread 0 (entry 0x820304D8, context 0x7010FCF0)
+threads: two workers, unplaced
+threads:   worker 0: started on 0, ran on 0, ended on 0; placed -1 (0x00000000, was 0x00); 16039936 passes, 51% of one alone
+threads:   worker 1: started on 0, ran on 0, ended on 0; placed -1 (0x00000000, was 0x00); 15224832 passes, 48% of one alone
+threads: a thread starts on hardware thread 0 (entry 0x820304D8, context 0x7010FCD0)
+threads: a thread starts on hardware thread 0 (entry 0x820304D8, context 0x7010FCF0)
+threads: a thread starts on hardware thread 0 (entry 0x820304D8, context 0x7010FD10)
+threads: a thread starts on hardware thread 0 (entry 0x820304D8, context 0x7010FD30)
+threads: a thread starts on hardware thread 0 (entry 0x820304D8, context 0x7010FD50)
+threads: a thread starts on hardware thread 0 (entry 0x820304D8, context 0x7010FD70)
+threads: six workers, unplaced
+threads:   worker 0: started on 0, ran on 0, ended on 0; placed -1 (0x00000000, was 0x00); 6217728 passes, 20% of one alone
+threads:   worker 1: started on 0, ran on 0, ended on 0; placed -1 (0x00000000, was 0x00); 6029312 passes, 19% of one alone
+threads:   worker 2: started on 0, ran on 0, ended on 0; placed -1 (0x00000000, was 0x00); 6217728 passes, 20% of one alone
+threads:   worker 3: started on 0, ran on 0, ended on 0; placed -1 (0x00000000, was 0x00); 6217728 passes, 20% of one alone
+threads:   worker 4: started on 0, ran on 0, ended on 0; placed -1 (0x00000000, was 0x00); 6217728 passes, 20% of one alone
+threads:   worker 5: started on 0, ran on 0, ended on 0; placed -1 (0x00000000, was 0x00); 5160960 passes, 16% of one alone
+threads: a thread starts on hardware thread 0 (entry 0x820304D8, context 0x7010FCD0)
+threads: a thread starts on hardware thread 0 (entry 0x820304D8, context 0x7010FCF0)
+threads: two workers, both placed on main's hardware thread
+threads:   worker 0: started on 0, ran on 0, ended on 0; placed 0 (0x00000000, was 0x01); 15974400 passes, 51% of one alone
+threads:   worker 1: started on 0, ran on 0, ended on 0; placed 0 (0x00000000, was 0x01); 15474688 passes, 49% of one alone
+threads: a thread starts on hardware thread 0 (entry 0x820304D8, context 0x7010FCD0)
+threads: a thread starts on hardware thread 0 (entry 0x820304D8, context 0x7010FCF0)
+threads: two workers, placed on one core's two hardware threads
+threads:   worker 0: started on 0, ran on 0, ended on 0; placed 0 (0x00000000, was 0x01); 15933440 passes, 51% of one alone
+threads:   worker 1: started on 0, ran on 1, ended on 1; placed 1 (0x00000000, was 0x01); 15929344 passes, 51% of one alone
+threads: a thread starts on hardware thread 0 (entry 0x820304D8, context 0x7010FCD0)
+threads: a thread starts on hardware thread 0 (entry 0x820304D8, context 0x7010FCF0)
+threads: two workers, placed on two cores
+threads:   worker 0: started on 0, ran on 0, ended on 0; placed 0 (0x00000000, was 0x01); 31080448 passes, 100% of one alone
+threads:   worker 1: started on 0, ran on 2, ended on 2; placed 2 (0x00000000, was 0x01); 29171712 passes, 93% of one alone
+threads: a thread starts on hardware thread 0 (entry 0x820304D8, context 0x7010FCD0)
+threads: a thread starts on hardware thread 0 (entry 0x820304D8, context 0x7010FCF0)
+threads: a thread starts on hardware thread 0 (entry 0x820304D8, context 0x7010FD10)
+threads: a thread starts on hardware thread 0 (entry 0x820304D8, context 0x7010FD30)
+threads: a thread starts on hardware thread 0 (entry 0x820304D8, context 0x7010FD50)
+threads: a thread starts on hardware thread 0 (entry 0x820304D8, context 0x7010FD70)
+threads: six workers, one placed on each hardware thread
+threads:   worker 0: started on 0, ran on 0, ended on 0; placed 0 (0x00000000, was 0x01); 15933440 passes, 51% of one alone
+threads:   worker 1: started on 0, ran on 1, ended on 1; placed 1 (0x00000000, was 0x01); 15929344 passes, 51% of one alone
+threads:   worker 2: started on 0, ran on 2, ended on 2; placed 2 (0x00000000, was 0x01); 14942208 passes, 48% of one alone
+threads:   worker 3: started on 0, ran on 3, ended on 3; placed 3 (0x00000000, was 0x01); 14966784 passes, 48% of one alone
+threads:   worker 4: started on 0, ran on 4, ended on 4; placed 4 (0x00000000, was 0x01); 13758464 passes, 44% of one alone
+threads:   worker 5: started on 0, ran on 5, ended on 5; placed 5 (0x00000000, was 0x01); 15462400 passes, 49% of one alone
+threads: a thread starts on hardware thread 4 (entry 0x820304D8, context 0x7010FCD0)
+threads: one worker, created with ExCreateThread's processor bits for the third core
+threads:   worker 0: started on 4, ran on 4, ended on 4; placed -1 (0x00000000, was 0x00); 27295744 passes, 87% of one alone
+threads: done
+exit: status 0
