@@ -2039,3 +2039,36 @@ page. Logs: `results/2026-10-12-milestone-25/` and vulkan4xenon:results/2026-10-
   at 29.2 to 29.8 fps once loaded, as at step 2, and exited with status 0.
 
 With that, milestone 25 is done: shaders' microcode shares pages, and every title built with it passes on the console.
+
+## Threads on all six hardware threads, milestone 26 (2026-10-13)
+
+A thread xsdk starts unplaced runs on its creator's hardware thread. A probe title found it before the milestone
+(`results/2026-10-13-threads-probe/`, its source and logs, built from a copy of xsdk with `probe_threads.c` and the
+patches there): the main thread ran on hardware thread 0, and so did every thread it started. Alone, a busy thread
+counted 31 million loop passes in 500 ms; two unplaced threads got 51% and 48% of that each, and six 16% to 20%.
+`KeSetAffinityThread` moved a running thread where asked (status 0, the previous mask 0x01), and `ExCreateThread`'s
+processor bits started one where asked, on 4 (`probe_threadflags.log`, the same probe placing threads only that way).
+Two busy threads on two cores got 100% and 93%, on one core's two hardware threads 51% each, and six placed one to a
+hardware thread 44% to 51%. A busy thread on hardware thread 2 got 93% beside one on 0, and one alone on 4 got 87%,
+so something of the system's seems to run on those cores. xsdk now places threads both ways (xsdk `91075c2`,
+src/thread.c). Logs:
+`results/2026-10-13-milestone-26/` and vulkan4xenon:results/2026-10-13-milestone-26/.
+- **xsdk_test passed 254 of 254** (`xsdk_test.log`). Threads started on 0 to 5 ran on 0 to 5, a thread moved to each
+  ran there, and an unplaced one ran on 0 with the main thread. One busy thread counted 18.6 million passes in 300 ms;
+  two on hardware threads 0 and 2 got 100% and 93% of that, and two on 0 got 51% and 53%.
+- **Broken on purpose,** threads asked for on a hardware thread started without the processor bits all ran on 0, and
+  the two busy ones got 53% and 52%, failing the start and two-core checks (`xsdk_test_created_unplaced.log`); and with
+  the move kept where the thread was, only the move check failed, the thread staying on 0
+  (`xsdk_test_never_moved.log`).
+- **vulkan4xenon_test** passed 72 of 72 and **vkbench** 14 of 14, its frame times as at milestone 25 and its CPU times
+  within 4%; neither places a thread.
+- **Dusklight** (`dusklight.log`; Aurora `afb5062`, Dusklight `b0221ad`) logged each placed thread where the list puts
+  it: the main thread on 0; the GPU waiter and the game's six threads on 1; the render worker on 2; both pipeline
+  compiles and texture preconversion on 3; the FIFO processor on 4; the decode helper on 5. Its title scene ran at
+  16.2, 19.9, 24.4, 20.0, 20.4 and 27.6 fps over its 10-second windows, against 16.9 to 22.1 with every thread on 0
+  (vulkan4xenon:results/2026-10-13-milestone-11-step-5/dusklight.log), and exited with status 0, 10 MB free as then.
+  Twenty frames a second is three vblanks a frame: most frames still take longer than the 33 ms of two, and what holds
+  them there is measured next.
+
+With that, milestone 26 is done: a title places its threads on the six hardware threads, and every title built with it
+passes on the console.
