@@ -723,6 +723,26 @@ So does the SDK:
     - Dusklight's pack holds all 69 programs recorded, and its title scene runs on the console without leaving a
       program out for its registers.
 
+25. **Shaders' microcode shares pages.** `xsdk_gpu_alloc` gives every allocation 64 KiB pages of its own (src/gpu.c,
+    `allocate`), and `xsdk_shader_load` takes one for each shader's microcode (src/shader.c), which vulkan4xenon loads
+    again for each pipeline (vulkan4xenon:src/pipeline.c, `load_shaders`). Counted in Xenia on 2026-10-12, Dusklight's
+    boot screens and a minute of its title scene made 87 GPU allocations, 73 of them under a page and 70 of those 24 to
+    1,440 bytes, shaders' microcode: about 85 KB in 73 pages, 4.6 MB (`results/2026-10-12-gpu-allocations/`). The
+    title scene ends with 9 MB free, and vulkan4xenon's milestone 11 adds about 60 pipelines, 7.5 MB more at a page a
+    shader. Decided with the user on 2026-10-12: microcode only, as the other small allocations would save a few pages.
+
+    So:
+    - a shader's microcode comes from shared 64 KiB pages in 256-byte blocks, the alignment libxenon gives it
+      (libxenon:drivers/xenos/xe.c:943); `xsdk_shader_free` gives its blocks back, and a page goes back to the kernel
+      with its last block;
+    - under a lock, as Aurora loads shaders from two threads; loading a shader isn't on the hot path.
+
+    Done when:
+    - xsdk_test loads 200 small shaders, which take a few pages where they took 200 by the kernel's count, and draws
+      with each right on the console; broken on purpose, two shaders handed overlapping blocks, the check fails;
+    - xsdk_test, vulkan4xenon_test and vkbench pass on the console;
+    - Dusklight's title scene ends with about 4 MB more free than at vulkan4xenon's milestone 11, step 2.
+
 ## 5. Questions for the user first
 
 1. **The GCC:** its version (C++23 needs 13 or later for most of it), target triple, ABI and code model, its C
