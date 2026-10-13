@@ -2088,3 +2088,19 @@ two apart. Logs: `results/2026-10-13-milestone-27/`.
 
 With that, milestone 27 is done: a title's log can be read while the title runs, and every title built with it passes
 on the console.
+
+## 32-bit float textures, milestone 28 (2026-10-13)
+
+`XSDK_FORMAT_R32F` is the TextureFormat `k_32_FLOAT` (xenia:src/xenia/gpu/xenos.h:512), its 32-bit units swapped
+8-in-32 like the other 32-bit formats. On the console the GPU read the floats xsdk_test wrote, 0 to 1 and past both
+ends, linear and tiled. Logs: `results/2026-10-13-milestone-28/`.
+- **xsdk_test passed 255 of 255** (`xsdk_test.log`). R32F's largest error in a channel was 0, linear and tiled, with
+  every other format's as before.
+- **Broken on purpose,** with R32F's units left unswapped, 4056 of the 4356 pixels of each of R32F's two cells were
+  wrong, black: the floats' bytes read in reverse come out next to 0, and only the formats check failed
+  (`xsdk_test_r32f_unswapped.log`). The controller had gone idle for that run, so its two checks failed as well:
+  `XamInputGetState` returned 0x48F, device not connected.
+- **vulkan4xenon_test** passed 72 of 72 and **vkbench** 14 of 14.
+
+With that, milestone 28 is done: a title can sample 32-bit float textures, and every title built with it passes on the
+console.
