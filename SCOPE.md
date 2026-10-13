@@ -769,6 +769,20 @@ So does the SDK:
     - Dusklight's title scene runs on the console with each placed thread where the list puts it, and its frame rate is
       measured against step 5's 17 to 22 fps.
 
+27. **The log, read while the title runs.** xsdk opens a title's log with no share access (src/log.c), so on the
+    console nothing else can open it until the title ends: opened for reading meanwhile, it fails with a sharing
+    violation. A tool following a title's log as it runs needs that. Decided with the user on 2026-10-13.
+
+    So:
+    - xsdk opens the log shared for reading (`NtCreateFile`'s share access; the values are NT's, and Xenia ignores it,
+      xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_io.cc:102-145);
+    - `xsdk_log_path` says where the log is.
+
+    Done when:
+    - xsdk_test opens its own log for reading while it's open and finds its first line; broken on purpose, with the
+      log opened unshared, the check fails on the console;
+    - xsdk_test, vulkan4xenon_test and vkbench pass on the console.
+
 ## 5. Questions for the user first
 
 1. **The GCC:** its version (C++23 needs 13 or later for most of it), target triple, ABI and code model, its C
