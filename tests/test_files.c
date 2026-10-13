@@ -96,8 +96,42 @@ static void check_flockfile(void)
 		waited_while_held_twice && waited_while_held_once && thread_has_lock);
 }
 
+// The log, opened again for reading while the title has it open for writing, as a tool on the console reads it while a
+// title runs. Only the console can fail this: Xenia ignores share access (xboxkrnl/xboxkrnl_io.cc:102-145).
+static void check_log_readable(void)
+{
+	const char *const path = xsdk_log_path();
+	if (!path) {
+		check("log read while it's open", false);
+		return;
+	}
+	const ANSI_STRING name = {
+		.length = (uint16_t)strlen(path),
+		.maximum_length = (uint16_t)(strlen(path) + 1),
+		.pointer = path,
+	};
+	const OBJECT_ATTRIBUTES attributes = { .root_directory = path[0] == '\\' ? 0 : OB_DOS_DEVICES, .name = &name };
+	IO_STATUS_BLOCK io_status;
+	HANDLE handle;
+	const NTSTATUS status =
+		NtCreateFile(&handle, GENERIC_READ | SYNCHRONIZE, &attributes, &io_status, NULL, FILE_ATTRIBUTE_NORMAL,
+			FILE_SHARE_READ | FILE_SHARE_WRITE, FILE_OPEN, FILE_SYNCHRONOUS_IO_NONALERT | FILE_NON_DIRECTORY_FILE);
+	// The log's first line is "log: " and its path (src/log.c).
+	char start[6] = "";
+	if (NT_SUCCESS(status)) {
+		const uint64_t offset = 0;
+		(void)NtReadFile(handle, 0, NULL, NULL, &io_status, start, sizeof(start) - 1, &offset);
+		(void)NtClose(handle);
+	}
+	xsdk_log_write(
+		"files: the log opened for reading while it's open: 0x%08X, starting \"%s\"", (unsigned)status, start);
+	check("log read while it's open", NT_SUCCESS(status) && strcmp(start, "log: ") == 0);
+}
+
 void test_files(void)
 {
+	check_log_readable();
+
 	char path[PATH_BYTES];
 	FILE *file = create_test_file(path);
 	if (!file) {

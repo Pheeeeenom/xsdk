@@ -234,6 +234,10 @@ enum {
 	DELETE = 0x00010000,
 	FILE_ATTRIBUTE_DIRECTORY = 0x00000010,
 	FILE_ATTRIBUTE_NORMAL = 0x00000080,
+	// NtCreateFile's share access; the values are NT's. Xenia ignores it (xboxkrnl/xboxkrnl_io.cc:102-145), and the
+	// console refuses a second open the first one doesn't share (docs/HARDWARE.md, "The log, read while it's open").
+	FILE_SHARE_READ = 0x00000001,
+	FILE_SHARE_WRITE = 0x00000002,
 	FILE_OPEN = 1,
 	FILE_CREATE = 2,
 	FILE_OPEN_IF = 3,

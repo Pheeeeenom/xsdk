@@ -30,6 +30,7 @@ static const LogFolder log_folders[] = {
 static RTL_CRITICAL_SECTION log_lock;
 static HANDLE log_file;
 static char log_line[LOG_LINE_BYTES];
+static char log_path[LOG_PATH_BYTES];
 
 // The running .xex's name, from the path the loader leaves in ExLoadedImageName, with .log for its extension; xsdk.log
 // if there's no name or it doesn't fit.
@@ -59,8 +60,9 @@ static NTSTATUS create_file(HANDLE *handle, HANDLE root_directory, const char *p
 	};
 	const OBJECT_ATTRIBUTES attributes = { .root_directory = root_directory, .name = &name };
 	IO_STATUS_BLOCK io_status;
-	return NtCreateFile(handle, GENERIC_WRITE | SYNCHRONIZE, &attributes, &io_status, NULL, FILE_ATTRIBUTE_NORMAL, 0,
-		FILE_OVERWRITE_IF, FILE_SYNCHRONOUS_IO_NONALERT | FILE_NON_DIRECTORY_FILE);
+	// Shared for reading, so the log can be read while the title runs.
+	return NtCreateFile(handle, GENERIC_WRITE | SYNCHRONIZE, &attributes, &io_status, NULL, FILE_ATTRIBUTE_NORMAL,
+		FILE_SHARE_READ, FILE_OVERWRITE_IF, FILE_SYNCHRONOUS_IO_NONALERT | FILE_NON_DIRECTORY_FILE);
 }
 
 static void write_line(const char *line, size_t length_bytes)
@@ -85,6 +87,7 @@ NTSTATUS xsdk_log_open(void)
 		status = create_file(&handle, log_folders[i].root_directory, path);
 		if (NT_SUCCESS(status)) {
 			log_file = handle;
+			strcpy(log_path, path);
 			xsdk_log_write("log: %s", path);
 			xsdk_log_write("log: named after %s", ExLoadedImageName ? ExLoadedImageName : "nothing");
 			return status;
@@ -92,6 +95,11 @@ NTSTATUS xsdk_log_open(void)
 		xsdk_log_write("log: NtCreateFile(%s) failed: 0x%08X", path, (unsigned)status);
 	}
 	return status;
+}
+
+const char *xsdk_log_path(void)
+{
+	return log_path[0] ? log_path : NULL;
 }
 
 void xsdk_log_write(const char *format, ...)
