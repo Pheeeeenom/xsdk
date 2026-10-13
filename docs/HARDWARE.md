@@ -1998,3 +1998,21 @@ xsdk names a title's log after the `.xex` the loader started (xsdk `7b23184`), f
 console it held the path the title was launched from: `\Device\Harddisk0\Partition1\XSDK\xsdk_test.xex` and
 `\Device\Harddisk0\Partition1\dusklight\dusklight.xex`, so the logs came out as `game:\xsdk_test.log` and
 `game:\dusklight.log` (`results/2026-10-12-milestone-24/`).
+
+## Reads at a0, and the pixel position (2026-10-12)
+
+For vulkan4xenon's milestone 11, xost reads a uniform array at an index known only at run time, `MOVA` setting `a0`
+and the read at `c[a0 + n]`, and a pixel shader's `gl_FragCoord.xy` from the pixel parameters (xost `4d7c297`,
+`7a5e42e`). Logs: vulkan4xenon:results/2026-10-12-milestone-11-step-3/.
+- **Reads at a0 work in both kinds of shader.** vulkan4xenon_test's vertex shader placed and coloured each of four
+  quads by the matrix its vertices named, and a pixel shader with its index from an interpolant coloured each of ten
+  bands right (`vulkan4xenon_test.log`, `vulkan4xenon_diag.log` D1). Ignoring the index on purpose stacked the quads in
+  one corner and turned the bands one colour (`vulkan4xenon_test_broken.log`).
+- **The execs around them keep addressing mode 0.** With the mode set to a0 (1) the same pixel shader drew black
+  (`vulkan4xenon_diag.log` D1b): `const_address_register_relative` in each ALU instruction is what picks a0.
+- **The pixel parameters need `SQ_CONTEXT_MISC.SC_OUTPUT_SCREEN_XY`.** With `SQ_PROGRAM_CNTL.PARAM_GEN` and
+  `PARAM_GEN_POS` alone, their x read 0 at every column, whether they went in r0 or r1, and with the vertex shader
+  exporting the interpolator they land in (D2, D2b, D3); with bit 1 of `SQ_CONTEXT_MISC` set too, their |xy| was the
+  pixel's column and row at every sample, 0 to 1279 and 0 to 719 (D4). Xenia names the bit
+  (xenia:src/xenia/gpu/registers.h:156) but doesn't say what it does.
+- **vulkan4xenon_test passed 72 of 72** with both, its bands right either side of their edges.
