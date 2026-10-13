@@ -3,7 +3,7 @@ log: named after \Device\Harddisk0\Partition1\XSDK\m27\xsdk_test.xex
 sbrk: the heap may grow to 472 MB, the title's free memory
 xsdk test title
 display: 1280x720 scaled to the 1920x1080 output
-display: the line counter reached 720 after 19143 us
+display: the line counter reached 720 after 31874 us
 PASS: splash: the vulkan4xenon logo shown
 PASS: start: main gets argc 1, an empty argv[0] and a null argv[1]
 PASS: read-only data
@@ -16,8 +16,8 @@ memory: 131072 pages in all, 784 the kernel's, highest page 0x1FFFF
 memory: title: 120900 pages free; 767 MB virtual, 472 MB reserved
 memory: title pages: 920 physical, 2 pool, 256 stack, 672 image, 96 heap
 memory: title pages: 16 virtual, 2 page table, 16 cache
-memory: system: 1403 pages free; 31 MB virtual, 14 MB reserved
-memory: system pages: 857 physical, 154 pool, 370 stack, 2080 image, 2464 heap
+memory: system: 1400 pages free; 31 MB virtual, 14 MB reserved
+memory: system pages: 860 physical, 154 pool, 370 stack, 2080 image, 2464 heap
 memory: system pages: 14 virtual, 2 page table, 64 cache
 memory: 472 MB free for the title
 PASS: MmQueryStatistics: the title's free pages lie within the total
@@ -46,11 +46,11 @@ PASS: pthread: a thread made detached runs
 PASS: pthread: a bad detach state and a one-byte stack are refused
 PASS: pthread: priorities report one level and refuse a change
 PASS: clocks: CLOCK_MONOTONIC_RAW reads the time base CLOCK_MONOTONIC does
-clocks: steps of 321 ns monotonic, 101 ns raw, 1000000 ns realtime
+clocks: steps of 341 ns monotonic, 100 ns raw, 1000000 ns realtime
 PASS: clocks: CLOCK_MONOTONIC and CLOCK_MONOTONIC_RAW step finer than 0.1 ms
-clocks: over 252000000 ns of the kernel's system time CLOCK_MONOTONIC counted 251998556 ns, -5 ppm off
+clocks: over 252000000 ns of the kernel's system time CLOCK_MONOTONIC counted 251998837 ns, -4 ppm off
 PASS: clocks: CLOCK_MONOTONIC keeps the kernel's time to 0.05%
-clocks: 20 sleeps of 2000000 ns took 2000261 to 3001123 ns
+clocks: 20 sleeps of 2000000 ns took 2041845 to 3001143 ns
 PASS: clocks: nanosleep never returns early
 clocks: KeQueryPerformanceFrequency reports 50000000 Hz
 PASS: clocks: KeQueryPerformanceFrequency, declared with its 64-bit return, reads 50 MHz
@@ -108,7 +108,7 @@ fp align: 0 of 76 reads gave back other bits
 PASS: fp align: floats and doubles written and read back at every offset from 0 to 7, through memcpy, std::bit_cast and packed structs
 chrono: a 250 ms sleep took 250 ms on steady_clock
 PASS: steady_clock times a known delay
-chrono: system_clock reads 2026-10-13 15:35:31 UTC
+chrono: system_clock reads 2026-10-13 15:51:54 UTC
 PASS: system_clock gives a plausible date
 open: NtCreateFile(game:\xsdk_fs_test) failed: 0xC0000034
 PASS: filesystem creates a directory
@@ -121,11 +121,10 @@ PASS: std::expected
 println: std::println reaches the log through stdout
 PASS: std::println
 input: polling controller 1 for 3 seconds; press some buttons
-input: XamInputGetState returned 0x48F
-FAIL: controller state read
+input: packet 1 buttons 0x0000 triggers 0 0 left -4952 -608 right 2164 -1048
+PASS: controller state read
 input: controller 1 rumbles at half strength for 500 ms
-input: XamInputSetState returned 0x48F, then 0x48F
-FAIL: controller rumble set and stopped
+PASS: controller rumble set and stopped
 audio: playing a 375 Hz tone for 2000 ms
 audio: 376 frames submitted from callbacks
 PASS: audio tone
@@ -142,7 +141,7 @@ PASS: present: GPU open
 display: 1280x720 scaled to the 1920x1080 output
 PASS: present: display open at 1280x720
 PASS: present: front buffers
-display: the line counter reached 720 after 25252 us
+display: the line counter reached 720 after 22252 us
 PASS: present: every resolve's fence landed
 PASS: present: every frame held the colour cleared before it
 PASS: present: every frame shown
@@ -153,7 +152,7 @@ PASS: triangle: display open at 1280x720
 PASS: triangle: shaders load
 PASS: triangle: vertex fetches patched for the layout
 PASS: triangle: vertex and front buffers
-display: the line counter reached 720 after 21918 us
+display: the line counter reached 720 after 20586 us
 triangle: the last frame drew 258720 pixels
 PASS: triangle: every frame's fence landed
 PASS: triangle: every frame has red, green and blue corners on the clear colour
@@ -167,7 +166,7 @@ PASS: texture: shaders load
 PASS: texture: vertex fetches patched for a float4 position and float2 coordinates
 PASS: texture: linear and tiled textures made
 PASS: texture: vertex and front buffers
-display: the line counter reached 720 after 30585 us
+display: the line counter reached 720 after 31253 us
 PASS: texture: every frame's fence landed
 texture: linear: the last frame had 0 wrong pixels
 PASS: texture: linear: every frame's corner and middle texels in place
@@ -184,7 +183,7 @@ PASS: render: shaders load
 PASS: render: vertex fetches patched
 PASS: render: source texture and render target made
 PASS: render: vertex and front buffers
-display: the line counter reached 720 after 29253 us
+display: the line counter reached 720 after 26253 us
 PASS: render: every frame's fence landed
 render: source: the last frame of each half had 0 wrong pixels
 PASS: render: source: every frame's corner and middle texels in place
@@ -196,7 +195,7 @@ PASS: render: every frame shown
 PASS: render: GPU close
 PASS: pacing: GPU open
 display: 1280x720 scaled to the 1920x1080 output
-display: the line counter reached 720 after 18034 us
+display: the line counter reached 720 after 31640 us
 PASS: pacing: 3 buffers, every vblank: scene and present open
 pacing: 3 buffers, every vblank: 0 reused buffers held the wrong frame
 pacing: 3 buffers, every vblank: 120 frames, 120 flips over 121 vblanks (first 2, last 121), 0 missed, 0 late; longest wait 17995 us
@@ -206,30 +205,30 @@ PASS: pacing: 3 buffers, every vblank: a flip every swap interval
 PASS: pacing: 3 buffers, every vblank: every flip inside vblank
 PASS: pacing: 3 buffers, every vblank: every frame resolved with its bar
 display: 1280x720 scaled to the 1920x1080 output
-display: the line counter reached 720 after 16377 us
+display: the line counter reached 720 after 31369 us
 PASS: pacing: 2 buffers, every vblank: scene and present open
 pacing: 2 buffers, every vblank: 0 reused buffers held the wrong frame
-pacing: 2 buffers, every vblank: 120 frames, 120 flips over 120 vblanks (first 1, last 120), 0 missed, 0 late; longest wait 17995 us
+pacing: 2 buffers, every vblank: 120 frames, 120 flips over 121 vblanks (first 2, last 121), 0 missed, 0 late; longest wait 17995 us
 PASS: pacing: 2 buffers, every vblank: every frame shown
 PASS: pacing: 2 buffers, every vblank: no vblank missed
 PASS: pacing: 2 buffers, every vblank: a flip every swap interval
 PASS: pacing: 2 buffers, every vblank: every flip inside vblank
 PASS: pacing: 2 buffers, every vblank: every frame resolved with its bar
 display: 1280x720 scaled to the 1920x1080 output
-display: the line counter reached 720 after 31933 us
+display: the line counter reached 720 after 30531 us
 PASS: pacing: 3 buffers, every second vblank: scene and present open
 pacing: 3 buffers, every second vblank: 0 reused buffers held the wrong frame
-pacing: 3 buffers, every second vblank: 120 frames, 120 flips over 240 vblanks (first 2, last 240), 0 missed, 0 late; longest wait 33995 us
+pacing: 3 buffers, every second vblank: 120 frames, 120 flips over 239 vblanks (first 1, last 239), 0 missed, 0 late; longest wait 33995 us
 PASS: pacing: 3 buffers, every second vblank: every frame shown
 PASS: pacing: 3 buffers, every second vblank: no vblank missed
 PASS: pacing: 3 buffers, every second vblank: a flip every swap interval
 PASS: pacing: 3 buffers, every second vblank: every flip inside vblank
 PASS: pacing: 3 buffers, every second vblank: every frame resolved with its bar
 display: 1280x720 scaled to the 1920x1080 output
-display: the line counter reached 720 after 25506 us
+display: the line counter reached 720 after 22423 us
 PASS: pacing: 2 buffers, every second vblank: scene and present open
 pacing: 2 buffers, every second vblank: 0 reused buffers held the wrong frame
-pacing: 2 buffers, every second vblank: 120 frames, 120 flips over 240 vblanks (first 2, last 240), 0 missed, 0 late; longest wait 33995 us
+pacing: 2 buffers, every second vblank: 120 frames, 120 flips over 240 vblanks (first 2, last 240), 0 missed, 0 late; longest wait 33994 us
 PASS: pacing: 2 buffers, every second vblank: every frame shown
 PASS: pacing: 2 buffers, every second vblank: no vblank missed
 PASS: pacing: 2 buffers, every second vblank: a flip every swap interval
@@ -241,7 +240,7 @@ PASS: scale: the kernel reports the output's size
 PASS: scale: the kernel's own scaler settings fail the check
 display: 1280x720 scaled to the 1920x1080 output
 PASS: scale: display open at 1280x720
-display: the line counter reached 720 after 25051 us
+display: the line counter reached 720 after 21950 us
 PASS: scale: image shown
 PASS: scale: the scaler holds 2 taps, the built-in filter and the output's scale factors
 scale: 1280x720 on the 1920x1080 output, desktop height 1080; showing it for 10000 ms for a capture
@@ -258,7 +257,7 @@ PASS: constants: display open at 1280x720
 PASS: constants: shaders load
 PASS: constants: vertex fetch patched for a float4 position
 PASS: constants: vertex, front and constant buffers
-display: the line counter reached 720 after 26585 us
+display: the line counter reached 720 after 19919 us
 constants: 0 of 59 frames checked held a wrong point; 0 points wrong
 constants: SQ_VS_CONST 000FF000, SQ_PS_CONST 000FF100 after the frames
 PASS: constants: every frame's fence landed
@@ -276,7 +275,7 @@ PASS: indexed: display open at 1280x720
 PASS: indexed: shaders load
 PASS: indexed: vertex fetch patched for a float4 position
 PASS: indexed: vertex, index and front buffers
-display: the line counter reached 720 after 31252 us
+display: the line counter reached 720 after 31585 us
 indexed: 0 of 59 frames checked held a wrong point; 0 points wrong
 PASS: indexed: every frame's fence landed
 PASS: indexed: every way drew its shape in its cell
@@ -289,7 +288,7 @@ PASS: depth: display open at 1280x720
 PASS: depth: shaders load
 PASS: depth: vertex fetch patched for a float4 position
 PASS: depth: vertex and front buffers
-display: the line counter reached 720 after 21920 us
+display: the line counter reached 720 after 31920 us
 depth: depth test on: 0 of 59 frames checked held a wrong point
 depth: depth test off: 9 of 9 frames got every depth check wrong and every other right
 PASS: depth: every frame's fence landed
@@ -304,7 +303,7 @@ PASS: raster: display open at 1280x720
 PASS: raster: shaders load
 PASS: raster: vertex fetch patched for a float4 position
 PASS: raster: vertex and front buffers
-display: the line counter reached 720 after 23920 us
+display: the line counter reached 720 after 17920 us
 raster: 25 points a frame; 0 of 59 frames checked held a wrong one, 0 points wrong
 PASS: raster: every frame's fence landed
 PASS: raster: blends, write mask, culling, scissor, viewport and depth bias as worked out
@@ -318,7 +317,7 @@ PASS: sampling: shaders load
 PASS: sampling: vertex fetches patched for a float4 position and float2 coordinates
 PASS: sampling: textures made with their levels
 PASS: sampling: vertex and front buffers
-display: the line counter reached 720 after 18253 us
+display: the line counter reached 720 after 18919 us
 sampling: 56 cells, 560 points a frame; 0 of 59 frames checked held a wrong one, 0 points wrong
 sampling: the last frame had 0 of 221775 pixels wrong across the cells and their edges
 PASS: sampling: every frame's fence landed
@@ -335,7 +334,7 @@ PASS: formats: shaders load
 PASS: formats: vertex fetches patched for a float4 position and float2 coordinates
 PASS: formats: textures made in every format
 PASS: formats: vertex and front buffers
-display: the line counter reached 720 after 27585 us
+display: the line counter reached 720 after 30920 us
 formats: the largest error in a channel: A8R8G8B8 0, R5G6B5 0, A1R5G5B5 0, A4R4G4B4 0, A2B10G10R10 0, R8 0, R8G8 0, R16F 0, R16G16F 0, R16G16B16A16F 0, DXT1 3, DXT3 3, DXT5 4, R8G8B8A8 0, B8G8R8A8 0
 formats: 66 cells, 660 points a frame; 0 of 59 frames checked held a wrong one, 0 points wrong
 formats: the last frame had 0 of 140526 pixels wrong across the cells and their edges
@@ -350,7 +349,7 @@ display: 1280x720 scaled to the 1920x1080 output
 PASS: vertex: display open at 1280x720
 PASS: vertex: a vertex shader patched for each cell's layout
 PASS: vertex: vertex and front buffers
-display: the line counter reached 720 after 18253 us
+display: the line counter reached 720 after 16251 us
 vertex: 23 cells, 115 points a frame; 0 of 59 frames checked held a wrong one, 0 points wrong
 vertex: the last frame had 0 of 100188 pixels wrong across the cells and their edges
 PASS: vertex: every frame's fence landed
@@ -364,7 +363,7 @@ PASS: replay: a recording that outgrows its buffer fails
 replay: the background took 75 dwords, the bar 6
 PASS: replay: background and bar recorded
 display: 1280x720 scaled to the 1920x1080 output
-display: the line counter reached 720 after 28710 us
+display: the line counter reached 720 after 30472 us
 PASS: replay: present open at 1280x720
 replay: 0 reused buffers held the wrong frame
 replay: 120 frames, 120 flips over 120 vblanks (first 1, last 120), 0 missed, 0 late; longest wait 17993 us
@@ -380,7 +379,7 @@ PASS: microcode: vertex and front buffers
 PASS: microcode: 200 small pixel shaders and a vertex shader load
 microcode: the 201 shaders took 16 of the kernel's 4 KB pages; a page each would be 3216
 PASS: microcode: the shaders share pages, two at most
-display: the line counter reached 720 after 30586 us
+display: the line counter reached 720 after 21253 us
 microcode: 0 of 29 frames checked held a wrong tile; 0 points wrong
 PASS: microcode: every frame draws each shader's tile in its own colour
 microcode: freed, the title holds 3850 pages, from 3850 before the shaders
@@ -393,7 +392,7 @@ PASS: registers: shaders load
 PASS: registers: vertex fetches patched for a float4 position
 PASS: registers: vertex and front buffers
 registers: drawing with 18 and 64 pixel shader registers and 64 vertex shader registers
-display: the line counter reached 720 after 28919 us
+display: the line counter reached 720 after 29586 us
 registers: a pixel shader using 18 registers: 0 of 59 frames checked held a wrong point; 0 points wrong
 PASS: registers: a pixel shader using 18 registers draws, every register carried into its colour
 registers: a pixel shader using 64 registers: 0 of 59 frames checked held a wrong point; 0 points wrong
@@ -403,5 +402,5 @@ PASS: registers: a vertex shader using 64 registers draws, every register carrie
 PASS: registers: every frame shown
 registers: the last frame stays on screen for 5000 ms for a capture
 PASS: registers: GPU close
-tests: 253 passed, 2 failed
-exit: status 2
+tests: 255 passed, 0 failed
+exit: status 0
