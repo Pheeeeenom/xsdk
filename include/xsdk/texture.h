@@ -41,6 +41,8 @@ enum {
 	// Bytes: red, green, blue then alpha; or blue, green, red then alpha (Vulkan's R8G8B8A8 and B8G8R8A8).
 	XSDK_FORMAT_R8G8B8A8,
 	XSDK_FORMAT_B8G8R8A8,
+	// 32-bit floats: red (Vulkan's R32_SFLOAT).
+	XSDK_FORMAT_R32F,
 	XSDK_FORMATS,
 };
 

@@ -118,6 +118,8 @@ static const FormatInfo formats[XSDK_FORMATS] = {
 	[XSDK_FORMAT_DXT5] = { 20, 2, 4, ENDIAN_8IN16, SWIZZLE(X, Y, Z, W) },
 	[XSDK_FORMAT_R8G8B8A8] = { 6, 0, 2, ENDIAN_NONE, SWIZZLE(X, Y, Z, W) },
 	[XSDK_FORMAT_B8G8R8A8] = { 6, 0, 2, ENDIAN_NONE, SWIZZLE(Z, Y, X, W) },
+	// k_32_FLOAT (xenia:src/xenia/gpu/xenos.h:512).
+	[XSDK_FORMAT_R32F] = { 36, 0, 2, ENDIAN_8IN32, SWIZZLE(X, ZERO, ZERO, ONE) },
 };
 
 static NTSTATUS reject(const char *why)

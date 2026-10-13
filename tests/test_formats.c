@@ -36,7 +36,8 @@ enum {
 	MIP_LEVELS = 6,
 	// Two pixels a texel.
 	CELL_SIZE = 64,
-	CELL_STEP = 80,
+	// Sixteen formats across a 1280-pixel row.
+	CELL_STEP = 76,
 	LEVEL_GAP = 12,
 	MIP_ROW_STEP = 48,
 	// Fixed-point channels convert to float and round once more on the way to the 8-bit target.
@@ -66,6 +67,8 @@ enum {
 	KIND_BYTES,
 	// One half float a channel, red first.
 	KIND_HALVES,
+	// One float a channel, red first.
+	KIND_FLOATS,
 	KIND_DXT1,
 	KIND_DXT3,
 	KIND_DXT5,
@@ -98,6 +101,7 @@ static const FormatSpec specs[XSDK_FORMATS] = {
 	[XSDK_FORMAT_DXT5] = { "DXT5", KIND_DXT5, 16, { 0 }, { 0 } },
 	[XSDK_FORMAT_R8G8B8A8] = { "R8G8B8A8", KIND_BYTES, 4, { 8, 8, 8, 8 }, { 0, 1, 2, 3 } },
 	[XSDK_FORMAT_B8G8R8A8] = { "B8G8R8A8", KIND_BYTES, 4, { 8, 8, 8, 8 }, { 2, 1, 0, 3 } },
+	[XSDK_FORMAT_R32F] = { "R32F", KIND_FLOATS, 4, { 32, 0, 0, 0 }, { 0 } },
 };
 
 // One format per kind of block: 1, 2, 4 and 8 bytes a texel, and 8 and 16 bytes a 4 by 4 block.
@@ -214,6 +218,23 @@ static uint16_t get_u16(const uint8_t *in)
 	return (uint16_t)(in[0] << 8 | in[1]);
 }
 
+// A float's bits as the CPU holds them, first byte highest.
+static void put_float(uint8_t *out, float value)
+{
+	uint32_t bits;
+	memcpy(&bits, &value, sizeof bits);
+	for (uint32_t i = 0; i < 4; i++)
+		out[i] = (uint8_t)(bits >> (24 - 8 * i));
+}
+
+static float get_float(const uint8_t *in)
+{
+	const uint32_t bits = (uint32_t)in[0] << 24 | (uint32_t)in[1] << 16 | (uint32_t)in[2] << 8 | in[3];
+	float value;
+	memcpy(&value, &bits, sizeof value);
+	return value;
+}
+
 // Endpoints from the corners and two index bits a texel; three_colour orders them for DXT1's transparent mode.
 static void colour_block(uint32_t format, uint32_t level, uint32_t bx, uint32_t by, bool three_colour, uint8_t *out)
 {
@@ -258,6 +279,14 @@ static void dxt5_alpha(uint32_t level, uint32_t bx, uint32_t by, uint8_t *out)
 	put_u16(out + 6, (uint16_t)(indices >> 32));
 }
 
+static float half_value(uint16_t bits)
+{
+	const uint32_t exponent = bits >> 10 & 0x1F;
+	const float magnitude =
+		exponent ? (float)(0x400 | (bits & 0x3FF)) * (float)(1u << exponent) / (float)(1u << 25) : 0.0f;
+	return bits & 0x8000 ? -magnitude : magnitude;
+}
+
 // A texel, or a 4 by 4 block, in the units xsdk_texture_upload takes.
 static void encode_block(uint32_t format, uint32_t level, uint32_t bx, uint32_t by, uint8_t *out)
 {
@@ -276,6 +305,10 @@ static void encode_block(uint32_t format, uint32_t level, uint32_t bx, uint32_t 
 	} else if (spec->kind == KIND_HALVES) {
 		for (uint32_t channel = 0; channel < spec->block_bytes / 2; channel++)
 			put_u16(out + 2 * channel, half_for(format, level, channel, bx, by));
+	} else if (spec->kind == KIND_FLOATS) {
+		// The halves' values, past 0 and 1 included.
+		for (uint32_t channel = 0; channel < spec->block_bytes / 4; channel++)
+			put_float(out + 4 * channel, half_value(half_for(format, level, channel, bx, by)));
 	} else if (spec->kind == KIND_DXT1) {
 		colour_block(format, level, bx, by, (bx + by + level) % 2 == 1, out);
 	} else {
@@ -285,14 +318,6 @@ static void encode_block(uint32_t format, uint32_t level, uint32_t bx, uint32_t 
 			dxt5_alpha(level, bx, by, out);
 		colour_block(format, level, bx, by, false, out + 8);
 	}
-}
-
-static float half_value(uint16_t bits)
-{
-	const uint32_t exponent = bits >> 10 & 0x1F;
-	const float magnitude =
-		exponent ? (float)(0x400 | (bits & 0x3FF)) * (float)(1u << exponent) / (float)(1u << 25) : 0.0f;
-	return bits & 0x8000 ? -magnitude : magnitude;
 }
 
 static uint32_t to_byte(float value)
@@ -374,6 +399,9 @@ static uint32_t decode_texel(uint32_t format, uint32_t level, uint32_t x, uint32
 	} else if (spec->kind == KIND_HALVES) {
 		for (uint32_t channel = 0; channel < spec->block_bytes / 2; channel++)
 			channels[channel] = half_value(get_u16(block + 2 * channel)) * 255.0f;
+	} else if (spec->kind == KIND_FLOATS) {
+		for (uint32_t channel = 0; channel < spec->block_bytes / 4; channel++)
+			channels[channel] = get_float(block + 4 * channel) * 255.0f;
 	} else {
 		const uint32_t texel = y % 4 * 4 + x % 4;
 		blended = decode_colour(spec->kind == KIND_DXT1 ? block : block + 8, texel, spec->kind == KIND_DXT1, channels);
