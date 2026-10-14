@@ -2197,3 +2197,25 @@ Then, with xsdk setting 0x8001 and 0xC003:
 
 With that, milestone 32 is done: a title can draw into targets of 2 and 4 samples, resolves average them, and every
 title built with it passes on the console.
+
+## Anisotropic filtering, milestone 33 (2026-10-13)
+
+`XsdkSampler`'s `max_anisotropy` sets the fetch constant's `aniso_filter`: 0 for none, then 1 to 5 for at most 1, 2,
+4, 8 and 16 to 1 (xenia:src/xenia/gpu/xenos.h:140-148, 1259). The tests' pixel shader leaves the filter to the fetch
+constant, its `tfetch` built with AnisoFilter 7 (tools/gen_texture_shaders.py; xost:xasm/encode.py:407). Logs:
+`results/2026-10-13-milestone-33/`.
+- **xsdk_test passed 264 of 264** (`xsdk_test.log`). It drew a tiled 256x256 texture of black and white stripes two
+  texels wide, its nine levels box-filtered, with linear filters and mips, on 256x32 quads: a texel a pixel across and
+  eight down. The stripes' contrast, the white stripes' average less the black ones' over 255, came to 0 with none and
+  with at most 1 and 2, 0.501 with 4, and 1.000 with 8 and 16; every quad averaged 0.50.
+- **So the level read is the squeeze over the most anisotropy,** as an anisotropic filter's should be. 8 over 8 or 16
+  leaves level 0. Over 4 it leaves level 1, whose one-texel stripes, read a quarter texel off their centres, keep half
+  their contrast. Over 2 or 1, or with none, it leaves level 2 or 3, all grey. At most 1 draws as none.
+- **Broken on purpose,** with the field left out, every quad came out grey, contrast 0, and the check at 16 failed
+  (`xsdk_test_aniso_left_out.log`). That run also missed one vblank in the replay test. A second run of the same build,
+  with the controller disconnected, missed two in pacing's two buffers at every vblank instead
+  (`xsdk_test_aniso_left_out_2.log`). The build that passed missed none, and the change touches no timing.
+- **vulkan4xenon_test** passed 80 of 80 and **vkbench** 14 of 14, its times as at milestone 29.
+
+With that, milestone 33 is done: a title's samplers take up to 16 times anisotropy, and every title built with it passes
+on the console.
