@@ -1,0 +1,6 @@
+log: game:\v_noinline.log
+log: named after \Device\Harddisk0\Partition1\XSDK\mbedtls\v_noinline.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+sha3 noinline: 2000 bytes: 5335b97fc4a134accb58cd795624b4eaeb1767d351cb52ebbdfb3755 match
+sha3 noinline: 1000000 bytes: 4b2417dd18ea93b2fa21e3afd206a716bacae27671dd2e532b4cd56c MISMATCH
+exit: status 0

@@ -1,0 +1,9 @@
+log: game:\keccak_diff.log
+log: named after \Device\Harddisk0\Partition1\XSDK\mbedtls\keccak_diff.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+keccak: -O2: 22 of 50000 differed
+keccak: -O2, theta unrolled: 36 of 50000 differed
+keccak: -O2: 28 of 50000 differed
+keccak: -O2, theta unrolled: 40 of 50000 differed
+keccak: % 5 against a table, 20000000 times: 0 differed
+exit: status 0

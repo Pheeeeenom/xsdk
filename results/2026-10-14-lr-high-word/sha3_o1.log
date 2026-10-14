@@ -1,0 +1,6 @@
+log: game:\v_o1.log
+log: named after \Device\Harddisk0\Partition1\XSDK\mbedtls\v_o1.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+sha3 o1: 2000 bytes: 5335b97fc4a134accb58cd795624b4eaeb1767d351cb52ebbdfb3755 match
+sha3 o1: 1000000 bytes: 834263a43f18106a263309a0a3bf3c38aeacbef899d619eab59f7a89 MISMATCH
+exit: status 0

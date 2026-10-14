@@ -1,0 +1,7 @@
+log: game:\alu_probe.log
+log: named after \Device\Harddisk0\Partition1\XSDK\mbedtls\alu_probe.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+alu: hardware thread 0: in registers 0 of 20000 trials differed; through memory 0 of 5000
+alu: hardware thread 2: in registers 0 of 20000 trials differed; through memory 0 of 5000
+alu: hardware thread 4: in registers 0 of 20000 trials differed; through memory 0 of 5000
+exit: status 0

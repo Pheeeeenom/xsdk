@@ -2643,3 +2643,68 @@ What XAM does that POSIX code doesn't expect:
   So xsdk's `SO_ERROR` is 0 until `NetDll_select` puts the socket in its error set, and `EIO` after.
 - **`NetDll_getsockname` gives 0.0.0.0** for a connected socket, with its port; the checks ask the PC what address it
   sees.
+
+## The console keeps only LR's low word across an interrupt (2026-10-14)
+
+Mbed TLS's self-tests, built through xsdk (mbedtls-xenon), passed every suite but SHA-3's: its known answer for a
+million 'a's, fed 1000 bytes at a time, came out wrong (`mbedtls_selftest.log`). Logs, and the probes' sources:
+`results/2026-10-14-lr-high-word/`.
+- **Wrong only sometimes.** `sha3_probe2.c` hashed 2000 and 1,000,000 'a's in 1000-byte updates with Mbed TLS's
+  `sha3.c` built several ways. 2000 always came out right. The million came out right at -O0, and wrong at -O1, -O2
+  and -O2 with inlining off (`sha3_o0.log` and the rest), and the same -O2 build gave a different wrong digest each
+  run (`sha3_o2.log`, `sha3_o2_again1.log`, `sha3_o2_again2.log`).
+- **The permutation against itself.** Mbed TLS's Keccak-f[1600], built at -O2 and at -O0, run on the same states:
+  - 65 of 100,000 differed, and each -O2 result, recomputed ten times from its input, came out as -O0's ten times
+    (`keccak_diff_first.log`);
+  - on every hardware thread, 4 to 52 of 50,000 (`keccak_diff_threads.log`);
+  - whatever the stack below held, zeros, ones or 0x5A (`keccak_diff_stack_filled.log`);
+  - without update forms (`-mno-update`), without `rotld`, and with theta unrolled, which drops `mulhwu`
+    (`keccak_diff_variants.log`, `keccak_diff_theta.log`).
+- **On the clock.** The -O2 permutation, run on one input for 2 s and checked against -O0's answer, failed 126 times
+  in 203,712, every lane wrong, and every gap between failures was a whole number of milliseconds of the 49.875 MHz
+  time base: 995, 1994, 2994, 3989 us and so on (`keccak_diff_timing.log`, `keccak_diff_timing.c`). So the 1 kHz
+  clock interrupt broke it whenever it landed in the wrong place.
+- **Not the GPRs, the stack or the arithmetic.** Through half-second spins of the time base:
+  - 64-bit patterns in r6-r12 and r14-r31 came back whole (`regs_probe.log`);
+  - so did r0, r3-r5, r10-r12, CTR, CR1-CR7 and XER (`regs_probe2.log`);
+  - so did a 512-byte frame filled with patterns (`mem_probe.log`).
+
+  The same 64-bit integer work done twice never differed: 60,000 times in registers and 15,000 through memory, on
+  hardware threads 0, 2 and 4 (`alu_probe.log`).
+- **LR.** Under register pressure GCC's -O2 permutation parked 64-bit lanes in LR, `mtlr` and later `mflr`. Held in
+  LR through half a second, A1B2C3D4E5F60718 came back as 00000000E5F60718, every round, while CTR held it whole
+  (`lr_probe.log`).
+
+So xsdk's GCC keeps LR to 4-byte modes under -mcall-xsdk (tools/toolchain/gcc-xsdk.patch,
+`rs6000_hard_regno_mode_ok_uncached`, xsdk `158c339`), and spills such values to the stack. LR still holds
+addresses and other 32-bit values, such as a table pointer or a loop's end, whose low word survives. xsdk_test's
+`interrupts` check runs a Keccak-f[1600] with every lane a variable through half a second of clock interrupts,
+checking each result against the all-zero state's known permutation:
+- **Built with the toolchain before it** (`~/xsdk-gcc-lr64`), 163 of 259,065 came out wrong and the check failed
+  (`xsdk_test_old_toolchain.log`); its permutation had 13 `mtlr` and `mflr`.
+- **Rebuilt in full with the fix,** every title clean:
+  - xsdk_test passed 294 of 296, the two failures the controller's, disconnected: 266,343 permutations, none wrong
+    (`xsdk_test.log`);
+  - vulkan4xenon_test passed 80 of 80 and vkbench 14 of 14, its CPU times within 1.6% of the run before and its GPU
+    times within 10 us (`vulkan4xenon_test.log`, `vkbench.log`);
+  - Dusklight's title scene ran at 29.1 to 30.0 fps with 123 MB free, as before (`dusklight.log`), and its logo shot
+    at 34.8 ms a frame, the GPU taking 17.6 ms, its last frame the same byte for byte (`dusklight_diag.log`);
+  - Mbed TLS's self-tests passed, all 30 suites (results/2026-10-14-tls/).
+
+## TLS 1.2 through Mbed TLS (2026-10-14)
+
+mbedtls-xenon (`e59cc68de` to `1500b8ac2`) builds Mbed TLS 3.6.7 for the console on xsdk's sockets, `getentropy`
+and clocks, TLS 1.2 only (docs/scope/networking.md, step 3). Built with the toolchain above, its two check titles ran
+on the console (logs: `results/2026-10-14-tls/`):
+- **The self-tests** passed, all 30 suites, SHA-3's long known answers included (`mbedtls_selftest.log`).
+- **TLS 1.2** (`mbedtls_https.log`), with Mozilla's root certificates from `cacert.pem` beside the title, all 121
+  parsed, and the console's clock at 2026-10-14 08:34:34 UTC:
+  - example.com shook hands in 133 ms with ECDHE-ECDSA and ChaCha20-Poly1305, its certificate checked against its
+    name, and its front page answered `HTTP/1.1 200 OK`;
+  - badssl.com's own certificate was accepted, in 319 ms with ECDHE-RSA and AES-128-GCM;
+  - wrong.host.badssl.com, expired.badssl.com and self-signed.badssl.com were refused, each certificate for its own
+    reason: another name, expired, not signed by a trusted root.
+- **Broken on purpose,** a verify callback clearing the name mismatch, wrong.host.badssl.com was accepted and that
+  check failed, 6 of 7 passing (`mbedtls_https_name_check_left_out.log`).
+- **The random values differ between runs.** example.com's client random, its first four bytes the time, held
+  `CDDF4AEE0E4B0A64...` in the first run and `7C93B7E9EBB098EF...` in the second.

@@ -1,0 +1,15 @@
+log: game:\regs_probe.log
+log: named after \Device\Harddisk0\Partition1\XSDK\mbedtls\regs_probe.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+regs: round 0: 31854832 loops, 0 registers changed
+regs: round 1: 31853976 loops, 0 registers changed
+regs: round 2: 31855032 loops, 0 registers changed
+regs: round 3: 31855090 loops, 0 registers changed
+regs: round 4: 31854748 loops, 0 registers changed
+regs: round 5: 31856158 loops, 0 registers changed
+regs: round 6: 31854636 loops, 0 registers changed
+regs: round 7: 31855231 loops, 0 registers changed
+regs: round 8: 31854813 loops, 0 registers changed
+regs: round 9: 31855627 loops, 0 registers changed
+regs probe: 0 of 10 rounds changed a register
+exit: status 0

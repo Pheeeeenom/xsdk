@@ -1,0 +1,27 @@
+log: game:\mbedtls_https.log
+log: named after \Device\Harddisk0\Partition1\XSDK\mbedtls\mbedtls_https.xex
+sbrk: the heap may grow to 473 MB, the title's free memory
+mbedtls https check
+https: the console's clock: 2026-10-14 08:37:49 UTC
+PASS: https: the random generator seeds from the console's entropy
+PASS: https: cacert.pem beside the title parses whole
+https: example.com: TLSv1.2, TLS-ECDHE-ECDSA-WITH-CHACHA20-POLY1305-SHA256, in 143 ms
+https: example.com: client random 6ACF3F5D 7C93B7E9EBB098EF5A15418965C7872DF1C25EBC333062B8CF84C97C
+https: example.com: HTTP/1.1 200 OK
+PASS: https: example.com over TLS 1.2, its certificate checked, gives its page
+https: badssl.com: TLSv1.2, TLS-ECDHE-RSA-WITH-AES-128-GCM-SHA256, in 1270 ms
+https: badssl.com: client random 6ACF3F5D 14D00A96E27740DA7E9B83963F0BB9710FD4348279672B0B92E6BA1E
+PASS: https: badssl.com's own certificate is accepted
+https: wrong.host.badssl.com: TLSv1.2, TLS-ECDHE-RSA-WITH-AES-128-GCM-SHA256, in 309 ms
+https: wrong.host.badssl.com: client random 6ACF3F5E 7C6875457301BE0686F77096035928EF7648A4CD7774C77013BED6A3
+FAIL: https: a certificate for another name is refused
+https: expired.badssl.com: handshake failed after 1144 ms: -0x2700 X509 - Certificate verification failed, e.g. CRL, CA or signature check failed
+https: expired.badssl.com: the certificate:
+  The certificate validity has expired
+PASS: https: an expired certificate is refused
+https: self-signed.badssl.com: handshake failed after 203 ms: -0x2700 X509 - Certificate verification failed, e.g. CRL, CA or signature check failed
+https: self-signed.badssl.com: the certificate:
+  The certificate is not correctly signed by the trusted CA
+PASS: https: a self-signed certificate is refused
+tests: 6 passed, 1 failed
+exit: status 1

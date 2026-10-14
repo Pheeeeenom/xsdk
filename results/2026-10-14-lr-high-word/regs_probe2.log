@@ -1,0 +1,5 @@
+log: game:\regs_probe2.log
+log: named after \Device\Harddisk0\Partition1\XSDK\mbedtls\regs_probe2.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+regs2 probe: 0 of 10 rounds changed something
+exit: status 0

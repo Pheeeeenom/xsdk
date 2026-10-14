@@ -1,0 +1,10 @@
+log: game:\keccak_diff.log
+log: named after \Device\Harddisk0\Partition1\XSDK\mbedtls\keccak_diff.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+keccak: hardware thread 0 (move 0x00000000, now on 0): 17 of 50000 permutations differed
+keccak: hardware thread 1 (move 0x00000000, now on 1): 4 of 50000 permutations differed
+keccak: hardware thread 2 (move 0x00000000, now on 2): 23 of 50000 permutations differed
+keccak: hardware thread 3 (move 0x00000000, now on 3): 52 of 50000 permutations differed
+keccak: hardware thread 4 (move 0x00000000, now on 4): 47 of 50000 permutations differed
+keccak: hardware thread 5 (move 0x00000000, now on 5): 38 of 50000 permutations differed
+exit: status 0

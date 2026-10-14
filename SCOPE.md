@@ -946,7 +946,7 @@ gap that something running on xsdk meets becomes a milestone; the rest wait (aft
 36. **The texel rate.** Proposed, not yet agreed: docs/scope/36-texel-rate.md.
 
 **Networking**, a scope of its own rather than a numbered milestone: sockets, and TLS 1.2 in the title's own code.
-Agreed on 2026-10-14, before milestone 36: docs/scope/networking.md.
+Agreed and done on 2026-10-14: docs/scope/networking.md.
 
 **Waiting for a use** (CODE_GUIDELINES.md 1.2), each a milestone when something running on xsdk needs it: render targets
 of 64 bits a pixel and resolves into other formats (Xenia's ColorRenderTargetFormat); 128-bit textures

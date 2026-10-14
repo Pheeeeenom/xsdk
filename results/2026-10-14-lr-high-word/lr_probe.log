@@ -1,0 +1,15 @@
+log: game:\lr_probe.log
+log: named after \Device\Harddisk0\Partition1\XSDK\mbedtls\lr_probe.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+lr: round 0: LR 00000000e5f60718, CTR a1b2c3d4e5f60718
+lr: round 1: LR 00000000e5f60718, CTR a1b2c3d4e5f60718
+lr: round 2: LR 00000000e5f60718, CTR a1b2c3d4e5f60718
+lr: round 3: LR 00000000e5f60718, CTR a1b2c3d4e5f60718
+lr: round 4: LR 00000000e5f60718, CTR a1b2c3d4e5f60718
+lr: round 5: LR 00000000e5f60718, CTR a1b2c3d4e5f60718
+lr: round 6: LR 00000000e5f60718, CTR a1b2c3d4e5f60718
+lr: round 7: LR 00000000e5f60718, CTR a1b2c3d4e5f60718
+lr: round 8: LR 00000000e5f60718, CTR a1b2c3d4e5f60718
+lr: round 9: LR 00000000e5f60718, CTR a1b2c3d4e5f60718
+lr probe: LR changed in 10 of 10 rounds, CTR in 0
+exit: status 0

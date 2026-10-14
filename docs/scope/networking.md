@@ -103,6 +103,12 @@ puts a socket in the error set, and `EIO` after; `getsockname` gives 0.0.0.0 for
   name check left out, the wrong-name case fails.
 - Two runs log different handshake random values, as a generator stuck at one value would pass every other check.
 
+Done on 2026-10-14 (docs/HARDWARE.md, "TLS 1.2 through Mbed TLS"), in xenosworks/mbedtls-xenon. It took a toolchain
+fix first: the console keeps only LR's low word across an interrupt, and GCC had parked 64-bit values there, which
+broke Mbed TLS's SHA-3 now and then (docs/HARDWARE.md, "The console keeps only LR's low word across an interrupt").
+A DashLaunch plugin carrying TLS for every title was raised by the user as an option, not a need; titles link the
+library.
+
 ## Out of scope
 
 - TLS 1.3, and TLS servers.
