@@ -30,6 +30,8 @@ enum {
 	CLEAR_ARGB = 0xFF202020,
 	WAIT_ROUNDS = 8,
 	WAIT_LATE_MAX_US = 100,
+	// As long as a 1 ms sleep takes on the console (docs/HARDWARE.md), so a wait outlasting it gains nothing.
+	WAIT_SPIN_US = 2000,
 	// Each fence gives the ring a segment of 14 dwords, so the 8192-dword ring wraps a few times.
 	WRAP_ROUNDS = 4000,
 	// 25600 dwords with no fence, which the ring runs in segments of 1024 or a little more.
@@ -143,16 +145,18 @@ static void test_wait_latency(void)
 	put_register(CP_PERFMON_CNTL, PERF_STATE_ENABLE);
 	bool timed = target && clocks;
 	uint32_t latest_clocks = 0;
+	xsdk_gpu_set_wait_spin(WAIT_SPIN_US);
 	for (uint32_t i = 0; i < WAIT_ROUNDS && timed; i++) {
 		uint32_t late_clocks = 0;
 		timed = wait_returns(target, clocks, &late_clocks);
 		latest_clocks = late_clocks > latest_clocks ? late_clocks : latest_clocks;
 	}
+	xsdk_gpu_set_wait_spin(0);
 	put_register(RBBM_PERFCOUNTER1_SELECT, found_select);
 	put_register(CP_PERFMON_CNTL, found_control);
 	timed = NT_SUCCESS(xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS)) && timed;
 	// Xenia's counter holds what was written (xenia:src/xenia/gpu/graphics_system.cc:181-205), so this fails there.
-	check("gpu: a wait returns within 100 us of its fence passing, by the GPU's clock",
+	check("gpu: a wait set to spin returns within 100 us of its fence passing, by the GPU's clock",
 		timed && latest_clocks <= WAIT_LATE_MAX_US * GPU_CLOCKS_PER_US);
 	xsdk_gpu_free(clocks);
 	xsdk_gpu_free(target);

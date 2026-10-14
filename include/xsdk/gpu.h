@@ -44,8 +44,11 @@ NTSTATUS xsdk_gpu_close(void);
 volatile uint32_t *xsdk_gpu_reserve(uint32_t dword_count);
 // Submits everything written so far, then a fence; returns the fence's number.
 uint32_t xsdk_gpu_fence(void);
-// Waits until the GPU has passed the fence, or returns STATUS_IO_TIMEOUT; looks without sleeping for the first 2 ms.
+// Waits until the GPU has passed the fence, or returns STATUS_IO_TIMEOUT, looking at it between 1 ms sleeps.
 NTSTATUS xsdk_gpu_wait(uint32_t fence, uint32_t timeout_ms);
+// Has xsdk_gpu_wait look every 5 us for this long before it sleeps, so a wait returns within microseconds of a fence
+// that soon; 0, the default, as the spinning slows the thread sharing the waiter's core (docs/HARDWARE.md).
+void xsdk_gpu_set_wait_spin(uint32_t microseconds);
 // Whether the GPU has passed the fence, without waiting; safe in the graphics interrupt callback.
 bool xsdk_gpu_fence_done(uint32_t fence);
 
