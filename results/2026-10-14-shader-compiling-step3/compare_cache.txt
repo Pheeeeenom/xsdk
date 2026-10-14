@@ -1,0 +1,2 @@
+SPIR-V: 111 of 111 as the pack's
+Containers: 111 of 111 as the bundle's, with as many literals and resources

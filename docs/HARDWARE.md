@@ -2857,3 +2857,42 @@ files by (src/path.c). `std::filesystem::rename` comes to it too. Logs: `results
 - **Xenia renames nothing:** its handler takes the class and has no case for it (xboxkrnl_io_info.cc:202-251).
 - **A folder within a folder doesn't go through `remove_all`,** as xsdk opens everything sharing nothing and libstdc++
   deletes the inner folder while it still holds it open: 0xC0000043, a sharing violation (TODO.md).
+
+## Shaders compiled as the game asks (2026-10-14)
+
+Step 3 of docs/scope/shader-compiling.md: a program Dusklight's pack doesn't hold is compiled on the console the first
+time the game asks for it, its GLSL to SPIR-V through glslang-xenon in Aurora's vulkan4xenon backend and the SPIR-V
+to a container through xost's compiler in vulkan4xenon, and both are kept on the hard disk, each file written beside
+its name and renamed into place ("Files renamed on the console"). vulkan4xenon's folder is named after
+`xsdk_xsc_version()` (xsdk `9f12704`), Aurora's after glslang's version. vulkan4xenon `a624f2e` and `da2ea21`, Aurora
+`953d207` and `2ba57e8`, Dusklight `828f1f561d` and `1d0abc8611`. Logs: `results/2026-10-14-shader-compiling-step3/`.
+- **Without the pack, nothing kept** (`dusklight_nopack_1.log`, built with `DUSK_XSDK_GLSL_PACK=OFF`): the boot
+  screens and a minute of the title scene asked for 107 programs, all compiled. Through glslang the first took 919 ms,
+  glslang starting with it, and the other 106 24.4 ms each on average, 61 ms at most; through xost 20.5 ms on average,
+  126 ms at most. The title scene ran at 28.7 to 30.0 fps, drawn as with the pack (`title_nopack_1.png`,
+  `title_pack.png`, at another moment of the camera's pan).
+- **The next runs read them back:** the second read all 107 and compiled the 3 programs only it reached, at its exit;
+  the third read those 110 and compiled 1 more (`dusklight_nopack_2.log`, `dusklight_nopack_3.log`). glslang started
+  only for those. The second run held 50 s longer on the boot's warning screen, nothing compiled or read meanwhile, as
+  the run before step 3 had (`results/2026-10-14-xost-creator/dusklight.log`).
+- **What the console compiled is the PC's:** the 111 programs' SPIR-V is the pack's word for word, and their 111
+  containers its bundle's byte for byte, with as many literals and resources (`compare_cache.txt`).
+- **Played by the user** from nothing kept: the title, a new file, the opening cutscenes and Ordon, stages F_SP102,
+  F_SP108, F_SP103 and F_SP104 (`dusklight_played_1.log`). 189 programs compiled, none refused: through glslang the
+  first in 919 ms and the rest in 23.9 ms on average, 64 ms at most; through xost 17.0 ms on average, 136 ms at most.
+  The second time through the same stages compiled nothing, and read 159 programs and their 159 containers back
+  (`dusklight_played_2.log`).
+- **The memory card** wasn't made the first time: Aurora's atomic write named its temporary file after the card's,
+  44 characters where FATX holds 42, and each create failed with 0xC0000033, `STATUS_OBJECT_NAME_INVALID`. Named in 21
+  characters (Aurora `2ba57e8`; its io tests, `aurora_io_tests.txt`, and with the old name put back
+  `aurora_io_tests_old_name.txt`), the second run made it, `01-GZ2E-gczelda2.gci`.
+- **Ordon's minimap drew as noise** (`minimap_noise.webp`, the user's capture): the vulkan4xenon backend doesn't convert
+  EFB copies through a palette, so the texture the map is drawn from is never written. In the first played run free
+  memory also reached 0, the GPU's growing from 53 MB to 143 MB, and 204 of those textures weren't made; the second,
+  glslang never started, kept 65 MB free or more. Both are proposed as vulkan4xenon's milestones 14 and 15 (its
+  docs/ROADMAP.md).
+- **With the pack** (`dusklight_pack.log`; the diagnostics build, `dusklight_diag.log`) nothing was compiled or read.
+  The title scene ran at 28.6 to 30.0 fps, and the logo shot took 17.6 ms of GPU time a frame against 17.7 in the run
+  before, its end frame the same byte for byte.
+- **xsdk_test** passed 300 of 300, the controller's two among them; **vulkan4xenon_test** 94 of 94; **vkbench** 14 of
+  14, its draw and submit times within 2.5% of the run before.

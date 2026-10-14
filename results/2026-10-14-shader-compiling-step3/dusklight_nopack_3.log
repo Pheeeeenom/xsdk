@@ -1,0 +1,1039 @@
+log: game:\dusklight_nopack.log
+log: named after \Device\Harddisk0\Partition1\dusklight\dusklight_nopack.xex
+sbrk: the heap may grow to 439 MB, the title's free memory
+dusklight: started, with the game linked and its static constructors run
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 26921 us
+dusklight: 512 MB in all, 3 MB the kernel's; the title has 439 MB free
+dusklight: title pages: 8992 image, 96 heap, 256 stack, 920 physical, 80 virtual, 2 pool
+dusklight: the heap holds 260 KB, 253 KB of it in use
+mkdir: NtCreateFile(game:\TwilitRealm) failed: 0xC0000035
+mkdir: NtCreateFile(game:\TwilitRealm\Dusklight) failed: 0xC0000035
+mkdir: NtCreateFile(game:\TwilitRealm) failed: 0xC0000035
+[0m[INFO | dusk][0m Build: UNKNOWN-VERSION (rev f62ae61469bf5686f0f7710d383f51d11bd726ac, built Wed Oct 14 13:31:45 2026 -0400, type RelWithDebInfo)
+[0m[INFO | dusk][0m Platform: generic
+[0m[INFO | dusk::config][0m Loading config from 'game:\TwilitRealm\Dusklight\/config.json'
+open: NtCreateFile(game:\TwilitRealm\Dusklight\config.json) failed: 0xC0000034
+[0m[INFO | dusk::config][0m Config file did not exist, staying with defaults
+[0m[INFO | aurora][0m Aurora initializing
+[0m[INFO | aurora::system_info][0m CPU model: Unknown
+[0m[INFO | aurora::system_info][0m Memory: 0 MiB
+[0m[INFO | aurora::system_info][0m Architecture: Unknown
+[0m[INFO | aurora::system_info][0m OS: Unknown
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 31939 us
+[0m[INFO | aurora::vulkan4xenon][0m CMPR textures as RGBA8: vulkan4xenon has no BC1
+[0m[INFO | aurora::thread][0m Aurora GPU waiter on hardware thread 1
+[0m[INFO | aurora::vulkan4xenon][0m Shader pack: 0 programs
+[0m[INFO | aurora::vulkan4xenon][0m Programs the pack doesn't hold are kept in game:\TwilitRealm\Dusklight\/shaders/glslang-16.3.0
+[0m[INFO | aurora::vulkan4xenon][0m Read 39662e66d545c874.vert from the disk; 0 compiled and 1 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read f544e71db9210106.frag from the disk; 0 compiled and 2 read this run
+vulkan4xenon: SPIR-V 2C8E96C7FA5499CC read from the shader cache
+vulkan4xenon: SPIR-V EFE9BDE46639AE1D read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m vulkan4xenon backend: 1280x720 EFB
+[0m[INFO | aurora::thread][0m Main thread on hardware thread 0
+[0m[INFO | aurora::gfx::pipeline_cache][0m Pipeline compilation: 2 at a time
+[0m[INFO | aurora::thread][0m Aurora render worker on hardware thread 2
+[31m[ERROR | aurora::gfx::pipeline_cache][0m Failed to open pipeline cache database: out of memory
+[0m[INFO | aurora::thread][0m Pipeline compilation thread on hardware thread 3
+[0m[INFO | aurora::thread][0m Pipeline compilation thread on hardware thread 3
+[0m[INFO | aurora][0m Using framebuffer size 1280x720 scale 1
+[0m[INFO | aurora::thread][0m Aurora FIFO processor on hardware thread 4
+[33m[WARNING | aurora::window][0m Failed to set window title: Video subsystem has not been initialized
+[33m[WARNING | aurora::gfx::texture_replacement][0m Texture packs and dumps are supported only by the Dawn backend
+[0m[INFO | dusk][0m Texture replacement directory loaded: 0 registration(s)
+[0m[INFO | aurora::rmlui][0m Loaded font face 'Fira Sans' [regular] from 'res/FiraSans-Regular.ttf'.
+[0m[INFO | aurora::rmlui][0m Loaded font face 'Fira Sans' [bold] from 'res/FiraSans-Bold.ttf'.
+[0m[INFO | aurora::rmlui][0m Loaded font face 'Fira Sans Condensed' [regular] from 'res/FiraSansCondensed-Regular.ttf'.
+[0m[INFO | aurora::rmlui][0m Loaded font face 'Fira Sans Condensed' [bold] from 'res/FiraSansCondensed-Bold.ttf'.
+[0m[INFO | aurora::rmlui][0m Loaded font face 'Alegreya SC' [regular] from 'res/AlegreyaSC-Regular.ttf'.
+[0m[INFO | aurora::rmlui][0m Loaded font face 'Alegreya SC' [bold] from 'res/AlegreyaSC-Bold.ttf'.
+[0m[INFO | aurora::rmlui][0m Loaded font face 'Material Symbols Rounded' [regular] from 'res/MaterialSymbolsRounded-Regular.ttf'.
+[0m[INFO | aurora::rmlui][0m Loaded font face 'Noto Mono' [regular] from 'res/NotoMono-Regular.ttf'.
+[0m[INFO | dusk][0m Loading DVD image: game:\dusklight.iso
+[0m[INFO | dusk][0m Loaded game disc is GZ2E01
+[0m[INFO | dusk][0m Initializing mods...
+[0m[INFO | dusk::mods::manifest][0m no symbol manifest embedded; by-name resolution unavailable
+open: NtCreateFile(game:\TwilitRealm\Dusklight\mods\.cache) failed: 0xC000003A
+[0m[INFO | dusk::mods::loader][0m no mods found
+[36m[DEBUG | dusk::mods::overlay][0m Registering 0 overlay file(s).
+[0m[INFO | dusk::osReport][0m Starting main01 (Game Loop)...
+[0m[INFO | dusk::osReport][0m [JKRHeap] initArena: Lo=0x3da6200 Hi=0xcda2200 Size=0x8FFC000
+[0m[INFO | dusk::osReport][0m [PC-OSThread] Thread system initialized (multi-threaded mode)
+[0m[INFO | dusk::osReport][0m [PC-OSThread] Created thread 0x3da7080 (priority=6, stackSize=3072)
+[36m[DEBUG | aurora::ar][0m Initialized 0x1800000 bytes of ARAM!
+[0m[INFO | dusk::osReport][0m [PC-OSThread] Created thread 0x3da8140 (priority=8, stackSize=3072)
+[0m[INFO | dusk::osReport][0m [PC-OSThread] Started thread 0x3da8140
+[0m[INFO | dusk::osReport][0m [PC-OSThread] Thread 0x3da8140 on hardware thread 1
+[0m[INFO | dusk::osReport][0m [PC-OSThread] Created thread 0x3da8d80 (priority=7, stackSize=2048)
+[0m[INFO | dusk::osReport][0m [PC-OSThread] Started thread 0x3da8d80
+[0m[INFO | dusk::osReport][0m [PC-OSThread] Thread 0x3da8d80 on hardware thread 1
+[0m[INFO | dusk::osReport][0m [PC-OSThread] Started thread 0x3da7080
+[0m[INFO | dusk::osReport][0m [PC-OSThread] Thread 0x3da7080 on hardware thread 1
+open: NtCreateFile(game:\TwilitRealm\Dusklight\keyboard_bindings.dat) failed: 0xC0000034
+[0m[INFO | dusk::osReport][0m [32mコマンドヒープ    = 05da7b80-05da9b80 size=8 KB
+[m
+[0m[INFO | aurora::thread][0m Aurora tex preconv on hardware thread 3
+[0m[INFO | dusk::osReport][0m [32mアーカイブヒープ = 05da9b90-06f68390 size=18170 KB
+[m
+[0m[INFO | dusk::osReport][0m [32mＪ２Ｄ用ヒープ    = 06f683a0-070623a0 size=1000 KB
+[m
+[0m[INFO | dusk::osReport][0m [32mゲームヒープ       = 070623b0-0c67a3b0 size=88160 KB
+[m
+[0m[INFO | dusk::osReport][0m [32mゼルダヒープ       = 03e4ea10-05d962c0 size=32030 KB
+[m
+[0m[INFO | dusk::osReport][0m [PC-OSThread] Created thread 0x84265178 (priority=14, stackSize=4096)
+[0m[INFO | dusk::osReport][0m [PC-OSThread] Started thread 0x84265178
+[0m[INFO | dusk::osReport][0m [PC-OSThread] Thread 0x84265178 on hardware thread 1
+[0m[INFO | aurora::card][0m CARD API Initialized BUILT <Oct 14 2026 16:45:00>
+[0m[INFO | aurora::card][0m Loaded GC Card Image: game:\TwilitRealm\Dusklight\/USA/Card A
+[0m[INFO | dusk::osReport][0m [PC-OSThread] Created thread 0x842667e0 (priority=17, stackSize=4096)
+[0m[INFO | dusk::osReport][0m [PC-OSThread] Started thread 0x842667e0
+[0m[INFO | dusk::osReport][0m [PC-OSThread] Thread 0x842667e0 on hardware thread 1
+[0m[INFO | dusk::osReport][0m Calling fapGm_Create()...
+[0m[INFO | dusk][0m COPYDATE=[2006/11/06 18:16
+]
+[31m[ERROR | aurora::card][0m Failed to open file: gczelda2
+[0m[INFO | dusk::osReport][0m Calling fopAcM_initManager()...
+[0m[INFO | dusk::osReport][0m Calling cDyl_InitAsync()...
+[36m[DEBUG | dusk][0m [DIAG] cDyl_InitCallback: START
+[0m[INFO | dusk::osReport][0m Entering Main Loop (main01)...
+[36m[DEBUG | dusk][0m fopScnM_CreateReq: procName=9 fade=32767
+[0m[INFO | aurora::input][0m Added controller 'Xbox 360 Controller' (instance 1, vid 045e, pid 028e, type 2)
+[36m[DEBUG | dusk][0m fopScnM_CreateReq: result=0 (error=4294967295)
+open: NtCreateFile(game:\TwilitRealm\Dusklight\controller_ports.dat) failed: 0xC0000034
+[36m[DEBUG | dusk][0m cDyl_InitCallback: fpcNm_LOGO_SCENE_e created, DONE
+open: NtCreateFile(game:\TwilitRealm\Dusklight\Xbox 360 Controller_045E_028E.controller) failed: 0xC0000034
+[36m[DEBUG | dusk][0m fapGm_Execute frame=0
+[36m[DEBUG | dusk][0m fpcDw_Handler: before BeforeOfDraw
+[36m[DEBUG | dusk][0m fpcDw_Handler: before draw iteration
+[0m[INFO | aurora::vulkan4xenon][0m Read 172ccfa9a454e318.vert from the disk; 0 compiled and 3 read this run
+[36m[DEBUG | dusk][0m fpcDw_Handler: before AfterOfDraw
+[0m[INFO | aurora::vulkan4xenon][0m Read 3de421fc6f9f3122.frag from the disk; 0 compiled and 4 read this run
+[36m[DEBUG | dusk][0m fpcDw_Handler: done
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+vulkan4xenon: SPIR-V 90CFEC8FB11C27FA read from the shader cache
+[36m[DEBUG | dusk][0m fpcNdRq_phase_Create: name=9 layer=0x84279dd8
+vulkan4xenon: SPIR-V 55B5601086774C36 read from the shader cache
+[36m[DEBUG | dusk][0m fpcNdRq_phase_Create: creating_id=1 (error=4294967295)
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m fapGm_Execute frame=1
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=9 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=9
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=1 profname=fpcNm_LOGO_SCENE_e (9) profile=0x82173ab4 procSize=688 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d95f14
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m dScnLogo_c::create START
+[36m[DEBUG | dusk][0m dScnLogo_c::create resLoad=0 (need 4 for complete)
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_SubCreateProcess: pid=1 procName=0009 ret=0
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcDw_Handler: before BeforeOfDraw
+[36m[DEBUG | dusk][0m fpcDw_Handler: before draw iteration
+[36m[DEBUG | dusk][0m fpcDw_Handler: before AfterOfDraw
+[36m[DEBUG | dusk][0m fpcDw_Handler: done
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m fapGm_Execute frame=2
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_SubCreateProcess: pid=1 procName=0009 ret=0
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcDw_Handler: before BeforeOfDraw
+[36m[DEBUG | dusk][0m fpcDw_Handler: before draw iteration
+[36m[DEBUG | dusk][0m fpcDw_Handler: before AfterOfDraw
+[36m[DEBUG | dusk][0m fpcDw_Handler: done
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m fapGm_Execute frame=3
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_SubCreateProcess: pid=1 procName=0009 ret=0
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcDw_Handler: before BeforeOfDraw
+[36m[DEBUG | dusk][0m fpcDw_Handler: before draw iteration
+[36m[DEBUG | dusk][0m fpcDw_Handler: before AfterOfDraw
+[36m[DEBUG | dusk][0m fpcDw_Handler: done
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m fapGm_Execute frame=4
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_SubCreateProcess: pid=1 procName=0009 ret=0
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcDw_Handler: before BeforeOfDraw
+[36m[DEBUG | dusk][0m fpcDw_Handler: before draw iteration
+[36m[DEBUG | dusk][0m fpcDw_Handler: before AfterOfDraw
+[36m[DEBUG | dusk][0m fpcDw_Handler: done
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m fapGm_Execute frame=5
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_SubCreateProcess: pid=1 procName=0009 ret=0
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m fapGm_Execute frame=6
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_SubCreateProcess: pid=1 procName=0009 ret=0
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m fapGm_Execute frame=7
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_SubCreateProcess: pid=1 procName=0009 ret=0
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m fapGm_Execute frame=8
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_SubCreateProcess: pid=1 procName=0009 ret=0
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m fapGm_Execute frame=9
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_SubCreateProcess: pid=1 procName=0009 ret=0
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_SubCreateProcess: pid=1 procName=0009 ret=0
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_SubCreateProcess: pid=1 procName=0009 ret=0
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_SubCreateProcess: pid=1 procName=0009 ret=0
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_SubCreateProcess: pid=1 procName=0009 ret=0
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_SubCreateProcess: pid=1 procName=0009 ret=0
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_SubCreateProcess: pid=1 procName=0009 ret=0
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_SubCreateProcess: pid=1 procName=0009 ret=0
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_SubCreateProcess: pid=1 procName=0009 ret=0
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_SubCreateProcess: pid=1 procName=0009 ret=0
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_SubCreateProcess: pid=1 procName=0009 ret=0
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_SubCreateProcess: pid=1 procName=0009 ret=0
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m fpcNdRq_Handler: queue size=1
+[36m[DEBUG | dusk][0m fopScnRq_phase_Execute: ret=0 name=9
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m fpcCtRq_Do: phase=0 process=0x5d95f14
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[0m[INFO | dusk::osReport][0m [PC-OSThread] Created thread 0x3fd7640 (priority=3, stackSize=4096)
+[0m[INFO | dusk::osReport][0m [PC-OSThread] Started thread 0x3fd7640
+[0m[INFO | dusk::osReport][0m [PC-OSThread] Thread 0x3fd7640 on hardware thread 1
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m [DIAG] dScnLogo_Create: entry i_this=0x5d95f14
+[36m[DEBUG | dusk][0m Loading Resource: dolby_p2_232_112.bti (Size: 26016)
+[36m[DEBUG | dusk][0m Loading Resource: nintendo_376x104.bti (Size: 78240)
+[36m[DEBUG | dusk][0m Loading Resource: progressive_choice.bti (Size: 15008)
+[36m[DEBUG | dusk][0m Loading Resource: progressive_inter.bti (Size: 15008)
+[36m[DEBUG | dusk][0m Loading Resource: progressive_no.bti (Size: 2592)
+[36m[DEBUG | dusk][0m Loading Resource: progressive_pro.bti (Size: 15008)
+[36m[DEBUG | dusk][0m Loading Resource: progressive_yes.bti (Size: 2848)
+[36m[DEBUG | dusk][0m Loading Resource: warning.bti (Size: 136224)
+[36m[DEBUG | dusk][0m Loading Resource: warning_pstart.bti (Size: 14624)
+[36m[DEBUG | dusk][0m dScnLogo_c::create resLoad COMPLETE, continuing init...
+[36m[DEBUG | dusk][0m dScnLogo_c::draw: mExecCommand=0 mTimer=120
+[0m[INFO | dusk][0m Logo scene: warning in
+[36m[DEBUG | dusk][0m dDlst_2D_c::draw: pos=(0,0) size=(608,448) alpha=255
+[36m[DEBUG | dusk][0m dScnLogo_c::draw: mExecCommand=0 mTimer=119
+[0m[INFO | aurora::vulkan4xenon][0m Read d5d99e338acc096e.vert from the disk; 0 compiled and 5 read this run
+[36m[DEBUG | dusk][0m dDlst_2D_c::draw: pos=(0,0) size=(608,448) alpha=255
+[0m[INFO | aurora::vulkan4xenon][0m Read 246ca2b33bb1fdf4.frag from the disk; 0 compiled and 6 read this run
+[36m[DEBUG | dusk][0m dScnLogo_c::draw: mExecCommand=0 mTimer=118
+vulkan4xenon: SPIR-V A70001999A9AF2F6 read from the shader cache
+[36m[DEBUG | dusk][0m dDlst_2D_c::draw: pos=(0,0) size=(608,448) alpha=255
+vulkan4xenon: SPIR-V FA91D17008C53C39 read from the shader cache
+[36m[DEBUG | dusk][0m dScnLogo_c::draw: mExecCommand=0 mTimer=117
+[36m[DEBUG | dusk][0m dDlst_2D_c::draw: pos=(0,0) size=(608,448) alpha=255
+[36m[DEBUG | dusk][0m dScnLogo_c::draw: mExecCommand=0 mTimer=116
+[36m[DEBUG | dusk][0m dDlst_2D_c::draw: pos=(0,0) size=(608,448) alpha=255
+[36m[DEBUG | dusk][0m dScnLogo_c::draw: mExecCommand=0 mTimer=115
+[36m[DEBUG | dusk][0m dDlst_2D_c::draw: pos=(0,0) size=(608,448) alpha=255
+[36m[DEBUG | dusk][0m dScnLogo_c::draw: mExecCommand=0 mTimer=114
+[36m[DEBUG | dusk][0m dDlst_2D_c::draw: pos=(0,0) size=(608,448) alpha=255
+[36m[DEBUG | dusk][0m dScnLogo_c::draw: mExecCommand=0 mTimer=113
+[36m[DEBUG | dusk][0m dDlst_2D_c::draw: pos=(0,0) size=(608,448) alpha=255
+[36m[DEBUG | dusk][0m dScnLogo_c::draw: mExecCommand=0 mTimer=112
+[36m[DEBUG | dusk][0m dDlst_2D_c::draw: pos=(0,0) size=(608,448) alpha=255
+[36m[DEBUG | dusk][0m dScnLogo_c::draw: mExecCommand=0 mTimer=111
+[36m[DEBUG | dusk][0m dDlst_2D_c::draw: pos=(0,0) size=(608,448) alpha=255
+[0m[INFO | dusk][0m Logo scene: warning
+[0m[INFO | aurora::vulkan4xenon][0m Read 8e555ecc28e3d240.vert from the disk; 0 compiled and 7 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read 12d30073b6d47043.frag from the disk; 0 compiled and 8 read this run
+vulkan4xenon: SPIR-V C622DAB4BEE8C6D7 read from the shader cache
+vulkan4xenon: SPIR-V 98C0CCD5BC1D5B89 read from the shader cache
+[36m[DEBUG | dusk][0m fapGm_Execute frame=300
+[0m[INFO | dusk][0m 474 frames in 10.0 s, 47.4 fps
+[0m[INFO | dusk][0m Memory: 160 MB free; the title's pages: 37 MB physical, 232 MB virtual, 0 MB heap, 14 MB stack; newlib's heap 232 MB, 230 MB of it in use
+[36m[DEBUG | dusk][0m fapGm_Execute frame=600
+[36m[DEBUG | dusk][0m fapGm_Execute frame=900
+[0m[INFO | dusk][0m 598 frames in 10.0 s, 59.8 fps
+[0m[INFO | dusk][0m Memory: 160 MB free; the title's pages: 37 MB physical, 232 MB virtual, 0 MB heap, 14 MB stack; newlib's heap 232 MB, 230 MB of it in use
+[36m[DEBUG | dusk][0m fapGm_Execute frame=1200
+[36m[DEBUG | dusk][0m fapGm_Execute frame=1500
+[0m[INFO | dusk][0m Logo scene: warning out
+[0m[INFO | dusk][0m Logo scene: Nintendo in
+[0m[INFO | aurora::vulkan4xenon][0m Read 6b7ff186cc28cce5.frag from the disk; 0 compiled and 9 read this run
+vulkan4xenon: SPIR-V 5892962CE2CCFB06 read from the shader cache
+[0m[INFO | dusk][0m Logo scene: Nintendo out
+[0m[INFO | dusk][0m Logo scene: Dolby in
+[0m[INFO | aurora::vulkan4xenon][0m Read 1675a46dea18c182.frag from the disk; 0 compiled and 10 read this run
+vulkan4xenon: SPIR-V 3E8BDF1CD5D870C1 read from the shader cache
+[0m[INFO | dusk][0m 600 frames in 10.0 s, 60.0 fps
+[0m[INFO | dusk][0m Memory: 160 MB free; the title's pages: 37 MB physical, 232 MB virtual, 0 MB heap, 14 MB stack; newlib's heap 232 MB, 230 MB of it in use
+[0m[INFO | dusk][0m Logo scene: Dolby out
+[0m[INFO | dusk][0m Logo scene: Dolby out 2
+[36m[DEBUG | dusk][0m fapGm_Execute frame=1800
+[0m[INFO | dusk][0m Logo scene: disc wait
+[36m[DEBUG | dusk][0m Loading Resource: ef_mizubashira.bck (Size: 672)
+[36m[DEBUG | dusk][0m Loading Resource: f_znc_r_impact.bck (Size: 704)
+[36m[DEBUG | dusk][0m Loading Resource: o_g_hutk.bck (Size: 416)
+[36m[DEBUG | dusk][0m Loading Resource: o_g_hutu.bck (Size: 416)
+[36m[DEBUG | dusk][0m Loading Resource: waita.bck (Size: 768)
+[36m[DEBUG | dusk][0m Loading Resource: zelda_notice_cursor_red.bck (Size: 512)
+[36m[DEBUG | dusk][0m Loading Resource: zelda_notice_cursor_yellow.bck (Size: 416)
+[36m[DEBUG | dusk][0m Loading Resource: o_g_hart.bmd (Size: 5472)
+[36m[DEBUG | dusk][0m Loading Resource: o_g_hutk.bmd (Size: 29376)
+[36m[DEBUG | dusk][0m Loading Resource: o_g_hutu.bmd (Size: 29376)
+[36m[DEBUG | dusk][0m Loading Resource: o_g_rupy.bmd (Size: 8224)
+[36m[DEBUG | dusk][0m Loading Resource: breakwoodbox.bmd (Size: 3744)
+[36m[DEBUG | dusk][0m Loading Resource: d_brockbrk.bmd (Size: 2848)
+[36m[DEBUG | dusk][0m Loading Resource: ef_mizubashira.bmd (Size: 12224)
+[36m[DEBUG | dusk][0m Loading Resource: ef_screen_suityu.bmd (Size: 4128)
+[36m[DEBUG | dusk][0m Loading Resource: ef_thunder01.bmd (Size: 10016)
+[36m[DEBUG | dusk][0m Loading Resource: ef_thunder02.bmd (Size: 10304)
+[36m[DEBUG | dusk][0m Loading Resource: mpm_tubo.bmd (Size: 4704)
+[36m[DEBUG | dusk][0m Loading Resource: nv.bmd (Size: 4256)
+[36m[DEBUG | dusk][0m Loading Resource: o_g_arow.bmd (Size: 4960)
+[36m[DEBUG | dusk][0m Loading Resource: o_g_arow_taba.bmd (Size: 22304)
+[36m[DEBUG | dusk][0m Loading Resource: o_g_tane.bmd (Size: 13152)
+[36m[DEBUG | dusk][0m Loading Resource: zelda_notice_cursor_red.bmd (Size: 7808)
+[36m[DEBUG | dusk][0m Loading Resource: zelda_notice_cursor_yellow.bmd (Size: 10688)
+[36m[DEBUG | dusk][0m Loading Resource: f_znc_r_impact.bpk (Size: 416)
+[36m[DEBUG | dusk][0m Loading Resource: zelda_notice_cursor_red.bpk (Size: 320)
+[36m[DEBUG | dusk][0m Loading Resource: zelda_notice_cursor_yellow.bpk (Size: 320)
+[36m[DEBUG | dusk][0m Loading Resource: ef_mizubashira.brk (Size: 480)
+[36m[DEBUG | dusk][0m Loading Resource: ef_thunder.brk (Size: 640)
+[36m[DEBUG | dusk][0m Loading Resource: f_g_hart.brk (Size: 384)
+[36m[DEBUG | dusk][0m Loading Resource: f_g_rupy.brk (Size: 800)
+[36m[DEBUG | dusk][0m Loading Resource: f_znc_r_impact.brk (Size: 384)
+[36m[DEBUG | dusk][0m Loading Resource: o_g_hutk.brk (Size: 416)
+[36m[DEBUG | dusk][0m Loading Resource: o_g_hutu.brk (Size: 544)
+[36m[DEBUG | dusk][0m Loading Resource: zelda_notice_cursor_red.brk (Size: 288)
+[36m[DEBUG | dusk][0m Loading Resource: zelda_notice_cursor_red_02.brk (Size: 224)
+[36m[DEBUG | dusk][0m Loading Resource: zelda_notice_cursor_yellow.brk (Size: 544)
+[36m[DEBUG | dusk][0m Loading Resource: zelda_notice_cursor_yellow_02.brk (Size: 224)
+[36m[DEBUG | dusk][0m Loading Resource: ef_mizubashira.btk (Size: 704)
+[36m[DEBUG | dusk][0m Loading Resource: ef_screen_suityu.btk (Size: 320)
+[36m[DEBUG | dusk][0m Loading Resource: f_znc_r_impact.btk (Size: 256)
+[36m[DEBUG | dusk][0m Loading Resource: zelda_notice_cursor_red.btk (Size: 256)
+[36m[DEBUG | dusk][0m Loading Resource: zelda_notice_cursor_yellow.btk (Size: 576)
+[36m[DEBUG | dusk][0m Loading Resource: mpm_tubo.btp (Size: 128)
+[36m[DEBUG | dusk][0m Loading Resource: areamapres.bin (Size: 444)
+[36m[DEBUG | dusk][0m Loading Resource: item_table.bin (Size: 128)
+[36m[DEBUG | dusk][0m Loading Resource: a_kusa_rgba.bti (Size: 2080)
+[36m[DEBUG | dusk][0m Loading Resource: ball32_i4.bti (Size: 544)
+[36m[DEBUG | dusk][0m Loading Resource: im_enter_4i_32.bti (Size: 544)
+[36m[DEBUG | dusk][0m Loading Resource: im_map_icon_circle_4i.bti (Size: 64)
+[36m[DEBUG | dusk][0m Loading Resource: im_map_icon_enter_4i.bti (Size: 160)
+[36m[DEBUG | dusk][0m Loading Resource: im_map_icon_nijumaru_4i.bti (Size: 160)
+[36m[DEBUG | dusk][0m Loading Resource: im_map_icon_square_4i.bti (Size: 64)
+[36m[DEBUG | dusk][0m Loading Resource: im_map_icon_tresurebox_4i.bti (Size: 64)
+[36m[DEBUG | dusk][0m Loading Resource: im_map_icon_try_force_4i.bti (Size: 160)
+[36m[DEBUG | dusk][0m Loading Resource: map_icon_circle16x16_4i.bti (Size: 160)
+[36m[DEBUG | dusk][0m Loading Resource: moya.bti (Size: 1056)
+[36m[DEBUG | dusk][0m Loading Resource: rope.bti (Size: 160)
+[36m[DEBUG | dusk][0m Loading Resource: snow.bti (Size: 160)
+[36m[DEBUG | dusk][0m Loading Resource: snow_tex.bti (Size: 1056)
+[36m[DEBUG | dusk][0m Loading Resource: txa_ring_a_32hafe.bti (Size: 544)
+[36m[DEBUG | dusk][0m Loading Resource: txa_tuki_as.bti (Size: 2080)
+[36m[DEBUG | dusk][0m Loading Resource: txa_tuki_bs.bti (Size: 2080)
+[36m[DEBUG | dusk][0m Loading Resource: txa_tuki_cs.bti (Size: 2080)
+[36m[DEBUG | dusk][0m Loading Resource: txa_tuki_ds.bti (Size: 2080)
+[36m[DEBUG | dusk][0m Loading Resource: vr_lenzf_tex.bti (Size: 1056)
+[36m[DEBUG | dusk][0m Loading Resource: warp_tex.bti (Size: 1056)
+[36m[DEBUG | dusk][0m Loading Resource: zl2_polygon_ia8 (Size: 64)
+[36m[DEBUG | dusk][0m Loading Resource: crod_ball_revive_demo.bck (Size: 288)
+[36m[DEBUG | dusk][0m Loading Resource: crod_ball_wait_a.bck (Size: 288)
+[36m[DEBUG | dusk][0m Loading Resource: crod_ball_wait_a_t.bck (Size: 288)
+[36m[DEBUG | dusk][0m Loading Resource: crod_ball_wait_a_t_start.bck (Size: 288)
+[36m[DEBUG | dusk][0m Loading Resource: crod_ball_wait_b.bck (Size: 352)
+[36m[DEBUG | dusk][0m Loading Resource: crod_ball_wait_c.bck (Size: 384)
+[36m[DEBUG | dusk][0m Loading Resource: ef_shippu.bck (Size: 544)
+[36m[DEBUG | dusk][0m Loading Resource: pb_move.bck (Size: 2816)
+[36m[DEBUG | dusk][0m Loading Resource: pb_wait.bck (Size: 928)
+[36m[DEBUG | dusk][0m Loading Resource: spout.bck (Size: 1088)
+[36m[DEBUG | dusk][0m Loading Resource: ef_setboom.bmd (Size: 15392)
+[36m[DEBUG | dusk][0m Loading Resource: al_arrow.bmd (Size: 5024)
+[36m[DEBUG | dusk][0m Loading Resource: al_arrowb.bmd (Size: 9696)
+[36m[DEBUG | dusk][0m Loading Resource: al_bomb.bmd (Size: 11104)
+[36m[DEBUG | dusk][0m Loading Resource: al_boom.bmd (Size: 20000)
+[36m[DEBUG | dusk][0m Loading Resource: al_pachi_nut.bmd (Size: 2176)
+[36m[DEBUG | dusk][0m Loading Resource: al_sp.bmd (Size: 21824)
+[36m[DEBUG | dusk][0m Loading Resource: crod_ball.bmd (Size: 3840)
+[36m[DEBUG | dusk][0m Loading Resource: footmark.bmd (Size: 2272)
+[36m[DEBUG | dusk][0m Loading Resource: hk.bmd (Size: 3648)
+[36m[DEBUG | dusk][0m Loading Resource: inochidama.bmd (Size: 13120)
+[36m[DEBUG | dusk][0m Loading Resource: pb.bmd (Size: 34976)
+[36m[DEBUG | dusk][0m Loading Resource: pg.bmd (Size: 20736)
+[36m[DEBUG | dusk][0m Loading Resource: rod_ukia.bmd (Size: 4384)
+[36m[DEBUG | dusk][0m Loading Resource: rod_ukib.bmd (Size: 2656)
+[36m[DEBUG | dusk][0m Loading Resource: rod_ukic.bmd (Size: 2656)
+[36m[DEBUG | dusk][0m Loading Resource: sango_fook.bmd (Size: 9984)
+[36m[DEBUG | dusk][0m Loading Resource: sfook.bmd (Size: 3456)
+[36m[DEBUG | dusk][0m Loading Resource: uki.bmd (Size: 4928)
+[36m[DEBUG | dusk][0m Loading Resource: uki_saki.bmd (Size: 4160)
+[36m[DEBUG | dusk][0m Loading Resource: wl_change.bmd (Size: 44256)
+[36m[DEBUG | dusk][0m Loading Resource: worm.bmd (Size: 8256)
+[36m[DEBUG | dusk][0m Loading Resource: worm_hole.bmd (Size: 2816)
+[36m[DEBUG | dusk][0m Loading Resource: ef_shippu.bmd (Size: 33216)
+[36m[DEBUG | dusk][0m Loading Resource: al_podm.bmd (Size: 21504)
+[36m[DEBUG | dusk][0m Loading Resource: al_swm.bmd (Size: 22720)
+[36m[DEBUG | dusk][0m Loading Resource: al_poda.bmd (Size: 12032)
+[36m[DEBUG | dusk][0m Loading Resource: al_swa.bmd (Size: 11808)
+[36m[DEBUG | dusk][0m Loading Resource: al_swm.brk (Size: 256)
+[36m[DEBUG | dusk][0m Loading Resource: crod_ball.brk (Size: 736)
+[36m[DEBUG | dusk][0m Loading Resource: inochidama.brk (Size: 288)
+[36m[DEBUG | dusk][0m Loading Resource: al_swa.btk (Size: 320)
+[36m[DEBUG | dusk][0m Loading Resource: al_swm.btk (Size: 320)
+[36m[DEBUG | dusk][0m Loading Resource: crod_ball.btk (Size: 416)
+[36m[DEBUG | dusk][0m Loading Resource: ef_setboom.btk (Size: 704)
+[36m[DEBUG | dusk][0m Loading Resource: ef_shippu.btk (Size: 1120)
+[36m[DEBUG | dusk][0m Loading Resource: inochidama.btk (Size: 672)
+[36m[DEBUG | dusk][0m Loading Resource: zelda_v_cursor_new_orange.blo (Size: 2368)
+[36m[DEBUG | dusk][0m Loading Resource: zelda_v_cursor_new_orange.brk (Size: 320)
+[36m[DEBUG | dusk][0m Loading Resource: zelda_v_cursor_new_orange_02.brk (Size: 384)
+[36m[DEBUG | dusk][0m Loading Resource: zelda_v_cursor_new_red.blo (Size: 2368)
+[36m[DEBUG | dusk][0m Loading Resource: zelda_v_cursor_new_red.brk (Size: 320)
+[36m[DEBUG | dusk][0m Loading Resource: zelda_v_cursor_new_red_02.brk (Size: 384)
+[36m[DEBUG | dusk][0m Loading Resource: zelda_v_cursor_new_yellow.bck (Size: 2016)
+[36m[DEBUG | dusk][0m Loading Resource: zelda_v_cursor_new_yellow.blo (Size: 2336)
+[36m[DEBUG | dusk][0m Loading Resource: zelda_v_cursor_new_yellow.bpk (Size: 448)
+[36m[DEBUG | dusk][0m Loading Resource: zelda_v_cursor_new_yellow.brk (Size: 320)
+[36m[DEBUG | dusk][0m Loading Resource: zelda_v_cursor_new_yellow_02.brk (Size: 352)
+[36m[DEBUG | dusk][0m Loading Resource: blur.bti (Size: 96)
+[36m[DEBUG | dusk][0m Loading Resource: rock_mark.bti (Size: 544)
+[36m[DEBUG | dusk][0m Loading Resource: tt_v_point_128_00_4ia_02.bti (Size: 16416)
+[36m[DEBUG | dusk][0m Loading Resource: tt_map_icon_link_40_4ia_00.bti (Size: 1632)
+[36m[DEBUG | dusk][0m Loading Resource: tt_navi_l.bti (Size: 544)
+[0m[INFO | dusk][0m Logo scene: scene change
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=0 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=0
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=2 profname=fpcNm_OVERLAP0_e (0) profile=0x82173784 procSize=220 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d95e28
+[36m[DEBUG | dusk][0m fpcNdRq_phase_Create: name=12 layer=0x84279dd8
+[36m[DEBUG | dusk][0m fpcNdRq_phase_Create: creating_id=3 (error=4294967295)
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=12 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=12
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=3 profname=fpcNm_OPENING_SCENE_e (12) profile=0x82173d10 procSize=476 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d95f78
+[0m[INFO | dusk][0m Stage: F_SP102
+[0m[INFO | dusk][0m Memory: 158 MB free; the title's pages: 37 MB physical, 233 MB virtual, 0 MB heap, 14 MB stack; newlib's heap 233 MB, 233 MB of it in use
+[36m[DEBUG | dusk][0m Loading Resource: vrbox_kasumim.bmd (Size: 2272)
+[36m[DEBUG | dusk][0m Loading Resource: vrbox_kumo.bmd (Size: 69664)
+[36m[DEBUG | dusk][0m Loading Resource: vrbox_sora.bmd (Size: 6624)
+[36m[DEBUG | dusk][0m Loading Resource: vrbox_sun.bmd (Size: 12032)
+[36m[DEBUG | dusk][0m Loading Resource: vrbox_sun.btk (Size: 320)
+[36m[DEBUG | dusk][0m Loading Resource: colordata_tbl.dat (Size: 800)
+[36m[DEBUG | dusk][0m Loading Resource: pol_arg.dat (Size: 128)
+[36m[DEBUG | dusk][0m Loading Resource: pol_effcol.dat (Size: 128)
+[36m[DEBUG | dusk][0m Loading Resource: pol_effcol2.dat (Size: 128)
+[36m[DEBUG | dusk][0m Loading Resource: pol_efftbl.dat (Size: 128)
+[36m[DEBUG | dusk][0m Loading Resource: pol_efftbl2.dat (Size: 128)
+[36m[DEBUG | dusk][0m Loading Resource: pol_sound.dat (Size: 128)
+[36m[DEBUG | dusk][0m Loading Resource: room0.dzs (Size: 5440)
+[36m[DEBUG | dusk][0m Loading Resource: stage.dzs (Size: 1952)
+[36m[DEBUG | dusk][0m Loading Resource: cloudtx_01.bti (Size: 4128)
+[36m[DEBUG | dusk][0m Loading Resource: cloudtx_02.bti (Size: 4128)
+[36m[DEBUG | dusk][0m Loading Resource: cloudtx_03.bti (Size: 4128)
+[36m[DEBUG | dusk][0m Loading Resource: f_moon.bti (Size: 8224)
+[36m[DEBUG | dusk][0m Loading Resource: f_moon_a.bti (Size: 2080)
+[36m[DEBUG | dusk][0m Loading Resource: f_moon_a_a00.bti (Size: 64)
+[36m[DEBUG | dusk][0m Loading Resource: f_moon_a_a01.bti (Size: 544)
+[36m[DEBUG | dusk][0m Loading Resource: f_moon_a_a02.bti (Size: 544)
+[36m[DEBUG | dusk][0m Loading Resource: f_moon_a_a03.bti (Size: 544)
+[36m[DEBUG | dusk][0m Loading Resource: event_list.dat (Size: 106476)
+[36m[DEBUG | dusk][0m Loading Resource: camstyle.dat (Size: 43328)
+[36m[DEBUG | dusk][0m Loading Resource: camtype.dat (Size: 14560)
+[36m[DEBUG | dusk][0m fopScnM_CreateReq: procName=18 fade=32767
+[36m[DEBUG | dusk][0m fopScnM_CreateReq: result=2 (error=4294967295)
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=7 profname=fpcNm_KANKYO_e (19) profile=0x8216b008 procSize=252 unkSize=0
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=9 profname=fpcNm_KYEFF_e (785) profile=0x8216b058 procSize=252 unkSize=0
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=11 profname=fpcNm_KYEFF2_e (786) profile=0x8216b080 procSize=252 unkSize=0
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=13 profname=fpcNm_ENVSE_e (21) profile=0x82169c34 procSize=272 unkSize=0
+[36m[DEBUG | dusk][0m fpcNdRq_phase_Create: name=18 layer=0x5d96038
+[36m[DEBUG | dusk][0m fpcNdRq_phase_Create: creating_id=16 (error=4294967295)
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=737 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=737
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=4 profname=fpcNm_TITLE_e (737) profile=0x821ea1e8 procSize=1556 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d94ef4
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=781 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=781
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=5 profname=fpcNm_CAMERA_e (781) profile=0x82169b58 procSize=3688 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d9407c
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=730 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=730
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=14 profname=fpcNm_VRBOX_e (730) profile=0x8217bf4c procSize=1412 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d93ae8
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=731 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=731
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=15 profname=fpcNm_VRBOX2_e (731) profile=0x8217bfcc procSize=1452 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d9352c
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=18 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=18
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=16 profname=fpcNm_ROOM_SCENE_e (18) profile=0x82173d64 procSize=480 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d9333c
+[36m[DEBUG | dusk][0m Loading Resource: titlelogo.bck (Size: 704)
+[36m[DEBUG | dusk][0m Loading Resource: titlelogo_r.bmd (Size: 1995456)
+[36m[DEBUG | dusk][0m Loading Resource: titlelogo.bpk (Size: 576)
+[36m[DEBUG | dusk][0m Loading Resource: titlelogo.brk (Size: 704)
+[36m[DEBUG | dusk][0m Loading Resource: titlelogo.btk (Size: 672)
+[36m[DEBUG | dusk][0m Loading Resource: model.bmd (Size: 927520)
+[36m[DEBUG | dusk][0m Loading Resource: model1.bmd (Size: 7488)
+[36m[DEBUG | dusk][0m Loading Resource: model2.bmd (Size: 22752)
+[36m[DEBUG | dusk][0m Loading Resource: model3.bmd (Size: 166848)
+[36m[DEBUG | dusk][0m Loading Resource: model4.bmd (Size: 10400)
+[36m[DEBUG | dusk][0m Loading Resource: model.btk (Size: 576)
+[36m[DEBUG | dusk][0m Loading Resource: model1.btk (Size: 320)
+[36m[DEBUG | dusk][0m Loading Resource: model2.btk (Size: 352)
+[36m[DEBUG | dusk][0m Loading Resource: model4.btk (Size: 320)
+[36m[DEBUG | dusk][0m Loading Resource: room.dzr (Size: 7456)
+[36m[DEBUG | dusk][0m Loading Resource: event_list.dat (Size: 5304)
+[36m[DEBUG | dusk][0m Loading Resource: room.kcl (Size: 449804)
+[36m[DEBUG | dusk][0m Loading Resource: room.plc (Size: 608)
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=253 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=253
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=17 profname=fpcNm_ALINK_e (253) profile=0x82164b7c procSize=14660 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d8f9e8
+[36m[DEBUG | dusk][0m Loading Resource: demo38_wl_cut01_gp_1_o.bck (Size: 8000)
+[36m[DEBUG | dusk][0m Loading Resource: demo38_wl_cut01_gp_1_l.bck (Size: 5088)
+[36m[DEBUG | dusk][0m Loading Resource: demo38_wl_cut00_gp_1_o.bmd (Size: 239584)
+[36m[DEBUG | dusk][0m Loading Resource: demo38_twfilm_cut00_gp_1_o.bmd (Size: 45376)
+[36m[DEBUG | dusk][0m Loading Resource: demo38_01.stb (Size: 9368)
+[36m[DEBUG | dusk][0m Loading Resource: demo38_twfilm_cut00_gp_1_l.btk (Size: 832)
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=732 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=732
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=18 profname=fpcNm_BG_e (732) profile=0x82177d68 procSize=1536 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d8e874
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=222 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=222
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=19 profname=fpcNm_OBJ_IHASI_e (222) profile=0x821d7410 procSize=1488 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d8e294
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=187 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=187
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=20 profname=fpcNm_CSTAF_e (187) profile=0x8217e8c0 procSize=2952 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d8d6fc
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=733 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=733
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=21 profname=fpcNm_SET_BG_OBJ_e (733) profile=0x8217ac9c procSize=1420 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d8d160
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=238 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=238
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=22 profname=fpcNm_HORSE_e (238) profile=0x821a48b0 procSize=6500 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d8b7ec
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=784 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=784
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=23 profname=fpcNm_GRASS_e (784) profile=0x82181298 procSize=1404 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d8b260
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=784 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=784
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=24 profname=fpcNm_GRASS_e (784) profile=0x82181298 procSize=1404 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d8acd4
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=784 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=784
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=25 profname=fpcNm_GRASS_e (784) profile=0x82181298 procSize=1404 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d8a748
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=784 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=784
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=26 profname=fpcNm_GRASS_e (784) profile=0x82181298 procSize=1404 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d8a1bc
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=784 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=784
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=27 profname=fpcNm_GRASS_e (784) profile=0x82181298 procSize=1404 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d89c30
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=784 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=784
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=28 profname=fpcNm_GRASS_e (784) profile=0x82181298 procSize=1404 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d896a4
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=333 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=333
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=29 profname=fpcNm_Obj_Yobikusa_e (333) profile=0x8218997c procSize=1916 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d88f18
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=333 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=333
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=30 profname=fpcNm_Obj_Yobikusa_e (333) profile=0x8218997c procSize=1916 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d8878c
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=333 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=333
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=31 profname=fpcNm_Obj_Yobikusa_e (333) profile=0x8218997c procSize=1916 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d88000
+[36m[DEBUG | dusk][0m Loading Resource: al_umakusa.bmd (Size: 5984)
+[36m[DEBUG | dusk][0m Loading Resource: j_umakusa.bmd (Size: 13152)
+[36m[DEBUG | dusk][0m Loading Resource: j_umakusa_c.bmd (Size: 9536)
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=333 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=333
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=32 profname=fpcNm_Obj_Yobikusa_e (333) profile=0x8218997c procSize=1916 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d87874
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=333 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=333
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=33 profname=fpcNm_Obj_Yobikusa_e (333) profile=0x8218997c procSize=1916 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d870e8
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=333 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=333
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=34 profname=fpcNm_Obj_Yobikusa_e (333) profile=0x8218997c procSize=1916 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d8695c
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=733 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=733
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=35 profname=fpcNm_SET_BG_OBJ_e (733) profile=0x8217ac9c procSize=1420 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d863c0
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=733 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=733
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=36 profname=fpcNm_SET_BG_OBJ_e (733) profile=0x8217ac9c procSize=1420 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d85e24
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=733 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=733
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=37 profname=fpcNm_SET_BG_OBJ_e (733) profile=0x8217ac9c procSize=1420 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d85888
+[36m[DEBUG | dusk][0m Loading Resource: model0.bmd (Size: 13312)
+[36m[DEBUG | dusk][0m Loading Resource: model1.bmd (Size: 10656)
+[36m[DEBUG | dusk][0m Loading Resource: model0.dzb (Size: 832)
+[36m[DEBUG | dusk][0m Loading Resource: spec.dat (Size: 148)
+[36m[DEBUG | dusk][0m Loading Resource: al_kantera.bmd (Size: 21024)
+[36m[DEBUG | dusk][0m Loading Resource: ef_ktglow.bmd (Size: 3040)
+[36m[DEBUG | dusk][0m Loading Resource: al.bmd (Size: 140448)
+[36m[DEBUG | dusk][0m Loading Resource: al_bootsh.bmd (Size: 22048)
+[36m[DEBUG | dusk][0m Loading Resource: al_face.bmd (Size: 72576)
+[36m[DEBUG | dusk][0m Loading Resource: al_hands.bmd (Size: 61056)
+[36m[DEBUG | dusk][0m Loading Resource: al_head.bmd (Size: 34400)
+[36m[DEBUG | dusk][0m Loading Resource: al_swb.bmd (Size: 23552)
+[36m[DEBUG | dusk][0m Loading Resource: ef_ktglow.btk (Size: 512)
+[36m[DEBUG | dusk][0m Loading Resource: i_bajyohasiparts.bmd (Size: 76032)
+[36m[DEBUG | dusk][0m Loading Resource: i_bajyohasiparts_ef.bmd (Size: 37088)
+[36m[DEBUG | dusk][0m Loading Resource: i_bajyohasiparts_ef.btk (Size: 512)
+[36m[DEBUG | dusk][0m Loading Resource: i_bajyohasiparts.dzb (Size: 6848)
+[36m[DEBUG | dusk][0m Loading Resource: cs_f_b_fall.bck (Size: 448)
+[36m[DEBUG | dusk][0m Loading Resource: cs_f_b_swing_reaction.bck (Size: 416)
+[36m[DEBUG | dusk][0m Loading Resource: cs_f_b_walk.bck (Size: 544)
+[36m[DEBUG | dusk][0m Loading Resource: cs_f_b.bmd (Size: 66176)
+[36m[DEBUG | dusk][0m Loading Resource: cs_f_cover.bmd (Size: 30112)
+[36m[DEBUG | dusk][0m Loading Resource: cs_f_b_start.brk (Size: 352)
+[36m[DEBUG | dusk][0m Loading Resource: cs_f_b_stop.brk (Size: 320)
+[36m[DEBUG | dusk][0m Loading Resource: cs_f_cover_vanish.brk (Size: 544)
+[36m[DEBUG | dusk][0m Loading Resource: cs_f_b_start.btk (Size: 512)
+[36m[DEBUG | dusk][0m Loading Resource: cs_f_cover_vanish.btk (Size: 896)
+[36m[DEBUG | dusk][0m Loading Resource: cs_f_b.dzb (Size: 544)
+[36m[DEBUG | dusk][0m Loading Resource: model0.bmd (Size: 22624)
+[36m[DEBUG | dusk][0m Loading Resource: spec.dat (Size: 16)
+[36m[DEBUG | dusk][0m Loading Resource: hs_back_walk.bck (Size: 5536)
+[36m[DEBUG | dusk][0m Loading Resource: hs_back_walk_start.bck (Size: 6304)
+[36m[DEBUG | dusk][0m Loading Resource: hs_excitement.bck (Size: 11968)
+[36m[DEBUG | dusk][0m Loading Resource: hs_excitement_2.bck (Size: 14144)
+[36m[DEBUG | dusk][0m Loading Resource: hs_jump_end.bck (Size: 5344)
+[36m[DEBUG | dusk][0m Loading Resource: hs_jump_middle.bck (Size: 4640)
+[36m[DEBUG | dusk][0m Loading Resource: hs_jump_start.bck (Size: 4832)
+[36m[DEBUG | dusk][0m Loading Resource: hs_jump_start_clift.bck (Size: 5248)
+[36m[DEBUG | dusk][0m Loading Resource: hs_lash.bck (Size: 3200)
+[36m[DEBUG | dusk][0m Loading Resource: hs_neck_waitback_left.bck (Size: 2880)
+[36m[DEBUG | dusk][0m Loading Resource: hs_neck_waitback_right.bck (Size: 2848)
+[36m[DEBUG | dusk][0m Loading Resource: hs_run_dash.bck (Size: 7680)
+[36m[DEBUG | dusk][0m Loading Resource: hs_run_fast.bck (Size: 6688)
+[36m[DEBUG | dusk][0m Loading Resource: hs_run_slow.bck (Size: 7712)
+[36m[DEBUG | dusk][0m Loading Resource: hs_stand.bck (Size: 17984)
+[36m[DEBUG | dusk][0m Loading Resource: hs_stop_slow.bck (Size: 14208)
+[36m[DEBUG | dusk][0m Loading Resource: hs_stop_stand.bck (Size: 16352)
+[36m[DEBUG | dusk][0m Loading Resource: hs_turn_left.bck (Size: 9632)
+[36m[DEBUG | dusk][0m Loading Resource: hs_turn_left_start.bck (Size: 5248)
+[36m[DEBUG | dusk][0m Loading Resource: hs_turn_right.bck (Size: 9472)
+[36m[DEBUG | dusk][0m Loading Resource: hs_turn_right_start.bck (Size: 5344)
+[36m[DEBUG | dusk][0m Loading Resource: hs_wait_01.bck (Size: 4768)
+[36m[DEBUG | dusk][0m Loading Resource: hs_wait_01b.bck (Size: 4672)
+[36m[DEBUG | dusk][0m Loading Resource: hs_wait_01b_connect.bck (Size: 4672)
+[36m[DEBUG | dusk][0m Loading Resource: hs_wait_02.bck (Size: 8928)
+[36m[DEBUG | dusk][0m Loading Resource: hs_wait_03.bck (Size: 7552)
+[36m[DEBUG | dusk][0m Loading Resource: hs_wait_04.bck (Size: 12640)
+[36m[DEBUG | dusk][0m Loading Resource: hs_wait_05.bck (Size: 10528)
+[36m[DEBUG | dusk][0m Loading Resource: hs_walk_fast.bck (Size: 5792)
+[36m[DEBUG | dusk][0m Loading Resource: hs_walk_slow.bck (Size: 5600)
+[36m[DEBUG | dusk][0m Loading Resource: hs.bmd (Size: 131264)
+[36m[DEBUG | dusk][0m Loading Resource: hs_eye.btp (Size: 128)
+[36m[DEBUG | dusk][0m Loading Resource: tazuna.bti (Size: 160)
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=734 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=734
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=38 profname=fpcNm_BG_OBJ_e (734) profile=0x82177e40 procSize=3340 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d84b6c
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=43 profname=fpcNm_Tag_Attp_e (346) profile=0x8217e0bc procSize=1396 unkSize=0
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=734 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=734
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=39 profname=fpcNm_BG_OBJ_e (734) profile=0x82177e40 procSize=3340 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d838cc
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=734 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=734
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=40 profname=fpcNm_BG_OBJ_e (734) profile=0x82177e40 procSize=3340 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d82bb0
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=45 profname=fpcNm_Tag_Attp_e (346) profile=0x8217e0bc procSize=1396 unkSize=0
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=734 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=734
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=41 profname=fpcNm_BG_OBJ_e (734) profile=0x82177e40 procSize=3340 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d81910
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=47 profname=fpcNm_Tag_Attp_e (346) profile=0x8217e0bc procSize=1396 unkSize=0
+[31m[ERROR | aurora::vulkan4xenon][0m Depth copies (format 19) aren't supported
+[0m[INFO | aurora::vulkan4xenon][0m Read 88a3de8e328f385a.vert from the disk; 0 compiled and 11 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read 92f6cc89e68fccea.frag from the disk; 0 compiled and 12 read this run
+vulkan4xenon: SPIR-V A71231B4106DECAA read from the shader cache
+vulkan4xenon: SPIR-V C1218163EE119931 read from the shader cache
+[36m[DEBUG | dusk][0m Loading Resource: al_sha.bmd (Size: 24288)
+[36m[DEBUG | dusk][0m [DIAG] fpcSCtRq_phase_Load: procName=255 ret=4
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: procName=255
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=48 profname=fpcNm_MIDNA_e (255) profile=0x8217d7f4 procSize=2584 unkSize=0
+[36m[DEBUG | dusk][0m fpcSCtRq_phase_CreateProcess: fpcBs_Create OK proc=0x5d8efc0
+[36m[DEBUG | dusk][0m Loading Resource: s_md_hands.bmd (Size: 19776)
+[36m[DEBUG | dusk][0m Loading Resource: s_md_mask.bmd (Size: 15424)
+[36m[DEBUG | dusk][0m Loading Resource: s_md_gokou.bmd (Size: 3008)
+[36m[DEBUG | dusk][0m Loading Resource: s_md.bmd (Size: 69984)
+[36m[DEBUG | dusk][0m Loading Resource: s_md_hair_hand.bmd (Size: 18944)
+[36m[DEBUG | dusk][0m Loading Resource: s_md_appear.brk (Size: 352)
+[36m[DEBUG | dusk][0m Loading Resource: s_md_gokou_appear.brk (Size: 256)
+[36m[DEBUG | dusk][0m Loading Resource: s_md_hair_hand_appear.brk (Size: 288)
+[36m[DEBUG | dusk][0m Loading Resource: s_md_mask_appear.brk (Size: 256)
+[36m[DEBUG | dusk][0m Loading Resource: s_md_hair_hand_moya.btk (Size: 544)
+[36m[DEBUG | dusk][0m Loading Resource: s_md_hands_moya.btk (Size: 608)
+[36m[DEBUG | dusk][0m Loading Resource: s_md_mask_moya.btk (Size: 320)
+[36m[DEBUG | dusk][0m Loading Resource: s_md_moya.btk (Size: 512)
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=50 profname=fpcNm_DEMO00_e (718) profile=0x8217c650 procSize=10652 unkSize=0
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=52 profname=fpcNm_DEMO00_e (718) profile=0x8217c650 procSize=10652 unkSize=0
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=54 profname=fpcNm_DEMO00_e (718) profile=0x8217c650 procSize=10652 unkSize=0
+[36m[DEBUG | dusk][0m fpcBs_Create: pid=56 profname=fpcNm_DEMO00_e (718) profile=0x8217c650 procSize=10652 unkSize=0
+[36m[DEBUG | dusk][0m frameInterp: onTypeChange 41 -> 40 (event_type_id=40, leaving_event=false, entering_event=true)
+[31m[ERROR | aurora::vulkan4xenon][0m GXPeekZ isn't supported; it reads nothing
+[0m[INFO | dusk::osReport][0m [PC-OSThread] Thread system initialized (multi-threaded mode)
+[0m[INFO | aurora::vulkan4xenon][0m Read 55a0066e2650ed99.vert from the disk; 0 compiled and 13 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read 9f1eca9bebdc35b6.frag from the disk; 0 compiled and 14 read this run
+vulkan4xenon: not supported: colour attachments with mips, or 16 texels or less on a side
+vulkan4xenon: SPIR-V DC78C70D616F4D0A read from the shader cache
+[31mvulkan4xenon: SPIR-V 94F65C7D709FE81E read from the shader cache
+[ERROR | aurora::vulkan4xenon][0m vkCreateImage: -8
+[31m[ERROR | aurora::vulkan4xenon][0m No image for Resolved Texture (20x11)
+[0m[INFO | aurora::vulkan4xenon][0m Read 22d6a7758d2d5d84.frag from the disk; 0 compiled and 15 read this run
+vulkan4xenon: not supported: colour attachments with mips, or 16 texels or less on a side
+vulkan4xenon: SPIR-V AF8E2960FDA295F6 read from the shader cache
+[31m[ERROR | aurora::vulkan4xenon][0m vkCreateImage: -8
+[31m[ERROR | aurora::vulkan4xenon][0m No image for Resolved Texture (20x11)
+[0m[INFO | aurora::vulkan4xenon][0m Read dae9addf7280e276.frag from the disk; 0 compiled and 16 read this run
+vulkan4xenon: SPIR-V BC31C9B4D665617A read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read c0887c56621045a9.vert from the disk; 0 compiled and 17 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read ca44599827bbdb23.frag from the disk; 0 compiled and 18 read this run
+vulkan4xenon: SPIR-V 663E45CA5C5F9ECC read from the shader cache
+vulkan4xenon: SPIR-V 298AB995CC8F1EE8 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read d8d724f61446ecbb.vert from the disk; 0 compiled and 19 read this run
+vulkan4xenon: a depth attachment was loaded after eDRAM lost it; its contents are undefined
+[0m[INFO | aurora::vulkan4xenon][0m Read e19f86ee747cb140.frag from the disk; 0 compiled and 20 read this run
+vulkan4xenon: SPIR-V C764482BA393F146 read from the shader cache
+vulkan4xenon: SPIR-V 6533A8C00EB39903 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read c2679fcd0788b78d.frag from the disk; 0 compiled and 21 read this run
+vulkan4xenon: SPIR-V 6ADC8B0325455863 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 33d3ad7a449b966c.frag from the disk; 0 compiled and 22 read this run
+vulkan4xenon: SPIR-V D8C0C56CB3D5C077 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read a35e191254f5ef46.frag from the disk; 0 compiled and 23 read this run
+vulkan4xenon: SPIR-V D1D1F7D2226F52A6 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read e9d14d2c939cffe4.vert from the disk; 0 compiled and 24 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read 75422301f0e22829.frag from the disk; 0 compiled and 25 read this run
+vulkan4xenon: SPIR-V ADA9998BF832E80A read from the shader cache
+vulkan4xenon: SPIR-V 00871DE167751FEA read from the shader cache
+[0m[INFO | aurora::thread][0m Aurora decode helper on hardware thread 5
+[0m[INFO | aurora::vulkan4xenon][0m Read 93d36ce55e3f9bad.vert from the disk; 0 compiled and 26 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read 551fb86c6ef59def.frag from the disk; 0 compiled and 27 read this run
+vulkan4xenon: SPIR-V C72C820C0429DBBC read from the shader cache
+vulkan4xenon: SPIR-V 3DEF138270327621 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 6c429f0c99b0524f.vert from the disk; 0 compiled and 28 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read 349b6ed78d720732.frag from the disk; 0 compiled and 29 read this run
+vulkan4xenon: SPIR-V 33EF2B1C4E3CB8B5 read from the shader cache
+vulkan4xenon: SPIR-V 213AA889B0F9562B read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 556ea181d0d34829.vert from the disk; 0 compiled and 30 read this run
+vulkan4xenon: SPIR-V 57519DE7F191E009 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 0963325b37f04df0.vert from the disk; 0 compiled and 31 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read 4ee5b3c093bea8ab.frag from the disk; 0 compiled and 32 read this run
+vulkan4xenon: SPIR-V F9F937B8A3BE0650 read from the shader cache
+vulkan4xenon: SPIR-V 9C047AEE2F37FE6A read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 71ac4a48df92e5b7.vert from the disk; 0 compiled and 33 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read e2cfed9f9f80cbf0.frag from the disk; 0 compiled and 34 read this run
+vulkan4xenon: SPIR-V C9F32648AF6974DB read from the shader cache
+vulkan4xenon: SPIR-V F2210F65C354D878 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read d90889c31c82dbe8.vert from the disk; 0 compiled and 35 read this run
+vulkan4xenon: SPIR-V 528D1B507B563964 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read f7c1df6fe6364447.frag from the disk; 0 compiled and 36 read this run
+vulkan4xenon: SPIR-V 3829299A87969FDB read from the shader cache
+[0m[INFO | dusk][0m 224 frames in 10.0 s, 22.4 fps
+[0m[INFO | dusk][0m Memory: 126 MB free; the title's pages: 53 MB physical, 249 MB virtual, 0 MB heap, 15 MB stack; newlib's heap 243 MB, 236 MB of it in use
+[0m[INFO | aurora::vulkan4xenon][0m Read b4bd0f33bde7fc52.frag from the disk; 0 compiled and 37 read this run
+vulkan4xenon: SPIR-V 8EC80B4941713B5A read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read f1f88472976e4bfb.vert from the disk; 0 compiled and 38 read this run
+vulkan4xenon: SPIR-V 6849F222FB064A95 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read b331aaa6bee56ee9.frag from the disk; 0 compiled and 39 read this run
+vulkan4xenon: SPIR-V 3C096766CB04C7B8 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 4f939ba938f196ae.vert from the disk; 0 compiled and 40 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read 6dd3a70373df59bf.frag from the disk; 0 compiled and 41 read this run
+vulkan4xenon: SPIR-V 9AE8354623CAD4EE read from the shader cache
+vulkan4xenon: SPIR-V 74448C1205049DD2 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 2a1a218d5688204a.vert from the disk; 0 compiled and 42 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read 8586b077d3e63bc1.frag from the disk; 0 compiled and 43 read this run
+vulkan4xenon: SPIR-V D0AAD27B78A87859 read from the shader cache
+vulkan4xenon: SPIR-V 56EC220BFF6F7DD6 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 093884ef391dfddc.frag from the disk; 0 compiled and 44 read this run
+vulkan4xenon: SPIR-V FB8FB045917A3BBA read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 407248b726bcb428.vert from the disk; 0 compiled and 45 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read 66457dda201609ed.frag from the disk; 0 compiled and 46 read this run
+vulkan4xenon: SPIR-V A8EC930D48511A57 read from the shader cache
+vulkan4xenon: SPIR-V 45D8333C4D686DC2 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 251e226c8a088a82.vert from the disk; 0 compiled and 47 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read b40238367bc2ae70.frag from the disk; 0 compiled and 48 read this run
+vulkan4xenon: SPIR-V 1D517884C53BCCC7 read from the shader cache
+vulkan4xenon: SPIR-V FF0D74B208A52BE2 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read c0ddfd4547c71e5a.vert from the disk; 0 compiled and 49 read this run
+vulkan4xenon: SPIR-V 150CAD0FF8953915 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read dee3af7655c47a63.frag from the disk; 0 compiled and 50 read this run
+vulkan4xenon: SPIR-V F9CD3291DECF81DC read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read bde83fec0182df1d.vert from the disk; 0 compiled and 51 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read 48cd8f549b507826.frag from the disk; 0 compiled and 52 read this run
+vulkan4xenon: SPIR-V 5926DB79AAD05F5E read from the shader cache
+vulkan4xenon: SPIR-V B105FA3BAB428E49 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 0c5faf5ad1250944.frag from the disk; 0 compiled and 53 read this run
+vulkan4xenon: SPIR-V D6DB25C07371F01C read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read e7fe951996d1f40b.frag from the disk; 0 compiled and 54 read this run
+vulkan4xenon: SPIR-V A80EBDD9AA86EB69 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 70ee109df12524e4.vert from the disk; 0 compiled and 55 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read ed3667059b5c9028.frag from the disk; 0 compiled and 56 read this run
+vulkan4xenon: SPIR-V CA671D16D21EBE90 read from the shader cache
+vulkan4xenon: SPIR-V 650EA75EB9B9161C read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 72abd6191dcd7bfe.vert from the disk; 0 compiled and 57 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read 85c8b022385334bf.frag from the disk; 0 compiled and 58 read this run
+vulkan4xenon: SPIR-V 256BADDABB3BF6E1 read from the shader cache
+vulkan4xenon: SPIR-V AF0042B3931C17E4 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 350248024002ce37.vert from the disk; 0 compiled and 59 read this run
+vulkan4xenon: SPIR-V B9777350DEB3F5F8 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read f12926532ee0b4d0.vert from the disk; 0 compiled and 60 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read f5cb41c6eaf01a5f.frag from the disk; 0 compiled and 61 read this run
+vulkan4xenon: SPIR-V 981DDAAAA6B878BA read from the shader cache
+vulkan4xenon: SPIR-V 2A06966732008BD8 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read ad037db0d56a10dd.vert from the disk; 0 compiled and 62 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read 1510c05add37f2b3.frag from the disk; 0 compiled and 63 read this run
+vulkan4xenon: SPIR-V AF003C53E53D1EAD read from the shader cache
+vulkan4xenon: SPIR-V 77D67C785D0825DD read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 2e7f30cdc49bd211.vert from the disk; 0 compiled and 64 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read 820f98f280587ea8.frag from the disk; 0 compiled and 65 read this run
+vulkan4xenon: SPIR-V FB0809C486DD211E read from the shader cache
+vulkan4xenon: SPIR-V C3A4D5890454420A read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read c98a0ca2e68f85a1.frag from the disk; 0 compiled and 66 read this run
+vulkan4xenon: SPIR-V 9B230B358750CBFC read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read bacc292ad5a86eb3.vert from the disk; 0 compiled and 67 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read e3fba406929fde97.frag from the disk; 0 compiled and 68 read this run
+vulkan4xenon: SPIR-V D65042C9685F21D5 read from the shader cache
+vulkan4xenon: SPIR-V 0044E6F5909712CD read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 85ae52ee303f618c.frag from the disk; 0 compiled and 69 read this run
+vulkan4xenon: SPIR-V 5831A2455D3DB919 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 946541a3cc485e48.frag from the disk; 0 compiled and 70 read this run
+vulkan4xenon: SPIR-V CF21A25ED6F2AE20 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read e9e5df17e9c42a02.frag from the disk; 0 compiled and 71 read this run
+vulkan4xenon: SPIR-V 81E523C28BA8B2D6 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 858b7f6b67e42fd6.frag from the disk; 0 compiled and 72 read this run
+vulkan4xenon: SPIR-V EC4AFF35540A6A55 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 8f974c0335e452d5.vert from the disk; 0 compiled and 73 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read e4c0798e6cc9e4ba.frag from the disk; 0 compiled and 74 read this run
+vulkan4xenon: SPIR-V B221DD1CCD3A0A5B read from the shader cache
+vulkan4xenon: SPIR-V 5B483E6D18154C1A read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 412f75e329bbe3a2.vert from the disk; 0 compiled and 75 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read cad12b640d1cfd9c.frag from the disk; 0 compiled and 76 read this run
+vulkan4xenon: SPIR-V 973D2CED53738699 read from the shader cache
+vulkan4xenon: SPIR-V DCEFCFEE7B6E8DDC read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read e5ea8b62e2ebf4ac.vert from the disk; 0 compiled and 77 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read 2eefbbd89e53921c.frag from the disk; 0 compiled and 78 read this run
+vulkan4xenon: SPIR-V B9E28CEF2F1B9AAE read from the shader cache
+vulkan4xenon: SPIR-V 2548F2763F6F7E61 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read d8658b0e39305f51.vert from the disk; 0 compiled and 79 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read 676ff8c4689eaf91.frag from the disk; 0 compiled and 80 read this run
+vulkan4xenon: SPIR-V D559A5866151FAF6 read from the shader cache
+vulkan4xenon: SPIR-V 98894DD8BE8CACAB read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 05716a5bd2aae204.frag from the disk; 0 compiled and 81 read this run
+vulkan4xenon: SPIR-V 7020B9B7141AD001 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read c359885760b8a624.vert from the disk; 0 compiled and 82 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read 60bcbd6f4104ab13.frag from the disk; 0 compiled and 83 read this run
+vulkan4xenon: SPIR-V 230194ED8FA4CD4F read from the shader cache
+vulkan4xenon: SPIR-V 83C3A0555B6FA6E5 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read cefc467138f9dac7.vert from the disk; 0 compiled and 84 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read 29fab4bb2516d607.frag from the disk; 0 compiled and 85 read this run
+vulkan4xenon: SPIR-V D3B755A4A4CE78C2 read from the shader cache
+vulkan4xenon: SPIR-V 71C49DC127496EC0 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 04a469b1240c5698.vert from the disk; 0 compiled and 86 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read 1e5db8674ad9d29e.frag from the disk; 0 compiled and 87 read this run
+vulkan4xenon: SPIR-V E6DCFFA4E73C8E46 read from the shader cache
+vulkan4xenon: SPIR-V ED1E2CE86085E148 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read a48b96d69ff86daf.vert from the disk; 0 compiled and 88 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read ce4bffbb0b973310.frag from the disk; 0 compiled and 89 read this run
+vulkan4xenon: SPIR-V 19427688A7666C0C read from the shader cache
+vulkan4xenon: SPIR-V 5414DA6B8BEE8B24 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 31871ebc6e90765a.vert from the disk; 0 compiled and 90 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read 15a57b221b955025.frag from the disk; 0 compiled and 91 read this run
+vulkan4xenon: SPIR-V 5A4B249C87984651 read from the shader cache
+vulkan4xenon: SPIR-V 206914BD41DE32F4 read from the shader cache
+[36m[DEBUG | dusk][0m fapGm_Execute frame=2100
+[33m[WARNING | aurora::gx::fifo][0m 65538 bytes written between publishes, more than a 65536 byte chunk: given a chunk of their own
+[0m[INFO | aurora::vulkan4xenon][0m Read 695e15b366c72818.frag from the disk; 0 compiled and 92 read this run
+vulkan4xenon: SPIR-V 2B1CE0E3D0104D42 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 041a85f07c74ec96.frag from the disk; 0 compiled and 93 read this run
+vulkan4xenon: SPIR-V 4A7916153C0C89C4 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 20a291c66ca7e0fd.vert from the disk; 0 compiled and 94 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read f3825523049d31cf.frag from the disk; 0 compiled and 95 read this run
+vulkan4xenon: SPIR-V DA254BC3E1DFC07F read from the shader cache
+vulkan4xenon: SPIR-V 51AE6DDA90AFD1A4 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 35fc826ad15e1872.frag from the disk; 0 compiled and 96 read this run
+vulkan4xenon: SPIR-V 3EDB31E4DFF3CB24 read from the shader cache
+[0m[INFO | dusk][0m 299 frames in 10.0 s, 29.9 fps
+[0m[INFO | dusk][0m Memory: 124 MB free; the title's pages: 53 MB physical, 251 MB virtual, 0 MB heap, 15 MB stack; newlib's heap 251 MB, 244 MB of it in use
+[0m[INFO | aurora::vulkan4xenon][0m Wrote frame capture to game:\dusklight_title.ppm
+[36m[DEBUG | dusk][0m fapGm_Execute frame=2400
+[0m[INFO | dusk][0m 291 frames in 10.0 s, 29.0 fps
+[0m[INFO | dusk][0m Memory: 121 MB free; the title's pages: 53 MB physical, 254 MB virtual, 0 MB heap, 15 MB stack; newlib's heap 247 MB, 245 MB of it in use
+[36m[DEBUG | dusk][0m fapGm_Execute frame=2700
+[0m[INFO | dusk][0m 299 frames in 10.0 s, 29.9 fps
+[0m[INFO | dusk][0m Memory: 121 MB free; the title's pages: 53 MB physical, 254 MB virtual, 0 MB heap, 15 MB stack; newlib's heap 246 MB, 243 MB of it in use
+[36m[DEBUG | dusk][0m fapGm_Execute frame=3000
+[0m[INFO | dusk][0m 300 frames in 10.0 s, 30.0 fps
+[0m[INFO | dusk][0m Memory: 121 MB free; the title's pages: 53 MB physical, 254 MB virtual, 0 MB heap, 15 MB stack; newlib's heap 248 MB, 243 MB of it in use
+[0m[INFO | aurora::vulkan4xenon][0m Read e2f1c3a692fdfb84.frag from the disk; 0 compiled and 97 read this run
+vulkan4xenon: SPIR-V 3872232EB621FD6D read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 4e6272cd5ea024f5.vert from the disk; 0 compiled and 98 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read 46d1eea9e1360669.frag from the disk; 0 compiled and 99 read this run
+vulkan4xenon: SPIR-V 2734C8ED49E25124 read from the shader cache
+vulkan4xenon: SPIR-V B8C081AE850D8238 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 32d160ecc3deb658.vert from the disk; 0 compiled and 100 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read e6ec5aee8cc08f41.frag from the disk; 0 compiled and 101 read this run
+vulkan4xenon: SPIR-V 27E2832DDB17069E read from the shader cache
+vulkan4xenon: SPIR-V ACA2323C46F9743E read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 58786ba1a7e49515.vert from the disk; 0 compiled and 102 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read 233aa73af10f83bc.frag from the disk; 0 compiled and 103 read this run
+vulkan4xenon: SPIR-V 52574E1C5D25FBE3 read from the shader cache
+vulkan4xenon: SPIR-V 8D249CA65C4AC7C6 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 020233a3aaada7e9.vert from the disk; 0 compiled and 104 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read a479ce42ba36b7d8.frag from the disk; 0 compiled and 105 read this run
+vulkan4xenon: SPIR-V 15F08405A672007C read from the shader cache
+vulkan4xenon: SPIR-V CD98C665CA34E4D1 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 68b11762bd80366b.vert from the disk; 0 compiled and 106 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read b4a8c01218dcffe9.frag from the disk; 0 compiled and 107 read this run
+vulkan4xenon: SPIR-V 787E9A71AD9E6D69 read from the shader cache
+vulkan4xenon: SPIR-V AC9671E5B4110130 read from the shader cache
+[36m[DEBUG | dusk][0m fapGm_Execute frame=3300
+[0m[INFO | dusk][0m 300 frames in 10.0 s, 30.0 fps
+[0m[INFO | dusk][0m Memory: 121 MB free; the title's pages: 53 MB physical, 254 MB virtual, 0 MB heap, 15 MB stack; newlib's heap 252 MB, 248 MB of it in use
+[0m[INFO | aurora::vulkan4xenon][0m Read 3ba44326990edfeb.vert from the disk; 0 compiled and 108 read this run
+[0m[INFO | aurora::vulkan4xenon][0m Read a478595f52157a73.frag from the disk; 0 compiled and 109 read this run
+vulkan4xenon: SPIR-V 0C17DD2CB28CC756 read from the shader cache
+vulkan4xenon: SPIR-V 6D39C25812FDEEE6 read from the shader cache
+[0m[INFO | aurora::vulkan4xenon][0m Read 1ad5c2f8e1cc2653.frag from the disk; 0 compiled and 110 read this run
+vulkan4xenon: SPIR-V BAA36327C5807A4A read from the shader cache
+[0m[INFO | dusk][0m A minute into the title scene. The heaps at their peaks:
+[0m[INFO | dusk][0m   root: 140176 KB of 147439 KB
+[0m[INFO | dusk][0m   system: 32739 KB of 32767 KB
+[0m[INFO | dusk][0m   zelda: 5163 KB of 32030 KB
+[0m[INFO | dusk][0m   game: 17634 KB of 88159 KB
+[0m[INFO | dusk][0m   archive: 7110 KB of 18169 KB
+[0m[INFO | dusk][0m   j2d: 41 KB of 999 KB
+[0m[INFO | dusk][0m   command: 1 KB of 7 KB
+[0m[INFO | dusk][0m   dbPrint: 0 KB of 5 KB
+[0m[INFO | dusk][0m   hostIO: 0 KB of 0 KB
+[0m[INFO | dusk][0m   audio: 2667 KB of 2667 KB
+[0m[INFO | dusk][0m   newlib's: 258105 KB
+[0m[INFO | dusk][0m Aurora's frame pools at their peaks, a frame's:
+[0m[INFO | dusk][0m   vertex: 525 KB
+[0m[INFO | dusk][0m   uniform: 441 KB
+[0m[INFO | dusk][0m   index: 222 KB
+[0m[INFO | dusk][0m   storage: 448 KB
+[0m[INFO | dusk][0m   texture upload: 6880 KB
+[0m[INFO | dusk::mods::loader][0m all mods unloaded
+[0m[INFO | dusk::osReport][0m [PC] OSResetSystem called (reset=2, code=0)
+[0m[INFO | aurora::vulkan4xenon][0m Compiled 607a7b7110387a22.frag in 1384.1 ms, with 254641 KB of heap in use; 1 compiled and 110 read this run
+vulkan4xenon: compiled SPIR-V 427512358AB80A7F, 2104 bytes, in 742 us
+[0m[INFO | aurora::vulkan4xenon][0m Programs this run: 1 compiled and 110 read from the disk; vulkan4xenon's shaders: 1 compiled and 110 read
+exit: status 0

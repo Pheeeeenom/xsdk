@@ -161,8 +161,8 @@ and the optimiser is on. vulkan4xenon's milestone 13 (its docs/ROADMAP.md).
    time it took, and how many programs it compiled and read in the run. glslang-xenon builds within Dusklight's build,
    from a checkout beside it, found as vulkan4xenon is (`GLSLANG_XENON_DIR`, as `VULKAN4XENON_DIR`,
    dusklight-xenon:CMakeLists.txt:87).
-5. **Dusklight builds without its pack when asked** (`DUSKLIGHT_GLSL_PACK=OFF`), for the run that starts with nothing.
-   The pack stays in by default, as a head start.
+5. **Dusklight builds without its pack when asked** (`DUSK_XSDK_GLSL_PACK=OFF`, beside its `DUSK_XSDK_RECORD_GLSL`),
+   for the run that starts with nothing. The pack stays in by default, as a head start.
 
 **Done when:**
 - a console with no pack and nothing kept plays Dusklight's title scene and opening cutscenes, and makes a memory card,
@@ -177,6 +177,13 @@ and the optimiser is on. vulkan4xenon's milestone 13 (its docs/ROADMAP.md).
 **Left out of step 3:** compiling before the game asks, and compiling on several threads at once, as Aurora's backend
 makes pipelines one at a time; Aurora's pipeline cache database; Vulkan's pipeline caches; giving
 glslang's memory back once nothing's left to compile.
+
+Done on 2026-10-14 (docs/HARDWARE.md, "Shaders compiled as the game asks"), with two things that weren't step 3's.
+Played from nothing kept, through the title, the opening cutscenes and Ordon, Dusklight compiled 189 programs, each
+once, and the second time through compiled none and read them all back; what the console compiled is the pack's, word
+for word. The memory card was made only on the second run: Aurora's temporary file names were too long for FATX until
+Aurora `2ba57e8`. And Ordon's minimap drew as noise, as the vulkan4xenon backend doesn't convert EFB copies through a
+palette, and memory ran out there in the first run; both are proposed as vulkan4xenon's milestones 14 and 15.
 
 ## Left out
 

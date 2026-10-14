@@ -1,0 +1,25 @@
+Running main() from /home/xenon/build/aurora-host/_deps/googletest-src/googletest/src/gtest_main.cc
+[==========] Running 8 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 8 tests from IoTest
+[ RUN      ] IoTest.ConvertsUtf8PathsInBothDirections
+[       OK ] IoTest.ConvertsUtf8PathsInBothDirections (0 ms)
+[ RUN      ] IoTest.ReadsAndWritesWholeFiles
+[       OK ] IoTest.ReadsAndWritesWholeFiles (0 ms)
+[ RUN      ] IoTest.ReadsAndWritesAtOffsets
+[       OK ] IoTest.ReadsAndWritesAtOffsets (0 ms)
+[ RUN      ] IoTest.AtomicWriteDoesNotExposePartialContents
+[       OK ] IoTest.AtomicWriteDoesNotExposePartialContents (0 ms)
+[ RUN      ] IoTest.PreserveModeSupportsAtomicPatching
+[       OK ] IoTest.PreserveModeSupportsAtomicPatching (0 ms)
+[ RUN      ] IoTest.AbandonedAtomicWriteKeepsOriginalAndRemovesTemporaryFile
+[       OK ] IoTest.AbandonedAtomicWriteKeepsOriginalAndRemovesTemporaryFile (0 ms)
+[ RUN      ] IoTest.AtomicWriteTemporaryNameFitsFatx
+[       OK ] IoTest.AtomicWriteTemporaryNameFitsFatx (0 ms)
+[ RUN      ] IoTest.CardFileIoDelegatesExactOffsetOperations
+[       OK ] IoTest.CardFileIoDelegatesExactOffsetOperations (0 ms)
+[----------] 8 tests from IoTest (4 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test suite ran. (5 ms total)
+[  PASSED  ] 8 tests.
