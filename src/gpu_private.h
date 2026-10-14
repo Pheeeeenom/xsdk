@@ -159,6 +159,10 @@ void xsdk_gpu_put_coherency(GpuPackets *packets, uint32_t actions, uint32_t base
 void xsdk_gpu_put_surface(GpuPackets *packets, uint32_t width, uint32_t height);
 // RB_COPY_CONTROL's sample select that averages the last target's samples.
 uint32_t xsdk_gpu_copy_sample_select(void);
+// For a resolve: draws need the target set again.
+void xsdk_gpu_undo_target(void);
+// Whether calls go into a command buffer, not the ring.
+bool xsdk_gpu_recording(void);
 // Points the shown surface at another buffer of its size; for the vblank callback, so it never sleeps.
 void xsdk_display_flip(uint32_t address);
 // For xsdk_present_open: whether the splash's display can be taken over, leaving the logo up, and its size.

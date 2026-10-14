@@ -50,6 +50,11 @@ enum {
 	INDIRECT_BUFFER_MAX_DWORDS = 0xFFFFF,
 	MICROSECONDS_PER_SECOND = 1000000,
 	NANOSECONDS_PER_MICROSECOND = 1000,
+	MICROSECONDS_PER_MILLISECOND = 1000,
+	// A wait looks without sleeping for as long as a 1 ms sleep takes on the console (docs/HARDWARE.md).
+	WAIT_SPIN_US = 2000,
+	// Looks read memory the GPU shares: without a break they slowed a resolve 4%, every 5 us 0.1% (docs/HARDWARE.md).
+	WAIT_LOOK_US = 5,
 };
 
 // Byte offsets in the write-back page.
@@ -441,6 +446,16 @@ void xsdk_gpu_stats(XsdkGpuStats *stats)
 
 NTSTATUS xsdk_gpu_wait(uint32_t fence, uint32_t timeout_ms)
 {
+	const uint64_t timeout_us = (uint64_t)timeout_ms * MICROSECONDS_PER_MILLISECOND;
+	uint64_t now = now_us();
+	const uint64_t spin_end = now + (timeout_us < WAIT_SPIN_US ? timeout_us : WAIT_SPIN_US);
+	while (now < spin_end) {
+		if (xsdk_gpu_fence_done(fence))
+			return STATUS_SUCCESS;
+		const uint64_t next = now + WAIT_LOOK_US;
+		while ((now = now_us()) < next) {
+		}
+	}
 	for (uint32_t waited_ms = 0;; waited_ms++) {
 		if (xsdk_gpu_fence_done(fence))
 			return STATUS_SUCCESS;
@@ -470,6 +485,11 @@ void xsdk_gpu_command_buffer_free(XsdkCommandBuffer *buffer)
 	assert(recording != buffer);
 	xsdk_gpu_free(buffer->dwords);
 	*buffer = (XsdkCommandBuffer){ .dwords = NULL };
+}
+
+bool xsdk_gpu_recording(void)
+{
+	return recording != NULL;
 }
 
 void xsdk_gpu_record_begin(XsdkCommandBuffer *buffer)

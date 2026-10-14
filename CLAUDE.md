@@ -26,7 +26,9 @@ layer that drives Xenos directly. Scope, sources and milestones are in SCOPE.md.
   It runs each of the title's threads on a host thread of its own (xenia:src/xenia/kernel/xthread.cc:378), so two
   busy threads placed on one hardware thread don't share it there, and that placement check fails too. It ignores
   `NtCreateFile`'s share access (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_io.cc:102-145), so the check that the log
-  can be read while it's open passes there even broken on purpose.
+  can be read while it's open passes there even broken on purpose. Its GPU registers hold what was last written
+  (xenia:src/xenia/gpu/graphics_system.cc:181-205), so the performance counter that times fence waits never counts,
+  and the check that a wait returns soon after its fence fails there.
 - Xenia skips instructions it doesn't implement, silently (xenia:src/xenia/cpu/ppc/ppc_emit_*.cc,
   `XEINSTRNOTIMPLEMENTED`). GCC emits some of them: `mcrf`, rare now that the toolchain reserves CR2-CR7, and `rldic`
   under `-mpowerpc64`. Each link runs `tools/xenia_scan.py`, which lists such instructions by function; treat any Xenia

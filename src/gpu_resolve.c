@@ -160,6 +160,7 @@ static void resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t 
 	// Xe_Sync's wait for idle (xe.c:1223-1226, 1278-1282).
 	gpu_put_register(&packets, WAIT_UNTIL, WAIT_3D_IDLE_CLEAN);
 	xsdk_gpu_write(&packets);
+	xsdk_gpu_undo_target();
 }
 
 uint32_t xsdk_gpu_resolve_bytes(uint32_t width, uint32_t height)

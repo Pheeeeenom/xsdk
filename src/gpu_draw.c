@@ -126,6 +126,8 @@ static uint32_t target_samples = 1;
 static bool target_placed;
 static uint32_t placed_color_tile;
 static uint32_t placed_depth_tile;
+// A resolve leaves eDRAM copying with the viewport transform off, where a draw hung the GPU (docs/HARDWARE.md).
+static bool target_undone;
 
 // MsaaSamples, 0 to 2 for 1, 2 and 4 samples (xenia:src/xenia/gpu/xenos.h:288-292).
 static uint32_t samples_log2(uint32_t samples)
@@ -210,6 +212,14 @@ static void put_target(uint32_t width, uint32_t height)
 	gpu_put_register(&packets, RB_COLOR_MASK, 0xF);
 	gpu_put_registers(&packets, RB_STENCILREFMASK_BF, viewport, 9);
 	xsdk_gpu_write(&packets);
+	// A recorded target is set when its buffer runs, not now.
+	if (!xsdk_gpu_recording())
+		target_undone = false;
+}
+
+void xsdk_gpu_undo_target(void)
+{
+	target_undone = true;
 }
 
 void xsdk_gpu_set_target_samples(uint32_t width, uint32_t height, uint32_t samples)
@@ -315,6 +325,7 @@ void xsdk_gpu_set_texture(uint32_t slot, const XsdkTexture *texture, const XsdkS
 // Xe_DrawPrimitive, with DRAW_INDX_2 as the resolve uses it (xe.c:1943-1957).
 void xsdk_gpu_draw(uint32_t primitive_type, uint32_t vertex_count)
 {
+	assert(!target_undone || xsdk_gpu_recording());
 	uint32_t dwords[DRAW_MAX_DWORDS];
 	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
 	gpu_put_register(&packets, COHER_DEST_BASE_1, 0);
@@ -411,6 +422,7 @@ void xsdk_gpu_set_viewport(float x, float y, float width, float height, float mi
 void xsdk_gpu_draw_indexed(uint32_t primitive_type, uint32_t index_address, uint32_t index_count, bool indices_32_bit)
 {
 	assert(index_count && index_count <= MAX_INDICES && index_address % (indices_32_bit ? 4 : 2) == 0);
+	assert(!target_undone || xsdk_gpu_recording());
 	uint32_t dwords[DRAW_MAX_DWORDS];
 	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
 	gpu_put_register(&packets, COHER_DEST_BASE_1, 0);

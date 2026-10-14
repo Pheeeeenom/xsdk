@@ -44,7 +44,7 @@ NTSTATUS xsdk_gpu_close(void);
 volatile uint32_t *xsdk_gpu_reserve(uint32_t dword_count);
 // Submits everything written so far, then a fence; returns the fence's number.
 uint32_t xsdk_gpu_fence(void);
-// Waits until the GPU has passed the fence, or returns STATUS_IO_TIMEOUT.
+// Waits until the GPU has passed the fence, or returns STATUS_IO_TIMEOUT; looks without sleeping for the first 2 ms.
 NTSTATUS xsdk_gpu_wait(uint32_t fence, uint32_t timeout_ms);
 // Whether the GPU has passed the fence, without waiting; safe in the graphics interrupt callback.
 bool xsdk_gpu_fence_done(uint32_t fence);
@@ -96,9 +96,11 @@ enum {
 	XSDK_EDRAM_TILES = 2048,
 };
 
-// Sets the eDRAM colour target and a viewport, no depth, blending or culling (libxenon); a resolve undoes it.
+// Sets the eDRAM colour target and a viewport, no depth, blending or culling (libxenon). A resolve undoes it, and a
+// draw after one, before the target is set again outside a recording, stops at an assert.
 void xsdk_gpu_set_target(uint32_t width, uint32_t height);
-// The same with colour from eDRAM tile color_tile and depth from depth_tile, not depth then colour; resolves keep it.
+// The same with colour from eDRAM tile color_tile and depth from depth_tile, not depth then colour; a resolve undoes
+// it too, keeping only where the target sits.
 void xsdk_gpu_set_target_at(uint32_t width, uint32_t height, uint32_t color_tile, uint32_t depth_tile);
 // The eDRAM tiles a target this size takes for its colour, and as many again for its depth.
 uint32_t xsdk_gpu_target_tiles(uint32_t width, uint32_t height);
