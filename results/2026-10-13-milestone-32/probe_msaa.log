@@ -1,0 +1,77 @@
+log: game:\probe_msaa.log
+log: named after \Device\Harddisk0\Partition1\XSDK\msaa\probe_msaa.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+msaa probe
+msaa: 1x, draw AA as xsdk sets it, MSAA_ENABLE off, resolve AA as xsdk sets it: edge pixels 0/1: 750 1/1: 540, others 0; off the edges 0 differ from 1x; 0 unwritten
+msaa: 2x, draw AA 00008002, MSAA_ENABLE on, resolve AA 00008002: edge pixels 0/2: 750 1/2: 0 2/2: 540, others 0; off the edges 0 differ from 1x; 0 unwritten
+msaa: 2x, draw AA 00008002, MSAA_ENABLE on, resolve AA 00000000: edge pixels 0/2: 0 1/2: 0 2/2: 0, others 1290; off the edges 31478 differ from 1x; 0 unwritten
+msaa:   first other at (12, 0): 00000000
+msaa:   first differing at (0, 0): 00000000, 1x FF202020
+msaa: 2x, draw AA 00008002, MSAA_ENABLE off, resolve AA 00008002: edge pixels 0/2: 750 1/2: 0 2/2: 540, others 0; off the edges 0 differ from 1x; 0 unwritten
+msaa: 2x, draw AA 00008002, MSAA_ENABLE off, resolve AA 00000000: edge pixels 0/2: 0 1/2: 0 2/2: 0, others 1290; off the edges 31478 differ from 1x; 0 unwritten
+msaa:   first other at (12, 0): 00000000
+msaa:   first differing at (0, 0): 00000000, 1x FF202020
+msaa: 2x, draw AA 00008001, MSAA_ENABLE on, resolve AA 00008001: edge pixels 0/2: 628 1/2: 247 2/2: 415, others 0; off the edges 0 differ from 1x; 0 unwritten
+msaa: 2x, draw AA 00008001, MSAA_ENABLE on, resolve AA 00000000: edge pixels 0/2: 0 1/2: 0 2/2: 0, others 1290; off the edges 31478 differ from 1x; 0 unwritten
+msaa:   first other at (12, 0): 00000000
+msaa:   first differing at (0, 0): 00000000, 1x FF202020
+msaa: 2x, draw AA 00008001, MSAA_ENABLE off, resolve AA 00008001: edge pixels 0/2: 750 1/2: 0 2/2: 540, others 0; off the edges 0 differ from 1x; 0 unwritten
+msaa: 2x, draw AA 00008001, MSAA_ENABLE off, resolve AA 00000000: edge pixels 0/2: 0 1/2: 0 2/2: 0, others 1290; off the edges 31478 differ from 1x; 0 unwritten
+msaa:   first other at (12, 0): 00000000
+msaa:   first differing at (0, 0): 00000000, 1x FF202020
+msaa: 2x, draw AA 00000000, MSAA_ENABLE on, resolve AA 00000000: edge pixels 0/2: 0 1/2: 0 2/2: 0, others 1290; off the edges 31478 differ from 1x; 0 unwritten
+msaa:   first other at (12, 0): 00000000
+msaa:   first differing at (0, 0): 00000000, 1x FF202020
+msaa: 2x, draw AA 00000000, MSAA_ENABLE on, resolve AA 00000000: edge pixels 0/2: 0 1/2: 0 2/2: 0, others 1290; off the edges 31478 differ from 1x; 0 unwritten
+msaa:   first other at (12, 0): 00000000
+msaa:   first differing at (0, 0): 00000000, 1x FF202020
+msaa: 2x, draw AA 00000000, MSAA_ENABLE off, resolve AA 00000000: edge pixels 0/2: 0 1/2: 0 2/2: 0, others 1290; off the edges 31478 differ from 1x; 0 unwritten
+msaa:   first other at (12, 0): 00000000
+msaa:   first differing at (0, 0): 00000000, 1x FF202020
+msaa: 2x, draw AA 00000000, MSAA_ENABLE off, resolve AA 00000000: edge pixels 0/2: 0 1/2: 0 2/2: 0, others 1290; off the edges 31478 differ from 1x; 0 unwritten
+msaa:   first other at (12, 0): 00000000
+msaa:   first differing at (0, 0): 00000000, 1x FF202020
+msaa: 4x, draw AA 0000C004, MSAA_ENABLE on, resolve AA 0000C004: edge pixels 0/4: 644 1/4: 0 2/4: 0 3/4: 0 4/4: 0, others 646; off the edges 21072 differ from 1x; 16384 unwritten
+msaa:   first other at (12, 0): FFFF00FF
+msaa:   first differing at (4, 0): FFFF00FF, 1x FF202020
+msaa: 4x, draw AA 0000C004, MSAA_ENABLE on, resolve AA 00000000: edge pixels 0/4: 644 1/4: 0 2/4: 0 3/4: 0 4/4: 0, others 646; off the edges 21072 differ from 1x; 16384 unwritten
+msaa:   first other at (12, 0): FFFF00FF
+msaa:   first differing at (4, 0): FFFF00FF, 1x FF202020
+msaa: 4x, draw AA 0000C004, MSAA_ENABLE off, resolve AA 0000C004: edge pixels 0/4: 644 1/4: 0 2/4: 0 3/4: 0 4/4: 0, others 646; off the edges 21072 differ from 1x; 16384 unwritten
+msaa:   first other at (12, 0): FFFF00FF
+msaa:   first differing at (4, 0): FFFF00FF, 1x FF202020
+msaa: 4x, draw AA 0000C004, MSAA_ENABLE off, resolve AA 00000000: edge pixels 0/4: 644 1/4: 0 2/4: 0 3/4: 0 4/4: 0, others 646; off the edges 21072 differ from 1x; 16384 unwritten
+msaa:   first other at (12, 0): FFFF00FF
+msaa:   first differing at (4, 0): FFFF00FF, 1x FF202020
+msaa: 4x, draw AA 0000C003, MSAA_ENABLE on, resolve AA 0000C003: edge pixels 0/4: 563 1/4: 118 2/4: 138 3/4: 116 4/4: 355, others 0; off the edges 0 differ from 1x; 0 unwritten
+msaa: 4x, draw AA 0000C003, MSAA_ENABLE on, resolve AA 00000000: edge pixels 0/4: 644 1/4: 0 2/4: 0 3/4: 0 4/4: 0, others 646; off the edges 21072 differ from 1x; 16384 unwritten
+msaa:   first other at (12, 0): FFFF00FF
+msaa:   first differing at (4, 0): FFFF00FF, 1x FF202020
+msaa: 4x, draw AA 0000C003, MSAA_ENABLE off, resolve AA 0000C003: edge pixels 0/4: 750 1/4: 0 2/4: 0 3/4: 0 4/4: 540, others 0; off the edges 0 differ from 1x; 0 unwritten
+msaa: 4x, draw AA 0000C003, MSAA_ENABLE off, resolve AA 00000000: edge pixels 0/4: 644 1/4: 0 2/4: 0 3/4: 0 4/4: 0, others 646; off the edges 21072 differ from 1x; 16384 unwritten
+msaa:   first other at (12, 0): FFFF00FF
+msaa:   first differing at (4, 0): FFFF00FF, 1x FF202020
+msaa: 4x, draw AA 00000000, MSAA_ENABLE on, resolve AA 00000000: edge pixels 0/4: 644 1/4: 0 2/4: 0 3/4: 0 4/4: 0, others 646; off the edges 21072 differ from 1x; 16384 unwritten
+msaa:   first other at (12, 0): FFFF00FF
+msaa:   first differing at (4, 0): FFFF00FF, 1x FF202020
+msaa: 4x, draw AA 00000000, MSAA_ENABLE on, resolve AA 00000000: edge pixels 0/4: 644 1/4: 0 2/4: 0 3/4: 0 4/4: 0, others 646; off the edges 21072 differ from 1x; 16384 unwritten
+msaa:   first other at (12, 0): FFFF00FF
+msaa:   first differing at (4, 0): FFFF00FF, 1x FF202020
+msaa: 4x, draw AA 00000000, MSAA_ENABLE off, resolve AA 00000000: edge pixels 0/4: 644 1/4: 0 2/4: 0 3/4: 0 4/4: 0, others 646; off the edges 21072 differ from 1x; 16384 unwritten
+msaa:   first other at (12, 0): FFFF00FF
+msaa:   first differing at (4, 0): FFFF00FF, 1x FF202020
+msaa: 4x, draw AA 00000000, MSAA_ENABLE off, resolve AA 00000000: edge pixels 0/4: 644 1/4: 0 2/4: 0 3/4: 0 4/4: 0, others 646; off the edges 21072 differ from 1x; 16384 unwritten
+msaa:   first other at (12, 0): FFFF00FF
+msaa:   first differing at (4, 0): FFFF00FF, 1x FF202020
+msaa: 1x, draw AA as xsdk sets it, MSAA_ENABLE off, resolve AA as xsdk sets it: row 64 sweep: 1@0 0@128
+msaa: 1x, draw AA as xsdk sets it, MSAA_ENABLE off, resolve AA as xsdk sets it: column 128 sweep: 1@0 0@64
+msaa: 2x, draw AA as xsdk sets it, MSAA_ENABLE on, resolve AA as xsdk sets it: row 64 sweep: 2@0 0@128
+msaa: 2x, draw AA as xsdk sets it, MSAA_ENABLE on, resolve AA as xsdk sets it: column 128 sweep: 2@0 0@64
+msaa: 2x, draw AA 00008001, MSAA_ENABLE on, resolve AA 00008001: row 64 sweep: 2@0 1@64 0@192
+msaa: 2x, draw AA 00008001, MSAA_ENABLE on, resolve AA 00008001: column 128 sweep: 2@0 1@32 0@96
+msaa: 4x, draw AA as xsdk sets it, MSAA_ENABLE on, resolve AA as xsdk sets it: row 64 sweep: 0@0 -1@4 0@8 -1@12 0@16 -1@20 0@24 -1@28 0@32 -1@36 0@40 -1@44 0@48 -1@52 0@56 -1@60 0@64 -1@68 0@72 -1@76 0@80 -1@84 0@88 -1@92 0@96 -1@100 0@104
+msaa: 4x, draw AA as xsdk sets it, MSAA_ENABLE on, resolve AA as xsdk sets it: column 128 sweep: 0@0
+msaa: 4x, draw AA 0000C003, MSAA_ENABLE on, resolve AA 0000C003: row 64 sweep: 4@0 3@32 2@96 1@160 0@224
+msaa: 4x, draw AA 0000C003, MSAA_ENABLE on, resolve AA 0000C003: column 128 sweep: 4@0 3@16 2@48 1@80 0@112
+msaa: done
+exit: status 0

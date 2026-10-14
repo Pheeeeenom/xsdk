@@ -1,0 +1,16 @@
+log: game:\vkbench.log
+log: named after \Device\Harddisk0\Partition1\XSDK\msaa\vkbench.xex
+sbrk: the heap may grow to 472 MB, the title's free memory
+vkbench: 10 scenes, each 60 warm-up and 600 measured frames, through xsdk then vulkan4xenon
+vkbench: a 1 ms sleep took 1997 us on average, from 1794 to 2001, over 100
+vkbench: writing 1 MB, fastest of 8: write-combined, 32-bit stores 292 us (3591 MB/s), memcpy 331 us (3167 MB/s); cached, 32-bit stores 712 us then dcbst 97 us (1296 MB/s)
+vkbench: copying 1024 KB from memory into write-combined memory, fastest of 8, memcpy: 710 us (1476 MB/s)
+vkbench: copying 256 KB from the cache into write-combined memory, fastest of 8, memcpy: 47 us (5577 MB/s)
+vkbench: copying 1024 KB from memory into write-combined memory, fastest of 8, VMX stores and dcbt 8 lines ahead: 714 us (1468 MB/s)
+vkbench: copying 1024 KB from memory into write-combined memory, fastest of 8, VMX stores and dcbt 16 lines ahead: 695 us (1508 MB/s)
+vkbench: copying 1024 KB from memory into write-combined memory, fastest of 8, VMX stores and dcbt 32 lines ahead: 796 us (1317 MB/s)
+vkbench: copying 1024 KB from memory into cached memory, fastest of 8, memcpy: 575 us (1823 MB/s)
+vkbench: copying 1024 KB from memory into cached memory, fastest of 8, VMX stores, dcbt and dcbz: 452 us (2319 MB/s)
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 16932 us
+PASS: vkbench: xsdk: opened

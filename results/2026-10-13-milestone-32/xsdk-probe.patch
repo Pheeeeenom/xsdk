@@ -1,0 +1,62 @@
+--- a/Makefile
++++ b/Makefile
+@@ -44,7 +44,7 @@
+ PACING_OBJECTS := $(patsubst tests/%,$(BUILD)/tests/%.o,$(basename $(PACING_SOURCES)))
+ # Bring-up probes: titles that each answer one question on the console.
+ PROBES := probe_spin probe_print probe_cp probe_ring probe_interrupt probe_exports probe_engines probe_swap \
+-	probe_display probe_guide probe_resolve probe_triangle probe_vblank probe_720p probe_constants probe_mip_tail
++	probe_display probe_guide probe_resolve probe_triangle probe_vblank probe_720p probe_constants probe_mip_tail probe_msaa
+ 
+ .PHONY: all clean cmake_check
+ # Keep the ELFs and objects that pattern rules build on the way to a .xex.
+--- a/src/gpu_draw.c
++++ b/src/gpu_draw.c
+@@ -114,9 +114,8 @@
+ 	return bits;
+ }
+ 
+-// PA_SC_AA_CONFIG: the samples less one, and the farthest from a pixel's centre in 16ths from bit 13
+-// (Linux:drivers/gpu/drm/msm/registers/adreno/a2xx.xml:1540-1543); libxenon's 2 and 4 fail (docs/HARDWARE.md).
+-static const uint32_t aa_configs[] = { 0, 0x00008001, 0x0000C003 };
++// PA_SC_AA_CONFIG for 1, 2 and 4 samples (libxenon:drivers/xenos/xe.c:1738-1740).
++static const uint32_t aa_configs[] = { 0, 0x00008002, 0x0000C004 };
+ // RB_COPY_CONTROL's copy_sample_select: sample 0, or the average of samples 0-1 or 0-3
+ // (xenia:src/xenia/gpu/registers.h:858; xenos.h:1000-1008), as libxenon picks them (xe.c:1096-1105).
+ static const uint32_t copy_sample_selects[] = { 0, 4, 6 };
+@@ -164,7 +163,7 @@
+ 	return copy_sample_selects[samples_log2(target_samples)];
+ }
+ 
+-// As libxenon sets it (xe.c:1411-1412): without msaa_enable the console's edges don't blend (docs/HARDWARE.md).
++// libxenon turns multisampling on in the scan converter's mode with its samples (xe.c:1411-1412).
+ static uint32_t msaa_enable(void)
+ {
+ 	return target_samples > 1 ? MSAA_ENABLE : 0;
+@@ -183,7 +182,7 @@
+ 			edram_pitch << SURFACE_HIZ_PITCH_SHIFT,
+ 		color_tile, depth_tile };
+ 	gpu_put_registers(packets, RB_SURFACE_INFO, surface, 3);
+-	// Resolves too take the target's samples here, else they miss pixels or copy zeros (docs/HARDWARE.md).
++	// XAM may leave multisampling on, halving a resolve (docs/HARDWARE.md, "A resolve needs multisampling off").
+ 	gpu_put_register(packets, PA_SC_AA_CONFIG, aa_configs[samples_log2(target_samples)]);
+ 	gpu_put_register(packets, PA_SC_AA_MASK, 0xFFFF);
+ }
+--- a/src/gpu_resolve.c
++++ b/src/gpu_resolve.c
+@@ -92,6 +92,7 @@
+ };
+ 
+ static uint32_t depth_clear = DEPTH_CLEAR_FAR;
++uint32_t probe_resolve_aa_config = 0xFFFFFFFF;
+ static uint32_t clears = COPY_CONTROL_COLOR_CLEAR | COPY_CONTROL_DEPTH_CLEAR;
+ 
+ // RB_COLOR_CLEAR wants the packed colour, red low (xenia:src/xenia/gpu/shaders/pixel_formats.xesli:113-116).
+@@ -146,6 +147,8 @@
+ 	gpu_put_register(&packets, RB_HIZCONTROL, 0);
+ 	gpu_put_registers(&packets, VGT_MAX_VTX_INDX, indices, 3);
+ 	gpu_put_registers(&packets, PA_CL_CLIP_CNTL, clip, 3);
++	if (probe_resolve_aa_config != 0xFFFFFFFF)
++		gpu_put_register(&packets, PA_SC_AA_CONFIG, probe_resolve_aa_config);
+ 	gpu_put_register(&packets, COHER_DEST_BASE_7, 0);
+ 	gpu_put_registers(&packets, SHADER_CONSTANT_FETCH_00_0, fetch, 6);
+ 	gpu_put_registers(&packets, SHADER_CONSTANT_FLUSH_FETCH_0, flush_fetch, 3);

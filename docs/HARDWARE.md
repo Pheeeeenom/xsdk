@@ -2143,3 +2143,57 @@ of Xenos's tiled layout (xsdk_tiled_2d), or a linear row. `xsdk_texture_swizzle`
 
 With that, milestone 29 is done: textures upload in runs, a title can pick a texture's channels, and every title built
 with it passes on the console.
+
+## Multisampled targets, milestone 32 (2026-10-13)
+
+`xsdk_gpu_set_target_samples` and `xsdk_gpu_set_target_samples_at` take 1, 2 or 4 samples a pixel, and
+`xsdk_gpu_target_sample_tiles` counts their eDRAM tiles; the three calls without samples take 1, so vulkan4xenon builds
+as it is. `RB_SURFACE_INFO` holds the count (xenia:src/xenia/gpu/registers.h:670-679), a pixel's 2 samples take two
+rows of eDRAM and its 4 a square of two by two (xenia:src/xenia/gpu/shaders/edram.xesli:27-32), and a resolve averages
+them with `RB_COPY_CONTROL`'s sample select, 4 for samples 0 and 1 and 6 for 0 to 3 (registers.h:858; xenos.h:1000-1008;
+libxenon:drivers/xenos/xe.c:1096-1105). Logs: `results/2026-10-13-milestone-32/`.
+
+A probe settled the rest before the test (`probe_msaa.c`, built from xsdk at the milestone's code commit with
+`xsdk-probe.patch`, which puts back libxenon's `PA_SC_AA_CONFIG` values, as xsdk had them then, and lets the probe set
+the resolve's; `probe_msaa.log`). Each case cleared a 256x128 target with a resolve, drew a triangle, resolved, and
+counted the pixels near its edges at each blend of its colour and the clear colour:
+- **`PA_SC_AA_CONFIG` takes the samples less one.** Its fields are the count and, from bit 13, the farthest sample from
+  a pixel's centre in 16ths of a pixel (Linux:drivers/gpu/drm/msm/registers/adreno/a2xx.xml:1540-1543). With 0x8001
+  at 2 samples and 0xC003 at 4, the value XAM leaves ("A resolve needs multisampling off"), edges blended: of 1290
+  pixels near them, 247 half way at 2 samples, and 118, 138 and 116 a quarter, half and three quarters of the way at 4.
+  Every pixel off the edges came out as at 1 sample. libxenon's 0x8002 and 0xC004 (xe.c:1738-1740), which it never
+  runs (xe.c:1004), fail: at 2 samples no pixel blended, the edges as at 1 sample; at 4 the resolve wrote every other 4
+  pixels of a row and left half the pixels unwritten.
+- **A resolve needs the target's value too.** With 0 there, a 2-sample resolve wrote every pixel wrong, the first ones
+  0, and a 4-sample one left half the pixels unwritten.
+- **Draws need `PA_SU_SC_MODE_CNTL`'s msaa_enable** (registers.h:474), which libxenon sets with samples
+  (xe.c:1411-1412): without it, at 2 and 4 samples alike, the edges came out as at 1 sample.
+- **Where the samples sit.** An edge rising one pixel over 256 columns, and one moving a pixel over 128 rows, give each
+  sample's offset down and across. 1 sample sits at the centre, as the half-pixel edges assume
+  (xenia:src/xenia/gpu/draw_util.cc:837); 2 at a quarter of a pixel either side of it, down and across; 4 at an eighth
+  and three eighths either side, each at an offset of its own down and across. The farthest, 4/16 and 6/16 of a pixel
+  each way, are the farthest-sample fields of 0x8001 and 0xC003. Which offsets pair up into one sample, and which
+  sample is which, the sweeps don't show; Xenia takes sample 0 of 2 for the top one (draw_util.h:317-320).
+
+Then, with xsdk setting 0x8001 and 0xC003:
+- **xsdk_test passed 267 of 269** (`xsdk_test.log`), the two failures the controller's, none connected:
+  `XamInputGetState` returned 0x48F. Over four rounds, a triangle with a shallow, a steep and a diagonal edge, drawn
+  at 1, 2 and 4 samples into a 240x128 target, in xsdk's layout and placed as vulkan4xenon places targets, with raster
+  state set after the target, resolved into a tiled A8R8G8B8 texture. Counted over the rounds, the pixels near the
+  edges held the clear colour 2844 times at 1 sample and the triangle's 2032; at 2, the clear colour 2368 times, half
+  way 956 and the triangle's 1552; at 4, 2132 times, then a quarter, half and three quarters of the way 464, 500 and
+  452, and the triangle's 1328. No pixel near the edges held anything else, and every pixel off them was as the CPU
+  works it out, placed or not. The 4-sample target, 240 pixels wide, counts 8 tiles across as its texture's
+  256-texel pitch does, so the resolve across the pitch read it where it was drawn.
+- **Broken on purpose,** the resolve copying sample 0, the pixels near the edges at 2 and 4 samples were all one
+  colour or the other, 2836 and 2040, and the four checks at 2 and 4 samples failed, besides the controller's
+  (`xsdk_test_one_sample.log`).
+- **vulkan4xenon_test** passed 80 of 80 and **vkbench** 14 of 14, its xsdk scenes' CPU and GPU times within 3% of
+  milestone 29's. A first vkbench run's log stopped 12.8 s in, after "xsdk: opened", with no exit line, while the
+  console reported no title running (`vkbench_cut_short.log`); the cause isn't known, and run again it passed.
+- **A vblank missed at times this evening:** two runs of this milestone's earlier builds each missed one, in replay and
+  in pacing's 2 buffers at every vblank, and so did xsdk_test at `db55e35`, before the milestone, in replay
+  (`xsdk_test_before.log`). The runs recorded above missed none.
+
+With that, milestone 32 is done: a title can draw into targets of 2 and 4 samples, resolves average them, and every
+title built with it passes on the console.
