@@ -797,6 +797,33 @@ So does the SDK:
       past both ends clamped; broken on purpose, with its units unswapped, the check fails on the console;
     - xsdk_test, vulkan4xenon_test and vkbench pass on the console.
 
+29. **Uploads in runs, and channel swizzles.** Dusklight's attract demo plays its movie at 7.5 fps: each frame's three
+    textures, 1.6 MB, take vulkan4xenon's copies 114 ms, and xsdk_texture_upload works out each texel's tiled offset
+    on its own and merges a texel under 4 bytes into its word by reading the word back from write-combined memory
+    (vulkan4xenon:docs/ROADMAP.md, "Then the memory for the attract demo"). The movie's 8-bit textures, expanded to
+    32 bits now, are to stay 8-bit and sample as intensity, which needs a texture's channels picked. Decided with the
+    user on 2026-10-13, with vulkan4xenon's milestone 12 and Aurora's side.
+
+    So:
+    - `xsdk_texture_upload` writes runs of blocks that sit together in memory with one offset each, as whole words:
+      in Xenos's tiled layout 16 bytes or 8 texels of a byte (xsdk_tiled_2d), a linear level's whole row. Blocks a
+      run doesn't cover, at a packed mip level's edges, go as now.
+    - `xsdk_texture_swizzle` sets which of the format's channels, or 0 or 1, the GPU returns as red, green, blue and
+      alpha: the fetch constant's swizzle (xenia:src/xenia/gpu/xenos.h:1015-1030), composed with the format's own.
+    - Found on the way, by vulkan4xenon's milestone 12 test and probe_mip_tail with thin shapes: the console reads a 2x1
+      texture's packed base at (16, 0), as a square's, where xsdk, after Xenia, put it at (0, 16); 4x1 and wider are
+      laid out as Xenia has them. xsdk places 2x1 as the console reads it.
+
+    Done when:
+    - xsdk_test's formats check passes with the uploads in runs, every format linear and tiled and every mipped level
+      as before, and draws R8 swizzled to red in every channel and R8G8 to red, red, red then green, every pixel as the
+      CPU decodes it; broken on purpose, a swizzle left at the format's, that check fails;
+    - xsdk_test times a 512x512 R8 tiled upload from cached memory, which must take under 4 ms; broken on purpose, the
+      blocks written one at a time as before, it fails on the console;
+    - probe_mip_tail reads 2x1, 4x1 and 1x2 textures where xsdk puts them, and vulkan4xenon_test's 2x1 R8 image draws
+      its texels;
+    - xsdk_test, vulkan4xenon_test and vkbench pass on the console.
+
 ## 5. Questions for the user first
 
 1. **The GCC:** its version (C++23 needs 13 or later for most of it), target triple, ABI and code model, its C
