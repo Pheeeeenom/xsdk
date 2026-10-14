@@ -1,7 +1,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "tests.h"
 #include "texture_shaders.h"
@@ -46,6 +48,10 @@ enum {
 	// well under the 85 between neighbouring blends of these blocks, so a wrong index or block fails.
 	DXT_BLEND_TOLERANCE = 12,
 	MAX_CELLS = 72,
+	SWIZZLE_ROW_Y = 600,
+	// The upload timed: an R8 tiled texture this many texels on a side, in under this long.
+	TIMED_SIZE = 512,
+	TIMED_LIMIT_US = 4000,
 	POINTS_PER_CELL = 10,
 	// The largest level: 32x32 texels of 8 bytes.
 	MAX_LEVEL_BYTES = TEXTURE_SIZE * TEXTURE_SIZE * 8,
@@ -57,6 +63,7 @@ enum {
 enum {
 	GROUP_FORMATS,
 	GROUP_MIPS,
+	GROUP_SWIZZLES,
 	GROUPS,
 };
 
@@ -108,10 +115,25 @@ static const FormatSpec specs[XSDK_FORMATS] = {
 static const uint32_t mipped_formats[] = { XSDK_FORMAT_R8, XSDK_FORMAT_R5G6B5, XSDK_FORMAT_A2B10G10R10,
 	XSDK_FORMAT_R16G16B16A16F, XSDK_FORMAT_DXT1, XSDK_FORMAT_DXT5 };
 
+// Textures drawn with their channels picked (xsdk_texture_swizzle): R8 as intensity, R8G8 as intensity and alpha.
+typedef struct {
+	const char *name;
+	uint32_t format;
+	uint32_t channels[4];
+} Swizzled;
+
+static const Swizzled swizzled[] = {
+	{ "R8 as RRRR", XSDK_FORMAT_R8, { XSDK_CHANNEL_RED, XSDK_CHANNEL_RED, XSDK_CHANNEL_RED, XSDK_CHANNEL_RED } },
+	{ "R8G8 as RRRG", XSDK_FORMAT_R8G8, { XSDK_CHANNEL_RED, XSDK_CHANNEL_RED, XSDK_CHANNEL_RED, XSDK_CHANNEL_GREEN } },
+};
+
 enum {
 	MIPPED = sizeof mipped_formats / sizeof mipped_formats[0],
-	// Each format linear, then tiled, then the mipped ones.
-	TEXTURES = XSDK_FORMATS * 2 + MIPPED,
+	SWIZZLED = sizeof swizzled / sizeof swizzled[0],
+	// Each format linear, then tiled, then the mipped ones, then the swizzled ones.
+	FIRST_MIPPED = XSDK_FORMATS * 2,
+	FIRST_SWIZZLED = FIRST_MIPPED + MIPPED,
+	TEXTURES = FIRST_SWIZZLED + SWIZZLED,
 };
 
 // Exact half floats, as bits and as values; above 1 and below 0 clamp in the 8-bit target.
@@ -136,6 +158,8 @@ typedef struct {
 	uint32_t y;
 	uint32_t width;
 	uint32_t height;
+	// Its entry in swizzled, for a cell of GROUP_SWIZZLES.
+	const Swizzled *swizzle;
 } Cell;
 
 typedef struct {
@@ -417,16 +441,29 @@ static uint32_t decode_texel(uint32_t format, uint32_t level, uint32_t x, uint32
 		to_byte(channels[2]);
 }
 
+// A decoded texel with its channels picked as the swizzle names them.
+static uint32_t swizzle_argb(uint32_t argb, const uint32_t channels[4])
+{
+	const uint32_t source[4] = { argb >> 16 & 0xFF, argb >> 8 & 0xFF, argb & 0xFF, argb >> 24 };
+	uint32_t out[4];
+	for (uint32_t i = 0; i < 4; i++)
+		out[i] = channels[i] == XSDK_CHANNEL_ZERO ? 0 : channels[i] == XSDK_CHANNEL_ONE ? 0xFF : source[channels[i]];
+	return out[3] << 24 | out[0] << 16 | out[1] << 8 | out[2];
+}
+
 static uint32_t texture_format(uint32_t texture)
 {
-	return texture < XSDK_FORMATS * 2 ? texture % XSDK_FORMATS : mipped_formats[texture - XSDK_FORMATS * 2];
+	if (texture < FIRST_MIPPED)
+		return texture % XSDK_FORMATS;
+	return texture < FIRST_SWIZZLED ? mipped_formats[texture - FIRST_MIPPED]
+									: swizzled[texture - FIRST_SWIZZLED].format;
 }
 
 static bool make_texture(XsdkTexture *texture, uint32_t which)
 {
 	const uint32_t format = texture_format(which);
 	const bool tiled = which >= XSDK_FORMATS;
-	const uint32_t levels = which >= XSDK_FORMATS * 2 ? MIP_LEVELS : 1;
+	const uint32_t levels = which >= FIRST_MIPPED && which < FIRST_SWIZZLED ? MIP_LEVELS : 1;
 	const NTSTATUS status = xsdk_texture_create(texture, format, TEXTURE_SIZE, TEXTURE_SIZE, levels, tiled);
 	if (!NT_SUCCESS(status)) {
 		xsdk_log_write("formats: %s: xsdk_texture_create failed: 0x%08X", specs[format].name, (unsigned)status);
@@ -442,27 +479,32 @@ static bool make_texture(XsdkTexture *texture, uint32_t which)
 		xsdk_texture_upload(texture, level, level_data, columns * block_bytes);
 		xsdk_gpu_invalidate(texture->address, texture->size_bytes);
 	}
+	if (which >= FIRST_SWIZZLED)
+		xsdk_texture_swizzle(texture, swizzled[which - FIRST_SWIZZLED].channels);
 	return true;
 }
 
-// Columns of formats, linear above tiled, then a row of levels for each mipped format.
+// Columns of formats, linear above tiled, then a row of levels for each mipped format, then the swizzled ones.
 static uint32_t make_cells(Cell *cells)
 {
 	uint32_t count = 0;
 	for (uint32_t texture = 0; texture < XSDK_FORMATS * 2; texture++) {
 		const bool tiled = texture >= XSDK_FORMATS;
 		cells[count++] = (Cell){ texture, texture % XSDK_FORMATS, GROUP_FORMATS, 0, tiled,
-			40 + texture % XSDK_FORMATS * CELL_STEP, tiled ? 160 : 60, CELL_SIZE, CELL_SIZE };
+			40 + texture % XSDK_FORMATS * CELL_STEP, tiled ? 160 : 60, CELL_SIZE, CELL_SIZE, NULL };
 	}
 	for (uint32_t i = 0; i < MIPPED; i++) {
 		uint32_t x = 40;
 		for (uint32_t level = 0; level < MIP_LEVELS; level++) {
 			const uint32_t size = level_size(TEXTURE_SIZE, level);
 			cells[count++] = (Cell){ XSDK_FORMATS * 2 + i, mipped_formats[i], GROUP_MIPS, level, true, x,
-				280 + i * MIP_ROW_STEP, size, size };
+				280 + i * MIP_ROW_STEP, size, size, NULL };
 			x += size + LEVEL_GAP;
 		}
 	}
+	for (uint32_t i = 0; i < SWIZZLED; i++)
+		cells[count++] = (Cell){ FIRST_SWIZZLED + i, swizzled[i].format, GROUP_SWIZZLES, 0, true, 40 + i * CELL_STEP,
+			SWIZZLE_ROW_Y, CELL_SIZE, CELL_SIZE, &swizzled[i] };
 	return count;
 }
 
@@ -470,8 +512,14 @@ static uint32_t make_cells(Cell *cells)
 static uint32_t expected_argb(const Cell *cell, uint32_t x, uint32_t y, uint32_t *tolerance)
 {
 	const uint32_t size = level_size(TEXTURE_SIZE, cell->level);
-	return decode_texel(
+	const uint32_t argb = decode_texel(
 		cell->format, cell->level, (x - cell->x) * size / cell->width, (y - cell->y) * size / cell->height, tolerance);
+	return cell->swizzle ? swizzle_argb(argb, cell->swizzle->channels) : argb;
+}
+
+static const char *cell_name(const Cell *cell)
+{
+	return cell->swizzle ? cell->swizzle->name : specs[cell->format].name;
 }
 
 static uint32_t make_points(const Cell *cells, uint32_t cell_count, Point *points)
@@ -510,7 +558,7 @@ static uint32_t error(uint32_t stored, uint32_t argb)
 static void log_miss(const Cell *cell, uint32_t frame, uint32_t x, uint32_t y, uint32_t stored, uint32_t argb)
 {
 	xsdk_log_write("formats: frame %u: %s %s level %u at (%u, %u) held %08X, not %08X", (unsigned)frame,
-		specs[cell->format].name, cell->tiled ? "tiled" : "linear", (unsigned)cell->level, (unsigned)x, (unsigned)y,
+		cell_name(cell), cell->tiled ? "tiled" : "linear", (unsigned)cell->level, (unsigned)x, (unsigned)y,
 		(unsigned)stored, (unsigned)__builtin_bswap32(argb));
 }
 
@@ -563,7 +611,7 @@ static uint32_t count_wrong(
 		checked += ring;
 		wrong[cell->group] += cell_misses;
 		if (cell_misses)
-			xsdk_log_write("formats: %s %s level %u: %u of %u pixels wrong", specs[cell->format].name,
+			xsdk_log_write("formats: %s %s level %u: %u of %u pixels wrong", cell_name(cell),
 				cell->tiled ? "tiled" : "linear", (unsigned)cell->level, (unsigned)cell_misses, (unsigned)ring);
 	}
 	log_largest(largest);
@@ -627,6 +675,7 @@ static void draw_cells(const Scene *scene)
 static const char *const group_checks[GROUPS] = {
 	"formats: every format, linear and tiled, as decoded on the CPU",
 	"formats: every level of six formats' mipped textures, as decoded on the CPU",
+	"formats: R8 and R8G8 with their channels picked, as decoded on the CPU",
 };
 
 // Each frame draws every cell into eDRAM, resolves into the buffer not on screen, and shows it.
@@ -692,6 +741,39 @@ static void draw_frames(const Scene *scene)
 	}
 }
 
+static int64_t now_us(void)
+{
+	struct timespec time;
+	(void)clock_gettime(CLOCK_MONOTONIC, &time);
+	return (int64_t)time.tv_sec * 1000000 + time.tv_nsec / 1000;
+}
+
+// An R8 tiled upload from cached memory, timed. Written a byte at a time, each merged into its word read back from
+// write-combined memory, it took an uncached read a texel; in runs of whole words it takes far less.
+static void check_upload_time(void)
+{
+	XsdkTexture texture;
+	const NTSTATUS status = xsdk_texture_create(&texture, XSDK_FORMAT_R8, TIMED_SIZE, TIMED_SIZE, 1, true);
+	uint8_t *const data = malloc(TIMED_SIZE * TIMED_SIZE);
+	if (!NT_SUCCESS(status) || !data) {
+		check("formats: a 512x512 R8 tiled upload takes under 4 ms", false);
+		free(data);
+		if (NT_SUCCESS(status))
+			xsdk_texture_free(&texture);
+		return;
+	}
+	for (uint32_t i = 0; i < TIMED_SIZE * TIMED_SIZE; i++)
+		data[i] = (uint8_t)(i * 7);
+	const int64_t start = now_us();
+	xsdk_texture_upload(&texture, 0, data, TIMED_SIZE);
+	const int64_t elapsed = now_us() - start;
+	xsdk_log_write("formats: a 512x512 R8 tiled upload took %u us, %u MB/s", (unsigned)elapsed,
+		(unsigned)(elapsed > 0 ? (int64_t)TIMED_SIZE * TIMED_SIZE / elapsed : 0));
+	check("formats: a 512x512 R8 tiled upload takes under 4 ms", elapsed < TIMED_LIMIT_US);
+	free(data);
+	xsdk_texture_free(&texture);
+}
+
 void test_formats(void)
 {
 	const NTSTATUS status = xsdk_gpu_open();
@@ -717,6 +799,7 @@ void test_formats(void)
 	for (uint32_t i = 0; i < TEXTURES; i++)
 		made = make_texture(&textures[i], i) && made;
 	check("formats: textures made in every format", made);
+	check_upload_time();
 	static Cell cells[MAX_CELLS];
 	const uint32_t cell_count = make_cells(cells);
 	const XsdkSampler point_clamped = { XSDK_FILTER_POINT, XSDK_FILTER_POINT, XSDK_FILTER_POINT, XSDK_ADDRESS_CLAMP,

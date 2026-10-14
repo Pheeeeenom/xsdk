@@ -53,6 +53,10 @@ static const Shape shapes[] = {
 	{ 16, 8, 5 },
 	{ 8, 16, 5 },
 	{ 32, 16, 6 },
+	// One texel high or wide, where 2x1 is laid out as a square, not as a wide texture (docs/HARDWARE.md).
+	{ 2, 1, 1 },
+	{ 4, 1, 1 },
+	{ 1, 2, 1 },
 };
 
 enum {

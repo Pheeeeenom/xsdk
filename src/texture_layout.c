@@ -77,14 +77,16 @@ static uint32_t stored_bytes(const TextureLayout *layout, uint32_t stored_level)
 	return round_up(blocks << layout->block_bytes_log2, PAGE_BYTES);
 }
 
-// A level's texels from the tail's corner, laid out by whether the texture is wider than tall.
+// A level's texels from the tail's corner, laid out by whether the texture is wider than tall. One texel high counts
+// as two there: the console read a 2x1 texture's base at (16, 0), as a square's, and a 4x1's at (0, 16), as a wide
+// one's, where Xenia lays out 2x1 as wide too (docs/HARDWARE.md, "A 2x1 texture's tail").
 static void packed_offset(uint32_t width, uint32_t height, uint32_t level, uint32_t *x, uint32_t *y)
 {
 	const uint32_t width_log2 = log2_ceil(width);
 	const uint32_t height_log2 = log2_ceil(height);
 	const uint32_t packed_level = xsdk_texture_packed_level(width, height);
 	const uint32_t step = level - packed_level;
-	const bool wide = width_log2 > height_log2;
+	const bool wide = width_log2 > (height_log2 > 1 ? height_log2 : 1);
 	if (step < PACKED_SIDE_BY_SIDE) {
 		*x = wide ? 0 : (1u << PACKED_SIZE_LOG2) >> step;
 		*y = wide ? (1u << PACKED_SIZE_LOG2) >> step : 0;

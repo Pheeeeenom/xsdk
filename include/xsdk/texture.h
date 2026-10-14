@@ -46,6 +46,16 @@ enum {
 	XSDK_FORMATS,
 };
 
+// What xsdk_texture_swizzle has the GPU return: one of the format's channels, as the list above reads them, or 0 or 1.
+enum {
+	XSDK_CHANNEL_RED,
+	XSDK_CHANNEL_GREEN,
+	XSDK_CHANNEL_BLUE,
+	XSDK_CHANNEL_ALPHA,
+	XSDK_CHANNEL_ZERO,
+	XSDK_CHANNEL_ONE,
+};
+
 // The fetch constant's TextureFilter values (xenia:src/xenia/gpu/xenos.h:131-138).
 enum {
 	XSDK_FILTER_POINT = 0,
@@ -101,7 +111,11 @@ void xsdk_texture_attach(XsdkTexture *texture, volatile uint32_t *texels);
 NTSTATUS xsdk_texture_create(
 	XsdkTexture *texture, uint32_t format, uint32_t width, uint32_t height, uint32_t levels, bool tiled);
 // Copies in a level's rows of texels or blocks, row_bytes apart, sizes halving per level; not while the GPU reads it.
+// Word-aligned rows go in runs of whole words, far faster than unaligned ones.
 void xsdk_texture_upload(XsdkTexture *texture, uint32_t level, const void *data, uint32_t row_bytes);
+// Has the texture return, as red, green, blue and alpha, the XSDK_CHANNEL_* each names; xsdk_texture_init returns
+// the format's own channels.
+void xsdk_texture_swizzle(XsdkTexture *texture, const uint32_t channels[4]);
 // Frees what xsdk_texture_create allocated.
 void xsdk_texture_free(XsdkTexture *texture);
 // Works out the sampler's fetch constant bits once, for xsdk_gpu_set_texture.

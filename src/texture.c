@@ -57,6 +57,8 @@ enum {
 	ENDIAN_SHIFT = 6,
 	HEIGHT_SHIFT = 13,
 	SWIZZLE_SHIFT = 1,
+	SWIZZLE_BITS = 3,
+	SWIZZLE_MASK = 0xFFF,
 	MAG_FILTER_SHIFT = 19,
 	MIN_FILTER_SHIFT = 21,
 	MIP_FILTER_SHIFT = 23,
@@ -69,6 +71,10 @@ enum {
 	// Levels at 16 texels and under share a tail (xenia:src/xenia/gpu/texture_util.h:76-83).
 	PACKED_MIPS = 1 << 11,
 	FETCH_ADDRESS_ALIGNMENT = 0x1000,
+	// In the tiled layout, a row's blocks sit together for 16 bytes, or 8 blocks of a byte: x's low 3 bits and the
+	// offset's low 4 stay where they are (xsdk_tiled_2d).
+	TILED_RUN_BYTES = 16,
+	TILED_RUN_BLOCKS_MAX = 8,
 };
 
 // Endian swaps (xenia:src/xenia/gpu/xenos.h:193-198); libxenon marks 16-bit formats 8-in-16 (xe.h:184).
@@ -249,13 +255,46 @@ static uint32_t block_offset(const XsdkTexture *texture, const TextureLevelPlace
 	return (y * place->pitch_blocks + x) << bytes_log2;
 }
 
-// Bytes within one 32-bit word, merged with what the word holds unless they fill it.
+// Bytes within one 32-bit word, merged with what the word holds unless they fill it: reading the word back from
+// write-combined memory goes all the way to memory.
 static void put_bytes(volatile uint32_t *image, uint32_t offset, const uint8_t *bytes, uint32_t count)
 {
 	volatile uint32_t *const word = image + offset / WORD_BYTES;
 	uint32_t value = count == WORD_BYTES ? 0 : *word;
 	memcpy((uint8_t *)&value + offset % WORD_BYTES, bytes, count);
 	*word = value;
+}
+
+// Whole words from word-aligned bytes to a word-aligned offset, each one store.
+static void put_words(volatile uint32_t *image, uint32_t offset, const uint8_t *bytes, uint32_t count)
+{
+	volatile uint32_t *word = image + offset / WORD_BYTES;
+	for (uint32_t i = 0; i < count; i += WORD_BYTES) {
+		uint32_t value;
+		memcpy(&value, bytes + i, WORD_BYTES);
+		*word++ = value;
+	}
+}
+
+// One block, a word or part of one at a time: blocks of 4 bytes or more fill whole words, smaller ones share a word
+// with their neighbours.
+static void put_block(volatile uint32_t *image, uint32_t offset, const uint8_t *bytes, uint32_t block_bytes)
+{
+	for (uint32_t byte = 0; byte < block_bytes; byte += WORD_BYTES)
+		put_bytes(image, offset + byte, bytes + byte, block_bytes < WORD_BYTES ? block_bytes : WORD_BYTES);
+}
+
+// How many blocks in a row go as one run from a block whose x is a multiple of it: in a linear row, the whole row cut
+// to whole words.
+static uint32_t run_blocks(const XsdkTexture *texture, const FormatInfo *info, uint32_t columns)
+{
+	if (!texture->tiled) {
+		const uint32_t per_word = info->block_bytes_log2 >= 2 ? 1 : WORD_BYTES >> info->block_bytes_log2;
+		const uint32_t whole = columns / per_word * per_word;
+		return whole ? whole : 1;
+	}
+	const uint32_t blocks = TILED_RUN_BYTES >> info->block_bytes_log2;
+	return blocks == 0 ? 1 : blocks > TILED_RUN_BLOCKS_MAX ? TILED_RUN_BLOCKS_MAX : blocks;
 }
 
 void xsdk_texture_upload(XsdkTexture *texture, uint32_t level, const void *data, uint32_t row_bytes)
@@ -269,17 +308,49 @@ void xsdk_texture_upload(XsdkTexture *texture, uint32_t level, const void *data,
 	const uint32_t block_bytes = 1u << info->block_bytes_log2;
 	const uint32_t columns = xsdk_texture_blocks(level_size(texture->width, level), info->block_log2);
 	const uint32_t rows = xsdk_texture_blocks(level_size(texture->height, level), info->block_log2);
+	// A run goes as whole words, read from the rows as words, so they must be word-aligned; unaligned rows go a block
+	// at a time.
+	const uint32_t run = ((uintptr_t)data | row_bytes) % WORD_BYTES == 0 ? run_blocks(texture, info, columns) : 1;
+	const uint32_t run_bytes = run * block_bytes;
 	for (uint32_t y = 0; y < rows; y++) {
 		const uint8_t *const row = (const uint8_t *)data + y * row_bytes;
-		for (uint32_t x = 0; x < columns; x++) {
+		uint32_t x = 0;
+		while (x < columns) {
 			const uint32_t offset = block_offset(texture, &place, place.x + x, place.y + y);
-			// Blocks of 4 bytes or more fill whole words; smaller ones share a word with their neighbours.
-			for (uint32_t byte = 0; byte < block_bytes; byte += WORD_BYTES)
-				put_bytes(image, offset + byte, row + x * block_bytes + byte,
-					block_bytes < WORD_BYTES ? block_bytes : WORD_BYTES);
+			// A whole run, starting where the layout's runs start, of whole words: at a packed level's edges and
+			// across a linear row's last bytes, blocks go one at a time.
+			if ((place.x + x) % run == 0 && x + run <= columns && run_bytes % WORD_BYTES == 0 &&
+				offset % WORD_BYTES == 0) {
+				put_words(image, offset, row + x * block_bytes, run_bytes);
+				x += run;
+				continue;
+			}
+			put_block(image, offset, row + x * block_bytes, block_bytes);
+			x++;
 		}
 	}
 	__asm__ volatile("sync" ::: "memory");
+}
+
+// Where the GPU takes an XSDK_CHANNEL_* from, among the swizzle sources, given the format's own swizzle.
+static uint32_t channel_source(uint32_t own, uint32_t channel)
+{
+	if (channel == XSDK_CHANNEL_ZERO)
+		return ZERO;
+	if (channel == XSDK_CHANNEL_ONE)
+		return ONE;
+	return own >> channel * SWIZZLE_BITS & 7;
+}
+
+void xsdk_texture_swizzle(XsdkTexture *texture, const uint32_t channels[4])
+{
+	const uint32_t own = formats[texture->format].swizzle;
+	uint32_t swizzle = 0;
+	for (uint32_t i = 0; i < 4; i++) {
+		assert(channels[i] <= XSDK_CHANNEL_ONE);
+		swizzle |= channel_source(own, channels[i]) << i * SWIZZLE_BITS;
+	}
+	texture->fetch[3] = (texture->fetch[3] & ~((uint32_t)SWIZZLE_MASK << SWIZZLE_SHIFT)) | swizzle << SWIZZLE_SHIFT;
 }
 
 void xsdk_texture_free(XsdkTexture *texture)
