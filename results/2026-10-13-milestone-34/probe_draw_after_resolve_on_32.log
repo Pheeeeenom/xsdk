@@ -1,0 +1,9 @@
+log: game:\probe_draw_after_resolve.log
+log: named after \Device\Harddisk0\Partition1\XSDK\aniso\probe_draw_after_resolve.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+draw after resolve: xsdk_gpu_open 0x00000000
+draw after resolve: the first frame's fence 0x00000000
+draw after resolve: drawing again without setting the target
+assertion "!target_undone || xsdk_gpu_recording()" failed: file "src/gpu_draw.c", line 328, function: xsdk_gpu_draw
+exit: signal 6
+exit: status 134

@@ -2222,8 +2222,9 @@ on the console.
 
 ## A clock the GPU and the CPU both read (2026-10-13)
 
-`probe_timestamp.c`, built as a probe against xsdk `96c3597`, looked for a GPU time stamp to time fence waits by (log:
-`results/2026-10-13-milestone-34/probe_timestamp.log`, its source beside it).
+`probe_timestamp.c`, built as a probe against milestone 33's code on `db55e35`, before milestone 32 came under it,
+looked for a GPU time stamp to time fence waits by (log: `results/2026-10-13-milestone-34/probe_timestamp.log`, its
+source beside it).
 - **The performance counters stood at 0 as XAM left them:** `CP_PERFCOUNTER0_LOW`, `RBBM_PERFCOUNTER0_LOW` and
   `RBBM_PERFCOUNTER1_LOW` (xenia:src/xenia/gpu/register_table.inc:42-52) read 0 and didn't move in 1 ms.
 - **With `CP_PERFMON_CNTL` reset and then set to 1, and the counters' selects 0,** written from the CPU or through the
@@ -2291,6 +2292,23 @@ they run when their buffer does (src/gpu_draw.c). Logs: `results/2026-10-13-mile
 With that, milestone 34 is done: a fence wait returns within microseconds of a short job's fence, a draw after a
 resolve stops at an assert, and every title built with them passes on the console. Why the console missed vblanks that
 evening, with xsdk_test from before the milestones too, isn't known.
+
+## Milestones 33 and 34 on top of milestone 32 (2026-10-13)
+
+The runs above were of milestones 33 and 34 on `db55e35`. Moved onto milestone 32, each ran its checks again, built
+clean at xsdk `75e17eb` and `ca0fd64` (logs: the `_on_32` ones in `results/2026-10-13-milestone-33/` and
+`results/2026-10-13-milestone-34/`). The controller was disconnected throughout, so its two checks failed in every run
+(`XamInputGetState` returned 0x48F).
+- **Milestone 33:** xsdk_test passed 274 of 276, milestone 32's multisampling checks among them, the stripes' contrast
+  0, 0, 0, 0.501, 1.000 and 1.000 as before. With the field left out, every quad came out grey and the check at 16
+  failed; replay missed two vblanks in that run. vulkan4xenon_test passed 80 of 80 and vkbench 14 of 14, its times
+  within 1.1% of milestone 32's run.
+- **Milestone 34:** xsdk_test passed 275 of 277 and missed no vblank. Eight waits after a 1280x720 resolve returned
+  1.4 to 2.4 us after their fences, the resolves taking 271 to 272 us, and the assert held through every test,
+  milestone 32's multisampled draws among them. Sleeping first, the waits returned 186 us to 1.66 ms late, but for one
+  whose sleep ended before its fence passed, 3.2 us, and that check failed. probe_draw_after_resolve stopped at the
+  assert, now at src/gpu_draw.c:328. vulkan4xenon_test passed 80 of 80 and vkbench 14 of 14, its CPU times within 2%
+  of milestone 33's run and its GPU times within 4%.
 
 ## The pixel rate, milestone 31 (2026-10-13)
 
