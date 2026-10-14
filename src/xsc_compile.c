@@ -12,6 +12,16 @@ enum {
 	MODEL_VERTEX = 0,
 };
 
+// make works it out (Makefile, XSC_VERSION).
+#ifndef XSDK_XSC_SOURCE_HASH
+#error "XSDK_XSC_SOURCE_HASH names the compiler's version"
+#endif
+
+const char *xsdk_xsc_version(void)
+{
+	return XSDK_XSC_SOURCE_HASH;
+}
+
 void xsdk_xsc_default_options(XsdkXscOptions *options)
 {
 	*options = (XsdkXscOptions){ .pixel_registers = XSDK_PIXEL_REGISTERS,

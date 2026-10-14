@@ -29,6 +29,10 @@ XSC_SOURCES := src/xsc_memory.c src/xsc_spirv.c src/xsc_resolve.c src/xsc_unroll
 	src/xsc_lower_glsl.c src/xsc_lower_stage.c src/xsc_lower_vertex.c src/xsc_lower_fragment.c src/xsc_lower_loop.c \
 	src/xsc_compile.c
 SDK_SOURCES += $(XSC_SOURCES)
+XSC_HEADERS := include/xsdk/xsc.h src/xsc_private.h src/xsc_lower.h
+# The compiler's version, xsdk_xsc_version(): a hash of its sources, line endings aside, so a changed compiler keeps
+# what it compiles apart from what an older one did.
+XSC_VERSION := $(shell cat $(XSC_SOURCES) $(XSC_HEADERS) | tr -d '\r' | sha256sum | cut -c1-16)
 IMPORT_NAMES := $(shell $(PYTHON) tools/gen_imports.py --list imports/imports.txt)
 IMPORT_SOURCES := $(IMPORT_NAMES:%=$(BUILD)/imports/%.S)
 SDK_OBJECTS := $(patsubst src/%,$(BUILD)/sdk/%.o,$(basename $(SDK_SOURCES))) $(IMPORT_NAMES:%=$(BUILD)/imports/%.o)
@@ -120,6 +124,9 @@ $(BUILD)/sdk/copy.o: CFLAGS += -fno-builtin -fno-tree-loop-distribute-patterns
 
 # xost folds constants in doubles, as Python does; a fused multiply-add rounds once and would differ.
 $(XSC_SOURCES:src/%.c=$(BUILD)/sdk/%.o): CFLAGS += -ffp-contract=off
+$(BUILD)/sdk/xsc_compile.o $(BUILD)/host/xsc_compile.o: $(XSC_SOURCES) $(XSC_HEADERS)
+$(BUILD)/sdk/xsc_compile.o: CFLAGS += -DXSDK_XSC_SOURCE_HASH='"$(XSC_VERSION)"'
+$(BUILD)/host/xsc_compile.o: HOST_CFLAGS += -DXSDK_XSC_SOURCE_HASH='"$(XSC_VERSION)"'
 
 # The console probe of xost's compiler, from the shader pack Aurora's tools/build_glsl_pack.py wrote for Dusklight;
 # outside all, as the pack is Dusklight's. probe_xsc_break has the fetch layout off, so it must fail.

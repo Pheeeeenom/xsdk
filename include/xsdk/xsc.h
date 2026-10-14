@@ -87,6 +87,8 @@ void xsdk_xsc_default_options(XsdkXscOptions *options);
 XsdkXscStatus xsdk_xsc_compile(
 	const uint32_t *spirv, size_t spirv_words, const XsdkXscOptions *options, XsdkXscShader *shader);
 void xsdk_xsc_free(XsdkXscShader *shader);
+// A hash of the compiler's sources, so what it compiled can be told from what a changed compiler would.
+const char *xsdk_xsc_version(void);
 
 #ifdef __cplusplus
 }
