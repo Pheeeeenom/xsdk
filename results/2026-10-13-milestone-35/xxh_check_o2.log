@@ -1,0 +1,6 @@
+log: game:\xxh_base.log
+log: named after \Device\Harddisk0\Partition1\XSDK\unroll\xxh_base.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+xxh check: XXH3_64bits d7ae70f0996d4a04, withSeed b46496f12270c449, XXH64 21210536591865ef, XXH32 eabb23e2334de43a, XXH3_128 df64311edbae1bb7
+xxh check: streaming matches one-shot (first differing offset<<16|length ffffffff)
+exit: status 0

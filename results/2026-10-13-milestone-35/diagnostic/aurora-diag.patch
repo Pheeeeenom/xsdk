@@ -1,0 +1,265 @@
+diff --git a/lib/gfx/frame.cpp b/lib/gfx/frame.cpp
+index 3a62264..a565692 100644
+--- a/lib/gfx/frame.cpp
++++ b/lib/gfx/frame.cpp
+@@ -171,6 +171,11 @@ void shutdown() {
+   g_frameSlots.reset();
+ }
+ 
++#ifdef AURORA_DIAGNOSTICS
++// Step 5's second diagnostics run: the game thread's wait for a frame slot.
++std::atomic<uint64_t> g_frameSlotWaitNs = 0;
++#endif
++
+ size_t acquire_frame_slot() {
+   ZoneScopedN("Acquire frame slot");
+   const auto waitStart = PresentClock::now();
+@@ -178,6 +183,10 @@ size_t acquire_frame_slot() {
+   // nothing needs pumping meanwhile.
+   const size_t slot = g_frameSlots.acquire();
+   const auto waitDuration = PresentClock::now() - waitStart;
++#ifdef AURORA_DIAGNOSTICS
++  g_frameSlotWaitNs.fetch_add(std::chrono::duration_cast<std::chrono::nanoseconds>(waitDuration).count(),
++                              std::memory_order_relaxed);
++#endif
+   const double waitMs = std::chrono::duration<double, std::milli>{waitDuration}.count();
+   TracyPlot("aurora: frameSlotWaitMs", waitMs);
+   return slot;
+@@ -353,4 +362,9 @@ float aurora_get_fps() { return aurora::gfx::calculate_fps(); }
+ #ifdef AURORA_DIAGNOSTICS
+ // The frame begun last, whose path aurora_frame_path (frame_path.cpp) gives.
+ extern "C" unsigned long long aurora_frame_path_last_id() { return aurora::gfx::current_frame_id(); }
++
++// The game thread's waits for a frame slot since the last call.
++extern "C" unsigned long long aurora_take_frame_slot_wait_ns() {
++  return aurora::gfx::g_frameSlotWaitNs.exchange(0, std::memory_order_relaxed);
++}
+ #endif
+diff --git a/lib/vulkan4xenon/device.cpp b/lib/vulkan4xenon/device.cpp
+index 1ee37fb..3b76f2d 100644
+--- a/lib/vulkan4xenon/device.cpp
++++ b/lib/vulkan4xenon/device.cpp
+@@ -68,6 +68,7 @@ struct PendingFrame {
+ #ifdef AURORA_DIAGNOSTICS
+   uint64_t frameId;
+   std::chrono::steady_clock::time_point submitted;
++  std::chrono::steady_clock::time_point submitEnd;
+ #endif
+ };
+ 
+@@ -128,6 +129,16 @@ VkDeviceSize align_up(VkDeviceSize value, VkDeviceSize alignment) noexcept {
+ #ifdef AURORA_DIAGNOSTICS
+ // The GPU's frame times, from the waiter thread: see wait_for_frames.
+ std::atomic<uint64_t> g_gpuBusyNs = 0;
++// Step 5's second diagnostics run: the layer's replay in vkQueueSubmit, the GPU's time after it, the present, and the
++// game thread's wait for the backend's slot.
++std::atomic<uint64_t> g_replayNs = 0;
++std::atomic<uint64_t> g_gpuTailNs = 0;
++std::atomic<uint64_t> g_presentNs = 0;
++std::atomic<uint64_t> g_slotWaitNs = 0;
++
++uint64_t since_ns(std::chrono::steady_clock::time_point start) noexcept {
++  return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - start).count();
++}
+ 
+ void count_taken(MemoryPool& pool, VkDeviceSize size) noexcept {
+   pool.taken += size;
+@@ -509,9 +520,12 @@ void* wait_for_frames(void* arg) noexcept {
+ #ifdef AURORA_DIAGNOSTICS
+     const auto done = std::chrono::steady_clock::now();
+     const auto start = std::max(frame.submitted, previousDone);
++    const auto tailStart = std::max(frame.submitEnd, previousDone);
+     previousDone = done;
+     g_gpuBusyNs.fetch_add(std::chrono::duration_cast<std::chrono::nanoseconds>(done - start).count(),
+                           std::memory_order_relaxed);
++    g_gpuTailNs.fetch_add(std::chrono::duration_cast<std::chrono::nanoseconds>(done - tailStart).count(),
++                          std::memory_order_relaxed);
+     note_frame_path(frame.frameId, FramePath::FenceSignalled, done);
+ #endif
+     g_completed.store(frame.serial, std::memory_order_release);
+@@ -852,7 +866,13 @@ bool acquire_swapchain_image(uint32_t& index, VkFramebuffer& framebuffer) noexce
+ VkCommandBuffer slot_commands(size_t slot) noexcept { return g_commands[slot]; }
+ 
+ bool acquire_slot(size_t slot) noexcept {
++#ifdef AURORA_DIAGNOSTICS
++  const auto start = std::chrono::steady_clock::now();
++#endif
+   g_slotFree[slot].wait();
++#ifdef AURORA_DIAGNOSTICS
++  g_slotWaitNs.fetch_add(since_ns(start), std::memory_order_relaxed);
++#endif
+   return true;
+ }
+ 
+@@ -876,11 +896,16 @@ bool submit_frame(size_t slot, uint32_t imageIndex, bool present, [[maybe_unused
+   // A fence no submission took returns VK_TIMEOUT at once (vulkan4xenon's docs/SUPPORT.md, Sync), so the waiter never
+   // hangs.
+   const bool submitted = succeeded(vkQueueSubmit(g_queue, 1, &submit, fence), "vkQueueSubmit");
++#ifdef AURORA_DIAGNOSTICS
++  const auto submitEnd = std::chrono::steady_clock::now();
++  g_replayNs.fetch_add(since_ns(submittedAt), std::memory_order_relaxed);
++#endif
+   const uint64_t serial = g_submitted.load(std::memory_order_relaxed) + 1;
+   {
+     std::lock_guard lock{g_pendingMutex};
+ #ifdef AURORA_DIAGNOSTICS
+-    g_pending.push_back({.fence = fence, .serial = serial, .slot = slot, .frameId = frameId, .submitted = submittedAt});
++    g_pending.push_back({.fence = fence, .serial = serial, .slot = slot, .frameId = frameId, .submitted = submittedAt,
++                         .submitEnd = submitEnd});
+ #else
+     g_pending.push_back({.fence = fence, .serial = serial, .slot = slot});
+ #endif
+@@ -896,11 +921,27 @@ bool submit_frame(size_t slot, uint32_t imageIndex, bool present, [[maybe_unused
+       .pSwapchains = &g_swapchain,
+       .pImageIndices = &imageIndex,
+   };
++#ifdef AURORA_DIAGNOSTICS
++  const auto presentStart = std::chrono::steady_clock::now();
++  const bool presented = succeeded(vkQueuePresentKHR(g_queue, &info), "vkQueuePresentKHR");
++  g_presentNs.fetch_add(since_ns(presentStart), std::memory_order_relaxed);
++  return presented;
++#else
+   return succeeded(vkQueuePresentKHR(g_queue, &info), "vkQueuePresentKHR");
++#endif
+ }
+ } // namespace aurora::gfx::vulkan4xenon
+ 
+ #ifdef AURORA_DIAGNOSTICS
++// Since the last call: the replay, the GPU after it, the present and the game thread's slot waits, in that order.
++extern "C" void aurora_vulkan4xenon_take_submit_times(unsigned long long* ns) {
++  using namespace aurora::gfx::vulkan4xenon;
++  ns[0] = g_replayNs.exchange(0, std::memory_order_relaxed);
++  ns[1] = g_gpuTailNs.exchange(0, std::memory_order_relaxed);
++  ns[2] = g_presentNs.exchange(0, std::memory_order_relaxed);
++  ns[3] = g_slotWaitNs.exchange(0, std::memory_order_relaxed);
++}
++
+ // The GPU's time since the last call, frame by frame as wait_for_frames measures it.
+ extern "C" unsigned long long aurora_gpu_take_busy_ns() {
+   return aurora::gfx::vulkan4xenon::g_gpuBusyNs.exchange(0, std::memory_order_relaxed);
+diff --git a/lib/vulkan4xenon/encoding.cpp b/lib/vulkan4xenon/encoding.cpp
+index 5ceb215..c425b06 100644
+--- a/lib/vulkan4xenon/encoding.cpp
++++ b/lib/vulkan4xenon/encoding.cpp
+@@ -139,6 +139,42 @@ std::atomic<uint64_t> g_decodedPeak = 0;
+ uint32_t g_cacheFrames = 0;
+ // The render worker's time in vkAcquireNextImageKHR, which waits for the display, since the benchmark last asked.
+ std::atomic<uint64_t> g_acquireNs = 0;
++
++// Milestone 11, step 5's console diagnostics: GX draws counted, and skipped, by the features step 5 drew. Bits:
++// lit, fog, range fog, indirect, PNMTXIDX, TEXnMTXIDX, none of them.
++constexpr size_t FeatureCount = 7;
++std::atomic<uint32_t> g_skipFeatures = 0;
++std::array<std::atomic<uint64_t>, FeatureCount> g_featureDraws{};
++std::array<std::atomic<uint64_t>, FeatureCount> g_featureVertices{};
++// The second run's: texture uploads and their bytes, EFB copies and render passes.
++std::array<std::atomic<uint64_t>, 4> g_frameWork{};
++
++uint32_t draw_features(const gx::ShaderConfig& config) noexcept {
++  uint32_t features = 0;
++  for (const auto& channel : config.colorChannels) {
++    if (channel.lightingEnabled) {
++      features |= 1;
++    }
++  }
++  if (config.fogType != GX_FOG_NONE) {
++    features |= 2;
++  }
++  if (config.fogRangeEnabled) {
++    features |= 4;
++  }
++  if (config.numIndStages != 0) {
++    features |= 8;
++  }
++  if (config.attrs[GX_VA_PNMTXIDX].attrType != GX_NONE) {
++    features |= 16;
++  }
++  for (u32 attr = GX_VA_TEX0MTXIDX; attr <= GX_VA_TEX7MTXIDX; ++attr) {
++    if (config.attrs[attr].attrType != GX_NONE) {
++      features |= 32;
++    }
++  }
++  return features == 0 ? 64 : features;
++}
+ #endif
+ 
+ // A capture (aurora_capture_frame): the frame's EFB as a binary PPM, as the WebGPU backend writes its present source,
+@@ -377,6 +413,10 @@ void upload_textures(FrameState& state, const detail::FrameOp& op, VkCommandBuff
+                         std::min(upload.height, std::max(texture->height >> upload.mipLevel, 1u)), 1},
+     };
+     vkCmdCopyBufferToImage(cmd, source, texture->image, VK_IMAGE_LAYOUT_GENERAL, 1, &region);
++#ifdef AURORA_DIAGNOSTICS
++    g_frameWork[0].fetch_add(1, std::memory_order_relaxed);
++    g_frameWork[1].fetch_add(uint64_t{pitch} * region.imageExtent.height, std::memory_order_relaxed);
++#endif
+   }
+   state.uploadsDone = op.textureUploads.size();
+ }
+@@ -574,6 +614,19 @@ void draw_gx(const FrameState& state, const gx::DrawData& data, const PassDraw&
+     return;
+   }
+   const auto& pipeline = *g_currentPipelineObject;
++#ifdef AURORA_DIAGNOSTICS
++  const uint32_t features = draw_features(pipeline.shaderConfig);
++  if ((features & g_skipFeatures.load(std::memory_order_relaxed)) != 0) {
++    return;
++  }
++  for (size_t i = 0; i < FeatureCount; ++i) {
++    if ((features & (1u << i)) != 0) {
++      g_featureDraws[i].fetch_add(1, std::memory_order_relaxed);
++      g_featureVertices[i].fetch_add(data.indexCount != 0 ? data.indexCount : data.vtxCount,
++                                     std::memory_order_relaxed);
++    }
++  }
++#endif
+   const VkDeviceSize offset = draw.offset;
+   if (g_lookedUpRef != data.bindGroups.textureBindGroup) {
+     g_lookedUpSet = texture_set(data.bindGroups.textureBindGroup);
+@@ -666,6 +719,9 @@ void encode_copy(const detail::RenderPass& pass, backend::Texture& source, VkCom
+   const VkExtent2D extent{target->width, target->height};
+   const VkViewport viewport{0.f, 0.f, static_cast<float>(extent.width), static_cast<float>(extent.height), 0.f, 1.f};
+   draw_texture(cmd, color_pass(Load::DontCare), framebuffer, extent, viewport, pipeline, set, sourceRect);
++#ifdef AURORA_DIAGNOSTICS
++  g_frameWork[2].fetch_add(1, std::memory_order_relaxed);
++#endif
+ }
+ 
+ void encode_pass(const detail::FramePacket& frame, FrameState& state, const detail::FrameOp& op,
+@@ -673,6 +729,9 @@ void encode_pass(const detail::FramePacket& frame, FrameState& state, const deta
+   if (!pass.sealed) {
+     return;
+   }
++#ifdef AURORA_DIAGNOSTICS
++  g_frameWork[3].fetch_add(1, std::memory_order_relaxed);
++#endif
+   if (!pass.paletteConvs.empty()) {
+     static std::once_flag once;
+     std::call_once(once, [] { Log.error("Palette conversions of EFB copies aren't supported"); });
+@@ -965,6 +1024,27 @@ extern "C" unsigned long long aurora_vulkan4xenon_take_acquire_ns() {
+   return aurora::gfx::vulkan4xenon::g_acquireNs.exchange(0, std::memory_order_relaxed);
+ }
+ 
++// GX draws whose features (draw_features) meet the mask aren't drawn.
++extern "C" void aurora_vulkan4xenon_skip_features(unsigned int mask) {
++  aurora::gfx::vulkan4xenon::g_skipFeatures.store(mask, std::memory_order_relaxed);
++}
++
++// Since the last call: texture uploads, their bytes, EFB copies and render passes.
++extern "C" void aurora_vulkan4xenon_take_frame_work(unsigned long long* counts) {
++  for (size_t i = 0; i < 4; ++i) {
++    counts[i] = aurora::gfx::vulkan4xenon::g_frameWork[i].exchange(0, std::memory_order_relaxed);
++  }
++}
++
++// The draws and vertices drawn with each feature since the last call, 7 of each.
++extern "C" void aurora_vulkan4xenon_take_feature_draws(unsigned long long* draws, unsigned long long* vertices) {
++  using namespace aurora::gfx::vulkan4xenon;
++  for (size_t i = 0; i < FeatureCount; ++i) {
++    draws[i] = g_featureDraws[i].exchange(0, std::memory_order_relaxed);
++    vertices[i] = g_featureVertices[i].exchange(0, std::memory_order_relaxed);
++  }
++}
++
+ // The most a frame's decoded vertices took of the vertex cache, and its size.
+ extern "C" void aurora_vulkan4xenon_vertices(unsigned long long* peak, unsigned long long* size) {
+   *peak = aurora::gfx::vulkan4xenon::g_decodedPeak.load(std::memory_order_relaxed);

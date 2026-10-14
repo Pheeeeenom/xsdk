@@ -1,0 +1,25 @@
+-O2:
+xsdk/build/xsdk_test.elf text 1420944 xex 2756608
+xsdk/build/probe_unroll.elf text 117228 xex 528384
+v4x/build/vulkan4xenon_test.elf text 197472 xex 593920
+v4x/build/vkbench.elf text 205600 xex 2756608
+dusklight/dusklight text 26071368 xex 34816000
+dusklight-diag/dusklight text 26089984 xex 34881536
+libxsdk.a 830976
+libvulkan4xenon.a 3550164
+
+-funroll-loops:
+xsdk/build/xsdk_test.elf text 1465024 xex 2822144
+xsdk/build/probe_unroll.elf text 128260 xex 528384
+v4x/build/vulkan4xenon_test.elf text 223832 xex 593920
+v4x/build/vkbench.elf text 230856 xex 2756608
+dusklight/dusklight text 29272584 xex 38027264
+dusklight-diag/dusklight text 29291920 xex 38027264
+libxsdk.a 874820
+libvulkan4xenon.a 3583512
+
+Instructions Xenia skips (tools/xenia_scan.py):
+-O2 xsdk: xenia_scan: 36 instructions Xenia skips; Xenia results through these functions are unreliable
+-O2 dusklight: xenia_scan: 539 instructions Xenia skips; Xenia results through these functions are unreliable
+-funroll-loops xsdk: xenia_scan: 50 instructions Xenia skips; Xenia results through these functions are unreliable
+-funroll-loops dusklight: xenia_scan: 558 instructions Xenia skips; Xenia results through these functions are unreliable

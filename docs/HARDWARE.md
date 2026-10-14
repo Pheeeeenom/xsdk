@@ -2377,3 +2377,68 @@ of xsdk's state, from Xenia, libxenon or the console's own values.
 Dusklight's logo shot isn't run here. With that, milestone 31 is done but for it: fills through a pixel shader run
 6.88 pixels a clock where they ran 3.98, small indexed triangles 249 million a second where they ran 166, and every
 title built with it passes on the console; what holds the fills below 8 isn't found.
+
+## Loop unrolling, milestone 35 (2026-10-13)
+
+GCC already unrolls small loops at -O2 for PowerPC: from -O2 up it turns `-funroll-loops` on with
+`-munroll-only-small-loops` and keeps register renaming off (gcc:common/config/rs6000/rs6000-common.cc:39-46), which
+unrolls a loop of up to 6 instructions 4 times and one of up to 10 twice (config/rs6000/rs6000.cc:5569-5582).
+`-funroll-loops` given on the command line unrolls every loop whose count is known on entry, up to 8 times and 200
+instructions (params.opt:779-784), and renames registers (rs6000.cc:3421-3435); `-Q --help=optimizers --help=target`
+on xsdk's GCC lists those differences and no others. Everything below was built both ways, every C and C++ compile of xsdk,
+vulkan4xenon, Aurora, Dusklight and the libraries Dusklight builds given `-funroll-loops` or not (`build.sh`); newlib,
+libstdc++ and SDL, built before, are the same in both. Logs: `results/2026-10-13-milestone-35/`.
+- **probe_unroll** builds six loops into one title both ways and times each nine times, alternating
+  (`probe_unroll.log`; `probe_unroll_again.log` matched it to three digits). The best of nine, in CPU clocks, 64 a
+  time-base tick, at -O2 and with `-funroll-loops`:
+  - 8 independent chains of double multiply-adds: 1.668 and 1.251 clocks a multiply-add, 3.83 and 5.10 GFLOPS, 1.33
+    times as fast. Unrolled 4 times, the 8 chains take 10 clocks, so a dependent multiply-add takes 10; at -O2 the
+    loop's count, compare and branch add 3.3 clocks to every 8.
+  - FNV-1a over bytes, one chain of multiplies: 16.0 and 14.1 clocks a byte, 1.14 times.
+  - A word copy: 7.52 and 6.30 clocks a word, 1.19 times at best and 1.07 at the median.
+  - MurmurHash3's finalizer over keys: 41.7 and 40.1 clocks a key, 1.04 times.
+  - A multiply-add over float arrays, `out[i] = a * x[i] + y[i]`, which -O2 already unrolls twice: 13.8 and 14.9 clocks
+    a result, 0.92 times.
+  - A 4x4 matrix times vectors: 46.8 and 49.5 clocks a vertex, 0.95 times.
+
+  Each loop's results were the same both ways. In the two float loops that lose, each result is stored through a
+  pointer that may alias the next iteration's loads, so GCC can't move those loads above the store, and unrolled
+  iterations still wait on each other's 10-clock multiply-adds.
+- **Dusklight's logo shot**, from the diagnostics build (`dusklight_diag_o2.log` and `dusklight_diag_unroll.log`, each
+  with an `_again` run; means over phases 0 to 8, the same still shot):
+  - The FIFO worker took 11.6 ms a frame at -O2, both runs, and 10.3 unrolled, both runs.
+  - The render worker took 11.6 ms at -O2 and 14.2 unrolled. Its own work, besides the replay and present, went from
+    2.0 ms to 4.7; the replay's CPU work, without its wait for a resolve rectangle, stayed at 0.6 ms.
+  - The GPU took 14.0 ms from submit, and 14.1 unrolled; in phase 0, nothing skipped, 20.1 and 20.3 ms, and 20.4 and
+    20.5.
+  - The game thread never waited on Aurora either way, and the shot's last frame drew the same pixel for pixel.
+- **The title scene** (`dusklight_o2.log`, `dusklight_unroll.log`) ran at 21.8, 29.8, 29.0, 30.0, 29.9 and 29.9 fps at
+  -O2 and 21.7, 30.0, 28.9, 30.0, 29.9 and 29.8 unrolled; the GPU holds it near 30 either way. It ended with 122 MB free
+  at -O2 and 106 unrolled: the image 3 MB larger, 9280 pages from 8496, and newlib's heap holding 257 MB in use, from
+  242. The diagnostics runs ended with 119 and 116 MB free, 242 MB in use, against 101 and 104, 252 MB in use.
+- **Where the difference comes from:** the diagnostics build relinked from both builds, some libraries from one and the
+  rest from the other (`diagnostic/relink.sh`). With the game's own objects unrolled and every library at -O2
+  (`dusklight_diag_unroll_game_only.log`), it ran as -O2 did: the FIFO worker 11.6 ms, the render worker's own work
+  2.0, 242 MB in use; and so with only xsdk and vulkan4xenon unrolled (`dusklight_diag_unroll_sdk_only.log`): 11.5
+  ms, 2.1 and 242 MB. With only the xxhash library unrolled (`dusklight_diag_unroll_xxhash_only.log`), it ran as the
+  unrolled build did: 10.0 ms, 4.4 and 252 MB; so it did with abseil and xxhash unrolled
+  (`dusklight_diag_unroll_abseil_xxhash_only.log`), and with everything unrolled but Aurora's own libraries
+  (`dusklight_diag_unroll_aurora_o2.log`). Aurora hashes vertex and storage data, pipelines and bind groups with
+  xxhash's XXH3 (aurora-xenon:lib/gfx/hash.hpp:18, lib/gfx/recording.cpp:894, 952). Its hashes are right unrolled: a
+  title hashing the same data through each build's library logged what xxhash on the PC does (`xxh_check_o2.log`,
+  `xxh_check_unroll.log`, `xxh_check_host.log`; `diagnostic/xxh_check.c`). Why its unrolled code makes the render
+  worker slower and the heap fuller isn't known.
+- **vkbench** (`vkbench_o2.log`, `vkbench_unroll.log`) passed 14 of 14 both ways. Unrolled, xsdk's scenes took 6 to 7%
+  less CPU time a frame (draws_4000 2418 us to 2257) and vulkan4xenon's 8 to 10% less (draws_4000 5266 us to 4751,
+  recording 1168 to 1094 and the replay 4102 to 3656), but its uniforms_1000 3% more (708 to 729).
+- **Code** (`sizes.txt`): unrolled, Dusklight's text grew 12.3%, from 26.07 MB to 29.27 MB, and its .xex from 34.8 MB to
+  38.0 MB; xsdk_test's text grew 3.1%, vulkan4xenon_test's 13.3% and vkbench's 12.3%. RmlUi grew most, by 630 KB, then
+  zstd by 398 KB. The instructions Xenia skips (`tools/xenia_scan.py`) went from 539 to 558 in Dusklight and from 36 to
+  50 in xsdk_test.
+
+So the toolchain keeps GCC's -O2, and tools/toolchain/build.sh doesn't change: unrolled, Dusklight's render worker
+took 2.6 ms more a frame, more than its FIFO worker saved, and it had 16 MB less free, for code 12% larger. Unrolling
+paid in xsdk's and vulkan4xenon's own code, 6 to 10% of vkbench's CPU time with nothing lost in Dusklight, but not as
+the default for everything a title builds.
+
+With that, milestone 35 is done: the console's numbers keep loop unrolling at GCC's -O2 default.

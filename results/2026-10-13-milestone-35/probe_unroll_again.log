@@ -1,0 +1,30 @@
+log: game:\probe_unroll_base.log
+log: named after \Device\Harddisk0\Partition1\XSDK\unroll\probe_unroll_base.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+unroll probe: 9 rounds of 6 loops, each built as GCC's -O2 builds it and with -funroll-loops
+unroll probe: 8 multiply-add chains, -O2: 1.668 clocks a multiply-add at best, 1.669 the median, 1.670 the worst
+unroll probe: 8 multiply-add chains, -O2: 3.83 GFLOPS at best
+unroll probe: 8 multiply-add chains, -funroll-loops: 1.252 clocks a multiply-add at best, 1.254 the median, 1.257 the worst
+unroll probe: 8 multiply-add chains, -funroll-loops: 5.10 GFLOPS at best
+unroll probe: 8 multiply-add chains: -funroll-loops 1.333 times as fast as -O2
+unroll probe: multiply-add over arrays, -O2: 13.778 clocks a result at best, 13.785 the median, 14.151 the worst
+unroll probe: multiply-add over arrays, -O2: 0.46 GFLOPS at best
+unroll probe: multiply-add over arrays, -funroll-loops: 14.906 clocks a result at best, 15.032 the median, 15.062 the worst
+unroll probe: multiply-add over arrays, -funroll-loops: 0.43 GFLOPS at best
+unroll probe: multiply-add over arrays: -funroll-loops 0.924 times as fast as -O2
+unroll probe: 4x4 matrix times vectors, -O2: 46.817 clocks a vertex at best, 46.834 the median, 48.216 the worst
+unroll probe: 4x4 matrix times vectors, -O2: 1.91 GFLOPS at best
+unroll probe: 4x4 matrix times vectors, -funroll-loops: 49.529 clocks a vertex at best, 50.078 the median, 50.129 the worst
+unroll probe: 4x4 matrix times vectors, -funroll-loops: 1.80 GFLOPS at best
+unroll probe: 4x4 matrix times vectors: -funroll-loops 0.945 times as fast as -O2
+unroll probe: word copy, -O2: 7.518 clocks a word at best, 7.521 the median, 8.141 the worst
+unroll probe: word copy, -funroll-loops: 6.298 clocks a word at best, 7.088 the median, 7.175 the worst
+unroll probe: word copy: -funroll-loops 1.194 times as fast as -O2
+unroll probe: FNV-1a over bytes, -O2: 16.027 clocks a byte at best, 16.030 the median, 16.042 the worst
+unroll probe: FNV-1a over bytes, -funroll-loops: 14.066 clocks a byte at best, 14.069 the median, 14.070 the worst
+unroll probe: FNV-1a over bytes: -funroll-loops 1.139 times as fast as -O2
+unroll probe: MurmurHash3 finalizer over keys, -O2: 41.690 clocks a key at best, 41.693 the median, 41.718 the worst
+unroll probe: MurmurHash3 finalizer over keys, -funroll-loops: 40.116 clocks a key at best, 40.125 the median, 40.133 the worst
+unroll probe: MurmurHash3 finalizer over keys: -funroll-loops 1.039 times as fast as -O2
+unroll probe: every loop's results were the same both ways
+exit: status 0

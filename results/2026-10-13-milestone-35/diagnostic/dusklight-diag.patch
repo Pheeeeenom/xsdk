@@ -1,0 +1,331 @@
+diff --git a/src/dusk/audio/DuskAudioSystem.cpp b/src/dusk/audio/DuskAudioSystem.cpp
+index bdb2acaf65..249a14734c 100644
+--- a/src/dusk/audio/DuskAudioSystem.cpp
++++ b/src/dusk/audio/DuskAudioSystem.cpp
+@@ -17,6 +17,18 @@
+ #include <cassert>
+ #include <span>
+ 
++#ifdef DUSK_XENON_DIAGNOSTICS
++#include <xsdk/log.h>
++#include <xsdk/thread.h>
++
++#include <atomic>
++#include <chrono>
++
++// The step 5 diagnostics: the audio callback's time, which SDL's audio thread spends rendering the game's DSP.
++static std::atomic<unsigned long long> AudioCallbackNs{0};
++extern "C" unsigned long long dusk_take_audio_ns() { return AudioCallbackNs.exchange(0); }
++#endif
++
+ using namespace dusk::audio;
+ 
+ static OutputSubframe OutBuffer;
+@@ -155,12 +167,25 @@ void SDLCALL GetNewAudio(
+     SDL_AudioStream*,
+     int needed,
+     int) {
++#ifdef DUSK_XENON_DIAGNOSTICS
++    static bool logged = false;
++    if (!logged) {
++        logged = true;
++        xsdk_log_write("audio: the callback runs on hardware thread %u",
++            static_cast<unsigned>(xsdk_thread_hardware_thread()));
++    }
++    const auto start = std::chrono::steady_clock::now();
++#endif
+     FrameMarkStart(FrameName);
+     while (needed > 0) {
+         const int rendered = RenderNewAudioFrame();
+         needed -= rendered;
+     }
+     FrameMarkEnd(FrameName);
++#ifdef DUSK_XENON_DIAGNOSTICS
++    AudioCallbackNs += std::chrono::duration_cast<std::chrono::nanoseconds>(
++        std::chrono::steady_clock::now() - start).count();
++#endif
+ }
+ 
+ int RenderNewAudioFrame() {
+diff --git a/src/dusk/xenon_run.cpp b/src/dusk/xenon_run.cpp
+index 2991445842..a71cfbd6a8 100644
+--- a/src/dusk/xenon_run.cpp
++++ b/src/dusk/xenon_run.cpp
+@@ -18,13 +18,43 @@
+ #include <chrono>
+ #include <string>
+ 
++#ifdef DUSK_XENON_DIAGNOSTICS
++#include "f_op/f_op_camera_mng.h"
++
++#include <xsdk/gpu.h>
++
++#include <cstring>
++#include <iterator>
++
++// Aurora's diagnostics (AURORA_ENABLE_DIAGNOSTICS), the step 5 patches' counts and skips, and the layer's uploads.
++extern "C" unsigned long long aurora_gpu_take_busy_ns();
++extern "C" unsigned long long aurora_render_take_busy_ns();
++extern "C" unsigned long long aurora_fifo_take_busy_ns();
++extern "C" unsigned long long aurora_vulkan4xenon_take_acquire_ns();
++extern "C" void aurora_vulkan4xenon_skip_features(unsigned int mask);
++extern "C" void aurora_vulkan4xenon_take_feature_draws(unsigned long long* draws, unsigned long long* vertices);
++extern "C" void aurora_vulkan4xenon_take_submit_times(unsigned long long* ns);
++extern "C" void aurora_vulkan4xenon_take_frame_work(unsigned long long* counts);
++extern "C" unsigned long long aurora_take_frame_slot_wait_ns();
++extern "C" uint64_t v4x_diag_take_uploads(uint64_t* wait_ns, uint64_t* copy_ns);
++extern "C" void v4x_diag_take_replay(uint64_t* counters);
++extern "C" uint32_t xsdk_diag_take_rectangles(uint64_t* counters, uint32_t* sizes);
++extern "C" void v4x_diag_set_tiny_scissor(bool tiny);
++extern "C" void v4x_diag_set_scissor_quarters(uint32_t quarters);
++extern "C" unsigned long long dusk_take_audio_ns();
++#endif
++
+ namespace dusk::xenon_run {
+ namespace {
+ 
+ using Clock = std::chrono::steady_clock;
+ 
+ constexpr const char* TitleStage = "F_SP102";
++#ifdef DUSK_XENON_DIAGNOSTICS
++constexpr Clock::duration TitleTime = std::chrono::seconds(240);
++#else
+ constexpr Clock::duration TitleTime = std::chrono::seconds(60);
++#endif
+ constexpr Clock::duration FrameRatePeriod = std::chrono::seconds(10);
+ // MmQueryStatistics counts 4 KB pages (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_memory.cc:496).
+ constexpr u32 PagesPerMB = 1024 * 1024 / 4096;
+@@ -118,6 +148,216 @@ void log_memory() {
+         static_cast<u32>(heap.uordblks) >> 20);
+ }
+ 
++#ifdef DUSK_XENON_DIAGNOSTICS
++constexpr const char* FeatureNames[] = {"lit", "fog", "range fog", "indirect", "PNMTXIDX", "TEXnMTXIDX", "none"};
++constexpr unsigned int AllFeatures = 0x3F;
++// The still shot the phases measure: the title scene at least this far in, and its draws picking matrices per vertex
++// and its plain draws unchanged for this many frames running, with the 3D scene drawn.
++constexpr Clock::duration ShotEarliest = std::chrono::seconds(55);
++constexpr u32 StillFrames = 45;
++// Each phase skips one set of features: some frames for the skip to reach the GPU, then the frames measured.
++// TinyScissor isn't a feature: every draw scissored to one pixel, so the pixel work goes and the vertex work stays.
++constexpr unsigned int TinyScissor = 0x40;
++// Nor are these: every draw's scissor cut to 3/4 or 1/2 of its width and height, about what 960x540 or 640x360 would
++// draw.
++constexpr unsigned int ThreeQuarterScissor = 0x80;
++constexpr unsigned int HalfScissor = 0x100;
++constexpr unsigned int PhaseSkips[] = {
++    0, 1, 2 | 4, 8, 16 | 32, AllFeatures, TinyScissor, ThreeQuarterScissor, HalfScissor, 0};
++
++void set_phase_skips(unsigned int skips) {
++    aurora_vulkan4xenon_skip_features(skips & AllFeatures);
++    v4x_diag_set_tiny_scissor((skips & TinyScissor) != 0);
++    v4x_diag_set_scissor_quarters((skips & ThreeQuarterScissor) != 0 ? 3 : (skips & HalfScissor) != 0 ? 2 : 0);
++}
++constexpr int PhaseCount = static_cast<int>(std::size(PhaseSkips));
++constexpr u32 SettleFrames = 8;
++constexpr u32 MeasureFrames = 48;
++
++Mtx lastView{};
++unsigned long long stillLitDraws = 0;
++u32 stillRun = 0;
++int phase = -1;  // -1 while looking for the shot
++u32 phaseFrame = 0;
++Clock::time_point measureStart;
++unsigned long long phaseDraws[7];
++unsigned long long phaseVertices[7];
++XsdkGpuStats streamStart;
++bool phasesDone = false;
++Clock::time_point doneAt;
++
++std::string skip_names(unsigned int skip) {
++    std::string names;
++    for (int i = 0; i < 6; ++i) {
++        if ((skip & (1u << i)) != 0) {
++            names += names.empty() ? FeatureNames[i] : fmt::format(", {}", FeatureNames[i]);
++        }
++    }
++    if ((skip & TinyScissor) != 0) {
++        names += names.empty() ? "pixels (1x1 scissor)" : ", pixels (1x1 scissor)";
++    }
++    if ((skip & ThreeQuarterScissor) != 0) {
++        names += names.empty() ? "pixels past 3/4 (scissor)" : ", pixels past 3/4 (scissor)";
++    }
++    if ((skip & HalfScissor) != 0) {
++        names += names.empty() ? "pixels past 1/2 (scissor)" : ", pixels past 1/2 (scissor)";
++    }
++    return names.empty() ? "nothing" : names;
++}
++
++void take_all() {
++    unsigned long long times[4];
++    unsigned long long work[4];
++    uint64_t waitNs = 0;
++    uint64_t copyNs = 0;
++    aurora_gpu_take_busy_ns();
++    aurora_render_take_busy_ns();
++    aurora_fifo_take_busy_ns();
++    aurora_vulkan4xenon_take_acquire_ns();
++    aurora_vulkan4xenon_take_submit_times(times);
++    aurora_vulkan4xenon_take_frame_work(work);
++    aurora_take_frame_slot_wait_ns();
++    v4x_diag_take_uploads(&waitNs, &copyNs);
++    uint64_t replayCounters[32];
++    v4x_diag_take_replay(replayCounters);
++    uint64_t rectangleCounters[4];
++    uint32_t rectangleSizes[16];
++    xsdk_diag_take_rectangles(rectangleCounters, rectangleSizes);
++    dusk_take_audio_ns();
++    xsdk_gpu_stats(&streamStart);
++}
++
++// The layer's replay counters (local/perf/tools/patch_v4x.py), per frame; ticks are the time base's, 49.875 MHz.
++void log_replay(double frames) {
++    uint64_t c[32];
++    v4x_diag_take_replay(c);
++    const auto n = [&](int i) { return c[i] / frames; };
++    const auto t = [&](int i) { return c[i] / 49875.0 / frames; };
++    DuskLog.info("  replay: {:.0f} commands, {:.1f} draws in {:.1f} packets; {:.1f} pipeline applies, {:.1f} viewport "
++                 "applies", n(0), n(1), n(2), n(3), n(4));
++    DuskLog.info("  uniforms: {:.1f}, {:.1f} loaded by the GPU; read by the CPU: {:.1f} for the first register, {:.1f} "
++                 "for the address, {:.1f} for the range, {:.0f} words", n(5), n(6), n(7), n(8), n(9), n(10));
++    DuskLog.info("  push writes {:.1f} ({:.0f} registers); literals {:.1f}; textures set {:.1f}, skipped {:.1f}; "
++                 "streams set {:.1f}", n(11), n(12), n(13), n(14), n(15), n(16));
++    DuskLog.info("  replay ms: {:.2f} in all; begin pass {:.2f}, end pass {:.2f}, pipeline {:.2f}, CPU uniforms {:.2f}, "
++                 "GPU uniforms {:.2f}, push {:.2f}, textures {:.2f}, streams {:.2f}, packets {:.2f}, uploads {:.2f}, "
++                 "other commands {:.2f}; invalidate {:.2f}", t(17), t(18), t(19), t(20), t(21), t(22), t(23), t(24),
++        t(25), t(26), t(27), t(28), t(29));
++    // xsdk's resolve rectangles (local/perf/tools/patch_xsdk_rectangles.py).
++    uint64_t r[4];
++    uint32_t sizes[16];
++    const uint32_t sizeCount = xsdk_diag_take_rectangles(r, sizes);
++    std::string sizeList;
++    for (uint32_t i = 0; i < sizeCount; ++i) {
++        sizeList += fmt::format("{}{}x{}", i == 0 ? "" : " ", sizes[i] >> 16, sizes[i] & 0xFFFF);
++    }
++    DuskLog.info("  resolve rectangles: {:.1f} hits, {:.1f} evictions, {:.1f} waits for the GPU, {:.2f} ms waiting; "
++                 "{} sizes: {}", r[0] / frames, r[1] / frames, r[2] / frames, r[3] / 49875.0 / frames, sizeCount,
++        sizeList);
++}
++
++void log_phase(Clock::time_point now) {
++    const double frames = MeasureFrames;
++    const double seconds = std::chrono::duration<double>(now - measureStart).count();
++    const double ms = 1e-6 / frames;
++    const double gpu = aurora_gpu_take_busy_ns() * ms;
++    const double render = aurora_render_take_busy_ns() * ms;
++    const double fifo = aurora_fifo_take_busy_ns() * ms;
++    const double acquire = aurora_vulkan4xenon_take_acquire_ns() * ms;
++    const double slotWait = aurora_take_frame_slot_wait_ns() * ms;
++    unsigned long long times[4];
++    aurora_vulkan4xenon_take_submit_times(times);
++    unsigned long long work[4];
++    aurora_vulkan4xenon_take_frame_work(work);
++    uint64_t waitNs = 0;
++    uint64_t copyNs = 0;
++    const uint64_t layerUploads = v4x_diag_take_uploads(&waitNs, &copyNs);
++    XsdkGpuStats stream;
++    xsdk_gpu_stats(&stream);
++    const double replay = times[0] * ms;
++    const double present = times[2] * ms;
++    DuskLog.info("Diagnostics, phase {} (skipping {}): {} frames in {:.2f} s, {:.1f} fps, {:.1f} ms a frame", phase,
++        skip_names(PhaseSkips[phase]), MeasureFrames, seconds, frames / seconds, seconds * 1000.0 / frames);
++    DuskLog.info("  game thread's waits a frame: {:.1f} ms for a frame slot, {:.1f} ms for the backend's slot",
++        slotWait, times[3] * ms);
++    DuskLog.info("  audio callback {:.1f} ms a frame", dusk_take_audio_ns() * ms);
++    DuskLog.info("  FIFO worker {:.1f} ms; render worker {:.1f} ms: acquire {:.1f}, replay {:.1f}, present {:.1f}, "
++                 "the rest {:.1f}", fifo, render, acquire, replay, present, render - acquire - replay - present);
++    DuskLog.info("  GPU {:.1f} ms from submit, {:.1f} ms after the replay", gpu, times[1] * ms);
++    DuskLog.info("  uploads {:.2f} ({:.1f} KB), replayed {:.2f}: {:.2f} ms waiting for the GPU, {:.2f} ms copying; "
++                 "copies {:.1f}; passes {:.1f}", work[0] / frames, work[1] / 1024.0 / frames, layerUploads / frames,
++        waitNs * ms, copyNs * ms, work[2] / frames, work[3] / frames);
++    DuskLog.info("  stream {:.0f} dwords, {:.2f} waits for room, {:.2f} ms waiting",
++        (stream.dwords - streamStart.dwords) / frames, (stream.waits - streamStart.waits) / frames,
++        (stream.waited_us - streamStart.waited_us) / 1000.0 / frames);
++    std::string line;
++    for (int i = 0; i < 7; ++i) {
++        line += fmt::format("{}{}: {:.0f} draws, {:.0f} vertices", i == 0 ? "" : "; ", FeatureNames[i],
++            phaseDraws[i] / frames, phaseVertices[i] / frames);
++    }
++    DuskLog.info("  draws by feature: {}", line);
++    log_replay(frames);
++}
++
++void diagnostics_frame(Clock::time_point now) {
++    unsigned long long draws[7];
++    unsigned long long vertices[7];
++    aurora_vulkan4xenon_take_feature_draws(draws, vertices);
++    if (phase < 0) {
++        // The camera's view unchanged since the last frame. Draw counts can't say: the render worker's counts are
++        // taken mid-frame as often as not.
++        bool still = false;
++        if (camera_process_class* const camera = dComIfGp_getCamera(0); camera != nullptr) {
++            still = std::memcmp(camera->view.viewMtx, lastView, sizeof(lastView)) == 0;
++            std::memcpy(lastView, camera->view.viewMtx, sizeof(lastView));
++        }
++        still = still && inTitle && now - titleStart >= ShotEarliest;
++        stillRun = still ? stillRun + 1 : 0;
++        stillLitDraws = still ? stillLitDraws + draws[0] : 0;
++        // With the 3D scene drawn: the lit draws, which the logo shot has over a hundred of a frame.
++        if (stillRun < StillFrames || stillLitDraws < 40ull * StillFrames) {
++            return;
++        }
++        DuskLog.info("Diagnostics: the still shot found {:.1f} s into the title scene",
++            std::chrono::duration<double>(now - titleStart).count());
++        aurora_capture_frame("game:\\dusklight_shot_start.ppm");
++        phase = 0;
++        phaseFrame = 0;
++        set_phase_skips(PhaseSkips[0]);
++        return;
++    }
++    if (phase >= PhaseCount) {
++        return;
++    }
++    if (phaseFrame < SettleFrames) {
++        if (++phaseFrame == SettleFrames) {
++            take_all();
++            std::fill(std::begin(phaseDraws), std::end(phaseDraws), 0);
++            std::fill(std::begin(phaseVertices), std::end(phaseVertices), 0);
++            measureStart = now;
++        }
++        return;
++    }
++    for (int i = 0; i < 7; ++i) {
++        phaseDraws[i] += draws[i];
++        phaseVertices[i] += vertices[i];
++    }
++    if (++phaseFrame < SettleFrames + MeasureFrames) {
++        return;
++    }
++    log_phase(now);
++    phaseFrame = 0;
++    if (++phase < PhaseCount) {
++        set_phase_skips(PhaseSkips[phase]);
++    } else {
++        set_phase_skips(0);
++        aurora_capture_frame("game:\\dusklight_shot_end.ppm");
++        phasesDone = true;
++        doneAt = now;
++    }
++}
++#endif
++
+ }  // namespace
+ 
+ void after_frame() {
+@@ -143,6 +383,16 @@ void after_frame() {
+         titleCaptured = true;
+         aurora_capture_frame(TitleCapturePath);
+     }
++#ifdef DUSK_XENON_DIAGNOSTICS
++    diagnostics_frame(now);
++    // The end report a few seconds after the last phase, once its capture is written; none found, at TitleTime.
++    if (phasesDone && now - doneAt >= std::chrono::seconds(3)) {
++        titleStart = now - TitleTime;
++    }
++    if (inTitle && phase < 0 && now - titleStart >= TitleTime) {
++        DuskLog.info("Diagnostics: no still shot found");
++    }
++#endif
+ 
+     periodFrames++;
+     if (now - periodStart >= FrameRatePeriod) {
