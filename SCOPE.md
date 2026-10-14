@@ -824,6 +824,126 @@ So does the SDK:
       its texels;
     - xsdk_test, vulkan4xenon_test and vkbench pass on the console.
 
+Milestones 30 to 35 come from measuring what the console does through xsdk, CPU, memory and GPU, against the published
+figures for the hardware (500 MHz, 8 pixels and 16 bilinear samples a clock). Decided with the user on 2026-10-13: each
+gap that something running on xsdk meets becomes a milestone; the rest wait (after 35).
+
+30. **Hierarchical depth.** xsdk keeps hierarchical depth off (`RB_HIZCONTROL` 0, src/gpu_setup.c), and a pixel
+    behind others costs what a drawn one does: full-screen quads behind a near one, through a 64 multiply-add pixel
+    shader, ran at 0.363 Gpixel/s, the rate the same shader draws at. Xenia says Xbox 360 titles never set an early
+    depth bit (xenia:src/xenia/gpu/registers.h:805), so hierarchical depth is the console's only rejection ahead of
+    the pixel shader. Dusklight draws a great deal that ends up behind other things. Xenia names `RB_HIZCONTROL`
+    (0x2203), `RB_HIZ_CLEAR` (0x231C; xenia:src/xenia/gpu/register_table.inc:539, 599) and `RB_SURFACE_INFO`'s HiZ
+    pitch (registers.h:676), which libxenon sets (libxenon:drivers/xenos/xe.c:1019, 1033), but not `RB_HIZCONTROL`'s
+    fields.
+
+    So:
+    - The fields, and what keeps the hierarchical buffer right through depth clears and depth writes, from public
+      reverse engineering where it has them and probes on the console where it doesn't.
+    - xsdk turns it on for draws that test depth, and keeps it right across resolves that clear depth, depth writes
+      and compare changes, with no call from the title; where a setting can't use it, xsdk leaves it off.
+
+    Done when:
+    - a probe times hidden pixels, quads behind a near one through a long pixel shader, with hierarchical depth on and
+      off, and on is many times faster;
+    - xsdk_test's depth checks pass with it on, and a check draws near and far geometry in both orders, across depth
+      clears, every pixel as the CPU works it out; broken on purpose, the hierarchical buffer left uncleared when depth
+      clears, that check fails on the console;
+    - xsdk_test, vulkan4xenon_test and vkbench pass on the console, and Dusklight's logo shot draws as before.
+
+31. **The pixel rate.** A full-screen quad through a one-instruction pixel shader with no registers fills 2.0
+    Gpixel/s through xsdk, 4 pixels a clock, opaque, blended and depth-only alike; small triangles of 8 pixels reach
+    166 million a second. The pixel ALUs reach their published peak (186 GFLOPS of 192 for 4-lane multiply-adds), so
+    the shader isn't it: some part of the draw state xsdk takes from libxenon holds the pixel rate to half of 8 a
+    clock. Point and bilinear sampling, 4 samples a pixel, reach 2.6 Gtexel/s, a third of 16 a clock; xost's sampling
+    shader holds 12 registers, which xost's own work takes on (xost:ROADMAP.md), and this milestone's answer may be
+    part of that too. Every title's pixels go through this.
+
+    So:
+    - A probe that times a fill, a sampled fill and a resolve while it changes one piece of xsdk's draw state at a
+      time: the shader register split, the sequencer's thread and export set-up, the surface, mode and colour
+      registers, the scan converter's set-up; each change backed by Xenia or libxenon.
+    - xsdk sets what holds the rate back the way that doesn't, and HARDWARE.md records what each change did.
+
+    Done when:
+    - the probe's fill rate with xsdk's state is near 8 pixels a clock, or HARDWARE.md records each piece tried and
+      that none moved it;
+    - with what's found reverted on purpose, the probe's rate falls back, on the console;
+    - xsdk_test, vulkan4xenon_test and vkbench pass on the console, and Dusklight's logo shot draws as before, its GPU
+      time measured.
+
+32. **Multisampled targets.** Dusklight has an anti-aliasing setting, and Aurora's vulkan4xenon backend draws with one
+    sample whatever it's set to (aurora-xenon:lib/vulkan4xenon/backend.cpp:401-402): xsdk has no multisampling. Xenos
+    takes 2 or 4 samples a pixel in eDRAM (`RB_SURFACE_INFO`'s samples, xenia:src/xenia/gpu/registers.h:675;
+    xenos.h:288-292; `PA_SC_AA_CONFIG`, `PA_SC_AA_MASK`, register_table.inc:572, 589), and a resolve picks samples or
+    averages them (`RB_COPY_CONTROL`'s sample select, registers.h:858; xenos.h:1000-1008), laid out as Xenia's
+    draw_util.cc:718-779 has it.
+
+    So:
+    - `xsdk_gpu_set_target` and `xsdk_gpu_set_target_at` take 1, 2 or 4 samples; `xsdk_gpu_target_tiles` counts them.
+    - Resolves of a multisampled target average its samples into the texture.
+
+    Done when:
+    - xsdk_test draws triangles with edges at 1, 2 and 4 samples and resolves each: at 1 the edge pixels are one colour
+      or the other, at 2 and 4 they blend in steps of a half and a quarter, every pixel off the edges as at 1;
+      broken on purpose, a resolve copying one sample, the check fails on the console;
+    - xsdk_test, vulkan4xenon_test and vkbench pass on the console.
+
+    vulkan4xenon's multisampled images and Aurora's setting are vulkan4xenon's milestone after this.
+
+33. **Anisotropic filtering.** Aurora asks for 16 times anisotropic filtering by default
+    (aurora-xenon:lib/aurora.cpp:75-76), and vulkan4xenon refuses it (vulkan4xenon:src/sampler.c:46-47): xsdk's
+    samplers have none. The fetch constant has an anisotropy field (`aniso_filter`, xenia:src/xenia/gpu/xenos.h:140-148,
+    1259).
+
+    So:
+    - `XsdkSampler` takes the most anisotropy, 1 to 16.
+
+    Done when:
+    - xsdk_test draws a texture of thin vertical stripes on a quad squeezed 8 to 1 down the stripes: sampled with
+      16 times anisotropy the stripes keep their contrast, and sampled without, the level the GPU picks greys them;
+      broken on purpose, the field left out, the check fails on the console;
+    - xsdk_test, vulkan4xenon_test and vkbench pass on the console.
+
+34. **Fence waits, and drawing after a resolve.** `xsdk_gpu_wait` sleeps a millisecond between looks at the fence
+    (src/gpu.c:444-449), so a wait ends up to a millisecond or more after the GPU passes it: a benchmark's every batch
+    came out a whole number of milliseconds. vulkan4xenon waits on fences every frame. And a draw after a resolve,
+    without setting the target again, hung the GPU: a resolve leaves eDRAM copying, the viewport transform off. The
+    header says a resolve undoes `xsdk_gpu_set_target`, not that it undoes `xsdk_gpu_set_target_at` too.
+
+    So:
+    - `xsdk_gpu_wait` looks at the fence without sleeping for a short while first, then sleeps as now.
+    - A draw after a resolve without the target set again is caught with an `assert`, and the header says so.
+
+    Done when:
+    - xsdk_test waits on a fence after a short GPU job and the wait returns within 100 us of the fence passing, as
+      the GPU's own time stamps show; broken on purpose, sleeping first, the check fails on the console;
+    - the assert holds through every test, and a title that draws after a resolve stops at it with a log line, on the
+      console;
+    - xsdk_test, vulkan4xenon_test and vkbench pass on the console.
+
+35. **Loop unrolling.** GCC at -O2 keeps a loop of 8 independent multiply-add chains rolled, 8 multiply-adds to a
+    branch, and a thread does 3.6 GFLOPS of double multiply-adds through it, 0.45 a clock at 3.2 GHz. Whether
+    unrolling gets more out of the in-order core, and costs Dusklight nothing, is to be measured. The toolchain's
+    default is what every title and port gets.
+
+    So:
+    - Dusklight's title scene and logo shot, and a CPU benchmark, with `-funroll-loops` and without, the GPU and
+      CPU times of each part from the diagnostics build.
+    - If Dusklight's frame doesn't get slower and its code grows by an amount it can carry, the toolchain's specs
+      turn it on for -O2 and above (tools/toolchain).
+
+    Done when:
+    - HARDWARE.md records the numbers, on the console;
+    - if it's turned on, xsdk_test, vulkan4xenon_test, vkbench and Dusklight pass on the console with the rebuilt
+      titles; if not, the record says why.
+
+**Waiting for a use** (CODE_GUIDELINES.md 1.2), each a milestone when something running on xsdk needs it: render targets
+of 64 bits a pixel and resolves into other formats (Xenia's ColorRenderTargetFormat); 128-bit textures
+(`k_32_32_32_32_FLOAT`); clearing eDRAM without a copy; memory export from shaders, which xost doesn't emit. The CPU's
+atomic increments cost what GCC's sequentially consistent default asks, a full barrier each side; xsdk's own locks are
+the kernel's critical sections and its atomics ask only the ordering they need, so there's nothing to change in xsdk.
+
 ## 5. Questions for the user first
 
 1. **The GCC:** its version (C++23 needs 13 or later for most of it), target triple, ABI and code model, its C
