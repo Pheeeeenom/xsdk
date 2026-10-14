@@ -496,7 +496,9 @@ int64_t xsdk_xsc_emit_scalar(XscLower *l, int64_t sop, int64_t dst, XscOperand s
 	f.scalar_write_mask = mask;
 	f.scalar_clamp = false;
 	f.is_export = false;
-	if (!set_src(l, &f, 3, src, false, ((src_comp - 3) & 3) << 6))
+	// ((src_comp - 3) & 3) << 6 from a table: GCC makes that shift an rldic, which Xenia skips (tools/xenia_scan.py).
+	static const uint8_t swizzles[4] = { 0x00, 0x40, 0x80, 0xC0 };
+	if (!set_src(l, &f, 3, src, false, swizzles[(src_comp - 3) & 3]))
 		return XSC_NONE;
 	return xsdk_xsc_emit_alu(l, &f) ? dst : XSC_NONE;
 }
