@@ -1,0 +1,30 @@
+log: game:\probe_mip_tail_thin.log
+log: named after \Device\Harddisk0\Partition1\XSDK\probe\probe_mip_tail_thin.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+mip tail probe
+mip tail probe: GPU 0x00000000
+mip tail probe: fences landed
+mip tail probe: 2x1, mips on their own page, level 0 (2x1): one rectangle; corners page 0 (16, 0), page 0 (17, 0), page 0 (16, 0), page 0 (17, 0)
+mip tail probe: 4x1, mips on their own page, level 0 (4x1): one rectangle; corners page 0 (0, 16), page 0 (3, 16), page 0 (0, 16), page 0 (3, 16)
+mip tail probe: 8x1, mips on their own page, level 0 (8x1): one rectangle; corners page 0 (0, 16), page 0 (7, 16), page 0 (0, 16), page 0 (7, 16)
+mip tail probe: 16x1, mips on their own page, level 0 (16x1): one rectangle; corners page 0 (0, 16), page 0 (15, 16), page 0 (0, 16), page 0 (15, 16)
+mip tail probe: 32x1, mips on their own page, level 0 (32x1): one rectangle; corners page 0 (0, 16), page 0 (31, 16), page 0 (0, 16), page 0 (31, 16)
+mip tail probe: 1x2, mips on their own page, level 0 (1x2): one rectangle; corners page 0 (16, 0), page 0 (16, 0), page 0 (16, 1), page 0 (16, 1)
+mip tail probe: 1x16, mips on their own page, level 0 (1x16): one rectangle; corners page 0 (16, 0), page 0 (16, 0), page 0 (16, 15), page 0 (16, 15)
+mip tail probe: 4x2, mips on their own page, level 0 (4x2): one rectangle; corners page 0 (0, 16), page 0 (3, 16), page 0 (0, 17), page 0 (3, 17)
+mip tail probe: 16x2, mips on their own page, level 0 (16x2): one rectangle; corners page 0 (0, 16), page 0 (15, 16), page 0 (0, 17), page 0 (15, 17)
+mip tail probe: 16x4, mips on their own page, level 0 (16x4): one rectangle; corners page 0 (0, 16), page 0 (15, 16), page 0 (0, 19), page 0 (15, 19)
+mip tail probe: 16x8, mips on their own page, level 0 (16x8): one rectangle; corners page 0 (0, 16), page 0 (15, 16), page 0 (0, 23), page 0 (15, 23)
+mip tail probe: 2x1, mips on the base's page, level 0 (2x1): one rectangle; corners page 0 (16, 0), page 0 (17, 0), page 0 (16, 0), page 0 (17, 0)
+mip tail probe: 4x1, mips on the base's page, level 0 (4x1): one rectangle; corners page 0 (0, 16), page 0 (3, 16), page 0 (0, 16), page 0 (3, 16)
+mip tail probe: 8x1, mips on the base's page, level 0 (8x1): one rectangle; corners page 0 (0, 16), page 0 (7, 16), page 0 (0, 16), page 0 (7, 16)
+mip tail probe: 16x1, mips on the base's page, level 0 (16x1): one rectangle; corners page 0 (0, 16), page 0 (15, 16), page 0 (0, 16), page 0 (15, 16)
+mip tail probe: 32x1, mips on the base's page, level 0 (32x1): one rectangle; corners page 0 (0, 16), page 0 (31, 16), page 0 (0, 16), page 0 (31, 16)
+mip tail probe: 1x2, mips on the base's page, level 0 (1x2): one rectangle; corners page 0 (16, 0), page 0 (16, 0), page 0 (16, 1), page 0 (16, 1)
+mip tail probe: 1x16, mips on the base's page, level 0 (1x16): one rectangle; corners page 0 (16, 0), page 0 (16, 0), page 0 (16, 15), page 0 (16, 15)
+mip tail probe: 4x2, mips on the base's page, level 0 (4x2): one rectangle; corners page 0 (0, 16), page 0 (3, 16), page 0 (0, 17), page 0 (3, 17)
+mip tail probe: 16x2, mips on the base's page, level 0 (16x2): one rectangle; corners page 0 (0, 16), page 0 (15, 16), page 0 (0, 17), page 0 (15, 17)
+mip tail probe: 16x4, mips on the base's page, level 0 (16x4): one rectangle; corners page 0 (0, 16), page 0 (15, 16), page 0 (0, 19), page 0 (15, 19)
+mip tail probe: 16x8, mips on the base's page, level 0 (16x8): one rectangle; corners page 0 (0, 16), page 0 (15, 16), page 0 (0, 23), page 0 (15, 23)
+mip tail probe: GPU close 0x00000000
+exit: status 0

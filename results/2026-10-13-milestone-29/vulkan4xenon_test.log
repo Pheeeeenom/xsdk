@@ -1,0 +1,98 @@
+log: game:\vulkan4xenon_test.log
+log: named after \Device\Harddisk0\Partition1\XSDK\m29\vulkan4xenon_test.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+vulkan4xenon test title
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 21883 us
+PASS: setup: instance, device, command pool and fence made
+boot logo: XAM's surface 1FC59000, then 1F0F0000
+PASS: boot logo: the display shows a buffer of its own after vkCreateDevice
+display: Xbox 360 video output, 1280x720 at 60000 mHz
+PASS: boot logo: the swapchain made
+PASS: boot logo: still on screen once the swapchain exists
+boot logo: after the first present the display shows 1ED30000, image 0 at 1ED30000; pixel 00 60 00
+PASS: boot logo: the first present replaces it with the app's image
+PASS: objects: vkGetInstanceProcAddr finds global functions without an instance
+PASS: objects: vkGetInstanceProcAddr finds instance functions only with an instance
+PASS: objects: vkGetDeviceProcAddr finds device functions and not instance ones
+PASS: objects: an unknown name finds nothing
+PASS: objects: two memory types in one heap, the GPU's device-local, then the CPU's cached
+PASS: objects: a buffer's requirements round its size up to its alignment
+PASS: objects: the cached memory type is offered to a transfer-source buffer alone
+PASS: objects: an instance for Vulkan 1.1 is refused
+vulkan4xenon: no compiled shader for SPIR-V 0806A8C99179CFC2, 20 bytes
+PASS: objects: SPIR-V missing from the bundle is refused
+vulkan4xenon: not supported: colour attachments with mips, or 16 texels or less on a side
+vulkan4xenon: not supported: colour attachments with mips, or 16 texels or less on a side
+PASS: objects: R8G8B8A8_UNORM is a blendable colour attachment, but not 16 texels across or with mips
+vulkan4xenon: not supported: depth and stencil attachments that clear one and load the other
+PASS: objects: a render pass that clears depth and loads stencil is refused
+PASS: triangle: render pass, shader modules, pipeline and vertex buffer made
+PASS: triangle: framebuffers made and command buffers recorded
+PASS: triangle: 120 frames acquired, drawn and presented
+PASS: triangle: every frame's image has red, green and blue corners on the clear colour
+triangle: the image on screen, 1ED30000, drew 259200 pixels
+triangle: 120 flips
+PASS: triangle: every presented frame reached the screen
+PASS: triangle: the image on screen has red, green and blue corners on the clear colour
+PASS: triangle: the image on screen covers the triangle's area
+PASS: packed_colour: A8B8G8R8_UNORM_PACK32 is a vertex buffer format
+PASS: packed_colour: a pipeline with 8-bit packed colours made
+PASS: packed_colour: framebuffers made and command buffers recorded
+PASS: packed_colour: every frame's image has yellow, cyan and magenta corners on the clear colour
+packed_colour: the image on screen, 1ED30000, drew 259200 pixels
+PASS: packed_colour: the image on screen has yellow, cyan and magenta corners
+PASS: packed_colour: the image on screen covers the triangle's area
+PASS: texture: three images, a sampler, descriptor sets and a pipeline made
+PASS: texture: a buffer copied into the three images
+PASS: texture: 60 frames drawn and presented
+PASS: texture: every frame shows each texel: R8G8B8A8, B8G8R8A8, then R32_SFLOAT's red clamped to 0 to 1
+PASS: texture: the image on screen shows them too
+PASS: push constants: a pipeline with a vertex and a fragment range made
+PASS: push constants: 60 frames drawn and presented
+PASS: push constants: every frame places and colours each quad by its pushes
+PASS: push constants: the image on screen shows them too
+PASS: uniform buffers: two set layouts, a pipeline, buffers and descriptor sets made
+PASS: uniform buffers: 60 frames drawn and presented
+PASS: uniform buffers: every frame places each quad by its matrix, coloured and tinted
+PASS: uniform buffers: the image on screen shows them too
+PASS: indexed: a pipeline for each topology, a vertex buffer and an index buffer made
+PASS: indexed: 60 frames drawn and presented
+PASS: indexed: every frame has each shape in its cell: triangle lists, strips and fans, lines, points, and a list past 65535
+PASS: indexed: the image on screen shows them too
+PASS: depth and stencil: a D24S8 attachment, a render pass clearing it and five pipelines made
+PASS: depth and stencil: 60 frames drawn and presented
+PASS: depth and stencil: every frame tests depth both ways, without writing, against the clear, by stencil and with a bias
+PASS: depth and stencil: the image on screen shows them too
+PASS: raster: twelve pipelines of culling, blending, write masks and dynamic viewports made
+PASS: raster: 60 frames drawn and presented
+PASS: raster: every frame culls, blends, masks, follows the dynamic viewport and scissor, and has Vulkan's edges
+PASS: raster: the image on screen shows them too
+PASS: render to texture: three images, seven render passes and four pipelines made
+PASS: render to texture: pass 1 alone leaves the scene's texels, read back
+PASS: render to texture: passes 1 to 4 leave every texel probed in the scene and its copy, read back
+PASS: render to texture: 60 frames of eight render passes drawn and presented
+PASS: render to texture: every frame: the scene, depth tested at 200x120, to its last column and row
+PASS: render to texture: every frame: its copy in B8G8R8A8, made before passes 3 and 4
+PASS: render to texture: every frame: the scene loaded after another pass: colour drawn back, depth kept in eDRAM
+PASS: render to texture: every frame: the scene loaded straight after
+PASS: render to texture: every frame: the swapchain image loaded after another pass, the third image over it
+PASS: render to texture: every frame: the swapchain image loaded straight after
+PASS: render to texture: the image on screen shows them too
+PASS: run-time index: matrices picked per vertex: a set, a pipeline and buffers made
+PASS: run-time index: matrices picked per vertex: 60 frames drawn and presented
+PASS: run-time index: matrices picked per vertex: every frame places each quad by the matrix its vertices name, in that matrix's colour
+PASS: run-time index: matrices picked per vertex: the image on screen does too
+PASS: run-time index: pixel position: a set, a pipeline and buffers made
+PASS: run-time index: pixel position: 60 frames drawn and presented
+PASS: run-time index: pixel position: every frame colours each 128-pixel band by the pixel's column
+PASS: run-time index: pixel position: the image on screen does too
+PASS: uploads: four images, swizzled views, two samplers, a staging buffer in cached memory and two passes made
+PASS: uploads: the R8, R8G8 and filtered images copied in from cached memory
+PASS: uploads: 60 frames drawn and presented
+PASS: uploads: every frame shows R8 as intensity and R8G8 as green, red and 1, through swizzled views
+PASS: uploads: every frame shows R8 filtered linearly between its two texels
+PASS: uploads: every frame shows each draw the texels copied in just before it, two copies into one image
+PASS: uploads: the image on screen shows them too
+tests: 80 passed, 0 failed
+exit: status 0

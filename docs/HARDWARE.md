@@ -2104,3 +2104,42 @@ ends, linear and tiled. Logs: `results/2026-10-13-milestone-28/`.
 
 With that, milestone 28 is done: a title can sample 32-bit float textures, and every title built with it passes on the
 console.
+
+## A 2x1 texture's tail (2026-10-13)
+
+vulkan4xenon's milestone 12 test draws a 2x1 R8 image, texels 00 and C8, filtered linearly between them. On the
+console the quad's left end read 80 and its right end 60, neither texel, and that check failed (log:
+`results/2026-10-13-milestone-29/vulkan4xenon_test_2x1_as_wide.log`). Such a texture's base is in its packed tail, and
+xsdk, after Xenia (xenia:src/xenia/gpu/texture_util.cc:116-207), put a 2x1 base at (0, 16), where a wide texture's
+goes.
+
+probe_mip_tail, run with eleven shapes one or two texels high or wide in place of its own, found where the console
+reads each (log: `probe_mip_tail_thin.log`). Every one read one rectangle of the base's page, with the mip address on
+its own page or on the base's.
+- **2x1 at (16, 0),** as a square's base, and **1x2 at (16, 0),** as a tall one's.
+- **4x1, 8x1, 16x1 and 32x1 at (0, 16),** as a wide one's, and so 4x2, 16x2, 16x4 and 16x8; **1x16 at (16, 0).**
+- So one texel high counts as two when the console weighs width against height for the tail. A 2x1 level further down
+  a larger texture's tail, 16x8's level 3, was already where xsdk put it: there the rule takes the base's sides.
+
+xsdk lays out a 2x1 base as the console reads it (src/texture_layout.c), and probe_mip_tail now draws 2x1, 4x1 and 1x2
+among its shapes. Xenia still lays out 2x1 as wide, so a 2x1 texture with the SDK's layout reads wrong there.
+
+## Uploads in runs, and channel swizzles, milestone 29 (2026-10-13)
+
+`xsdk_texture_upload` writes runs of blocks that sit together in memory, one offset each and as whole words: 16 bytes
+of Xenos's tiled layout (xsdk_tiled_2d), or a linear row. `xsdk_texture_swizzle` sets the fetch constant's swizzle
+(xenia:src/xenia/gpu/xenos.h:1015-1030), composed with the format's own. Logs: `results/2026-10-13-milestone-29/`.
+- **xsdk_test passed 257 of 257** (`xsdk_test.log`). Every format, linear and tiled, and every mipped level read as the
+  CPU decodes it, as before. R8 swizzled to red in every channel and R8G8 to red, red, red then green read every pixel
+  as decoded.
+- **A 512x512 R8 tiled upload from cached memory took 2226 us,** 117 MB/s, against the check's 4 ms.
+- **Broken on purpose,** with each block written on its own as before, it took 84730 us, 3 MB/s, and that check failed
+  (`xsdk_test_one_block_runs.log`). With the swizzles left at the format's, R8 and R8G8's cells had 4096 of 4356 pixels
+  wrong each, red in red alone, and only the swizzle check failed (`xsdk_test_swizzle_ignored.log`). The controller had
+  gone idle for both runs, so its two checks failed as well: `XamInputGetState` returned 0x48F, device not connected.
+- **probe_mip_tail** read 2x1, 4x1 and 1x2 where xsdk puts them (`probe_mip_tail.log`), and vulkan4xenon_test's 2x1 R8
+  image drew its texels, filtered between them.
+- **vulkan4xenon_test** passed 80 of 80 and **vkbench** 14 of 14.
+
+With that, milestone 29 is done: textures upload in runs, a title can pick a texture's channels, and every title built
+with it passes on the console.
