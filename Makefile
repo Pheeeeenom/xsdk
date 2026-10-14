@@ -45,7 +45,10 @@ PACING_OBJECTS := $(patsubst tests/%,$(BUILD)/tests/%.o,$(basename $(PACING_SOUR
 # Bring-up probes: titles that each answer one question on the console.
 PROBES := probe_spin probe_print probe_cp probe_ring probe_interrupt probe_exports probe_engines probe_swap \
 	probe_display probe_guide probe_resolve probe_triangle probe_vblank probe_720p probe_constants probe_mip_tail \
-	probe_draw_after_resolve probe_pixel_rate
+	probe_draw_after_resolve probe_pixel_rate probe_unroll
+# GCC's -O2 for PowerPC, which unrolls small loops only (gcc:common/config/rs6000/rs6000-common.cc:39-46).
+UNROLL_O2_FLAGS := -munroll-only-small-loops -fno-rename-registers
+UNROLL_LOOPS_OBJECTS := $(BUILD)/tests/unroll_loops_o2.o $(BUILD)/tests/unroll_loops_unrolled.o
 
 .PHONY: all clean cmake_check
 # Keep the ELFs and objects that pattern rules build on the way to a .xex.
@@ -72,6 +75,18 @@ $(BUILD)/pacing_test.elf: $(PACING_OBJECTS) $(BUILD)/libxsdk.a src/xsdk.ld
 
 $(BUILD)/probe_%.elf: $(BUILD)/tests/probe_%.o $(BUILD)/libxsdk.a src/xsdk.ld
 	$(CC) $(LDFLAGS) -o $@ $(BUILD)/tests/probe_$*.o $(LIBS)
+
+$(BUILD)/probe_unroll.elf: $(BUILD)/tests/probe_unroll.o $(UNROLL_LOOPS_OBJECTS) $(BUILD)/libxsdk.a src/xsdk.ld
+	$(CC) $(LDFLAGS) -o $@ $(BUILD)/tests/probe_unroll.o $(UNROLL_LOOPS_OBJECTS) $(LIBS)
+
+# probe_unroll's loops built both ways, its copy loop kept a loop rather than a call to memcpy.
+$(BUILD)/tests/unroll_loops_o2.o: tests/unroll_loops.c
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) $(UNROLL_O2_FLAGS) -fno-tree-loop-distribute-patterns -DUNROLL_LOOPS=unroll_loops_o2 -c $< -o $@
+
+$(BUILD)/tests/unroll_loops_unrolled.o: tests/unroll_loops.c
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) -funroll-loops -fno-tree-loop-distribute-patterns -DUNROLL_LOOPS=unroll_loops_unrolled -c $< -o $@
 
 $(BUILD)/libxsdk.a: $(SDK_OBJECTS)
 	rm -f $@
