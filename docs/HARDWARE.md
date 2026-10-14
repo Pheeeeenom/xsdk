@@ -2708,3 +2708,76 @@ on the console (logs: `results/2026-10-14-tls/`):
   check failed, 6 of 7 passing (`mbedtls_https_name_check_left_out.log`).
 - **The random values differ between runs.** example.com's client random, its first four bytes the time, held
   `CDDF4AEE0E4B0A64...` in the first run and `7C93B7E9EBB098EF...` in the second.
+
+## The texel rate, milestone 36 (2026-10-14)
+
+A pixel shader taking four bilinear samples a texel apart, its coordinates worked out from a constant, sampled about
+10 texels a clock through xost, of the texture units' published 16 (docs/scope/36-texel-rate.md).
+`tests/probe_texel_rate.c` times hand-built layouts of that shader, written in xost's assembly
+(tools/gen_texel_shaders.py), and xost's own build of its GLSL. Each fills a 1280x720 target with 4 samples a pixel
+from a 256x256 ramp texture, checked after against the four texels' average, timed as milestone 31's probe times its
+fills ("The pixel rate, milestone 31"); a clock is the published 500 MHz. Logs: `results/2026-10-14-milestone-36/`.
+- **The fetches together reach the 16; between their coordinates' work, they don't.** Bilinear, with each layout's own
+  registers under xsdk's split of 64 pixel registers (`probe_texel_rate.log`; point ran within 0.06 of each):
+
+  | Layout | Registers | Texels a clock |
+  |---|---|---|
+  | Reference: four fetches at the interpolated coordinates | 5 | 15.92 |
+  | xost's before: each add, then its fetch, the coordinates through one register | 6 | 10.17 |
+  | The same order, each coordinate in a register of its own | 8 | 8.82 |
+  | The coordinates first, then the four fetches together in an exec of their own | 8 | 15.90 |
+  | Two coordinates to a register, then the fetches together | 7 | 15.92 |
+  | xost's build now | 8 | 15.90 |
+
+  So the layout held the rate, not the registers: a register for each coordinate, its fetch still after its add, ran
+  slower than sharing one.
+- **The wait bit changed nothing.** Each layout with it on the first instruction reading a sample
+  (xenia:src/xenia/gpu/ucode.h:230-231) ran within 0.01 a clock of the same layout without.
+- **More registers held fewer threads, as milestone 31 found.** Bilinear, with 12 and 17 registers declared:
+
+  | Layout | 12, split 64 | 17, split 64 | 12, split 112 | 17, split 112 |
+  |---|---|---|---|---|
+  | Reference | 14.09 | 9.19 | 15.99 | 15.32 |
+  | xost's before | 6.09 | 3.88 | 10.01 | 7.08 |
+  | Each coordinate in its own register | 6.10 | 3.88 | 10.06 | 7.16 |
+  | The fetches together | 12.24 | 7.53 | 17.01 | 15.04 |
+  | Two coordinates to a register | 12.56 | 7.73 | 16.50 | 14.99 |
+  | xost's build now | 12.24 | 7.53 | 16.61 | 14.97 |
+
+  With their own registers under 112 pixel registers the reference ran 16.76, the fetches together 15.92 and xost's
+  layout from before 12.29. Rates past the published 16 came only under that split, timed as the others are; what
+  allows them isn't looked into.
+- **A 64-bit texture, trilinear,** R16G16B16A16F, 512x512 with every level, drawn 1.41 texels a pixel so levels 0
+  and 1 blend: the fetches together ran 3.93 a clock with their own registers and with 12, the reference 3.96, xost's
+  layout from before 1.21 and 2.10, and each coordinate in its own register 1.24 and 2.10.
+- **xost lays a pixel shader's fetches out together now** (xost `fe34a9d`, `_group_fetches`): the work their
+  coordinates need first, then the fetches, a run of two or more in an exec of its own, what they read kept till the
+  run ends. Its build of the probe's GLSL is the "together" layout but for its sum, and the probe judged it
+  `xost's build 15.90 a clock, the fastest hand-built (two coordinates to a register, the fetches together) 15.92:
+  within 5%`.
+- **Broken on purpose,** xost's build laid out as before (`gen_texel_shaders.py --before`), it ran 10.17 a clock and
+  the probe logged `FAIL, more than 5% slower` (`probe_texel_rate_xost_as_before.log`). The first such run went
+  through every measurement, but the console stopped answering on the network before the verdict reached its log; it
+  answered again only once switched off and on, and the run again went through, verdict and all. What stopped it
+  isn't known.
+- **Dusklight's shader pack**, rebuilt with it, holds all 145 programs within xsdk's split. 28 of its 98 pixel
+  programs are laid out anew: the longest run of fetches grew in 24 of them, 13 from 1 to 2 and 6 to 4, and one
+  grew from 12 registers to 14. Each gave the same exports as before on xost's simulator, from the same random
+  interpolators, constants and texture, three times (`compare_pack.txt`); with the layout broken on purpose to ignore
+  what each instruction reads and writes, 5 differed (`compare_pack_dependencies_ignored.txt`). vulkan4xenon's shaders
+  all sample at their interpolated coordinates and came out byte for byte the same.
+- **Dusklight with that pack** (`dusklight.log`) ran its title scene at 29.0 to 30.0 fps in 10-second windows once
+  loaded, as the last run did (29.1 to 30.0, "The console keeps only LR's low word across an interrupt"), its
+  capture the same scene at another point of the camera's pan. Its logo shot (`dusklight_diag.log`, the diagnostics
+  build) took 17.6 ms of GPU time a frame, as in that run, and 35.0 ms a frame against 34.8; the end frame is the same
+  pixel for pixel, and the start frame differs in 0.05% of its pixels, the logo's shine, as earlier runs' start
+  frames differ from each other (0.05 to 0.07%). So the layout didn't change what the shot's GPU time goes on; which
+  of the programs laid out anew the shot draws with isn't looked into here.
+- **xsdk_test passed 294 of 296** (`xsdk_test.log`), the two failures the controller's, none connected;
+  **vulkan4xenon_test** 80 of 80 and **vkbench** 14 of 14 (`vulkan4xenon_test.log`, `vkbench.log`), vkbench's CPU
+  and GPU times within 1.3% of the last run's.
+
+With that, milestone 36 is done: xost lays a pixel shader's fetches out together, and four samples at worked-out
+coordinates run 15.9 texels a clock where they ran 10.2, and 3.9 from a 64-bit texture filtered trilinearly where
+they ran 1.2. Left for later, as agreed: a register split giving pixel shaders more, under which 12 registers ran
+16.6 a clock rather than 12.2.

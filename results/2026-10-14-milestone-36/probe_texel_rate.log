@@ -1,0 +1,70 @@
+log: game:\probe_texel_rate.log
+log: named after \Device\Harddisk0\Partition1\XSDK\m36\probe_texel_rate.xex
+sbrk: the heap may grow to 472 MB, the title's free memory
+texel rate probe
+texel rate: reference, four fetches at the interpolated coordinates, 5 registers, split 64 pixel: point: 214 draws in 99098 us: 7960 Mtexels/s, 15.92 a clock; drew right
+texel rate: reference, four fetches at the interpolated coordinates, 5 registers, split 64 pixel: bilinear: 214 draws in 99102 us: 7960 Mtexels/s, 15.92 a clock; drew right
+texel rate: xost's before milestone 36, each add then its fetch, all through r2, 6 registers, split 64 pixel: point: 137 draws in 98671 us: 5116 Mtexels/s, 10.23 a clock; drew right
+texel rate: xost's before milestone 36, each add then its fetch, all through r2, 6 registers, split 64 pixel: bilinear: 137 draws in 99251 us: 5088 Mtexels/s, 10.17 a clock; drew right
+texel rate: xost's before milestone 36, waiting, 6 registers, split 64 pixel: point: 138 draws in 99371 us: 5116 Mtexels/s, 10.23 a clock; drew right
+texel rate: xost's before milestone 36, waiting, 6 registers, split 64 pixel: bilinear: 136 draws in 98531 us: 5088 Mtexels/s, 10.17 a clock; drew right
+texel rate: each coordinate in its own register, 8 registers, split 64 pixel: point: 119 draws in 98850 us: 4436 Mtexels/s, 8.87 a clock; drew right
+texel rate: each coordinate in its own register, 8 registers, split 64 pixel: bilinear: 119 draws in 99350 us: 4412 Mtexels/s, 8.82 a clock; drew right
+texel rate: each coordinate in its own register, waiting, 8 registers, split 64 pixel: point: 119 draws in 98910 us: 4432 Mtexels/s, 8.86 a clock; drew right
+texel rate: each coordinate in its own register, waiting, 8 registers, split 64 pixel: bilinear: 119 draws in 99310 us: 4416 Mtexels/s, 8.83 a clock; drew right
+texel rate: the coordinates first, the fetches together, 8 registers, split 64 pixel: point: 214 draws in 99180 us: 7952 Mtexels/s, 15.90 a clock; drew right
+texel rate: the coordinates first, the fetches together, 8 registers, split 64 pixel: bilinear: 214 draws in 99180 us: 7952 Mtexels/s, 15.90 a clock; drew right
+texel rate: the coordinates first, the fetches together, waiting, 8 registers, split 64 pixel: point: 214 draws in 99178 us: 7952 Mtexels/s, 15.90 a clock; drew right
+texel rate: the coordinates first, the fetches together, waiting, 8 registers, split 64 pixel: bilinear: 214 draws in 99197 us: 7952 Mtexels/s, 15.90 a clock; drew right
+texel rate: two coordinates to a register, the fetches together, 7 registers, split 64 pixel: point: 214 draws in 99097 us: 7960 Mtexels/s, 15.92 a clock; drew right
+texel rate: two coordinates to a register, the fetches together, 7 registers, split 64 pixel: bilinear: 214 draws in 99097 us: 7960 Mtexels/s, 15.92 a clock; drew right
+texel rate: two coordinates to a register, the fetches together, waiting, 7 registers, split 64 pixel: point: 214 draws in 99099 us: 7960 Mtexels/s, 15.92 a clock; drew right
+texel rate: two coordinates to a register, the fetches together, waiting, 7 registers, split 64 pixel: bilinear: 214 draws in 99099 us: 7960 Mtexels/s, 15.92 a clock; drew right
+texel rate: xost's build of the GLSL, 8 registers, split 64 pixel: point: 214 draws in 99180 us: 7952 Mtexels/s, 15.90 a clock; drew right
+texel rate: xost's build of the GLSL, 8 registers, split 64 pixel: bilinear: 214 draws in 99197 us: 7952 Mtexels/s, 15.90 a clock; drew right
+texel rate: reference, four fetches at the interpolated coordinates, 5 registers, split 112 pixel: bilinear: 214 draws in 94137 us: 8380 Mtexels/s, 16.76 a clock; drew right
+texel rate: reference, four fetches at the interpolated coordinates, 12 registers declared, split 64 pixel: bilinear: 190 draws in 99356 us: 7048 Mtexels/s, 14.09 a clock; drew right
+texel rate: reference, four fetches at the interpolated coordinates, 12 registers declared, split 112 pixel: bilinear: 214 draws in 98637 us: 7996 Mtexels/s, 15.99 a clock; drew right
+texel rate: reference, four fetches at the interpolated coordinates, 17 registers declared, split 64 pixel: bilinear: 124 draws in 99411 us: 4596 Mtexels/s, 9.19 a clock; drew right
+texel rate: reference, four fetches at the interpolated coordinates, 17 registers declared, split 112 pixel: bilinear: 206 draws in 99079 us: 7664 Mtexels/s, 15.32 a clock; drew right
+texel rate: xost's before milestone 36, each add then its fetch, all through r2, 6 registers, split 112 pixel: bilinear: 166 draws in 99533 us: 6148 Mtexels/s, 12.29 a clock; drew right
+texel rate: xost's before milestone 36, each add then its fetch, all through r2, 12 registers declared, split 64 pixel: bilinear: 82 draws in 99047 us: 3048 Mtexels/s, 6.09 a clock; drew right
+texel rate: xost's before milestone 36, each add then its fetch, all through r2, 12 registers declared, split 112 pixel: bilinear: 172 draws in 126594 us: 5008 Mtexels/s, 10.01 a clock; drew right
+texel rate: xost's before milestone 36, each add then its fetch, all through r2, 17 registers declared, split 64 pixel: bilinear: 52 draws in 98765 us: 1940 Mtexels/s, 3.88 a clock; drew right
+texel rate: xost's before milestone 36, each add then its fetch, all through r2, 17 registers declared, split 112 pixel: bilinear: 95 draws in 98729 us: 3544 Mtexels/s, 7.08 a clock; drew right
+texel rate: each coordinate in its own register, 8 registers, split 112 pixel: bilinear: 157 draws in 98956 us: 5848 Mtexels/s, 11.69 a clock; drew right
+texel rate: each coordinate in its own register, 12 registers declared, split 64 pixel: bilinear: 82 draws in 99027 us: 3052 Mtexels/s, 6.10 a clock; drew right
+texel rate: each coordinate in its own register, 12 registers declared, split 112 pixel: bilinear: 128 draws in 93710 us: 5032 Mtexels/s, 10.06 a clock; drew right
+texel rate: each coordinate in its own register, 17 registers declared, split 64 pixel: bilinear: 52 draws in 98765 us: 1940 Mtexels/s, 3.88 a clock; drew right
+texel rate: each coordinate in its own register, 17 registers declared, split 112 pixel: bilinear: 96 draws in 98748 us: 3580 Mtexels/s, 7.16 a clock; drew right
+texel rate: the coordinates first, the fetches together, 8 registers, split 112 pixel: bilinear: 214 draws in 99098 us: 7960 Mtexels/s, 15.92 a clock; drew right
+texel rate: the coordinates first, the fetches together, 12 registers declared, split 64 pixel: bilinear: 165 draws in 99293 us: 6124 Mtexels/s, 12.24 a clock; drew right
+texel rate: the coordinates first, the fetches together, 12 registers declared, split 112 pixel: bilinear: 214 draws in 92697 us: 8508 Mtexels/s, 17.01 a clock; drew right
+texel rate: the coordinates first, the fetches together, 17 registers declared, split 64 pixel: bilinear: 102 draws in 99751 us: 3768 Mtexels/s, 7.53 a clock; drew right
+texel rate: the coordinates first, the fetches together, 17 registers declared, split 112 pixel: bilinear: 192 draws in 94036 us: 7524 Mtexels/s, 15.04 a clock; drew right
+texel rate: two coordinates to a register, the fetches together, 7 registers, split 112 pixel: bilinear: 214 draws in 99098 us: 7960 Mtexels/s, 15.92 a clock; drew right
+texel rate: two coordinates to a register, the fetches together, 12 registers declared, split 64 pixel: bilinear: 169 draws in 99113 us: 6284 Mtexels/s, 12.56 a clock; drew right
+texel rate: two coordinates to a register, the fetches together, 12 registers declared, split 112 pixel: bilinear: 214 draws in 95557 us: 8252 Mtexels/s, 16.50 a clock; drew right
+texel rate: two coordinates to a register, the fetches together, 17 registers declared, split 64 pixel: bilinear: 104 draws in 99088 us: 3868 Mtexels/s, 7.73 a clock; drew right
+texel rate: two coordinates to a register, the fetches together, 17 registers declared, split 112 pixel: bilinear: 195 draws in 95896 us: 7496 Mtexels/s, 14.99 a clock; drew right
+texel rate: xost's build of the GLSL, 8 registers, split 112 pixel: bilinear: 214 draws in 99098 us: 7960 Mtexels/s, 15.92 a clock; drew right
+texel rate: xost's build of the GLSL, 12 registers declared, split 64 pixel: bilinear: 165 draws in 99293 us: 6124 Mtexels/s, 12.24 a clock; drew right
+texel rate: xost's build of the GLSL, 12 registers declared, split 112 pixel: bilinear: 214 draws in 94937 us: 8308 Mtexels/s, 16.61 a clock; drew right
+texel rate: xost's build of the GLSL, 17 registers declared, split 64 pixel: bilinear: 102 draws in 99768 us: 3768 Mtexels/s, 7.53 a clock; drew right
+texel rate: xost's build of the GLSL, 17 registers declared, split 112 pixel: bilinear: 197 draws in 96956 us: 7488 Mtexels/s, 14.97 a clock; drew right
+texel rate: reference, four fetches at the interpolated coordinates, 5 registers, split 64 pixel: trilinear, 64-bit: 53 draws in 98305 us: 1984 Mtexels/s, 3.96 a clock; drew
+texel rate: reference, four fetches at the interpolated coordinates, 12 registers declared, split 64 pixel: trilinear, 64-bit: 53 draws in 98305 us: 1984 Mtexels/s, 3.96 a clock; drew
+texel rate: xost's before milestone 36, each add then its fetch, all through r2, 6 registers, split 64 pixel: trilinear, 64-bit: 16 draws in 96883 us: 608 Mtexels/s, 1.21 a clock; drew
+texel rate: xost's before milestone 36, each add then its fetch, all through r2, 12 registers declared, split 64 pixel: trilinear, 64-bit: 28 draws in 98103 us: 1052 Mtexels/s, 2.10 a clock; drew
+texel rate: each coordinate in its own register, 8 registers, split 64 pixel: trilinear, 64-bit: 16 draws in 94082 us: 624 Mtexels/s, 1.24 a clock; drew
+texel rate: each coordinate in its own register, 12 registers declared, split 64 pixel: trilinear, 64-bit: 28 draws in 98023 us: 1052 Mtexels/s, 2.10 a clock; drew
+texel rate: the coordinates first, the fetches together, 8 registers, split 64 pixel: trilinear, 64-bit: 53 draws in 99108 us: 1968 Mtexels/s, 3.93 a clock; drew
+texel rate: the coordinates first, the fetches together, 12 registers declared, split 64 pixel: trilinear, 64-bit: 53 draws in 99105 us: 1968 Mtexels/s, 3.93 a clock; drew
+texel rate: two coordinates to a register, the fetches together, 7 registers, split 64 pixel: trilinear, 64-bit: 53 draws in 99085 us: 1968 Mtexels/s, 3.93 a clock; drew
+texel rate: two coordinates to a register, the fetches together, 12 registers declared, split 64 pixel: trilinear, 64-bit: 53 draws in 99107 us: 1968 Mtexels/s, 3.93 a clock; drew
+texel rate: xost's build of the GLSL, 8 registers, split 64 pixel: trilinear, 64-bit: 53 draws in 99108 us: 1968 Mtexels/s, 3.93 a clock; drew
+texel rate: xost's build of the GLSL, 12 registers declared, split 64 pixel: trilinear, 64-bit: 53 draws in 99105 us: 1968 Mtexels/s, 3.93 a clock; drew
+texel rate: xost's build 15.90 a clock, the fastest hand-built (two coordinates to a register, the fetches together) 15.92: within 5%
+texel rate: done
+texel rate: GPU close 0x00000000
+exit: status 0
