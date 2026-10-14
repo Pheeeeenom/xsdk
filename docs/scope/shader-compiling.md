@@ -110,17 +110,73 @@ off, 117 did and the probe failed.
 
 ### 3. Compiling as the game asks
 
-- vulkan4xenon compiles SPIR-V it holds no container for, at `vkCreateShaderModule`, through step 2's compiler: the
-  runtime SPIR-V compilation its ROADMAP leaves out (section 6).
-- Aurora's vulkan4xenon backend compiles GLSL its pack doesn't hold through step 1's glslang.
-- Both keep what they compile on the hard disk, by hash, and look there before compiling. A pack becomes a head start,
-  not a requirement.
-- The compiling happens on Aurora's pipeline threads (aurora-xenon:lib/vulkan4xenon/backend.cpp:49), off the frame;
-  a draw whose program is still compiling is skipped, as one missing from the pack is now.
+Agreed with the user on 2026-10-14: vulkan4xenon keeps what it compiles in a folder the app names; the compiler's
+version is a hash of its sources; xsdk gets `rename` first, so each file kept is written aside and put in place whole;
+and the optimiser is on. vulkan4xenon's milestone 13 (its docs/ROADMAP.md).
 
-Done when a console with no pack and nothing kept plays Dusklight's title scene and opening cutscenes, and makes a
-memory card, drawn: each program missed only the first time it's asked for, as the user sees on screen, and a second
-run compiles nothing.
+**Today:**
+- vulkan4xenon finds a shader's container in the app's bundle by its SPIR-V's hash and size. For SPIR-V it holds none
+  for, it logs the hash, and `vkCreateShaderModule` returns `VK_ERROR_FEATURE_NOT_PRESENT`
+  (vulkan4xenon:src/shader.c:34-61). A pipeline points at the bundle's shader for its life (src/pipeline.c:85-87).
+- Aurora's backend finds each program's SPIR-V in its pack by the program's hash, XXH3-64 of its GLSL. It logs a
+  program the pack doesn't hold once, and doesn't make that pipeline, so its draws are skipped
+  (aurora-xenon:lib/vulkan4xenon/pipeline.cpp:54-68). It makes pipelines one at a time, under a lock of its own
+  (pipeline.cpp:35-36), on Aurora's pipeline compilation threads: two on the console (lib/gfx/pipeline_cache.cpp:1152,
+  and Dusklight's log), each with xsdk's default 1 MB stack (docs/HARDWARE.md, "Threads' stacks"). glslang took 68 KB of
+  stack at most, and xost 30 KB.
+- Dusklight keeps its files in `game:\TwilitRealm\Dusklight\`, SDL's pref path, and hands Aurora that as its cache path
+  (dusklight-xenon:src/m_Do/m_Do_main.cpp:693-697).
+- xsdk's `rename` fails with `ENOSYS` (TODO.md), so a file can't be written aside and put in place whole.
+- Aurora's pipeline cache database doesn't open on the console ("Failed to open pipeline cache database: out of
+  memory", in Dusklight's log), so Aurora doesn't make the pipelines it knew at start.
+
+**In five parts,** each run on the console before the next:
+
+1. **xsdk's `rename`,** over `NtSetInformationFile`'s rename class, replacing what's at the new name as POSIX's does,
+   which `std::filesystem::rename` then takes too (TODO.md). The class wants 16 bytes
+   (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_io_info.cc:170-172); their layout, whether to replace, a root directory
+   and the new name, is the original Xbox kernel's, unverified on the 360 until the console runs it. Xenia takes the
+   class and renames nothing (its handler has no case for it, xboxkrnl_io_info.cc:202-251), so the check fails there.
+   xsdk_test checks a file renamed over another and a directory renamed, and Dusklight saves its settings again.
+2. **vulkan4xenon compiles what its bundle doesn't hold.** At `vkCreateShaderModule`, SPIR-V the bundle has no
+   container for goes through `xsdk_xsc_compile`, at xsdk's register split with the optimiser on, as Dusklight's pack
+   is built. The container, literals and resources become a shader the layer keeps, by its SPIR-V's hash and size,
+   until the device goes: pipelines point at it as at the bundle's, and a second module from the same SPIR-V doesn't
+   compile again. A lock guards the shaders kept, as Vulkan lets modules be made on several threads. A shader xost
+   refuses fails as a missing one does now, logged with xost's message. The ROADMAP's section 6 stops leaving runtime
+   SPIR-V compilation out. vulkan4xenon_test checks that a shader its bundle doesn't hold, compiled on the console,
+   draws what the same shader built offline draws.
+3. **vulkan4xenon keeps them on the hard disk.** An app names a folder with a call vulkan4xenon.h adds,
+   `v4x_set_shader_cache`; without one, nothing is kept. Each shader compiled is a file there, named by its SPIR-V's
+   hash and size, in a folder named after the compiler's version, `xsdk_xsc_version()`: a hash of the compiler's
+   sources that make works out, so an xsdk whose compiler changed compiles afresh rather than read what an older one
+   made. The layer looks there before compiling, and writes each file beside its name and renames it into place, so a
+   crash leaves none half written. vulkan4xenon_test checks that a shader compiled is read back from its file.
+4. **Aurora's backend compiles GLSL its pack doesn't hold,** through glslang-xenon with step 1's settings, which give
+   the PC's SPIR-V (glslang-xenon:xsdk/glslang_probe.cpp), on the pipeline compilation thread that asked. glslang
+   starts at the first program it compiles, in 0.94 s and with 13.5 MB of heap it keeps (docs/HARDWARE.md, "glslang on
+   the console"), so a run that finds every program doesn't pay for it. The SPIR-V is kept under Aurora's cache path,
+   a file a program named by its hash, in a folder named after glslang's version, and read from there before compiling.
+   The backend names the folder beside it to vulkan4xenon (part 3's call). It logs each program it compiles with the
+   time it took, and how many programs it compiled and read in the run. glslang-xenon builds within Dusklight's build,
+   from a checkout beside it, found as vulkan4xenon is (`GLSLANG_XENON_DIR`, as `VULKAN4XENON_DIR`,
+   dusklight-xenon:CMakeLists.txt:87).
+5. **Dusklight builds without its pack when asked** (`DUSKLIGHT_GLSL_PACK=OFF`), for the run that starts with nothing.
+   The pack stays in by default, as a head start.
+
+**Done when:**
+- a console with no pack and nothing kept plays Dusklight's title scene and opening cutscenes, and makes a memory card,
+  drawn: each program missed only the first time it's asked for, as the user sees on screen, and a second run compiles
+  nothing, its log showing every program read from the disk. The user plays both runs;
+- with its pack, Dusklight's title scene compiles nothing and runs as at step 2: its frame rate, and the logo shot's GPU
+  time and end frame;
+- vulkan4xenon_test, vkbench and xsdk_test pass as before;
+- HARDWARE.md records both runs: the programs compiled and read, the times, the slowest, the first with glslang
+  starting, and the heap.
+
+**Left out of step 3:** compiling before the game asks, and compiling on several threads at once, as Aurora's backend
+makes pipelines one at a time; Aurora's pipeline cache database; Vulkan's pipeline caches; giving
+glslang's memory back once nothing's left to compile.
 
 ## Left out
 
