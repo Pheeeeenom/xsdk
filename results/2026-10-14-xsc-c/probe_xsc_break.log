@@ -1,0 +1,185 @@
+log: game:\probe_xsc_break.log
+log: named after \Device\Harddisk0\Partition1\XSDK\xsc\probe_xsc_break.xex
+sbrk: the heap may grow to 473 MB, the title's free memory
+xsc probe: 145 programs, the fetch layout off (broken on purpose)
+xsc: glsl_017c19da20649fa0_frag: 486 us, 488 bytes, the pack's
+xsc: glsl_01c8b343f41ff9f4_frag: 181 us, 252 bytes, the pack's
+xsc: glsl_020233a3aaada7e9_vert: 857 us, 968 bytes, the pack's
+xsc: glsl_041a85f07c74ec96_frag: 474 us, 600 bytes, the pack's
+xsc: glsl_04a469b1240c5698_vert: 386 us, 1016 bytes, the pack's
+xsc: glsl_05716a5bd2aae204_frag: 5031 us, 1656 bytes, container
+xsc: glsl_05716a5bd2aae204_frag: DIFFERS from the pack in its container
+xsc: glsl_05b63b9d751d5736_frag: 198 us, 252 bytes, the pack's
+xsc: glsl_093884ef391dfddc_frag: 4348 us, 1560 bytes, container
+xsc: glsl_093884ef391dfddc_frag: DIFFERS from the pack in its container
+xsc: glsl_0963325b37f04df0_vert: 50914 us, 4236 bytes, the pack's
+xsc: glsl_09bef7f9a3ac5df7_frag: 222 us, 252 bytes, the pack's
+xsc: glsl_0c5faf5ad1250944_frag: 4403 us, 1604 bytes, container
+xsc: glsl_0c5faf5ad1250944_frag: DIFFERS from the pack in its container
+xsc: glsl_0c9a6858fbbe328e_frag: 133 us, 208 bytes, the pack's
+xsc: glsl_0f8714b3c758a3b1_frag: 186 us, 252 bytes, the pack's
+xsc: glsl_12d30073b6d47043_frag: 904 us, 752 bytes, the pack's
+xsc: glsl_1510c05add37f2b3_frag: 24972 us, 2548 bytes, container
+xsc: glsl_1510c05add37f2b3_frag: DIFFERS from the pack in its container
+xsc: glsl_15a57b221b955025_frag: 4237 us, 1396 bytes, container
+xsc: glsl_15a57b221b955025_frag: DIFFERS from the pack in its container
+xsc: glsl_1675a46dea18c182_frag: 550 us, 472 bytes, the pack's
+xsc: glsl_16a9a335fb71c29a_frag: 178 us, 252 bytes, the pack's
+xsc: glsl_172ccfa9a454e318_vert: 681 us, 948 bytes, the pack's
+xsc: glsl_1ad5c2f8e1cc2653_frag: 441 us, 528 bytes, the pack's
+xsc: glsl_1e5db8674ad9d29e_frag: 215 us, 364 bytes, the pack's
+xsc: glsl_2013a34320f17698_frag: 191 us, 276 bytes, the pack's
+xsc: glsl_20a291c66ca7e0fd_vert: 48028 us, 3928 bytes, the pack's
+xsc: glsl_22d6a7758d2d5d84_frag: 433 us, 468 bytes, the pack's
+xsc: glsl_233aa73af10f83bc_frag: 844 us, 676 bytes, the pack's
+xsc: glsl_246ca2b33bb1fdf4_frag: 603 us, 664 bytes, the pack's
+xsc: glsl_251e226c8a088a82_vert: 74219 us, 4628 bytes, the pack's
+xsc: glsl_29fab4bb2516d607_frag: 3132 us, 1480 bytes, container
+xsc: glsl_29fab4bb2516d607_frag: DIFFERS from the pack in its container
+xsc: glsl_2a1a218d5688204a_vert: 63637 us, 4244 bytes, the pack's
+xsc: glsl_2bc4ebf687f545b6_frag: 159 us, 220 bytes, the pack's
+xsc: glsl_2e7f30cdc49bd211_vert: 1010 us, 1316 bytes, the pack's
+xsc: glsl_2eefbbd89e53921c_frag: 8963 us, 1788 bytes, container
+xsc: glsl_2eefbbd89e53921c_frag: DIFFERS from the pack in its container
+xsc: glsl_31871ebc6e90765a_vert: 859 us, 1092 bytes, the pack's
+xsc: glsl_32d160ecc3deb658_vert: 593 us, 980 bytes, the pack's
+xsc: glsl_33d3ad7a449b966c_frag: 439 us, 472 bytes, the pack's
+xsc: glsl_349b6ed78d720732_frag: 694 us, 648 bytes, the pack's
+xsc: glsl_350248024002ce37_vert: 62871 us, 4368 bytes, the pack's
+xsc: glsl_35fc826ad15e1872_frag: 4292 us, 1396 bytes, container
+xsc: glsl_35fc826ad15e1872_frag: DIFFERS from the pack in its container
+xsc: glsl_39662e66d545c874_vert: 250 us, 300 bytes, the pack's
+xsc: glsl_3ba44326990edfeb_vert: 1085 us, 1052 bytes, the pack's
+xsc: glsl_3de421fc6f9f3122_frag: 343 us, 324 bytes, the pack's
+xsc: glsl_407248b726bcb428_vert: 76211 us, 4768 bytes, the pack's
+xsc: glsl_412f75e329bbe3a2_vert: 947 us, 1000 bytes, the pack's
+xsc: glsl_46d1eea9e1360669_frag: 3315 us, 1180 bytes, the pack's
+xsc: glsl_48cd8f549b507826_frag: 4080 us, 1536 bytes, container
+xsc: glsl_48cd8f549b507826_frag: DIFFERS from the pack in its container
+xsc: glsl_4a2fde48317fee5f_frag: 2740 us, 1132 bytes, the pack's
+xsc: glsl_4e6272cd5ea024f5_vert: 1368 us, 1432 bytes, the pack's
+xsc: glsl_4ee5b3c093bea8ab_frag: 21393 us, 2256 bytes, container
+xsc: glsl_4ee5b3c093bea8ab_frag: DIFFERS from the pack in its container
+xsc: glsl_4f41862f49358139_frag: 550 us, 536 bytes, the pack's
+xsc: glsl_4f939ba938f196ae_vert: 67727 us, 4564 bytes, the pack's
+xsc: glsl_5264b90e6f50c901_frag: 331 us, 444 bytes, the pack's
+xsc: glsl_551fb86c6ef59def_frag: 4408 us, 1604 bytes, container
+xsc: glsl_551fb86c6ef59def_frag: DIFFERS from the pack in its container
+xsc: glsl_556ea181d0d34829_vert: 49387 us, 4076 bytes, the pack's
+xsc: glsl_55a0066e2650ed99_vert: 1166 us, 1156 bytes, the pack's
+xsc: glsl_58786ba1a7e49515_vert: 1115 us, 1284 bytes, the pack's
+xsc: glsl_607a7b7110387a22_frag: 454 us, 528 bytes, the pack's
+xsc: glsl_60bcbd6f4104ab13_frag: 3634 us, 1216 bytes, container
+xsc: glsl_60bcbd6f4104ab13_frag: DIFFERS from the pack in its container
+xsc: glsl_61cdb76b69b6489b_frag: 502 us, 424 bytes, the pack's
+xsc: glsl_64f76a18fb37dd48_frag: 181 us, 320 bytes, the pack's
+xsc: glsl_66457dda201609ed_frag: 7361 us, 1936 bytes, container
+xsc: glsl_66457dda201609ed_frag: DIFFERS from the pack in its container
+xsc: glsl_676ff8c4689eaf91_frag: 4440 us, 1380 bytes, the pack's
+xsc: glsl_68b11762bd80366b_vert: 67724 us, 4564 bytes, the pack's
+xsc: glsl_695e15b366c72818_frag: 3518 us, 1412 bytes, container
+xsc: glsl_695e15b366c72818_frag: DIFFERS from the pack in its container
+xsc: glsl_6a05b1f88a016fb2_frag: 178 us, 252 bytes, the pack's
+xsc: glsl_6b7ff186cc28cce5_frag: 1213 us, 748 bytes, the pack's
+xsc: glsl_6c429f0c99b0524f_vert: 45774 us, 3896 bytes, the pack's
+xsc: glsl_6dd3a70373df59bf_frag: 7540 us, 1900 bytes, container
+xsc: glsl_6dd3a70373df59bf_frag: DIFFERS from the pack in its container
+xsc: glsl_6e690d475f0af5fe_vert: 933 us, 1032 bytes, the pack's
+xsc: glsl_70ee109df12524e4_vert: 34469 us, 3568 bytes, the pack's
+xsc: glsl_71ac4a48df92e5b7_vert: 52117 us, 4156 bytes, the pack's
+xsc: glsl_72abd6191dcd7bfe_vert: 63511 us, 4260 bytes, the pack's
+xsc: glsl_75422301f0e22829_frag: 10913 us, 1936 bytes, container
+xsc: glsl_75422301f0e22829_frag: DIFFERS from the pack in its container
+xsc: glsl_820f98f280587ea8_frag: 5480 us, 1628 bytes, container
+xsc: glsl_820f98f280587ea8_frag: DIFFERS from the pack in its container
+xsc: glsl_84e4d80e1fc6e615_frag: 135 us, 208 bytes, the pack's
+xsc: glsl_8586b077d3e63bc1_frag: 4323 us, 1560 bytes, container
+xsc: glsl_8586b077d3e63bc1_frag: DIFFERS from the pack in its container
+xsc: glsl_858b7f6b67e42fd6_frag: 2059 us, 1060 bytes, the pack's
+xsc: glsl_85ae52ee303f618c_frag: 342 us, 504 bytes, the pack's
+xsc: glsl_85c8b022385334bf_frag: 8994 us, 1748 bytes, container
+xsc: glsl_85c8b022385334bf_frag: DIFFERS from the pack in its container
+xsc: glsl_88a3de8e328f385a_vert: 541 us, 912 bytes, the pack's
+xsc: glsl_8e555ecc28e3d240_vert: 892 us, 1016 bytes, the pack's
+xsc: glsl_8ecfa22174a91d18_frag: 376 us, 380 bytes, the pack's
+xsc: glsl_8f974c0335e452d5_vert: 869 us, 1108 bytes, the pack's
+xsc: glsl_92f6cc89e68fccea_frag: 104 us, 192 bytes, the pack's
+xsc: glsl_93d36ce55e3f9bad_vert: 1884 us, 4612 bytes, the pack's
+xsc: glsl_946541a3cc485e48_frag: 354 us, 504 bytes, the pack's
+xsc: glsl_987a188c27a802e5_frag: 862 us, 616 bytes, the pack's
+xsc: glsl_9f1eca9bebdc35b6_frag: 442 us, 532 bytes, the pack's
+xsc: glsl_a122a58ca77e3270_frag: 269 us, 376 bytes, the pack's
+xsc: glsl_a2beec39ae2b951c_frag: 131 us, 208 bytes, the pack's
+xsc: glsl_a35e191254f5ef46_frag: 744 us, 732 bytes, the pack's
+xsc: glsl_a478595f52157a73_frag: 472 us, 404 bytes, the pack's
+xsc: glsl_a479ce42ba36b7d8_frag: 2523 us, 1020 bytes, the pack's
+xsc: glsl_a48b96d69ff86daf_vert: 109 us, 184 bytes, the pack's
+xsc: glsl_ad037db0d56a10dd_vert: 1644 us, 1452 bytes, the pack's
+xsc: glsl_b331aaa6bee56ee9_frag: 12967 us, 2108 bytes, container
+xsc: glsl_b331aaa6bee56ee9_frag: DIFFERS from the pack in its container
+xsc: glsl_b40238367bc2ae70_frag: 5226 us, 1752 bytes, container
+xsc: glsl_b40238367bc2ae70_frag: DIFFERS from the pack in its container
+xsc: glsl_b4a8c01218dcffe9_frag: 4242 us, 1604 bytes, container
+xsc: glsl_b4a8c01218dcffe9_frag: DIFFERS from the pack in its container
+xsc: glsl_b4bd0f33bde7fc52_frag: 1075 us, 884 bytes, the pack's
+xsc: glsl_b624738d17bc5ca0_frag: 394 us, 492 bytes, the pack's
+xsc: glsl_b72c3e79097987b4_frag: 237 us, 332 bytes, the pack's
+xsc: glsl_ba930563b1db79f4_frag: 230 us, 364 bytes, the pack's
+xsc: glsl_bacc292ad5a86eb3_vert: 2551 us, 2184 bytes, the pack's
+xsc: glsl_bde83fec0182df1d_vert: 946 us, 1064 bytes, the pack's
+xsc: glsl_c0887c56621045a9_vert: 1128 us, 1172 bytes, the pack's
+xsc: glsl_c0ddfd4547c71e5a_vert: 2042 us, 5004 bytes, the pack's
+xsc: glsl_c165aaa5a5be8de5_frag: 138 us, 208 bytes, the pack's
+xsc: glsl_c2679fcd0788b78d_frag: 1133 us, 744 bytes, the pack's
+xsc: glsl_c359885760b8a624_vert: 1264 us, 1072 bytes, the pack's
+xsc: glsl_c4bb20c5e14ce9d8_frag: 132 us, 208 bytes, the pack's
+xsc: glsl_c8673f02f09b439d_frag: 206 us, 332 bytes, the pack's
+xsc: glsl_c91470b682614340_frag: 130 us, 208 bytes, the pack's
+xsc: glsl_c98a0ca2e68f85a1_frag: 711 us, 632 bytes, the pack's
+xsc: glsl_ca44599827bbdb23_frag: 2293 us, 1316 bytes, container
+xsc: glsl_ca44599827bbdb23_frag: DIFFERS from the pack in its container
+xsc: glsl_cad12b640d1cfd9c_frag: 2045 us, 1056 bytes, the pack's
+xsc: glsl_cbed2c9db6f723a5_frag: 299 us, 376 bytes, the pack's
+xsc: glsl_ce4bffbb0b973310_frag: 85 us, 180 bytes, the pack's
+xsc: glsl_cefc467138f9dac7_vert: 1198 us, 1192 bytes, the pack's
+xsc: glsl_d5d99e338acc096e_vert: 719 us, 980 bytes, the pack's
+xsc: glsl_d8658b0e39305f51_vert: 66501 us, 4660 bytes, the pack's
+xsc: glsl_d8d724f61446ecbb_vert: 1467 us, 1312 bytes, the pack's
+xsc: glsl_d90889c31c82dbe8_vert: 36121 us, 3744 bytes, the pack's
+xsc: glsl_da2593920df168c8_vert: 618 us, 964 bytes, the pack's
+xsc: glsl_dae9addf7280e276_frag: 447 us, 528 bytes, the pack's
+xsc: glsl_dee3af7655c47a63_frag: 4342 us, 1560 bytes, container
+xsc: glsl_dee3af7655c47a63_frag: DIFFERS from the pack in its container
+xsc: glsl_e09e6878603dc742_frag: 135 us, 208 bytes, the pack's
+xsc: glsl_e19f86ee747cb140_frag: 1318 us, 732 bytes, the pack's
+xsc: glsl_e2cfed9f9f80cbf0_frag: 13958 us, 2116 bytes, container
+xsc: glsl_e2cfed9f9f80cbf0_frag: DIFFERS from the pack in its container
+xsc: glsl_e2f1c3a692fdfb84_frag: 385 us, 472 bytes, the pack's
+xsc: glsl_e3fba406929fde97_frag: 2424 us, 892 bytes, the pack's
+xsc: glsl_e4c0798e6cc9e4ba_frag: 1908 us, 1056 bytes, the pack's
+xsc: glsl_e5c535debebde1ed_frag: 166 us, 176 bytes, the pack's
+xsc: glsl_e5ea8b62e2ebf4ac_vert: 72238 us, 4508 bytes, the pack's
+xsc: glsl_e6ec5aee8cc08f41_frag: 486 us, 516 bytes, the pack's
+xsc: glsl_e7fe951996d1f40b_frag: 3452 us, 1412 bytes, container
+xsc: glsl_e7fe951996d1f40b_frag: DIFFERS from the pack in its container
+xsc: glsl_e9d14d2c939cffe4_vert: 65919 us, 4420 bytes, the pack's
+xsc: glsl_e9e5df17e9c42a02_frag: 1943 us, 868 bytes, the pack's
+xsc: glsl_ece2618e566d8623_frag: 170 us, 276 bytes, the pack's
+xsc: glsl_ed3667059b5c9028_frag: 2613 us, 1160 bytes, container
+xsc: glsl_ed3667059b5c9028_frag: DIFFERS from the pack in its container
+xsc: glsl_f12926532ee0b4d0_vert: 3730 us, 2144 bytes, the pack's
+xsc: glsl_f1f88472976e4bfb_vert: 47992 us, 3928 bytes, the pack's
+xsc: glsl_f3825523049d31cf_frag: 5974 us, 1676 bytes, container
+xsc: glsl_f3825523049d31cf_frag: DIFFERS from the pack in its container
+xsc: glsl_f526e9ffb3616812_frag: 178 us, 264 bytes, the pack's
+xsc: glsl_f544e71db9210106_frag: 112 us, 208 bytes, the pack's
+xsc: glsl_f5cb41c6eaf01a5f_frag: 3313 us, 1384 bytes, the pack's
+xsc: glsl_f7c1df6fe6364447_frag: 758 us, 848 bytes, the pack's
+xsc: vk_frag_coord_depth.frag.spv: status 1, "gl_FragCoord.zw: the pixel parameters hold no depth (v1)": refused as on the PC
+xsc: vk_local_partial.frag.spv: status 1, "indexed access into a local not supported": refused as on the PC
+xsc probe: 117 of 145 programs the pack's, 2 of 2 refusals right
+xsc probe: 1325450 us in all, 9141 us on average, the slowest 76211 us (glsl_407248b726bcb428_vert)
+xsc probe: heap 32 bytes in use before, grown to 1114112 at most, 5848 in use after a compile at most
+xsc probe: stack 29840 bytes at most of 978944
+xsc probe: FAIL
+exit: status 1

@@ -102,6 +102,12 @@ recursion where the Python has it. The console probe measures the stack, and ste
 
 Calling the compiler from vulkan4xenon and Aurora is step 3.
 
+Done on 2026-10-14 (docs/HARDWARE.md, "xost's compiler in C on the console"; xsdk `02dede7`, `1d86a33`). The port was
+written whole and then checked, not part by part: the encoder and the interface on their own, the rest end to end,
+1068 compilations byte for byte the same as the Python's. On the console all 145 programs came out as the pack's, in
+9.1 ms each on average and 76 ms at most, with the heap at 1.06 MB at most and 30 KB of stack; with the fetch layout
+off, 117 did and the probe failed.
+
 ### 3. Compiling as the game asks
 
 - vulkan4xenon compiles SPIR-V it holds no container for, at `vkCreateShaderModule`, through step 2's compiler: the

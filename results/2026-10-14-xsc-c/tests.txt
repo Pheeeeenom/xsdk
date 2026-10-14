@@ -1,0 +1,286 @@
+== tests/test_container_creator.py: exit 0
+  PASS xsc, a vertex shader: creator 'xost'
+  PASS xsc, a pixel shader: creator 'xost'
+  PASS the text assembler: creator 'xost'
+  PASS the combiner: creator 'xost'
+== tests/test_dynamic_index.py: exit 0
+  PASS vk_dynamic_rows.vert: rows i to i + 2 and colour i / 3 at a0, for i 0, 3, 6 and 9 (624 B)
+  PASS vk_dynamic_matrices.vert: m[i] * position, a0 i times 4, for i 0 to 2 (416 B)
+  PASS vk_frag_coord.frag: pixel parameters in r1, each column's band at a0, front and back faces (344 B)
+  PASS vk_frag_coord_depth.frag: refused (gl_FragCoord.zw: the pixel parameters hold no depth (v1))
+== tests/test_encode_fuzz.py: exit 0
+cf_exec                1000 iterations  PASS
+cf_cond_exec           1000 iterations  PASS
+cf_cond_exec_pred      1000 iterations  PASS
+cf_loop_start          1000 iterations  PASS
+cf_loop_end            1000 iterations  PASS
+cf_cond_call           1000 iterations  PASS
+cf_return              1000 iterations  PASS
+cf_cond_jmp            1000 iterations  PASS
+cf_alloc               1000 iterations  PASS
+pack_cf_pair           1000 iterations  PASS
+vfetch_full            1000 iterations  PASS
+vfetch_mini            1000 iterations  PASS
+tfetch                 1000 iterations  PASS
+alu                    1000 iterations  PASS
+alu_scalar_const_reg   1000 iterations  PASS
+error-paths            11 checks         PASS
+
+All encoder fuzz tests passed.
+== tests/test_exact_total.py: exit 0
+PASS 106 shaders: exact text -> identical ucode
+== tests/test_fetch_layout.py: exit 0
+== fetches laid out together ==
+  PASS vk_texel_offsets.frag: its four fetches are one exec of their own
+  PASS vk_texel_offsets.frag: its coordinates' three adds come before them
+  PASS vk_texel_offsets.frag: no fetch in the exec writes a register another reads
+  PASS vk_texel_offsets.frag: the simulator gives what the GLSL says
+  PASS vk_texel_dependent.frag: two fetch execs, the first with two fetches, the second with the dependent one
+  PASS vk_texel_dependent.frag: the simulator gives what the GLSL says
+  PASS fs_dsolid.frag: its one fetch stays in an exec with the add before it
+  PASS 64 fragment shaders that sample only their inputs lower byte for byte as before; 8 others are laid out
+OK
+== tests/test_local_stores.py: exit 0
+  PASS vk_local_reassign.frag, first + t: [0.875, 1.25, 4.25, 3.0625]
+  PASS vk_local_chain.frag, 64 multiply-adds on one local: [0.80901, 0.35854, 0.53652, 0.04025]
+  PASS vk_local_reassign.vert, the position scaled then moved: [2.5, 4.0, 7.0, 4.25]
+  PASS vk_local_partial.frag: refused (indexed access into a local not supported)
+  PASS vk_local_branch_reassign.frag: refused (local %9 stored more than once where the unroller doesn't rewrite it)
+  PASS vk_local_merged_early.frag: refused (local %9 read before the if/else that assigns it ends)
+OK
+== tests/test_matrix.py: exit 0
+  PASS fs_mtest.frag: transpose(mat3) + determinant(mat3) -> [3.0, -7.25, 6.75, 27.562]
+  PASS fs_minv.frag: inverse(mat3) via adjugate / det -> [0.408, -0.633, 0.102]
+OK
+== tests/test_native_encode.py: exit 0
+alu              1000 iterations  PASS
+tfetch           1000 iterations  PASS
+vfetch           1000 iterations  PASS
+cf_exec          1000 iterations  PASS
+cf_alloc         1000 iterations  PASS
+cf_loop_start    1000 iterations  PASS
+cf_loop_end      1000 iterations  PASS
+pack_cf_pair     1000 iterations  PASS
+errors           20 cases        PASS
+== tests/test_optimize.py: exit 0
+  PASS a move's readers read its source, and the move goes: 3 -> 2 ALU instructions, 2 expected
+  PASS a negated move from a constant folds into its reader: 3 -> 2 ALU instructions, 2 expected
+  PASS an absolute move from a temp folds, its reader keeping the absolute value: 3 -> 2 ALU instructions, 2 expected
+  PASS a move from a constant whose reader takes an absolute value stays: 3 -> 3 ALU instructions, 3 expected
+  PASS a vector assembled by two moves stays, as no one source holds it: 4 -> 4 ALU instructions, 4 expected
+  PASS a move whose source changes before its reader stays: 4 -> 4 ALU instructions, 4 expected
+  PASS a recomputed sum is the first one's: 4 -> 3 ALU instructions, 3 expected
+  PASS a sum of different values isn't merged: 4 -> 4 ALU instructions, 4 expected
+  PASS mul then add is a mad, the product's negation moving to a factor: 3 -> 2 ALU instructions, 2 expected
+  PASS a product read twice isn't fused: 4 -> 4 ALU instructions, 4 expected
+  PASS a scalar op joins an independent vector op: 4 -> 3 ALU instructions, 3 expected
+  PASS a scalar op reading the vector op's result doesn't join it: 4 -> 4 ALU instructions, 4 expected
+  PASS a third constant isn't folded into an instruction holding two: 3 -> 3 ALU instructions, 3 expected
+  PASS dead code goes: 3 -> 2 ALU instructions, 2 expected
+  PASS a wrong rewrite shows: trial 0: export 0.x -4.869931005801079 -> -3.8320294603491165
+OK
+== tests/test_program_loop.py: exit 0
+  PASS program loop CF: LOOP_START i0 skip->L4, LOOP_END body->L2 (272 B)
+  PASS oracle: decompiles to for(aL=0; aL<i0.x; aL++) r0+=c0
+  PASS counted loop LOOP_END stays unpredicated (brk=0, cond=0)
+  PASS encode srcN_const_rel -> aL-relative addressing (5 cases)
+  PASS break shader body accumulates c[0+aL] (aL-relative)
+  PASS break shader: setp_ge + predicated LOOP_END (brk=1, cond=1)
+  PASS predicate-setting exec is not predicate-clean
+  PASS counted loop execs all stay predicate-clean
+  PASS oracle accepts the predicated-break loop (336 B)
+OK
+== tests/test_register_alloc.py: exit 0
+  PASS vk_many_live.vert: the simulated sums are the reference's
+  PASS a corrupted allocation gives other sums
+  PASS vk_dependent_read.frag: the offsets are fetched first, and the image where they point
+  PASS loop: r1, read from before the loop, isn't written in it (writes [4, 5, 2])
+OK
+== tests/test_register_budget.py: exit 0
+  PASS 16-register pixel shader, libxenon's split: 16 registers
+  PASS 18-register pixel shader, libxenon's split: refused
+  PASS 18-register pixel shader, xsdk's split: 18 registers
+  PASS 64-register pixel shader, libxenon's split: refused
+  PASS 64-register pixel shader, xsdk's split: 64 registers
+  PASS 64-register vertex shader, libxenon's split: 64 registers
+  PASS 64-register vertex shader, xsdk's split: 64 registers
+  PASS 40-register vertex shader, a 32-register vertex share: refused
+  PASS assembled pixel shader to r15, libxenon's split: 16 registers
+  PASS assembled pixel shader to r17, libxenon's split: refused
+  PASS assembled pixel shader to r17, xsdk's split: 18 registers
+  PASS a 12-register pixel shader builds the same under both splits
+== tests/test_textasm.py: exit 0
+== 106-blob round-trip ==
+  PASS absign.frag.spv (132 B)
+  PASS angles.frag.spv (60 B)
+  PASS blend.frag.spv (60 B)
+  PASS blend50.frag.spv (60 B)
+  PASS bright.frag.spv (60 B)
+  PASS cf_if.frag.spv (60 B)
+  PASS chainmat.vert.spv (192 B)
+  PASS clamprange.frag.spv (72 B)
+  PASS cubedir.vert.spv (132 B)
+  PASS floorabs.frag.spv (84 B, the same disassembly; hidden fields differ)
+  PASS frag.spv (48 B)
+  PASS fs_branch_local.frag.spv (72 B)
+  PASS fs_dsolid.frag.spv (120 B, the same disassembly; hidden fields differ)
+  PASS fs_mtest.frag.spv (228 B)
+  PASS fs_ternary.frag.spv (60 B)
+  PASS fs_texlod.frag.spv (48 B)
+  PASS fs_texproj.frag.spv (84 B, the same disassembly; hidden fields differ)
+  PASS fs_texscale.frag.spv (60 B)
+  PASS gray.frag.spv (72 B)
+  PASS intmix.frag.spv (24 B)
+  PASS invtrig.frag.spv (336 B, the same disassembly; hidden fields differ)
+  PASS loop_cond.frag.spv (108 B)
+  PASS loop_uniform.frag.spv (72 B)
+  PASS modcross.frag.spv (120 B, the same disassembly; hidden fields differ)
+  PASS modulate.frag.spv (48 B)
+  PASS nested_if.frag.spv (96 B)
+  PASS rounding.frag.spv (132 B, the same disassembly; hidden fields differ)
+  PASS sat.frag.spv (48 B)
+  PASS shuffle2.frag.spv (72 B)
+  PASS spincube.vert.spv (144 B)
+  PASS sw_swizzle.frag.spv (48 B)
+  PASS tint.frag.spv (72 B)
+  PASS verify_nest.frag.spv (60 B)
+  PASS vert.spv (144 B)
+  PASS vk_blocks.vert.spv (180 B)
+  PASS vk_constant_color.frag.spv (24 B)
+  PASS vk_constant_varying.vert.spv (72 B)
+  PASS vk_dependent_read.frag.spv (72 B)
+  PASS vk_local_chain.frag.spv (840 B)
+  PASS vk_local_reassign.frag.spv (36 B)
+  PASS vk_local_reassign.vert.spv (48 B)
+  PASS vk_many_live.vert.spv (1692 B)
+  PASS vk_matrices.vert.spv (372 B)
+  PASS vk_position_only.vert.spv (48 B)
+  PASS vk_samplers.frag.spv (60 B)
+  PASS vk_texel_dependent.frag.spv (120 B)
+  PASS vk_texel_offsets.frag.spv (156 B)
+  PASS vk_triangle.frag.gl.spv (24 B)
+  PASS vk_triangle.frag.spv (24 B)
+  PASS vk_triangle.vert.gl.spv (84 B)
+  PASS vk_triangle.vert.spv (84 B)
+  PASS vs_lighting.vert.spv (228 B)
+  PASS vs_mat2.vert.spv (168 B)
+  PASS vs_mat3.vert.spv (216 B)
+  PASS vs_matmat.vert.spv (348 B)
+  PASS vs_vecmat.vert.spv (156 B)
+  PASS vtx_arith.vert.spv (168 B)
+  PASS combiner modulate (48 B)
+  PASS combiner tex_prim (60 B)
+  PASS combiner lerp_pe_t (84 B)
+  PASS combiner decal (48 B)
+  PASS combiner shade (36 B)
+  PASS combiner inv_tex_p (72 B)
+  PASS combiner multitex (72 B)
+  PASS combiner lerp2_p (96 B)
+  PASS combiner add_glow (84 B)
+  REFUSED 1, bad ALU source operand 'r_abs[1]': vk_frag_coord.frag.spv
+  REFUSED 23, constant 0/1 dest masks not supported in v1: explog.frag.spv, fs_deriv.frag.spv, fs_intdiv.frag.spv, fs_minv.frag.spv, fs_refract.frag.spv, fs_vrelation.frag.spv, intbucket.frag.spv, lit01.frag.spv, loop_accum.frag.spv, loop_nested.frag.spv, loop_stair.frag.spv, loop_weight.frag.spv, loop_while.frag.spv, verify_asin.frag.spv, verify_atan.frag.spv, verify_cross.frag.spv, verify_fract.frag.spv, verify_mod.frag.spv, verify_round.frag.spv, verify_sign.frag.spv, verify_trunc.frag.spv, vk_block_literals.vert.spv, vk_three_inputs.vert.spv
+  REFUSED 1, dest mask must have 4 positions: fs_discard.frag.spv
+  REFUSED 1, relative/_abs ALU operands not supported in v1: loop_array.frag.spv
+  REFUSED 1, unknown vector opcode 'exp': mathfns.frag.spv
+  REFUSED 1, unknown vector opcode 'log': gamma.frag.spv
+  REFUSED 1, unknown vector opcode 'maxas': vk_dynamic_matrices.vert.spv
+  REFUSED 1, unknown vector opcode 'maxasf': vk_dynamic_rows.vert.spv
+  REFUSED 4, unknown vector opcode 'rcp': divide.frag.spv, fs_cubemap.frag.spv, stepsmooth.frag.spv, verify_smooth.frag.spv
+  REFUSED 1, unknown vector opcode 'rsq': normlen.frag.spv
+  REFUSED 1, unknown vector opcode 'setp_gt': loop_break.frag.spv
+  REFUSED 3, unknown vector opcode 'sin': tangent.frag.spv, verify_alloc.frag.spv, vs_wave.vert.spv
+  REFUSED 1, unknown vector opcode 'sqrt': verify_sqrt.frag.spv
+  66 round-tripped, 6 of them up to hidden fields; 40 refused
+== conventional fuzz ==
+  PASS 200 combiner programs round-tripped
+== cond exec opcodes ==
+  PASS cexec/cexece, clean and unclean
+== source-mode smoke ==
+  PASS hand-authored .xasm -> container -> oracle
+== tests/test_vertex_branches.py: exit 0
+  PASS vk_vertex_branch.vert: refused (vertex shader control flow (an if/else, a ?: glslang branches for, or a switch) isn't lowered)
+OK
+== tests/test_vulkan_spirv.py: exit 0
+  PASS vk_triangle.vert: Vulkan SPIR-V lowers as the OpenGL one (220 B), oracle OK
+  PASS vk_triangle.frag: Vulkan SPIR-V lowers as the OpenGL one (140 B), oracle OK
+  PASS vk_blocks.vert: push c0, blocks c4-c8 and c12, literals from c16; mvp * position and the colour from raw std140 bytes
+  PASS vk_matrices.vert: projection * view * position and position * view over columns
+  PASS vk_samplers.frag: set 0 binding 2 -> tf0, set 1 binding 0 -> tf1, push offset 16 -> c1
+  PASS vk_position_only.vert: alloc interpolators, alloc position, exece, export count 0; oracle OK
+  PASS constant exports: oC0 from push constant c2, and o0 from uniform c0
+  PASS vk_three_inputs.vert: fetches into r1, r2, r0, r0 last, each by r0.x; oracle OK
+  PASS vk_block_literals.vert: push c0, uniform c4, literals from c8; the position from all three
+OK
+== tests/test_xsc_lower.py: exit 0
+  PASS modulate.frag byte-identical to combiner (212 B)
+  PASS blend.frag: novel mix() -> correct lerp (sub+mad), oracle-validated (268 B)
+  PASS tint.frag: .rgb swizzle + vec4(rgb,a) construct -> masked exports (236 B)
+  PASS blend50.frag: literal 0.5 -> pooled const c0, manifest [(0, (0.5, 0.5, 0.5, 0.5))] (268 B)
+  PASS lit01.frag: 0/1 literals -> identity folds + export constants, empty manifest (260 B)
+  PASS normlen.frag: normalize (dp3+rsq) + length (dp3+sqrt) (240 B)
+  PASS mathfns.frag: normalize+length+pow(log2/exp2)+floor stress (520 B)
+  PASS explog.frag: exp/log natural + reflect(mad) + sin/cos (408 B)
+  PASS cf_if.frag: if(a>b) A else B -> cndgt select, branch-free (272 B)
+  PASS nested_if.frag: nested if/else -> chained cnd selects, branch-free (304 B)
+  PASS fs_branch_local.frag: if/else local -> select feeds post-merge math (236 B)
+  PASS fs_discard.frag: if(uv.x<0.5) discard -> kill_gt literal-vs-uv (268 B)
+  PASS fs_cubemap.frag: samplerCube -> cube/rcp/mad + tfetchCube .yxw (288 B)
+  PASS sw_swizzle.frag: non-identity swizzle .bgra (224 B)
+  PASS clamprange.frag: clamp(x,0.2,0.8) -> max/min + pooled literals (324 B)
+  PASS floorabs.frag: floor() + abs() as max(x,-x) (248 B)
+  PASS divide.frag: vec/vec division -> per-component rcp + mul (340 B)
+  PASS absign.frag: abs()=max(x,-x), sign()=sgt(x,-x)-sgt(-x,x) (368 B)
+  PASS tangent.frag: tan(x)=sin(x)*rcp(cos(x)) (236 B)
+  PASS rounding.frag: fract/trunc/ceil=-floor(-x)/round=floor(x+.5) (352 B)
+  PASS angles.frag: radians/degrees -> mul by pooled const (324 B)
+  PASS stepsmooth.frag: step (kSge) + smoothstep (clamp + hermite t*t*(3-2t)) (604 B)
+  PASS modcross.frag: cross (yzx/zxy mad) + mod (x - y*floor(x/y)) (428 B)
+  PASS shuffle2.frag: two-source vec assembly (t.xy + color.zw) (248 B)
+  PASS invtrig.frag: asin (A-S sqrt form) / acos=pi/2-asin / atan (odd poly) (1264 B)
+  PASS loop_accum.frag: for i<4: s+=uv.x -> 4x unrolled accumulate (252 B)
+  PASS loop_weight.frag: for i<4: s+=uv.x*float(i) -> induction folded (420 B)
+  PASS loop_while.frag: while i<4 (increment in body) -> 4x unroll (252 B)
+  PASS loop_nested.frag: nested for 3x3 -> 9x (innermost-first) (452 B)
+  PASS loop_stair.frag: 5x step() staircase + post-loop *0.2 (mem2reg RMW) (568 B)
+  PASS loop_uniform.frag: uniform bound -> real LOOP_START/END (236 B)
+  PASS loop_array.frag: for(i<n) sum += w[i] -> real loop with c[base+aL] (232 B)
+  PASS loop_break.frag: if(cond) break -> setp + predicated LOOP_END (304 B)
+  PASS loop_cond.frag: if(i<k) in loop -> per-iteration arm select (328 B)
+  PASS gray.frag: dot(rgb, luma) -> dp3 broadcast, vec4(lum,lum,lum,a) (280 B)
+  PASS sat.frag: clamp(x,0,1) -> add_sat fused, free (212 B)
+  PASS bright.frag: vec * scalar uniform (.xxxx) (276 B)
+  PASS intmix.frag: int arithmetic -> float literal manifest (184 B)
+  PASS intbucket.frag: ConvertFToS/IAdd/ConvertSToF float-backed path (356 B)
+  PASS fs_ternary.frag: ternary ?: -> f + (t-f)*cond select (292 B)
+  PASS fs_vrelation.frag: greaterThan + any(max)/all(min)/not + select (648 B)
+  PASS fs_refract.frag: refract(): Snell vector with total-internal-reflection mask (708 B)
+  PASS fs_intdiv.frag: runtime int / and % via rcp+trunc emulation (576 B)
+  PASS fs_texlod.frag: textureLod explicit LOD -> tfetch LOD bias (208 B)
+  PASS fs_texproj.frag: textureProj perspective divide (260 B)
+  PASS fs_texscale.frag: texture2D with a computed coordinate (320 B)
+  PASS fs_deriv.frag: getGradients fetch (404 B)
+  PASS fs_dsolid.frag: getGradients fetch (364 B)
+  PASS spincube.vert oracle = mvp dp4 transform + passthrough (336 B)
+  PASS chainmat.vert: u_viewproj * (u_model * pos) -> temp dp4 chain + passthrough (432 B)
+  PASS vs_mat3.vert: mat3 normal matrix (dp3 per row) + mat4 MVP (584 B)
+  PASS vs_mat2.vert: mat2 UV rotation (dp2add per row) + mat4 MVP (456 B)
+  PASS fs_mtest.frag: transpose + determinant(mat3) (480 B)
+  PASS fs_minv.frag: inverse(mat3) via adjugate/det (552 B)
+  PASS vs_vecmat.vert: vec4 * mat4 -> mul/mad row vector (348 B)
+  PASS vs_matmat.vert: mat4 * mat4 rows feed mat4 * vec4 (636 B)
+  PASS vtx_arith.vert: VS add/mul feed position + varying exports (456 B)
+  PASS vs_lighting.vert: VS literal manifest feeds normalize/dot/max lighting (524 B)
+  PASS vs_wave.vert: VS literal + sin path lowers with manifest (440 B)
+== tests/test_xsc_resolve.py: exit 0
+  PASS  vs stage
+  PASS  vs vfetch
+  PASS  vs interp_out
+  PASS  vs position
+  PASS  vs constant u_mvp -> c0..c3
+  PASS  fs stage
+  PASS  fs interp_in
+  PASS  fs sampler -> tf0
+  PASS  fs sampler Dim 2D
+  PASS  fs color_out -> oC0
+  PASS  cube sampler -> tf0
+  PASS  cube sampler Dim Cube

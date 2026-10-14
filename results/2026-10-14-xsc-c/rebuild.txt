@@ -1,0 +1,19 @@
+vulkan4xenon's shaders and Dusklight's pack rebuilt through xost's compiler in C (xsdk 1d86a33), in WSL, each
+compared with cmp against the file committed in its repository.
+
+vulkan4xenon (tools/build_shaders.py, without --optimize, as the committed files were built):
+  python3 tools/build_shaders.py --xost ../Xbox-360-SDK/xenos-toolchain --output <out>/shaders tests/shaders/*.vert tests/shaders/*.frag
+  python3 tools/build_shaders.py --xost ../Xbox-360-SDK/xenos-toolchain --output <out>/shaders bench/shaders/*.vert bench/shaders/*.frag
+  python3 tools/build_shaders.py --xost ../Xbox-360-SDK/xenos-toolchain --bundle v4x_blit_bundle --prefix v4x_ --output <out>/blit_shaders src/shaders/blit.vert src/shaders/blit.frag
+  tests/shaders.c, tests/shaders.h: identical
+  bench/shaders.c, bench/shaders.h: identical
+  src/blit_shaders.c, src/blit_shaders.h: identical
+
+Dusklight (Aurora's tools/build_glsl_pack.py with --optimize, from Dusklight's repository root):
+  python3 ../aurora-xenon/tools/build_glsl_pack.py --vulkan4xenon ../vulkan4xenon --xost ../Xbox-360-SDK/xenos-toolchain --optimize --output <out>/glsl_pack platforms/xenon/shaders
+  145 of 145 programs packed
+  platforms/xenon/glsl_pack.c, platforms/xenon/glsl_pack.h: identical
+
+xsdk's generators through the trimmed xasm/program.py and the C compiler (tools/gen_*.py, arrays compared with those
+committed): constant, fill, hiz, microcode, probe constant, register, resolve VS, setup, texture, triangle and texel
+shaders all as committed; gen_texel_shaders.py --before changes xost's build alone.

@@ -1,0 +1,1069 @@
+  PASS xsc/testdata/absign.frag.spv [libxenon]: ok, 368 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/absign.frag.spv [libxenon, optimize]: ok, 344 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/absign.frag.spv [xsdk]: ok, 368 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/absign.frag.spv [xsdk, optimize]: ok, 344 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/angles.frag.spv [libxenon]: ok, 324 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/angles.frag.spv [libxenon, optimize]: ok, 312 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/angles.frag.spv [xsdk]: ok, 324 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/angles.frag.spv [xsdk, optimize]: ok, 312 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/blend.frag.spv [libxenon]: ok, 268 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/blend.frag.spv [libxenon, optimize]: ok, 268 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/blend.frag.spv [xsdk]: ok, 268 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/blend.frag.spv [xsdk, optimize]: ok, 268 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/blend50.frag.spv [libxenon]: ok, 268 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/blend50.frag.spv [libxenon, optimize]: ok, 268 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/blend50.frag.spv [xsdk]: ok, 268 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/blend50.frag.spv [xsdk, optimize]: ok, 268 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/bright.frag.spv [libxenon]: ok, 276 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/bright.frag.spv [libxenon, optimize]: ok, 276 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/bright.frag.spv [xsdk]: ok, 276 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/bright.frag.spv [xsdk, optimize]: ok, 276 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/cf_if.frag.spv [libxenon]: ok, 272 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/cf_if.frag.spv [libxenon, optimize]: ok, 272 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/cf_if.frag.spv [xsdk]: ok, 272 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/cf_if.frag.spv [xsdk, optimize]: ok, 272 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/chainmat.vert.spv [libxenon]: ok, 432 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/chainmat.vert.spv [libxenon, optimize]: ok, 432 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/chainmat.vert.spv [xsdk]: ok, 432 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/chainmat.vert.spv [xsdk, optimize]: ok, 432 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/clamprange.frag.spv [libxenon]: ok, 324 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/clamprange.frag.spv [libxenon, optimize]: ok, 324 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/clamprange.frag.spv [xsdk]: ok, 324 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/clamprange.frag.spv [xsdk, optimize]: ok, 324 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/cubedir.vert.spv [libxenon]: ok, 316 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/cubedir.vert.spv [libxenon, optimize]: ok, 316 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/cubedir.vert.spv [xsdk]: ok, 316 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/cubedir.vert.spv [xsdk, optimize]: ok, 316 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/divide.frag.spv [libxenon]: ok, 340 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/divide.frag.spv [libxenon, optimize]: ok, 340 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/divide.frag.spv [xsdk]: ok, 340 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/divide.frag.spv [xsdk, optimize]: ok, 340 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/explog.frag.spv [libxenon]: ok, 408 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/explog.frag.spv [libxenon, optimize]: ok, 372 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/explog.frag.spv [xsdk]: ok, 408 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/explog.frag.spv [xsdk, optimize]: ok, 372 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/floorabs.frag.spv [libxenon]: ok, 248 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/floorabs.frag.spv [libxenon, optimize]: ok, 248 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/floorabs.frag.spv [xsdk]: ok, 248 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/floorabs.frag.spv [xsdk, optimize]: ok, 248 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/frag.spv [libxenon]: ok, 212 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/frag.spv [libxenon, optimize]: ok, 212 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/frag.spv [xsdk]: ok, 212 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/frag.spv [xsdk, optimize]: ok, 212 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/fs_branch_local.frag.spv [libxenon]: ok, 236 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/fs_branch_local.frag.spv [libxenon, optimize]: ok, 236 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/fs_branch_local.frag.spv [xsdk]: ok, 236 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/fs_branch_local.frag.spv [xsdk, optimize]: ok, 236 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/fs_cubemap.frag.spv [libxenon]: ok, 288 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/fs_cubemap.frag.spv [libxenon, optimize]: ok, 288 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/fs_cubemap.frag.spv [xsdk]: ok, 288 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/fs_cubemap.frag.spv [xsdk, optimize]: ok, 288 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/fs_deriv.frag.spv [libxenon]: ok, 404 bytes, 1 literals, 0 resources
+  PASS xsc/testdata/fs_deriv.frag.spv [libxenon, optimize]: ok, 356 bytes, 1 literals, 0 resources
+  PASS xsc/testdata/fs_deriv.frag.spv [xsdk]: ok, 404 bytes, 1 literals, 0 resources
+  PASS xsc/testdata/fs_deriv.frag.spv [xsdk, optimize]: ok, 356 bytes, 1 literals, 0 resources
+  PASS xsc/testdata/fs_discard.frag.spv [libxenon]: ok, 268 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/fs_discard.frag.spv [libxenon, optimize]: ok, 268 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/fs_discard.frag.spv [xsdk]: ok, 268 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/fs_discard.frag.spv [xsdk, optimize]: ok, 268 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/fs_dsolid.frag.spv [libxenon]: ok, 364 bytes, 2 literals, 0 resources
+  PASS xsc/testdata/fs_dsolid.frag.spv [libxenon, optimize]: ok, 328 bytes, 2 literals, 0 resources
+  PASS xsc/testdata/fs_dsolid.frag.spv [xsdk]: ok, 364 bytes, 2 literals, 0 resources
+  PASS xsc/testdata/fs_dsolid.frag.spv [xsdk, optimize]: ok, 328 bytes, 2 literals, 0 resources
+  PASS xsc/testdata/fs_intdiv.frag.spv [libxenon]: ok, 576 bytes, 5 literals, 0 resources
+  PASS xsc/testdata/fs_intdiv.frag.spv [libxenon, optimize]: ok, 516 bytes, 5 literals, 0 resources
+  PASS xsc/testdata/fs_intdiv.frag.spv [xsdk]: ok, 576 bytes, 5 literals, 0 resources
+  PASS xsc/testdata/fs_intdiv.frag.spv [xsdk, optimize]: ok, 516 bytes, 5 literals, 0 resources
+  PASS xsc/testdata/fs_minv.frag.spv [libxenon]: ok, 552 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/fs_minv.frag.spv [libxenon, optimize]: ok, 444 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/fs_minv.frag.spv [xsdk]: ok, 552 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/fs_minv.frag.spv [xsdk, optimize]: ok, 444 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/fs_mtest.frag.spv [libxenon]: ok, 480 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/fs_mtest.frag.spv [libxenon, optimize]: ok, 384 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/fs_mtest.frag.spv [xsdk]: ok, 480 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/fs_mtest.frag.spv [xsdk, optimize]: ok, 384 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/fs_refract.frag.spv [libxenon]: ok, 708 bytes, 6 literals, 0 resources
+  PASS xsc/testdata/fs_refract.frag.spv [libxenon, optimize]: ok, 612 bytes, 6 literals, 0 resources
+  PASS xsc/testdata/fs_refract.frag.spv [xsdk]: ok, 708 bytes, 6 literals, 0 resources
+  PASS xsc/testdata/fs_refract.frag.spv [xsdk, optimize]: ok, 612 bytes, 6 literals, 0 resources
+  PASS xsc/testdata/fs_ternary.frag.spv [libxenon]: ok, 292 bytes, 2 literals, 0 resources
+  PASS xsc/testdata/fs_ternary.frag.spv [libxenon, optimize]: ok, 268 bytes, 2 literals, 0 resources
+  PASS xsc/testdata/fs_ternary.frag.spv [xsdk]: ok, 292 bytes, 2 literals, 0 resources
+  PASS xsc/testdata/fs_ternary.frag.spv [xsdk, optimize]: ok, 268 bytes, 2 literals, 0 resources
+  PASS xsc/testdata/fs_texlod.frag.spv [libxenon]: ok, 208 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/fs_texlod.frag.spv [libxenon, optimize]: ok, 208 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/fs_texlod.frag.spv [xsdk]: ok, 208 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/fs_texlod.frag.spv [xsdk, optimize]: ok, 208 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/fs_texproj.frag.spv [libxenon]: ok, 260 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/fs_texproj.frag.spv [libxenon, optimize]: ok, 248 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/fs_texproj.frag.spv [xsdk]: ok, 260 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/fs_texproj.frag.spv [xsdk, optimize]: ok, 248 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/fs_texscale.frag.spv [libxenon]: ok, 320 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/fs_texscale.frag.spv [libxenon, optimize]: ok, 308 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/fs_texscale.frag.spv [xsdk]: ok, 320 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/fs_texscale.frag.spv [xsdk, optimize]: ok, 308 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/fs_vrelation.frag.spv [libxenon]: ok, 648 bytes, 3 literals, 0 resources
+  PASS xsc/testdata/fs_vrelation.frag.spv [libxenon, optimize]: ok, 492 bytes, 3 literals, 0 resources
+  PASS xsc/testdata/fs_vrelation.frag.spv [xsdk]: ok, 648 bytes, 3 literals, 0 resources
+  PASS xsc/testdata/fs_vrelation.frag.spv [xsdk, optimize]: ok, 492 bytes, 3 literals, 0 resources
+  PASS xsc/testdata/gamma.frag.spv [libxenon]: ok, 424 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/gamma.frag.spv [libxenon, optimize]: ok, 388 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/gamma.frag.spv [xsdk]: ok, 424 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/gamma.frag.spv [xsdk, optimize]: ok, 388 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/gray.frag.spv [libxenon]: ok, 280 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/gray.frag.spv [libxenon, optimize]: ok, 280 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/gray.frag.spv [xsdk]: ok, 280 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/gray.frag.spv [xsdk, optimize]: ok, 280 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/intbucket.frag.spv [libxenon]: ok, 356 bytes, 3 literals, 0 resources
+  PASS xsc/testdata/intbucket.frag.spv [libxenon, optimize]: ok, 332 bytes, 3 literals, 0 resources
+  PASS xsc/testdata/intbucket.frag.spv [xsdk]: ok, 356 bytes, 3 literals, 0 resources
+  PASS xsc/testdata/intbucket.frag.spv [xsdk, optimize]: ok, 332 bytes, 3 literals, 0 resources
+  PASS xsc/testdata/intmix.frag.spv [libxenon]: ok, 184 bytes, 1 literals, 0 resources
+  PASS xsc/testdata/intmix.frag.spv [libxenon, optimize]: ok, 184 bytes, 1 literals, 0 resources
+  PASS xsc/testdata/intmix.frag.spv [xsdk]: ok, 184 bytes, 1 literals, 0 resources
+  PASS xsc/testdata/intmix.frag.spv [xsdk, optimize]: ok, 184 bytes, 1 literals, 0 resources
+  PASS xsc/testdata/invtrig.frag.spv [libxenon]: ok, 1264 bytes, 11 literals, 1 resources
+  PASS xsc/testdata/invtrig.frag.spv [libxenon, optimize]: ok, 1024 bytes, 11 literals, 1 resources
+  PASS xsc/testdata/invtrig.frag.spv [xsdk]: ok, 1264 bytes, 11 literals, 1 resources
+  PASS xsc/testdata/invtrig.frag.spv [xsdk, optimize]: ok, 1024 bytes, 11 literals, 1 resources
+  PASS xsc/testdata/lit01.frag.spv [libxenon]: ok, 260 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/lit01.frag.spv [libxenon, optimize]: ok, 236 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/lit01.frag.spv [xsdk]: ok, 260 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/lit01.frag.spv [xsdk, optimize]: ok, 236 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/loop_accum.frag.spv [libxenon]: ok, 252 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/loop_accum.frag.spv [libxenon, optimize]: ok, 192 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/loop_accum.frag.spv [xsdk]: ok, 252 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/loop_accum.frag.spv [xsdk, optimize]: ok, 192 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/loop_array.frag.spv [libxenon]: ok, 232 bytes, 2 literals, 0 resources
+  PASS xsc/testdata/loop_array.frag.spv [libxenon, optimize]: ok, 232 bytes, 2 literals, 0 resources
+  PASS xsc/testdata/loop_array.frag.spv [xsdk]: ok, 232 bytes, 2 literals, 0 resources
+  PASS xsc/testdata/loop_array.frag.spv [xsdk, optimize]: ok, 232 bytes, 2 literals, 0 resources
+  PASS xsc/testdata/loop_break.frag.spv [libxenon]: ok, 304 bytes, 3 literals, 0 resources
+  PASS xsc/testdata/loop_break.frag.spv [libxenon, optimize]: ok, 304 bytes, 3 literals, 0 resources
+  PASS xsc/testdata/loop_break.frag.spv [xsdk]: ok, 304 bytes, 3 literals, 0 resources
+  PASS xsc/testdata/loop_break.frag.spv [xsdk, optimize]: ok, 304 bytes, 3 literals, 0 resources
+  PASS xsc/testdata/loop_cond.frag.spv [libxenon]: ok, 328 bytes, 2 literals, 0 resources
+  PASS xsc/testdata/loop_cond.frag.spv [libxenon, optimize]: ok, 316 bytes, 2 literals, 0 resources
+  PASS xsc/testdata/loop_cond.frag.spv [xsdk]: ok, 328 bytes, 2 literals, 0 resources
+  PASS xsc/testdata/loop_cond.frag.spv [xsdk, optimize]: ok, 316 bytes, 2 literals, 0 resources
+  PASS xsc/testdata/loop_nested.frag.spv [libxenon]: ok, 452 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/loop_nested.frag.spv [libxenon, optimize]: ok, 320 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/loop_nested.frag.spv [xsdk]: ok, 452 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/loop_nested.frag.spv [xsdk, optimize]: ok, 320 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/loop_stair.frag.spv [libxenon]: ok, 568 bytes, 5 literals, 1 resources
+  PASS xsc/testdata/loop_stair.frag.spv [libxenon, optimize]: ok, 508 bytes, 5 literals, 1 resources
+  PASS xsc/testdata/loop_stair.frag.spv [xsdk]: ok, 568 bytes, 5 literals, 1 resources
+  PASS xsc/testdata/loop_stair.frag.spv [xsdk, optimize]: ok, 508 bytes, 5 literals, 1 resources
+  PASS xsc/testdata/loop_uniform.frag.spv [libxenon]: ok, 236 bytes, 2 literals, 0 resources
+  PASS xsc/testdata/loop_uniform.frag.spv [libxenon, optimize]: ok, 236 bytes, 2 literals, 0 resources
+  PASS xsc/testdata/loop_uniform.frag.spv [xsdk]: ok, 236 bytes, 2 literals, 0 resources
+  PASS xsc/testdata/loop_uniform.frag.spv [xsdk, optimize]: ok, 236 bytes, 2 literals, 0 resources
+  PASS xsc/testdata/loop_weight.frag.spv [libxenon]: ok, 420 bytes, 3 literals, 1 resources
+  PASS xsc/testdata/loop_weight.frag.spv [libxenon, optimize]: ok, 324 bytes, 3 literals, 1 resources
+  PASS xsc/testdata/loop_weight.frag.spv [xsdk]: ok, 420 bytes, 3 literals, 1 resources
+  PASS xsc/testdata/loop_weight.frag.spv [xsdk, optimize]: ok, 324 bytes, 3 literals, 1 resources
+  PASS xsc/testdata/loop_while.frag.spv [libxenon]: ok, 252 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/loop_while.frag.spv [libxenon, optimize]: ok, 192 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/loop_while.frag.spv [xsdk]: ok, 252 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/loop_while.frag.spv [xsdk, optimize]: ok, 192 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/mathfns.frag.spv [libxenon]: ok, 520 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/mathfns.frag.spv [libxenon, optimize]: ok, 424 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/mathfns.frag.spv [xsdk]: ok, 520 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/mathfns.frag.spv [xsdk, optimize]: ok, 424 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/modcross.frag.spv [libxenon]: ok, 428 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/modcross.frag.spv [libxenon, optimize]: ok, 332 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/modcross.frag.spv [xsdk]: ok, 428 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/modcross.frag.spv [xsdk, optimize]: ok, 332 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/modulate.frag.spv [libxenon]: ok, 212 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/modulate.frag.spv [libxenon, optimize]: ok, 212 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/modulate.frag.spv [xsdk]: ok, 212 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/modulate.frag.spv [xsdk, optimize]: ok, 212 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/nested_if.frag.spv [libxenon]: ok, 304 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/nested_if.frag.spv [libxenon, optimize]: ok, 304 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/nested_if.frag.spv [xsdk]: ok, 304 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/nested_if.frag.spv [xsdk, optimize]: ok, 304 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/normlen.frag.spv [libxenon]: ok, 240 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/normlen.frag.spv [libxenon, optimize]: ok, 204 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/normlen.frag.spv [xsdk]: ok, 240 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/normlen.frag.spv [xsdk, optimize]: ok, 204 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/rounding.frag.spv [libxenon]: ok, 352 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/rounding.frag.spv [libxenon, optimize]: ok, 340 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/rounding.frag.spv [xsdk]: ok, 352 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/rounding.frag.spv [xsdk, optimize]: ok, 340 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/sat.frag.spv [libxenon]: ok, 212 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/sat.frag.spv [libxenon, optimize]: ok, 212 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/sat.frag.spv [xsdk]: ok, 212 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/sat.frag.spv [xsdk, optimize]: ok, 212 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/shuffle2.frag.spv [libxenon]: ok, 248 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/shuffle2.frag.spv [libxenon, optimize]: ok, 236 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/shuffle2.frag.spv [xsdk]: ok, 248 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/shuffle2.frag.spv [xsdk, optimize]: ok, 236 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/spincube.vert.spv [libxenon]: ok, 336 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/spincube.vert.spv [libxenon, optimize]: ok, 336 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/spincube.vert.spv [xsdk]: ok, 336 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/spincube.vert.spv [xsdk, optimize]: ok, 336 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/stepsmooth.frag.spv [libxenon]: ok, 604 bytes, 4 literals, 1 resources
+  PASS xsc/testdata/stepsmooth.frag.spv [libxenon, optimize]: ok, 556 bytes, 4 literals, 1 resources
+  PASS xsc/testdata/stepsmooth.frag.spv [xsdk]: ok, 604 bytes, 4 literals, 1 resources
+  PASS xsc/testdata/stepsmooth.frag.spv [xsdk, optimize]: ok, 556 bytes, 4 literals, 1 resources
+  PASS xsc/testdata/sw_swizzle.frag.spv [libxenon]: ok, 224 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/sw_swizzle.frag.spv [libxenon, optimize]: ok, 212 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/sw_swizzle.frag.spv [xsdk]: ok, 224 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/sw_swizzle.frag.spv [xsdk, optimize]: ok, 212 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/tangent.frag.spv [libxenon]: ok, 236 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/tangent.frag.spv [libxenon, optimize]: ok, 236 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/tangent.frag.spv [xsdk]: ok, 236 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/tangent.frag.spv [xsdk, optimize]: ok, 236 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/tint.frag.spv [libxenon]: ok, 236 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/tint.frag.spv [libxenon, optimize]: ok, 236 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/tint.frag.spv [xsdk]: ok, 236 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/tint.frag.spv [xsdk, optimize]: ok, 236 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/verify_alloc.frag.spv [libxenon]: ok, 884 bytes, 7 literals, 1 resources
+  PASS xsc/testdata/verify_alloc.frag.spv [libxenon, optimize]: ok, 764 bytes, 7 literals, 1 resources
+  PASS xsc/testdata/verify_alloc.frag.spv [xsdk]: ok, 884 bytes, 7 literals, 1 resources
+  PASS xsc/testdata/verify_alloc.frag.spv [xsdk, optimize]: ok, 764 bytes, 7 literals, 1 resources
+  PASS xsc/testdata/verify_asin.frag.spv [libxenon]: ok, 656 bytes, 7 literals, 1 resources
+  PASS xsc/testdata/verify_asin.frag.spv [libxenon, optimize]: ok, 608 bytes, 7 literals, 1 resources
+  PASS xsc/testdata/verify_asin.frag.spv [xsdk]: ok, 656 bytes, 7 literals, 1 resources
+  PASS xsc/testdata/verify_asin.frag.spv [xsdk, optimize]: ok, 608 bytes, 7 literals, 1 resources
+  PASS xsc/testdata/verify_atan.frag.spv [libxenon]: ok, 688 bytes, 8 literals, 1 resources
+  PASS xsc/testdata/verify_atan.frag.spv [libxenon, optimize]: ok, 628 bytes, 8 literals, 1 resources
+  PASS xsc/testdata/verify_atan.frag.spv [xsdk]: ok, 688 bytes, 8 literals, 1 resources
+  PASS xsc/testdata/verify_atan.frag.spv [xsdk, optimize]: ok, 628 bytes, 8 literals, 1 resources
+  PASS xsc/testdata/verify_cross.frag.spv [libxenon]: ok, 328 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/verify_cross.frag.spv [libxenon, optimize]: ok, 316 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/verify_cross.frag.spv [xsdk]: ok, 328 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/verify_cross.frag.spv [xsdk, optimize]: ok, 316 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/verify_fract.frag.spv [libxenon]: ok, 236 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/verify_fract.frag.spv [libxenon, optimize]: ok, 224 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/verify_fract.frag.spv [xsdk]: ok, 236 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/verify_fract.frag.spv [xsdk, optimize]: ok, 224 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/verify_mod.frag.spv [libxenon]: ok, 292 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/verify_mod.frag.spv [libxenon, optimize]: ok, 280 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/verify_mod.frag.spv [xsdk]: ok, 292 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/verify_mod.frag.spv [xsdk, optimize]: ok, 280 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/verify_nest.frag.spv [libxenon]: ok, 368 bytes, 4 literals, 1 resources
+  PASS xsc/testdata/verify_nest.frag.spv [libxenon, optimize]: ok, 356 bytes, 4 literals, 1 resources
+  PASS xsc/testdata/verify_nest.frag.spv [xsdk]: ok, 368 bytes, 4 literals, 1 resources
+  PASS xsc/testdata/verify_nest.frag.spv [xsdk, optimize]: ok, 356 bytes, 4 literals, 1 resources
+  PASS xsc/testdata/verify_round.frag.spv [libxenon]: ok, 360 bytes, 3 literals, 1 resources
+  PASS xsc/testdata/verify_round.frag.spv [libxenon, optimize]: ok, 324 bytes, 3 literals, 1 resources
+  PASS xsc/testdata/verify_round.frag.spv [xsdk]: ok, 360 bytes, 3 literals, 1 resources
+  PASS xsc/testdata/verify_round.frag.spv [xsdk, optimize]: ok, 324 bytes, 3 literals, 1 resources
+  PASS xsc/testdata/verify_sign.frag.spv [libxenon]: ok, 296 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/verify_sign.frag.spv [libxenon, optimize]: ok, 272 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/verify_sign.frag.spv [xsdk]: ok, 296 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/verify_sign.frag.spv [xsdk, optimize]: ok, 272 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/verify_smooth.frag.spv [libxenon]: ok, 420 bytes, 3 literals, 1 resources
+  PASS xsc/testdata/verify_smooth.frag.spv [libxenon, optimize]: ok, 396 bytes, 3 literals, 1 resources
+  PASS xsc/testdata/verify_smooth.frag.spv [xsdk]: ok, 420 bytes, 3 literals, 1 resources
+  PASS xsc/testdata/verify_smooth.frag.spv [xsdk, optimize]: ok, 396 bytes, 3 literals, 1 resources
+  PASS xsc/testdata/verify_sqrt.frag.spv [libxenon]: ok, 180 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/verify_sqrt.frag.spv [libxenon, optimize]: ok, 168 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/verify_sqrt.frag.spv [xsdk]: ok, 180 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/verify_sqrt.frag.spv [xsdk, optimize]: ok, 168 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/verify_trunc.frag.spv [libxenon]: ok, 292 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/verify_trunc.frag.spv [libxenon, optimize]: ok, 280 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/verify_trunc.frag.spv [xsdk]: ok, 292 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/verify_trunc.frag.spv [xsdk, optimize]: ok, 280 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/vert.spv [libxenon]: ok, 336 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vert.spv [libxenon, optimize]: ok, 336 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vert.spv [xsdk]: ok, 336 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vert.spv [xsdk, optimize]: ok, 336 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vk_block_literals.vert.spv [libxenon]: ok, 352 bytes, 1 literals, 2 resources
+  PASS xsc/testdata/vk_block_literals.vert.spv [libxenon, optimize]: ok, 340 bytes, 1 literals, 2 resources
+  PASS xsc/testdata/vk_block_literals.vert.spv [xsdk]: ok, 352 bytes, 1 literals, 2 resources
+  PASS xsc/testdata/vk_block_literals.vert.spv [xsdk, optimize]: ok, 340 bytes, 1 literals, 2 resources
+  PASS xsc/testdata/vk_blocks.vert.spv [libxenon]: ok, 596 bytes, 0 literals, 3 resources
+  PASS xsc/testdata/vk_blocks.vert.spv [libxenon, optimize]: ok, 548 bytes, 0 literals, 3 resources
+  PASS xsc/testdata/vk_blocks.vert.spv [xsdk]: ok, 596 bytes, 0 literals, 3 resources
+  PASS xsc/testdata/vk_blocks.vert.spv [xsdk, optimize]: ok, 548 bytes, 0 literals, 3 resources
+  PASS xsc/testdata/vk_constant_color.frag.spv [libxenon]: ok, 180 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_constant_color.frag.spv [libxenon, optimize]: ok, 180 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_constant_color.frag.spv [xsdk]: ok, 180 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_constant_color.frag.spv [xsdk, optimize]: ok, 180 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_constant_varying.vert.spv [libxenon]: ok, 248 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_constant_varying.vert.spv [libxenon, optimize]: ok, 248 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_constant_varying.vert.spv [xsdk]: ok, 248 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_constant_varying.vert.spv [xsdk, optimize]: ok, 248 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_dependent_read.frag.spv [libxenon]: ok, 332 bytes, 1 literals, 2 resources
+  PASS xsc/testdata/vk_dependent_read.frag.spv [libxenon, optimize]: ok, 320 bytes, 1 literals, 2 resources
+  PASS xsc/testdata/vk_dependent_read.frag.spv [xsdk]: ok, 332 bytes, 1 literals, 2 resources
+  PASS xsc/testdata/vk_dependent_read.frag.spv [xsdk, optimize]: ok, 320 bytes, 1 literals, 2 resources
+  PASS xsc/testdata/vk_dynamic_matrices.vert.spv [libxenon]: ok, 416 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/vk_dynamic_matrices.vert.spv [libxenon, optimize]: ok, 416 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/vk_dynamic_matrices.vert.spv [xsdk]: ok, 416 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/vk_dynamic_matrices.vert.spv [xsdk, optimize]: ok, 416 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/vk_dynamic_rows.vert.spv [libxenon]: ok, 624 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/vk_dynamic_rows.vert.spv [libxenon, optimize]: ok, 624 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/vk_dynamic_rows.vert.spv [xsdk]: ok, 624 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/vk_dynamic_rows.vert.spv [xsdk, optimize]: ok, 624 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/vk_frag_coord.frag.spv [libxenon]: ok, 344 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/vk_frag_coord.frag.spv [libxenon, optimize]: ok, 344 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/vk_frag_coord.frag.spv [xsdk]: ok, 344 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/vk_frag_coord.frag.spv [xsdk, optimize]: ok, 344 bytes, 2 literals, 1 resources
+  PASS xsc/testdata/vk_frag_coord_depth.frag.spv [libxenon]: refused: gl_FragCoord.zw: the pixel parameters hold no depth (v1)
+  PASS xsc/testdata/vk_frag_coord_depth.frag.spv [libxenon, optimize]: refused: gl_FragCoord.zw: the pixel parameters hold no depth (v1)
+  PASS xsc/testdata/vk_frag_coord_depth.frag.spv [xsdk]: refused: gl_FragCoord.zw: the pixel parameters hold no depth (v1)
+  PASS xsc/testdata/vk_frag_coord_depth.frag.spv [xsdk, optimize]: refused: gl_FragCoord.zw: the pixel parameters hold no depth (v1)
+  PASS xsc/testdata/vk_local_branch_reassign.frag.spv [libxenon]: refused: local %9 stored more than once where the unroller doesn't rewrite it
+  PASS xsc/testdata/vk_local_branch_reassign.frag.spv [libxenon, optimize]: refused: local %9 stored more than once where the unroller doesn't rewrite it
+  PASS xsc/testdata/vk_local_branch_reassign.frag.spv [xsdk]: refused: local %9 stored more than once where the unroller doesn't rewrite it
+  PASS xsc/testdata/vk_local_branch_reassign.frag.spv [xsdk, optimize]: refused: local %9 stored more than once where the unroller doesn't rewrite it
+  PASS xsc/testdata/vk_local_chain.frag.spv [libxenon]: ok, 1888 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_local_chain.frag.spv [libxenon, optimize]: ok, 1036 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_local_chain.frag.spv [xsdk]: ok, 1888 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_local_chain.frag.spv [xsdk, optimize]: ok, 1036 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_local_merged_early.frag.spv [libxenon]: refused: local %9 read before the if/else that assigns it ends
+  PASS xsc/testdata/vk_local_merged_early.frag.spv [libxenon, optimize]: refused: local %9 read before the if/else that assigns it ends
+  PASS xsc/testdata/vk_local_merged_early.frag.spv [xsdk]: refused: local %9 read before the if/else that assigns it ends
+  PASS xsc/testdata/vk_local_merged_early.frag.spv [xsdk, optimize]: refused: local %9 read before the if/else that assigns it ends
+  PASS xsc/testdata/vk_local_partial.frag.spv [libxenon]: refused: indexed access into a local not supported
+  PASS xsc/testdata/vk_local_partial.frag.spv [libxenon, optimize]: refused: indexed access into a local not supported
+  PASS xsc/testdata/vk_local_partial.frag.spv [xsdk]: refused: indexed access into a local not supported
+  PASS xsc/testdata/vk_local_partial.frag.spv [xsdk, optimize]: refused: indexed access into a local not supported
+  PASS xsc/testdata/vk_local_reassign.frag.spv [libxenon]: ok, 268 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_local_reassign.frag.spv [libxenon, optimize]: ok, 232 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_local_reassign.frag.spv [xsdk]: ok, 268 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_local_reassign.frag.spv [xsdk, optimize]: ok, 232 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_local_reassign.vert.spv [libxenon]: ok, 272 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_local_reassign.vert.spv [libxenon, optimize]: ok, 260 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_local_reassign.vert.spv [xsdk]: ok, 272 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_local_reassign.vert.spv [xsdk, optimize]: ok, 260 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_many_live.vert.spv [libxenon]: ok, 2784 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/vk_many_live.vert.spv [libxenon, optimize]: ok, 2408 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/vk_many_live.vert.spv [xsdk]: ok, 2784 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/vk_many_live.vert.spv [xsdk, optimize]: ok, 2408 bytes, 1 literals, 1 resources
+  PASS xsc/testdata/vk_matrices.vert.spv [libxenon]: ok, 672 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_matrices.vert.spv [libxenon, optimize]: ok, 612 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_matrices.vert.spv [xsdk]: ok, 672 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_matrices.vert.spv [xsdk, optimize]: ok, 612 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_position_only.vert.spv [libxenon]: ok, 272 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_position_only.vert.spv [libxenon, optimize]: ok, 260 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_position_only.vert.spv [xsdk]: ok, 272 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_position_only.vert.spv [xsdk, optimize]: ok, 260 bytes, 0 literals, 1 resources
+  PASS xsc/testdata/vk_samplers.frag.spv [libxenon]: ok, 320 bytes, 0 literals, 3 resources
+  PASS xsc/testdata/vk_samplers.frag.spv [libxenon, optimize]: ok, 308 bytes, 0 literals, 3 resources
+  PASS xsc/testdata/vk_samplers.frag.spv [xsdk]: ok, 320 bytes, 0 literals, 3 resources
+  PASS xsc/testdata/vk_samplers.frag.spv [xsdk, optimize]: ok, 308 bytes, 0 literals, 3 resources
+  PASS xsc/testdata/vk_texel_dependent.frag.spv [libxenon]: ok, 392 bytes, 0 literals, 3 resources
+  PASS xsc/testdata/vk_texel_dependent.frag.spv [libxenon, optimize]: ok, 368 bytes, 0 literals, 3 resources
+  PASS xsc/testdata/vk_texel_dependent.frag.spv [xsdk]: ok, 392 bytes, 0 literals, 3 resources
+  PASS xsc/testdata/vk_texel_dependent.frag.spv [xsdk, optimize]: ok, 368 bytes, 0 literals, 3 resources
+  PASS xsc/testdata/vk_texel_offsets.frag.spv [libxenon]: ok, 428 bytes, 0 literals, 2 resources
+  PASS xsc/testdata/vk_texel_offsets.frag.spv [libxenon, optimize]: ok, 404 bytes, 0 literals, 2 resources
+  PASS xsc/testdata/vk_texel_offsets.frag.spv [xsdk]: ok, 428 bytes, 0 literals, 2 resources
+  PASS xsc/testdata/vk_texel_offsets.frag.spv [xsdk, optimize]: ok, 404 bytes, 0 literals, 2 resources
+  PASS xsc/testdata/vk_three_inputs.vert.spv [libxenon]: ok, 324 bytes, 1 literals, 0 resources
+  PASS xsc/testdata/vk_three_inputs.vert.spv [libxenon, optimize]: ok, 324 bytes, 1 literals, 0 resources
+  PASS xsc/testdata/vk_three_inputs.vert.spv [xsdk]: ok, 324 bytes, 1 literals, 0 resources
+  PASS xsc/testdata/vk_three_inputs.vert.spv [xsdk, optimize]: ok, 324 bytes, 1 literals, 0 resources
+  PASS xsc/testdata/vk_triangle.frag.gl.spv [libxenon]: ok, 140 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vk_triangle.frag.gl.spv [libxenon, optimize]: ok, 140 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vk_triangle.frag.gl.spv [xsdk]: ok, 140 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vk_triangle.frag.gl.spv [xsdk, optimize]: ok, 140 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vk_triangle.frag.spv [libxenon]: ok, 140 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vk_triangle.frag.spv [libxenon, optimize]: ok, 140 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vk_triangle.frag.spv [xsdk]: ok, 140 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vk_triangle.frag.spv [xsdk, optimize]: ok, 140 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vk_triangle.vert.gl.spv [libxenon]: ok, 220 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vk_triangle.vert.gl.spv [libxenon, optimize]: ok, 220 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vk_triangle.vert.gl.spv [xsdk]: ok, 220 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vk_triangle.vert.gl.spv [xsdk, optimize]: ok, 220 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vk_triangle.vert.spv [libxenon]: ok, 220 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vk_triangle.vert.spv [libxenon, optimize]: ok, 220 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vk_triangle.vert.spv [xsdk]: ok, 220 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vk_triangle.vert.spv [xsdk, optimize]: ok, 220 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vk_vertex_branch.vert.spv [libxenon]: refused: vertex shader control flow (an if/else, a ?: glslang branches for, or a switch) isn't lowered
+  PASS xsc/testdata/vk_vertex_branch.vert.spv [libxenon, optimize]: refused: vertex shader control flow (an if/else, a ?: glslang branches for, or a switch) isn't lowered
+  PASS xsc/testdata/vk_vertex_branch.vert.spv [xsdk]: refused: vertex shader control flow (an if/else, a ?: glslang branches for, or a switch) isn't lowered
+  PASS xsc/testdata/vk_vertex_branch.vert.spv [xsdk, optimize]: refused: vertex shader control flow (an if/else, a ?: glslang branches for, or a switch) isn't lowered
+  PASS xsc/testdata/vs_lighting.vert.spv [libxenon]: ok, 524 bytes, 1 literals, 0 resources
+  PASS xsc/testdata/vs_lighting.vert.spv [libxenon, optimize]: ok, 492 bytes, 1 literals, 0 resources
+  PASS xsc/testdata/vs_lighting.vert.spv [xsdk]: ok, 524 bytes, 1 literals, 0 resources
+  PASS xsc/testdata/vs_lighting.vert.spv [xsdk, optimize]: ok, 492 bytes, 1 literals, 0 resources
+  PASS xsc/testdata/vs_mat2.vert.spv [libxenon]: ok, 456 bytes, 1 literals, 0 resources
+  PASS xsc/testdata/vs_mat2.vert.spv [libxenon, optimize]: ok, 456 bytes, 1 literals, 0 resources
+  PASS xsc/testdata/vs_mat2.vert.spv [xsdk]: ok, 456 bytes, 1 literals, 0 resources
+  PASS xsc/testdata/vs_mat2.vert.spv [xsdk, optimize]: ok, 456 bytes, 1 literals, 0 resources
+  PASS xsc/testdata/vs_mat3.vert.spv [libxenon]: ok, 584 bytes, 2 literals, 0 resources
+  PASS xsc/testdata/vs_mat3.vert.spv [libxenon, optimize]: ok, 568 bytes, 2 literals, 0 resources
+  PASS xsc/testdata/vs_mat3.vert.spv [xsdk]: ok, 584 bytes, 2 literals, 0 resources
+  PASS xsc/testdata/vs_mat3.vert.spv [xsdk, optimize]: ok, 568 bytes, 2 literals, 0 resources
+  PASS xsc/testdata/vs_matmat.vert.spv [libxenon]: ok, 636 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vs_matmat.vert.spv [libxenon, optimize]: ok, 588 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vs_matmat.vert.spv [xsdk]: ok, 636 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vs_matmat.vert.spv [xsdk, optimize]: ok, 588 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vs_vecmat.vert.spv [libxenon]: ok, 348 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vs_vecmat.vert.spv [libxenon, optimize]: ok, 348 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vs_vecmat.vert.spv [xsdk]: ok, 348 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vs_vecmat.vert.spv [xsdk, optimize]: ok, 348 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vs_wave.vert.spv [libxenon]: ok, 440 bytes, 1 literals, 0 resources
+  PASS xsc/testdata/vs_wave.vert.spv [libxenon, optimize]: ok, 428 bytes, 1 literals, 0 resources
+  PASS xsc/testdata/vs_wave.vert.spv [xsdk]: ok, 440 bytes, 1 literals, 0 resources
+  PASS xsc/testdata/vs_wave.vert.spv [xsdk, optimize]: ok, 428 bytes, 1 literals, 0 resources
+  PASS xsc/testdata/vtx_arith.vert.spv [libxenon]: ok, 456 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vtx_arith.vert.spv [libxenon, optimize]: ok, 456 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vtx_arith.vert.spv [xsdk]: ok, 456 bytes, 0 literals, 0 resources
+  PASS xsc/testdata/vtx_arith.vert.spv [xsdk, optimize]: ok, 456 bytes, 0 literals, 0 resources
+  PASS shaders.c:mesh_frag_spirv [libxenon]: ok, 252 bytes, 0 literals, 2 resources
+  PASS shaders.c:mesh_frag_spirv [libxenon, optimize]: ok, 252 bytes, 0 literals, 2 resources
+  PASS shaders.c:mesh_frag_spirv [xsdk]: ok, 252 bytes, 0 literals, 2 resources
+  PASS shaders.c:mesh_frag_spirv [xsdk, optimize]: ok, 252 bytes, 0 literals, 2 resources
+  PASS shaders.c:mesh_vert_spirv [libxenon]: ok, 376 bytes, 1 literals, 1 resources
+  PASS shaders.c:mesh_vert_spirv [libxenon, optimize]: ok, 352 bytes, 1 literals, 1 resources
+  PASS shaders.c:mesh_vert_spirv [xsdk]: ok, 376 bytes, 1 literals, 1 resources
+  PASS shaders.c:mesh_vert_spirv [xsdk, optimize]: ok, 352 bytes, 1 literals, 1 resources
+  PASS shaders.c:mesh_gray_frag_spirv [libxenon]: ok, 332 bytes, 1 literals, 2 resources
+  PASS shaders.c:mesh_gray_frag_spirv [libxenon, optimize]: ok, 332 bytes, 1 literals, 2 resources
+  PASS shaders.c:mesh_gray_frag_spirv [xsdk]: ok, 332 bytes, 1 literals, 2 resources
+  PASS shaders.c:mesh_gray_frag_spirv [xsdk, optimize]: ok, 332 bytes, 1 literals, 2 resources
+  PASS shaders.c:mesh_uniform_frag_spirv [libxenon]: ok, 252 bytes, 0 literals, 2 resources
+  PASS shaders.c:mesh_uniform_frag_spirv [libxenon, optimize]: ok, 252 bytes, 0 literals, 2 resources
+  PASS shaders.c:mesh_uniform_frag_spirv [xsdk]: ok, 252 bytes, 0 literals, 2 resources
+  PASS shaders.c:mesh_uniform_frag_spirv [xsdk, optimize]: ok, 252 bytes, 0 literals, 2 resources
+  PASS shaders.c:mesh_uniform_vert_spirv [libxenon]: ok, 376 bytes, 1 literals, 1 resources
+  PASS shaders.c:mesh_uniform_vert_spirv [libxenon, optimize]: ok, 352 bytes, 1 literals, 1 resources
+  PASS shaders.c:mesh_uniform_vert_spirv [xsdk]: ok, 376 bytes, 1 literals, 1 resources
+  PASS shaders.c:mesh_uniform_vert_spirv [xsdk, optimize]: ok, 352 bytes, 1 literals, 1 resources
+  PASS shaders.c:sprite_frag_spirv [libxenon]: ok, 212 bytes, 0 literals, 1 resources
+  PASS shaders.c:sprite_frag_spirv [libxenon, optimize]: ok, 212 bytes, 0 literals, 1 resources
+  PASS shaders.c:sprite_frag_spirv [xsdk]: ok, 212 bytes, 0 literals, 1 resources
+  PASS shaders.c:sprite_frag_spirv [xsdk, optimize]: ok, 212 bytes, 0 literals, 1 resources
+  PASS shaders.c:sprite_vert_spirv [libxenon]: ok, 324 bytes, 1 literals, 0 resources
+  PASS shaders.c:sprite_vert_spirv [libxenon, optimize]: ok, 324 bytes, 1 literals, 0 resources
+  PASS shaders.c:sprite_vert_spirv [xsdk]: ok, 324 bytes, 1 literals, 0 resources
+  PASS shaders.c:sprite_vert_spirv [xsdk, optimize]: ok, 324 bytes, 1 literals, 0 resources
+  PASS blit_shaders.c:v4x_blit_frag_spirv [libxenon]: ok, 208 bytes, 0 literals, 1 resources
+  PASS blit_shaders.c:v4x_blit_frag_spirv [libxenon, optimize]: ok, 208 bytes, 0 literals, 1 resources
+  PASS blit_shaders.c:v4x_blit_frag_spirv [xsdk]: ok, 208 bytes, 0 literals, 1 resources
+  PASS blit_shaders.c:v4x_blit_frag_spirv [xsdk, optimize]: ok, 208 bytes, 0 literals, 1 resources
+  PASS blit_shaders.c:v4x_blit_vert_spirv [libxenon]: ok, 220 bytes, 0 literals, 0 resources
+  PASS blit_shaders.c:v4x_blit_vert_spirv [libxenon, optimize]: ok, 220 bytes, 0 literals, 0 resources
+  PASS blit_shaders.c:v4x_blit_vert_spirv [xsdk]: ok, 220 bytes, 0 literals, 0 resources
+  PASS blit_shaders.c:v4x_blit_vert_spirv [xsdk, optimize]: ok, 220 bytes, 0 literals, 0 resources
+  PASS shaders.c:band_frag_spirv [libxenon]: ok, 344 bytes, 2 literals, 1 resources
+  PASS shaders.c:band_frag_spirv [libxenon, optimize]: ok, 344 bytes, 2 literals, 1 resources
+  PASS shaders.c:band_frag_spirv [xsdk]: ok, 344 bytes, 2 literals, 1 resources
+  PASS shaders.c:band_frag_spirv [xsdk, optimize]: ok, 344 bytes, 2 literals, 1 resources
+  PASS shaders.c:matrix_index_vert_spirv [libxenon]: ok, 624 bytes, 2 literals, 1 resources
+  PASS shaders.c:matrix_index_vert_spirv [libxenon, optimize]: ok, 624 bytes, 2 literals, 1 resources
+  PASS shaders.c:matrix_index_vert_spirv [xsdk]: ok, 624 bytes, 2 literals, 1 resources
+  PASS shaders.c:matrix_index_vert_spirv [xsdk, optimize]: ok, 624 bytes, 2 literals, 1 resources
+  PASS shaders.c:push_frag_spirv [libxenon]: ok, 180 bytes, 0 literals, 1 resources
+  PASS shaders.c:push_frag_spirv [libxenon, optimize]: ok, 180 bytes, 0 literals, 1 resources
+  PASS shaders.c:push_frag_spirv [xsdk]: ok, 180 bytes, 0 literals, 1 resources
+  PASS shaders.c:push_frag_spirv [xsdk, optimize]: ok, 180 bytes, 0 literals, 1 resources
+  PASS shaders.c:push_vert_spirv [libxenon]: ok, 272 bytes, 0 literals, 1 resources
+  PASS shaders.c:push_vert_spirv [libxenon, optimize]: ok, 260 bytes, 0 literals, 1 resources
+  PASS shaders.c:push_vert_spirv [xsdk]: ok, 272 bytes, 0 literals, 1 resources
+  PASS shaders.c:push_vert_spirv [xsdk, optimize]: ok, 260 bytes, 0 literals, 1 resources
+  PASS shaders.c:texture_frag_spirv [libxenon]: ok, 208 bytes, 0 literals, 1 resources
+  PASS shaders.c:texture_frag_spirv [libxenon, optimize]: ok, 208 bytes, 0 literals, 1 resources
+  PASS shaders.c:texture_frag_spirv [xsdk]: ok, 208 bytes, 0 literals, 1 resources
+  PASS shaders.c:texture_frag_spirv [xsdk, optimize]: ok, 208 bytes, 0 literals, 1 resources
+  PASS shaders.c:texture_vert_spirv [libxenon]: ok, 220 bytes, 0 literals, 0 resources
+  PASS shaders.c:texture_vert_spirv [libxenon, optimize]: ok, 220 bytes, 0 literals, 0 resources
+  PASS shaders.c:texture_vert_spirv [xsdk]: ok, 220 bytes, 0 literals, 0 resources
+  PASS shaders.c:texture_vert_spirv [xsdk, optimize]: ok, 220 bytes, 0 literals, 0 resources
+  PASS shaders.c:triangle_frag_spirv [libxenon]: ok, 140 bytes, 0 literals, 0 resources
+  PASS shaders.c:triangle_frag_spirv [libxenon, optimize]: ok, 140 bytes, 0 literals, 0 resources
+  PASS shaders.c:triangle_frag_spirv [xsdk]: ok, 140 bytes, 0 literals, 0 resources
+  PASS shaders.c:triangle_frag_spirv [xsdk, optimize]: ok, 140 bytes, 0 literals, 0 resources
+  PASS shaders.c:triangle_vert_spirv [libxenon]: ok, 220 bytes, 0 literals, 0 resources
+  PASS shaders.c:triangle_vert_spirv [libxenon, optimize]: ok, 220 bytes, 0 literals, 0 resources
+  PASS shaders.c:triangle_vert_spirv [xsdk]: ok, 220 bytes, 0 literals, 0 resources
+  PASS shaders.c:triangle_vert_spirv [xsdk, optimize]: ok, 220 bytes, 0 literals, 0 resources
+  PASS shaders.c:uniform_frag_spirv [libxenon]: ok, 184 bytes, 0 literals, 1 resources
+  PASS shaders.c:uniform_frag_spirv [libxenon, optimize]: ok, 184 bytes, 0 literals, 1 resources
+  PASS shaders.c:uniform_frag_spirv [xsdk]: ok, 184 bytes, 0 literals, 1 resources
+  PASS shaders.c:uniform_frag_spirv [xsdk, optimize]: ok, 184 bytes, 0 literals, 1 resources
+  PASS shaders.c:uniform_vert_spirv [libxenon]: ok, 344 bytes, 0 literals, 1 resources
+  PASS shaders.c:uniform_vert_spirv [libxenon, optimize]: ok, 344 bytes, 0 literals, 1 resources
+  PASS shaders.c:uniform_vert_spirv [xsdk]: ok, 344 bytes, 0 literals, 1 resources
+  PASS shaders.c:uniform_vert_spirv [xsdk, optimize]: ok, 344 bytes, 0 literals, 1 resources
+  PASS test_objects.c:unknown_spirv [libxenon]: value: too short for a SPIR-V header
+  PASS test_objects.c:unknown_spirv [libxenon, optimize]: value: too short for a SPIR-V header
+  PASS test_objects.c:unknown_spirv [xsdk]: value: too short for a SPIR-V header
+  PASS test_objects.c:unknown_spirv [xsdk, optimize]: value: too short for a SPIR-V header
+  PASS glsl_pack.c:glsl_017c19da20649fa0_frag_spirv [libxenon]: ok, 524 bytes, 5 literals, 1 resources
+  PASS glsl_pack.c:glsl_017c19da20649fa0_frag_spirv [libxenon, optimize]: ok, 488 bytes, 5 literals, 1 resources
+  PASS glsl_pack.c:glsl_017c19da20649fa0_frag_spirv [xsdk]: ok, 524 bytes, 5 literals, 1 resources
+  PASS glsl_pack.c:glsl_017c19da20649fa0_frag_spirv [xsdk, optimize]: ok, 488 bytes, 5 literals, 1 resources
+  PASS glsl_pack.c:glsl_01c8b343f41ff9f4_frag_spirv [libxenon]: ok, 288 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_01c8b343f41ff9f4_frag_spirv [libxenon, optimize]: ok, 252 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_01c8b343f41ff9f4_frag_spirv [xsdk]: ok, 288 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_01c8b343f41ff9f4_frag_spirv [xsdk, optimize]: ok, 252 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_020233a3aaada7e9_vert_spirv [libxenon]: ok, 1000 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_020233a3aaada7e9_vert_spirv [libxenon, optimize]: ok, 968 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_020233a3aaada7e9_vert_spirv [xsdk]: ok, 1000 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_020233a3aaada7e9_vert_spirv [xsdk, optimize]: ok, 968 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_041a85f07c74ec96_frag_spirv [libxenon]: ok, 624 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_041a85f07c74ec96_frag_spirv [libxenon, optimize]: ok, 600 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_041a85f07c74ec96_frag_spirv [xsdk]: ok, 624 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_041a85f07c74ec96_frag_spirv [xsdk, optimize]: ok, 600 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_04a469b1240c5698_vert_spirv [libxenon]: ok, 1016 bytes, 2 literals, 3 resources
+  PASS glsl_pack.c:glsl_04a469b1240c5698_vert_spirv [libxenon, optimize]: ok, 1016 bytes, 2 literals, 3 resources
+  PASS glsl_pack.c:glsl_04a469b1240c5698_vert_spirv [xsdk]: ok, 1016 bytes, 2 literals, 3 resources
+  PASS glsl_pack.c:glsl_04a469b1240c5698_vert_spirv [xsdk, optimize]: ok, 1016 bytes, 2 literals, 3 resources
+  PASS glsl_pack.c:glsl_05716a5bd2aae204_frag_spirv [libxenon]: ok, 1920 bytes, 7 literals, 5 resources
+  PASS glsl_pack.c:glsl_05716a5bd2aae204_frag_spirv [libxenon, optimize]: ok, 1656 bytes, 7 literals, 5 resources
+  PASS glsl_pack.c:glsl_05716a5bd2aae204_frag_spirv [xsdk]: ok, 1920 bytes, 7 literals, 5 resources
+  PASS glsl_pack.c:glsl_05716a5bd2aae204_frag_spirv [xsdk, optimize]: ok, 1656 bytes, 7 literals, 5 resources
+  PASS glsl_pack.c:glsl_05b63b9d751d5736_frag_spirv [libxenon]: ok, 288 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_05b63b9d751d5736_frag_spirv [libxenon, optimize]: ok, 252 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_05b63b9d751d5736_frag_spirv [xsdk]: ok, 288 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_05b63b9d751d5736_frag_spirv [xsdk, optimize]: ok, 252 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_093884ef391dfddc_frag_spirv [libxenon]: ok, 1800 bytes, 7 literals, 4 resources
+  PASS glsl_pack.c:glsl_093884ef391dfddc_frag_spirv [libxenon, optimize]: ok, 1560 bytes, 7 literals, 4 resources
+  PASS glsl_pack.c:glsl_093884ef391dfddc_frag_spirv [xsdk]: ok, 1800 bytes, 7 literals, 4 resources
+  PASS glsl_pack.c:glsl_093884ef391dfddc_frag_spirv [xsdk, optimize]: ok, 1560 bytes, 7 literals, 4 resources
+  PASS glsl_pack.c:glsl_0963325b37f04df0_vert_spirv [libxenon]: ok, 4816 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_0963325b37f04df0_vert_spirv [libxenon, optimize]: ok, 4236 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_0963325b37f04df0_vert_spirv [xsdk]: ok, 4816 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_0963325b37f04df0_vert_spirv [xsdk, optimize]: ok, 4236 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_09bef7f9a3ac5df7_frag_spirv [libxenon]: ok, 288 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_09bef7f9a3ac5df7_frag_spirv [libxenon, optimize]: ok, 252 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_09bef7f9a3ac5df7_frag_spirv [xsdk]: ok, 288 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_09bef7f9a3ac5df7_frag_spirv [xsdk, optimize]: ok, 252 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_0c5faf5ad1250944_frag_spirv [libxenon]: ok, 1844 bytes, 8 literals, 4 resources
+  PASS glsl_pack.c:glsl_0c5faf5ad1250944_frag_spirv [libxenon, optimize]: ok, 1604 bytes, 8 literals, 4 resources
+  PASS glsl_pack.c:glsl_0c5faf5ad1250944_frag_spirv [xsdk]: ok, 1844 bytes, 8 literals, 4 resources
+  PASS glsl_pack.c:glsl_0c5faf5ad1250944_frag_spirv [xsdk, optimize]: ok, 1604 bytes, 8 literals, 4 resources
+  PASS glsl_pack.c:glsl_0c9a6858fbbe328e_frag_spirv [libxenon]: ok, 220 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_0c9a6858fbbe328e_frag_spirv [libxenon, optimize]: ok, 208 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_0c9a6858fbbe328e_frag_spirv [xsdk]: ok, 220 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_0c9a6858fbbe328e_frag_spirv [xsdk, optimize]: ok, 208 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_0f8714b3c758a3b1_frag_spirv [libxenon]: ok, 288 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_0f8714b3c758a3b1_frag_spirv [libxenon, optimize]: ok, 252 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_0f8714b3c758a3b1_frag_spirv [xsdk]: ok, 288 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_0f8714b3c758a3b1_frag_spirv [xsdk, optimize]: ok, 252 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_12d30073b6d47043_frag_spirv [libxenon]: ok, 788 bytes, 3 literals, 2 resources
+  PASS glsl_pack.c:glsl_12d30073b6d47043_frag_spirv [libxenon, optimize]: ok, 752 bytes, 3 literals, 2 resources
+  PASS glsl_pack.c:glsl_12d30073b6d47043_frag_spirv [xsdk]: ok, 788 bytes, 3 literals, 2 resources
+  PASS glsl_pack.c:glsl_12d30073b6d47043_frag_spirv [xsdk, optimize]: ok, 752 bytes, 3 literals, 2 resources
+  PASS glsl_pack.c:glsl_1510c05add37f2b3_frag_spirv [libxenon]: registers: pixel shader needs 22 registers (r0..r21), over the 16 it may use; it would hang the GPU
+  PASS glsl_pack.c:glsl_1510c05add37f2b3_frag_spirv [libxenon, optimize]: ok, 2560 bytes, 15 literals, 6 resources
+  PASS glsl_pack.c:glsl_1510c05add37f2b3_frag_spirv [xsdk]: ok, 3304 bytes, 15 literals, 6 resources
+  PASS glsl_pack.c:glsl_1510c05add37f2b3_frag_spirv [xsdk, optimize]: ok, 2560 bytes, 15 literals, 6 resources
+  PASS glsl_pack.c:glsl_15a57b221b955025_frag_spirv [libxenon]: ok, 1672 bytes, 5 literals, 4 resources
+  PASS glsl_pack.c:glsl_15a57b221b955025_frag_spirv [libxenon, optimize]: ok, 1408 bytes, 5 literals, 4 resources
+  PASS glsl_pack.c:glsl_15a57b221b955025_frag_spirv [xsdk]: ok, 1672 bytes, 5 literals, 4 resources
+  PASS glsl_pack.c:glsl_15a57b221b955025_frag_spirv [xsdk, optimize]: ok, 1408 bytes, 5 literals, 4 resources
+  PASS glsl_pack.c:glsl_1675a46dea18c182_frag_spirv [libxenon]: ok, 508 bytes, 3 literals, 1 resources
+  PASS glsl_pack.c:glsl_1675a46dea18c182_frag_spirv [libxenon, optimize]: ok, 472 bytes, 3 literals, 1 resources
+  PASS glsl_pack.c:glsl_1675a46dea18c182_frag_spirv [xsdk]: ok, 508 bytes, 3 literals, 1 resources
+  PASS glsl_pack.c:glsl_1675a46dea18c182_frag_spirv [xsdk, optimize]: ok, 472 bytes, 3 literals, 1 resources
+  PASS glsl_pack.c:glsl_16a9a335fb71c29a_frag_spirv [libxenon]: ok, 288 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_16a9a335fb71c29a_frag_spirv [libxenon, optimize]: ok, 252 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_16a9a335fb71c29a_frag_spirv [xsdk]: ok, 288 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_16a9a335fb71c29a_frag_spirv [xsdk, optimize]: ok, 252 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_172ccfa9a454e318_vert_spirv [libxenon]: ok, 964 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_172ccfa9a454e318_vert_spirv [libxenon, optimize]: ok, 948 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_172ccfa9a454e318_vert_spirv [xsdk]: ok, 964 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_172ccfa9a454e318_vert_spirv [xsdk, optimize]: ok, 948 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_1ad5c2f8e1cc2653_frag_spirv [libxenon]: ok, 564 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_1ad5c2f8e1cc2653_frag_spirv [libxenon, optimize]: ok, 528 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_1ad5c2f8e1cc2653_frag_spirv [xsdk]: ok, 564 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_1ad5c2f8e1cc2653_frag_spirv [xsdk, optimize]: ok, 528 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_1e5db8674ad9d29e_frag_spirv [libxenon]: ok, 376 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_1e5db8674ad9d29e_frag_spirv [libxenon, optimize]: ok, 364 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_1e5db8674ad9d29e_frag_spirv [xsdk]: ok, 376 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_1e5db8674ad9d29e_frag_spirv [xsdk, optimize]: ok, 364 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_2013a34320f17698_frag_spirv [libxenon]: ok, 288 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_2013a34320f17698_frag_spirv [libxenon, optimize]: ok, 276 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_2013a34320f17698_frag_spirv [xsdk]: ok, 288 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_2013a34320f17698_frag_spirv [xsdk, optimize]: ok, 276 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_20a291c66ca7e0fd_vert_spirv [libxenon]: ok, 4464 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_20a291c66ca7e0fd_vert_spirv [libxenon, optimize]: ok, 3928 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_20a291c66ca7e0fd_vert_spirv [xsdk]: ok, 4464 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_20a291c66ca7e0fd_vert_spirv [xsdk, optimize]: ok, 3928 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_22d6a7758d2d5d84_frag_spirv [libxenon]: ok, 504 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_22d6a7758d2d5d84_frag_spirv [libxenon, optimize]: ok, 468 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_22d6a7758d2d5d84_frag_spirv [xsdk]: ok, 504 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_22d6a7758d2d5d84_frag_spirv [xsdk, optimize]: ok, 468 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_233aa73af10f83bc_frag_spirv [libxenon]: ok, 736 bytes, 1 literals, 3 resources
+  PASS glsl_pack.c:glsl_233aa73af10f83bc_frag_spirv [libxenon, optimize]: ok, 676 bytes, 1 literals, 3 resources
+  PASS glsl_pack.c:glsl_233aa73af10f83bc_frag_spirv [xsdk]: ok, 736 bytes, 1 literals, 3 resources
+  PASS glsl_pack.c:glsl_233aa73af10f83bc_frag_spirv [xsdk, optimize]: ok, 676 bytes, 1 literals, 3 resources
+  PASS glsl_pack.c:glsl_246ca2b33bb1fdf4_frag_spirv [libxenon]: ok, 700 bytes, 3 literals, 2 resources
+  PASS glsl_pack.c:glsl_246ca2b33bb1fdf4_frag_spirv [libxenon, optimize]: ok, 664 bytes, 3 literals, 2 resources
+  PASS glsl_pack.c:glsl_246ca2b33bb1fdf4_frag_spirv [xsdk]: ok, 700 bytes, 3 literals, 2 resources
+  PASS glsl_pack.c:glsl_246ca2b33bb1fdf4_frag_spirv [xsdk, optimize]: ok, 664 bytes, 3 literals, 2 resources
+  PASS glsl_pack.c:glsl_251e226c8a088a82_vert_spirv [libxenon]: ok, 5304 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_251e226c8a088a82_vert_spirv [libxenon, optimize]: ok, 4628 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_251e226c8a088a82_vert_spirv [xsdk]: ok, 5304 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_251e226c8a088a82_vert_spirv [xsdk, optimize]: ok, 4628 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_29fab4bb2516d607_frag_spirv [libxenon]: ok, 1684 bytes, 5 literals, 5 resources
+  PASS glsl_pack.c:glsl_29fab4bb2516d607_frag_spirv [libxenon, optimize]: ok, 1492 bytes, 5 literals, 5 resources
+  PASS glsl_pack.c:glsl_29fab4bb2516d607_frag_spirv [xsdk]: ok, 1684 bytes, 5 literals, 5 resources
+  PASS glsl_pack.c:glsl_29fab4bb2516d607_frag_spirv [xsdk, optimize]: ok, 1492 bytes, 5 literals, 5 resources
+  PASS glsl_pack.c:glsl_2a1a218d5688204a_vert_spirv [libxenon]: ok, 4856 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_2a1a218d5688204a_vert_spirv [libxenon, optimize]: ok, 4244 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_2a1a218d5688204a_vert_spirv [xsdk]: ok, 4856 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_2a1a218d5688204a_vert_spirv [xsdk, optimize]: ok, 4244 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_2bc4ebf687f545b6_frag_spirv [libxenon]: ok, 220 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_2bc4ebf687f545b6_frag_spirv [libxenon, optimize]: ok, 220 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_2bc4ebf687f545b6_frag_spirv [xsdk]: ok, 220 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_2bc4ebf687f545b6_frag_spirv [xsdk, optimize]: ok, 220 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_2e7f30cdc49bd211_vert_spirv [libxenon]: ok, 1348 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_2e7f30cdc49bd211_vert_spirv [libxenon, optimize]: ok, 1316 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_2e7f30cdc49bd211_vert_spirv [xsdk]: ok, 1348 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_2e7f30cdc49bd211_vert_spirv [xsdk, optimize]: ok, 1316 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_2eefbbd89e53921c_frag_spirv [libxenon]: ok, 2172 bytes, 5 literals, 6 resources
+  PASS glsl_pack.c:glsl_2eefbbd89e53921c_frag_spirv [libxenon, optimize]: ok, 1800 bytes, 5 literals, 6 resources
+  PASS glsl_pack.c:glsl_2eefbbd89e53921c_frag_spirv [xsdk]: ok, 2172 bytes, 5 literals, 6 resources
+  PASS glsl_pack.c:glsl_2eefbbd89e53921c_frag_spirv [xsdk, optimize]: ok, 1800 bytes, 5 literals, 6 resources
+  PASS glsl_pack.c:glsl_31871ebc6e90765a_vert_spirv [libxenon]: ok, 1108 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_31871ebc6e90765a_vert_spirv [libxenon, optimize]: ok, 1092 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_31871ebc6e90765a_vert_spirv [xsdk]: ok, 1108 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_31871ebc6e90765a_vert_spirv [xsdk, optimize]: ok, 1092 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_32d160ecc3deb658_vert_spirv [libxenon]: ok, 980 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_32d160ecc3deb658_vert_spirv [libxenon, optimize]: ok, 980 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_32d160ecc3deb658_vert_spirv [xsdk]: ok, 980 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_32d160ecc3deb658_vert_spirv [xsdk, optimize]: ok, 980 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_33d3ad7a449b966c_frag_spirv [libxenon]: ok, 520 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_33d3ad7a449b966c_frag_spirv [libxenon, optimize]: ok, 472 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_33d3ad7a449b966c_frag_spirv [xsdk]: ok, 520 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_33d3ad7a449b966c_frag_spirv [xsdk, optimize]: ok, 472 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_349b6ed78d720732_frag_spirv [libxenon]: ok, 696 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_349b6ed78d720732_frag_spirv [libxenon, optimize]: ok, 648 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_349b6ed78d720732_frag_spirv [xsdk]: ok, 696 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_349b6ed78d720732_frag_spirv [xsdk, optimize]: ok, 648 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_350248024002ce37_vert_spirv [libxenon]: ok, 4980 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_350248024002ce37_vert_spirv [libxenon, optimize]: ok, 4368 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_350248024002ce37_vert_spirv [xsdk]: ok, 4980 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_350248024002ce37_vert_spirv [xsdk, optimize]: ok, 4368 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_35fc826ad15e1872_frag_spirv [libxenon]: ok, 1672 bytes, 5 literals, 4 resources
+  PASS glsl_pack.c:glsl_35fc826ad15e1872_frag_spirv [libxenon, optimize]: ok, 1408 bytes, 5 literals, 4 resources
+  PASS glsl_pack.c:glsl_35fc826ad15e1872_frag_spirv [xsdk]: ok, 1672 bytes, 5 literals, 4 resources
+  PASS glsl_pack.c:glsl_35fc826ad15e1872_frag_spirv [xsdk, optimize]: ok, 1408 bytes, 5 literals, 4 resources
+  PASS glsl_pack.c:glsl_39662e66d545c874_vert_spirv [libxenon]: ok, 332 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_39662e66d545c874_vert_spirv [libxenon, optimize]: ok, 300 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_39662e66d545c874_vert_spirv [xsdk]: ok, 332 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_39662e66d545c874_vert_spirv [xsdk, optimize]: ok, 300 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_3ba44326990edfeb_vert_spirv [libxenon]: ok, 1128 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_3ba44326990edfeb_vert_spirv [libxenon, optimize]: ok, 1052 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_3ba44326990edfeb_vert_spirv [xsdk]: ok, 1128 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_3ba44326990edfeb_vert_spirv [xsdk, optimize]: ok, 1052 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_3de421fc6f9f3122_frag_spirv [libxenon]: ok, 348 bytes, 2 literals, 0 resources
+  PASS glsl_pack.c:glsl_3de421fc6f9f3122_frag_spirv [libxenon, optimize]: ok, 324 bytes, 2 literals, 0 resources
+  PASS glsl_pack.c:glsl_3de421fc6f9f3122_frag_spirv [xsdk]: ok, 348 bytes, 2 literals, 0 resources
+  PASS glsl_pack.c:glsl_3de421fc6f9f3122_frag_spirv [xsdk, optimize]: ok, 324 bytes, 2 literals, 0 resources
+  PASS glsl_pack.c:glsl_407248b726bcb428_vert_spirv [libxenon]: ok, 5444 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_407248b726bcb428_vert_spirv [libxenon, optimize]: ok, 4768 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_407248b726bcb428_vert_spirv [xsdk]: ok, 5444 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_407248b726bcb428_vert_spirv [xsdk, optimize]: ok, 4768 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_412f75e329bbe3a2_vert_spirv [libxenon]: ok, 1060 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_412f75e329bbe3a2_vert_spirv [libxenon, optimize]: ok, 1000 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_412f75e329bbe3a2_vert_spirv [xsdk]: ok, 1060 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_412f75e329bbe3a2_vert_spirv [xsdk, optimize]: ok, 1000 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_46d1eea9e1360669_frag_spirv [libxenon]: ok, 1384 bytes, 7 literals, 4 resources
+  PASS glsl_pack.c:glsl_46d1eea9e1360669_frag_spirv [libxenon, optimize]: ok, 1180 bytes, 7 literals, 4 resources
+  PASS glsl_pack.c:glsl_46d1eea9e1360669_frag_spirv [xsdk]: ok, 1384 bytes, 7 literals, 4 resources
+  PASS glsl_pack.c:glsl_46d1eea9e1360669_frag_spirv [xsdk, optimize]: ok, 1180 bytes, 7 literals, 4 resources
+  PASS glsl_pack.c:glsl_48cd8f549b507826_frag_spirv [libxenon]: ok, 1776 bytes, 7 literals, 4 resources
+  PASS glsl_pack.c:glsl_48cd8f549b507826_frag_spirv [libxenon, optimize]: ok, 1536 bytes, 7 literals, 4 resources
+  PASS glsl_pack.c:glsl_48cd8f549b507826_frag_spirv [xsdk]: ok, 1776 bytes, 7 literals, 4 resources
+  PASS glsl_pack.c:glsl_48cd8f549b507826_frag_spirv [xsdk, optimize]: ok, 1536 bytes, 7 literals, 4 resources
+  PASS glsl_pack.c:glsl_4a2fde48317fee5f_frag_spirv [libxenon]: ok, 1252 bytes, 5 literals, 4 resources
+  PASS glsl_pack.c:glsl_4a2fde48317fee5f_frag_spirv [libxenon, optimize]: ok, 1132 bytes, 5 literals, 4 resources
+  PASS glsl_pack.c:glsl_4a2fde48317fee5f_frag_spirv [xsdk]: ok, 1252 bytes, 5 literals, 4 resources
+  PASS glsl_pack.c:glsl_4a2fde48317fee5f_frag_spirv [xsdk, optimize]: ok, 1132 bytes, 5 literals, 4 resources
+  PASS glsl_pack.c:glsl_4e6272cd5ea024f5_vert_spirv [libxenon]: ok, 1556 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_4e6272cd5ea024f5_vert_spirv [libxenon, optimize]: ok, 1432 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_4e6272cd5ea024f5_vert_spirv [xsdk]: ok, 1556 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_4e6272cd5ea024f5_vert_spirv [xsdk, optimize]: ok, 1432 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_4ee5b3c093bea8ab_frag_spirv [libxenon]: ok, 2760 bytes, 10 literals, 6 resources
+  PASS glsl_pack.c:glsl_4ee5b3c093bea8ab_frag_spirv [libxenon, optimize]: ok, 2256 bytes, 10 literals, 6 resources
+  PASS glsl_pack.c:glsl_4ee5b3c093bea8ab_frag_spirv [xsdk]: ok, 2760 bytes, 10 literals, 6 resources
+  PASS glsl_pack.c:glsl_4ee5b3c093bea8ab_frag_spirv [xsdk, optimize]: ok, 2256 bytes, 10 literals, 6 resources
+  PASS glsl_pack.c:glsl_4f41862f49358139_frag_spirv [libxenon]: ok, 608 bytes, 5 literals, 1 resources
+  PASS glsl_pack.c:glsl_4f41862f49358139_frag_spirv [libxenon, optimize]: ok, 536 bytes, 5 literals, 1 resources
+  PASS glsl_pack.c:glsl_4f41862f49358139_frag_spirv [xsdk]: ok, 608 bytes, 5 literals, 1 resources
+  PASS glsl_pack.c:glsl_4f41862f49358139_frag_spirv [xsdk, optimize]: ok, 536 bytes, 5 literals, 1 resources
+  PASS glsl_pack.c:glsl_4f939ba938f196ae_vert_spirv [libxenon]: ok, 5240 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_4f939ba938f196ae_vert_spirv [libxenon, optimize]: ok, 4564 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_4f939ba938f196ae_vert_spirv [xsdk]: ok, 5240 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_4f939ba938f196ae_vert_spirv [xsdk, optimize]: ok, 4564 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_5264b90e6f50c901_frag_spirv [libxenon]: ok, 456 bytes, 4 literals, 1 resources
+  PASS glsl_pack.c:glsl_5264b90e6f50c901_frag_spirv [libxenon, optimize]: ok, 444 bytes, 4 literals, 1 resources
+  PASS glsl_pack.c:glsl_5264b90e6f50c901_frag_spirv [xsdk]: ok, 456 bytes, 4 literals, 1 resources
+  PASS glsl_pack.c:glsl_5264b90e6f50c901_frag_spirv [xsdk, optimize]: ok, 444 bytes, 4 literals, 1 resources
+  PASS glsl_pack.c:glsl_551fb86c6ef59def_frag_spirv [libxenon]: ok, 1844 bytes, 8 literals, 4 resources
+  PASS glsl_pack.c:glsl_551fb86c6ef59def_frag_spirv [libxenon, optimize]: ok, 1604 bytes, 8 literals, 4 resources
+  PASS glsl_pack.c:glsl_551fb86c6ef59def_frag_spirv [xsdk]: ok, 1844 bytes, 8 literals, 4 resources
+  PASS glsl_pack.c:glsl_551fb86c6ef59def_frag_spirv [xsdk, optimize]: ok, 1604 bytes, 8 literals, 4 resources
+  PASS glsl_pack.c:glsl_556ea181d0d34829_vert_spirv [libxenon]: ok, 4624 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_556ea181d0d34829_vert_spirv [libxenon, optimize]: ok, 4076 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_556ea181d0d34829_vert_spirv [xsdk]: ok, 4624 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_556ea181d0d34829_vert_spirv [xsdk, optimize]: ok, 4076 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_55a0066e2650ed99_vert_spirv [libxenon]: ok, 1204 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_55a0066e2650ed99_vert_spirv [libxenon, optimize]: ok, 1156 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_55a0066e2650ed99_vert_spirv [xsdk]: ok, 1204 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_55a0066e2650ed99_vert_spirv [xsdk, optimize]: ok, 1156 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_58786ba1a7e49515_vert_spirv [libxenon]: ok, 1364 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_58786ba1a7e49515_vert_spirv [libxenon, optimize]: ok, 1284 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_58786ba1a7e49515_vert_spirv [xsdk]: ok, 1364 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_58786ba1a7e49515_vert_spirv [xsdk, optimize]: ok, 1284 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_607a7b7110387a22_frag_spirv [libxenon]: ok, 564 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_607a7b7110387a22_frag_spirv [libxenon, optimize]: ok, 528 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_607a7b7110387a22_frag_spirv [xsdk]: ok, 564 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_607a7b7110387a22_frag_spirv [xsdk, optimize]: ok, 528 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_60bcbd6f4104ab13_frag_spirv [libxenon]: ok, 1432 bytes, 4 literals, 3 resources
+  PASS glsl_pack.c:glsl_60bcbd6f4104ab13_frag_spirv [libxenon, optimize]: ok, 1216 bytes, 4 literals, 3 resources
+  PASS glsl_pack.c:glsl_60bcbd6f4104ab13_frag_spirv [xsdk]: ok, 1432 bytes, 4 literals, 3 resources
+  PASS glsl_pack.c:glsl_60bcbd6f4104ab13_frag_spirv [xsdk, optimize]: ok, 1216 bytes, 4 literals, 3 resources
+  PASS glsl_pack.c:glsl_61cdb76b69b6489b_frag_spirv [libxenon]: ok, 508 bytes, 3 literals, 1 resources
+  PASS glsl_pack.c:glsl_61cdb76b69b6489b_frag_spirv [libxenon, optimize]: ok, 424 bytes, 3 literals, 1 resources
+  PASS glsl_pack.c:glsl_61cdb76b69b6489b_frag_spirv [xsdk]: ok, 508 bytes, 3 literals, 1 resources
+  PASS glsl_pack.c:glsl_61cdb76b69b6489b_frag_spirv [xsdk, optimize]: ok, 424 bytes, 3 literals, 1 resources
+  PASS glsl_pack.c:glsl_64f76a18fb37dd48_frag_spirv [libxenon]: ok, 320 bytes, 2 literals, 1 resources
+  PASS glsl_pack.c:glsl_64f76a18fb37dd48_frag_spirv [libxenon, optimize]: ok, 320 bytes, 2 literals, 1 resources
+  PASS glsl_pack.c:glsl_64f76a18fb37dd48_frag_spirv [xsdk]: ok, 320 bytes, 2 literals, 1 resources
+  PASS glsl_pack.c:glsl_64f76a18fb37dd48_frag_spirv [xsdk, optimize]: ok, 320 bytes, 2 literals, 1 resources
+  PASS glsl_pack.c:glsl_66457dda201609ed_frag_spirv [libxenon]: ok, 2212 bytes, 9 literals, 6 resources
+  PASS glsl_pack.c:glsl_66457dda201609ed_frag_spirv [libxenon, optimize]: ok, 1936 bytes, 9 literals, 6 resources
+  PASS glsl_pack.c:glsl_66457dda201609ed_frag_spirv [xsdk]: ok, 2212 bytes, 9 literals, 6 resources
+  PASS glsl_pack.c:glsl_66457dda201609ed_frag_spirv [xsdk, optimize]: ok, 1936 bytes, 9 literals, 6 resources
+  PASS glsl_pack.c:glsl_676ff8c4689eaf91_frag_spirv [libxenon]: ok, 1632 bytes, 2 literals, 5 resources
+  PASS glsl_pack.c:glsl_676ff8c4689eaf91_frag_spirv [libxenon, optimize]: ok, 1380 bytes, 2 literals, 5 resources
+  PASS glsl_pack.c:glsl_676ff8c4689eaf91_frag_spirv [xsdk]: ok, 1632 bytes, 2 literals, 5 resources
+  PASS glsl_pack.c:glsl_676ff8c4689eaf91_frag_spirv [xsdk, optimize]: ok, 1380 bytes, 2 literals, 5 resources
+  PASS glsl_pack.c:glsl_68b11762bd80366b_vert_spirv [libxenon]: ok, 5240 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_68b11762bd80366b_vert_spirv [libxenon, optimize]: ok, 4564 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_68b11762bd80366b_vert_spirv [xsdk]: ok, 5240 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_68b11762bd80366b_vert_spirv [xsdk, optimize]: ok, 4564 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_695e15b366c72818_frag_spirv [libxenon]: ok, 1628 bytes, 5 literals, 4 resources
+  PASS glsl_pack.c:glsl_695e15b366c72818_frag_spirv [libxenon, optimize]: ok, 1412 bytes, 5 literals, 4 resources
+  PASS glsl_pack.c:glsl_695e15b366c72818_frag_spirv [xsdk]: ok, 1628 bytes, 5 literals, 4 resources
+  PASS glsl_pack.c:glsl_695e15b366c72818_frag_spirv [xsdk, optimize]: ok, 1412 bytes, 5 literals, 4 resources
+  PASS glsl_pack.c:glsl_6a05b1f88a016fb2_frag_spirv [libxenon]: ok, 288 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_6a05b1f88a016fb2_frag_spirv [libxenon, optimize]: ok, 252 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_6a05b1f88a016fb2_frag_spirv [xsdk]: ok, 288 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_6a05b1f88a016fb2_frag_spirv [xsdk, optimize]: ok, 252 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_6b7ff186cc28cce5_frag_spirv [libxenon]: ok, 808 bytes, 3 literals, 2 resources
+  PASS glsl_pack.c:glsl_6b7ff186cc28cce5_frag_spirv [libxenon, optimize]: ok, 748 bytes, 3 literals, 2 resources
+  PASS glsl_pack.c:glsl_6b7ff186cc28cce5_frag_spirv [xsdk]: ok, 808 bytes, 3 literals, 2 resources
+  PASS glsl_pack.c:glsl_6b7ff186cc28cce5_frag_spirv [xsdk, optimize]: ok, 748 bytes, 3 literals, 2 resources
+  PASS glsl_pack.c:glsl_6c429f0c99b0524f_vert_spirv [libxenon]: ok, 4428 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_6c429f0c99b0524f_vert_spirv [libxenon, optimize]: ok, 3896 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_6c429f0c99b0524f_vert_spirv [xsdk]: ok, 4428 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_6c429f0c99b0524f_vert_spirv [xsdk, optimize]: ok, 3896 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_6dd3a70373df59bf_frag_spirv [libxenon]: ok, 2200 bytes, 9 literals, 6 resources
+  PASS glsl_pack.c:glsl_6dd3a70373df59bf_frag_spirv [libxenon, optimize]: ok, 1900 bytes, 9 literals, 6 resources
+  PASS glsl_pack.c:glsl_6dd3a70373df59bf_frag_spirv [xsdk]: ok, 2200 bytes, 9 literals, 6 resources
+  PASS glsl_pack.c:glsl_6dd3a70373df59bf_frag_spirv [xsdk, optimize]: ok, 1900 bytes, 9 literals, 6 resources
+  PASS glsl_pack.c:glsl_6e690d475f0af5fe_vert_spirv [libxenon]: ok, 1108 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_6e690d475f0af5fe_vert_spirv [libxenon, optimize]: ok, 1032 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_6e690d475f0af5fe_vert_spirv [xsdk]: ok, 1108 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_6e690d475f0af5fe_vert_spirv [xsdk, optimize]: ok, 1032 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_70ee109df12524e4_vert_spirv [libxenon]: ok, 4040 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_70ee109df12524e4_vert_spirv [libxenon, optimize]: ok, 3568 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_70ee109df12524e4_vert_spirv [xsdk]: ok, 4040 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_70ee109df12524e4_vert_spirv [xsdk, optimize]: ok, 3568 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_71ac4a48df92e5b7_vert_spirv [libxenon]: ok, 4724 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_71ac4a48df92e5b7_vert_spirv [libxenon, optimize]: ok, 4156 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_71ac4a48df92e5b7_vert_spirv [xsdk]: ok, 4724 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_71ac4a48df92e5b7_vert_spirv [xsdk, optimize]: ok, 4156 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_72abd6191dcd7bfe_vert_spirv [libxenon]: ok, 4872 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_72abd6191dcd7bfe_vert_spirv [libxenon, optimize]: ok, 4260 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_72abd6191dcd7bfe_vert_spirv [xsdk]: ok, 4872 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_72abd6191dcd7bfe_vert_spirv [xsdk, optimize]: ok, 4260 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_75422301f0e22829_frag_spirv [libxenon]: ok, 2332 bytes, 9 literals, 5 resources
+  PASS glsl_pack.c:glsl_75422301f0e22829_frag_spirv [libxenon, optimize]: ok, 1948 bytes, 9 literals, 5 resources
+  PASS glsl_pack.c:glsl_75422301f0e22829_frag_spirv [xsdk]: ok, 2332 bytes, 9 literals, 5 resources
+  PASS glsl_pack.c:glsl_75422301f0e22829_frag_spirv [xsdk, optimize]: ok, 1948 bytes, 9 literals, 5 resources
+  PASS glsl_pack.c:glsl_820f98f280587ea8_frag_spirv [libxenon]: ok, 1928 bytes, 8 literals, 4 resources
+  PASS glsl_pack.c:glsl_820f98f280587ea8_frag_spirv [libxenon, optimize]: ok, 1628 bytes, 8 literals, 4 resources
+  PASS glsl_pack.c:glsl_820f98f280587ea8_frag_spirv [xsdk]: ok, 1928 bytes, 8 literals, 4 resources
+  PASS glsl_pack.c:glsl_820f98f280587ea8_frag_spirv [xsdk, optimize]: ok, 1628 bytes, 8 literals, 4 resources
+  PASS glsl_pack.c:glsl_84e4d80e1fc6e615_frag_spirv [libxenon]: ok, 220 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_84e4d80e1fc6e615_frag_spirv [libxenon, optimize]: ok, 208 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_84e4d80e1fc6e615_frag_spirv [xsdk]: ok, 220 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_84e4d80e1fc6e615_frag_spirv [xsdk, optimize]: ok, 208 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_8586b077d3e63bc1_frag_spirv [libxenon]: ok, 1800 bytes, 7 literals, 4 resources
+  PASS glsl_pack.c:glsl_8586b077d3e63bc1_frag_spirv [libxenon, optimize]: ok, 1560 bytes, 7 literals, 4 resources
+  PASS glsl_pack.c:glsl_8586b077d3e63bc1_frag_spirv [xsdk]: ok, 1800 bytes, 7 literals, 4 resources
+  PASS glsl_pack.c:glsl_8586b077d3e63bc1_frag_spirv [xsdk, optimize]: ok, 1560 bytes, 7 literals, 4 resources
+  PASS glsl_pack.c:glsl_858b7f6b67e42fd6_frag_spirv [libxenon]: ok, 1252 bytes, 1 literals, 3 resources
+  PASS glsl_pack.c:glsl_858b7f6b67e42fd6_frag_spirv [libxenon, optimize]: ok, 1060 bytes, 1 literals, 3 resources
+  PASS glsl_pack.c:glsl_858b7f6b67e42fd6_frag_spirv [xsdk]: ok, 1252 bytes, 1 literals, 3 resources
+  PASS glsl_pack.c:glsl_858b7f6b67e42fd6_frag_spirv [xsdk, optimize]: ok, 1060 bytes, 1 literals, 3 resources
+  PASS glsl_pack.c:glsl_85ae52ee303f618c_frag_spirv [libxenon]: ok, 528 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_85ae52ee303f618c_frag_spirv [libxenon, optimize]: ok, 504 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_85ae52ee303f618c_frag_spirv [xsdk]: ok, 528 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_85ae52ee303f618c_frag_spirv [xsdk, optimize]: ok, 504 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_85c8b022385334bf_frag_spirv [libxenon]: ok, 2144 bytes, 8 literals, 4 resources
+  PASS glsl_pack.c:glsl_85c8b022385334bf_frag_spirv [libxenon, optimize]: ok, 1748 bytes, 8 literals, 4 resources
+  PASS glsl_pack.c:glsl_85c8b022385334bf_frag_spirv [xsdk]: ok, 2144 bytes, 8 literals, 4 resources
+  PASS glsl_pack.c:glsl_85c8b022385334bf_frag_spirv [xsdk, optimize]: ok, 1748 bytes, 8 literals, 4 resources
+  PASS glsl_pack.c:glsl_88a3de8e328f385a_vert_spirv [libxenon]: ok, 912 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_88a3de8e328f385a_vert_spirv [libxenon, optimize]: ok, 912 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_88a3de8e328f385a_vert_spirv [xsdk]: ok, 912 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_88a3de8e328f385a_vert_spirv [xsdk, optimize]: ok, 912 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_8e555ecc28e3d240_vert_spirv [libxenon]: ok, 1076 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_8e555ecc28e3d240_vert_spirv [libxenon, optimize]: ok, 1016 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_8e555ecc28e3d240_vert_spirv [xsdk]: ok, 1076 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_8e555ecc28e3d240_vert_spirv [xsdk, optimize]: ok, 1016 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_8ecfa22174a91d18_frag_spirv [libxenon]: ok, 428 bytes, 2 literals, 1 resources
+  PASS glsl_pack.c:glsl_8ecfa22174a91d18_frag_spirv [libxenon, optimize]: ok, 380 bytes, 2 literals, 1 resources
+  PASS glsl_pack.c:glsl_8ecfa22174a91d18_frag_spirv [xsdk]: ok, 428 bytes, 2 literals, 1 resources
+  PASS glsl_pack.c:glsl_8ecfa22174a91d18_frag_spirv [xsdk, optimize]: ok, 380 bytes, 2 literals, 1 resources
+  PASS glsl_pack.c:glsl_8f974c0335e452d5_vert_spirv [libxenon]: ok, 1156 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_8f974c0335e452d5_vert_spirv [libxenon, optimize]: ok, 1108 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_8f974c0335e452d5_vert_spirv [xsdk]: ok, 1156 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_8f974c0335e452d5_vert_spirv [xsdk, optimize]: ok, 1108 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_92f6cc89e68fccea_frag_spirv [libxenon]: ok, 192 bytes, 1 literals, 0 resources
+  PASS glsl_pack.c:glsl_92f6cc89e68fccea_frag_spirv [libxenon, optimize]: ok, 192 bytes, 1 literals, 0 resources
+  PASS glsl_pack.c:glsl_92f6cc89e68fccea_frag_spirv [xsdk]: ok, 192 bytes, 1 literals, 0 resources
+  PASS glsl_pack.c:glsl_92f6cc89e68fccea_frag_spirv [xsdk, optimize]: ok, 192 bytes, 1 literals, 0 resources
+  PASS glsl_pack.c:glsl_93d36ce55e3f9bad_vert_spirv [libxenon]: ok, 4612 bytes, 3 literals, 5 resources
+  PASS glsl_pack.c:glsl_93d36ce55e3f9bad_vert_spirv [libxenon, optimize]: ok, 4612 bytes, 3 literals, 5 resources
+  PASS glsl_pack.c:glsl_93d36ce55e3f9bad_vert_spirv [xsdk]: ok, 4612 bytes, 3 literals, 5 resources
+  PASS glsl_pack.c:glsl_93d36ce55e3f9bad_vert_spirv [xsdk, optimize]: ok, 4612 bytes, 3 literals, 5 resources
+  PASS glsl_pack.c:glsl_946541a3cc485e48_frag_spirv [libxenon]: ok, 528 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_946541a3cc485e48_frag_spirv [libxenon, optimize]: ok, 504 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_946541a3cc485e48_frag_spirv [xsdk]: ok, 528 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_946541a3cc485e48_frag_spirv [xsdk, optimize]: ok, 504 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_987a188c27a802e5_frag_spirv [libxenon]: ok, 676 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_987a188c27a802e5_frag_spirv [libxenon, optimize]: ok, 616 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_987a188c27a802e5_frag_spirv [xsdk]: ok, 676 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_987a188c27a802e5_frag_spirv [xsdk, optimize]: ok, 616 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_9f1eca9bebdc35b6_frag_spirv [libxenon]: ok, 568 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_9f1eca9bebdc35b6_frag_spirv [libxenon, optimize]: ok, 532 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_9f1eca9bebdc35b6_frag_spirv [xsdk]: ok, 568 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_9f1eca9bebdc35b6_frag_spirv [xsdk, optimize]: ok, 532 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_a122a58ca77e3270_frag_spirv [libxenon]: ok, 400 bytes, 3 literals, 1 resources
+  PASS glsl_pack.c:glsl_a122a58ca77e3270_frag_spirv [libxenon, optimize]: ok, 376 bytes, 3 literals, 1 resources
+  PASS glsl_pack.c:glsl_a122a58ca77e3270_frag_spirv [xsdk]: ok, 400 bytes, 3 literals, 1 resources
+  PASS glsl_pack.c:glsl_a122a58ca77e3270_frag_spirv [xsdk, optimize]: ok, 376 bytes, 3 literals, 1 resources
+  PASS glsl_pack.c:glsl_a2beec39ae2b951c_frag_spirv [libxenon]: ok, 220 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_a2beec39ae2b951c_frag_spirv [libxenon, optimize]: ok, 208 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_a2beec39ae2b951c_frag_spirv [xsdk]: ok, 220 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_a2beec39ae2b951c_frag_spirv [xsdk, optimize]: ok, 208 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_a35e191254f5ef46_frag_spirv [libxenon]: ok, 780 bytes, 4 literals, 2 resources
+  PASS glsl_pack.c:glsl_a35e191254f5ef46_frag_spirv [libxenon, optimize]: ok, 732 bytes, 4 literals, 2 resources
+  PASS glsl_pack.c:glsl_a35e191254f5ef46_frag_spirv [xsdk]: ok, 780 bytes, 4 literals, 2 resources
+  PASS glsl_pack.c:glsl_a35e191254f5ef46_frag_spirv [xsdk, optimize]: ok, 732 bytes, 4 literals, 2 resources
+  PASS glsl_pack.c:glsl_a478595f52157a73_frag_spirv [libxenon]: ok, 440 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_a478595f52157a73_frag_spirv [libxenon, optimize]: ok, 404 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_a478595f52157a73_frag_spirv [xsdk]: ok, 440 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_a478595f52157a73_frag_spirv [xsdk, optimize]: ok, 404 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_a479ce42ba36b7d8_frag_spirv [libxenon]: ok, 1236 bytes, 4 literals, 2 resources
+  PASS glsl_pack.c:glsl_a479ce42ba36b7d8_frag_spirv [libxenon, optimize]: ok, 1020 bytes, 4 literals, 2 resources
+  PASS glsl_pack.c:glsl_a479ce42ba36b7d8_frag_spirv [xsdk]: ok, 1236 bytes, 4 literals, 2 resources
+  PASS glsl_pack.c:glsl_a479ce42ba36b7d8_frag_spirv [xsdk, optimize]: ok, 1020 bytes, 4 literals, 2 resources
+  PASS glsl_pack.c:glsl_a48b96d69ff86daf_vert_spirv [libxenon]: ok, 184 bytes, 0 literals, 0 resources
+  PASS glsl_pack.c:glsl_a48b96d69ff86daf_vert_spirv [libxenon, optimize]: ok, 184 bytes, 0 literals, 0 resources
+  PASS glsl_pack.c:glsl_a48b96d69ff86daf_vert_spirv [xsdk]: ok, 184 bytes, 0 literals, 0 resources
+  PASS glsl_pack.c:glsl_a48b96d69ff86daf_vert_spirv [xsdk, optimize]: ok, 184 bytes, 0 literals, 0 resources
+  PASS glsl_pack.c:glsl_ad037db0d56a10dd_vert_spirv [libxenon]: ok, 1592 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_ad037db0d56a10dd_vert_spirv [libxenon, optimize]: ok, 1452 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_ad037db0d56a10dd_vert_spirv [xsdk]: ok, 1592 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_ad037db0d56a10dd_vert_spirv [xsdk, optimize]: ok, 1452 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_b331aaa6bee56ee9_frag_spirv [libxenon]: ok, 2516 bytes, 11 literals, 5 resources
+  PASS glsl_pack.c:glsl_b331aaa6bee56ee9_frag_spirv [libxenon, optimize]: ok, 2108 bytes, 11 literals, 5 resources
+  PASS glsl_pack.c:glsl_b331aaa6bee56ee9_frag_spirv [xsdk]: ok, 2516 bytes, 11 literals, 5 resources
+  PASS glsl_pack.c:glsl_b331aaa6bee56ee9_frag_spirv [xsdk, optimize]: ok, 2108 bytes, 11 literals, 5 resources
+  PASS glsl_pack.c:glsl_b40238367bc2ae70_frag_spirv [libxenon]: ok, 1980 bytes, 7 literals, 6 resources
+  PASS glsl_pack.c:glsl_b40238367bc2ae70_frag_spirv [libxenon, optimize]: ok, 1752 bytes, 7 literals, 6 resources
+  PASS glsl_pack.c:glsl_b40238367bc2ae70_frag_spirv [xsdk]: ok, 1980 bytes, 7 literals, 6 resources
+  PASS glsl_pack.c:glsl_b40238367bc2ae70_frag_spirv [xsdk, optimize]: ok, 1752 bytes, 7 literals, 6 resources
+  PASS glsl_pack.c:glsl_b4a8c01218dcffe9_frag_spirv [libxenon]: ok, 1820 bytes, 5 literals, 6 resources
+  PASS glsl_pack.c:glsl_b4a8c01218dcffe9_frag_spirv [libxenon, optimize]: ok, 1604 bytes, 5 literals, 6 resources
+  PASS glsl_pack.c:glsl_b4a8c01218dcffe9_frag_spirv [xsdk]: ok, 1820 bytes, 5 literals, 6 resources
+  PASS glsl_pack.c:glsl_b4a8c01218dcffe9_frag_spirv [xsdk, optimize]: ok, 1604 bytes, 5 literals, 6 resources
+  PASS glsl_pack.c:glsl_b4bd0f33bde7fc52_frag_spirv [libxenon]: ok, 944 bytes, 6 literals, 2 resources
+  PASS glsl_pack.c:glsl_b4bd0f33bde7fc52_frag_spirv [libxenon, optimize]: ok, 884 bytes, 6 literals, 2 resources
+  PASS glsl_pack.c:glsl_b4bd0f33bde7fc52_frag_spirv [xsdk]: ok, 944 bytes, 6 literals, 2 resources
+  PASS glsl_pack.c:glsl_b4bd0f33bde7fc52_frag_spirv [xsdk, optimize]: ok, 884 bytes, 6 literals, 2 resources
+  PASS glsl_pack.c:glsl_b624738d17bc5ca0_frag_spirv [libxenon]: ok, 540 bytes, 4 literals, 1 resources
+  PASS glsl_pack.c:glsl_b624738d17bc5ca0_frag_spirv [libxenon, optimize]: ok, 492 bytes, 4 literals, 1 resources
+  PASS glsl_pack.c:glsl_b624738d17bc5ca0_frag_spirv [xsdk]: ok, 540 bytes, 4 literals, 1 resources
+  PASS glsl_pack.c:glsl_b624738d17bc5ca0_frag_spirv [xsdk, optimize]: ok, 492 bytes, 4 literals, 1 resources
+  PASS glsl_pack.c:glsl_b72c3e79097987b4_frag_spirv [libxenon]: ok, 356 bytes, 2 literals, 1 resources
+  PASS glsl_pack.c:glsl_b72c3e79097987b4_frag_spirv [libxenon, optimize]: ok, 332 bytes, 2 literals, 1 resources
+  PASS glsl_pack.c:glsl_b72c3e79097987b4_frag_spirv [xsdk]: ok, 356 bytes, 2 literals, 1 resources
+  PASS glsl_pack.c:glsl_b72c3e79097987b4_frag_spirv [xsdk, optimize]: ok, 332 bytes, 2 literals, 1 resources
+  PASS glsl_pack.c:glsl_ba930563b1db79f4_frag_spirv [libxenon]: ok, 388 bytes, 3 literals, 1 resources
+  PASS glsl_pack.c:glsl_ba930563b1db79f4_frag_spirv [libxenon, optimize]: ok, 364 bytes, 3 literals, 1 resources
+  PASS glsl_pack.c:glsl_ba930563b1db79f4_frag_spirv [xsdk]: ok, 388 bytes, 3 literals, 1 resources
+  PASS glsl_pack.c:glsl_ba930563b1db79f4_frag_spirv [xsdk, optimize]: ok, 364 bytes, 3 literals, 1 resources
+  PASS glsl_pack.c:glsl_bacc292ad5a86eb3_vert_spirv [libxenon]: ok, 2452 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_bacc292ad5a86eb3_vert_spirv [libxenon, optimize]: ok, 2184 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_bacc292ad5a86eb3_vert_spirv [xsdk]: ok, 2452 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_bacc292ad5a86eb3_vert_spirv [xsdk, optimize]: ok, 2184 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_bde83fec0182df1d_vert_spirv [libxenon]: ok, 1112 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_bde83fec0182df1d_vert_spirv [libxenon, optimize]: ok, 1064 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_bde83fec0182df1d_vert_spirv [xsdk]: ok, 1112 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_bde83fec0182df1d_vert_spirv [xsdk, optimize]: ok, 1064 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_c0887c56621045a9_vert_spirv [libxenon]: ok, 1236 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_c0887c56621045a9_vert_spirv [libxenon, optimize]: ok, 1172 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_c0887c56621045a9_vert_spirv [xsdk]: ok, 1236 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_c0887c56621045a9_vert_spirv [xsdk, optimize]: ok, 1172 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_c0ddfd4547c71e5a_vert_spirv [libxenon]: ok, 5004 bytes, 3 literals, 5 resources
+  PASS glsl_pack.c:glsl_c0ddfd4547c71e5a_vert_spirv [libxenon, optimize]: ok, 5004 bytes, 3 literals, 5 resources
+  PASS glsl_pack.c:glsl_c0ddfd4547c71e5a_vert_spirv [xsdk]: ok, 5004 bytes, 3 literals, 5 resources
+  PASS glsl_pack.c:glsl_c0ddfd4547c71e5a_vert_spirv [xsdk, optimize]: ok, 5004 bytes, 3 literals, 5 resources
+  PASS glsl_pack.c:glsl_c165aaa5a5be8de5_frag_spirv [libxenon]: ok, 220 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_c165aaa5a5be8de5_frag_spirv [libxenon, optimize]: ok, 208 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_c165aaa5a5be8de5_frag_spirv [xsdk]: ok, 220 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_c165aaa5a5be8de5_frag_spirv [xsdk, optimize]: ok, 208 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_c2679fcd0788b78d_frag_spirv [libxenon]: ok, 792 bytes, 1 literals, 3 resources
+  PASS glsl_pack.c:glsl_c2679fcd0788b78d_frag_spirv [libxenon, optimize]: ok, 744 bytes, 1 literals, 3 resources
+  PASS glsl_pack.c:glsl_c2679fcd0788b78d_frag_spirv [xsdk]: ok, 792 bytes, 1 literals, 3 resources
+  PASS glsl_pack.c:glsl_c2679fcd0788b78d_frag_spirv [xsdk, optimize]: ok, 744 bytes, 1 literals, 3 resources
+  PASS glsl_pack.c:glsl_c359885760b8a624_vert_spirv [libxenon]: ok, 1164 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_c359885760b8a624_vert_spirv [libxenon, optimize]: ok, 1072 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_c359885760b8a624_vert_spirv [xsdk]: ok, 1164 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_c359885760b8a624_vert_spirv [xsdk, optimize]: ok, 1072 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_c4bb20c5e14ce9d8_frag_spirv [libxenon]: ok, 220 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_c4bb20c5e14ce9d8_frag_spirv [libxenon, optimize]: ok, 208 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_c4bb20c5e14ce9d8_frag_spirv [xsdk]: ok, 220 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_c4bb20c5e14ce9d8_frag_spirv [xsdk, optimize]: ok, 208 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_c8673f02f09b439d_frag_spirv [libxenon]: ok, 332 bytes, 2 literals, 1 resources
+  PASS glsl_pack.c:glsl_c8673f02f09b439d_frag_spirv [libxenon, optimize]: ok, 332 bytes, 2 literals, 1 resources
+  PASS glsl_pack.c:glsl_c8673f02f09b439d_frag_spirv [xsdk]: ok, 332 bytes, 2 literals, 1 resources
+  PASS glsl_pack.c:glsl_c8673f02f09b439d_frag_spirv [xsdk, optimize]: ok, 332 bytes, 2 literals, 1 resources
+  PASS glsl_pack.c:glsl_c91470b682614340_frag_spirv [libxenon]: ok, 220 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_c91470b682614340_frag_spirv [libxenon, optimize]: ok, 208 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_c91470b682614340_frag_spirv [xsdk]: ok, 220 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_c91470b682614340_frag_spirv [xsdk, optimize]: ok, 208 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_c98a0ca2e68f85a1_frag_spirv [libxenon]: ok, 680 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_c98a0ca2e68f85a1_frag_spirv [libxenon, optimize]: ok, 632 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_c98a0ca2e68f85a1_frag_spirv [xsdk]: ok, 680 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_c98a0ca2e68f85a1_frag_spirv [xsdk, optimize]: ok, 632 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_ca44599827bbdb23_frag_spirv [libxenon]: ok, 1472 bytes, 4 literals, 4 resources
+  PASS glsl_pack.c:glsl_ca44599827bbdb23_frag_spirv [libxenon, optimize]: ok, 1316 bytes, 4 literals, 4 resources
+  PASS glsl_pack.c:glsl_ca44599827bbdb23_frag_spirv [xsdk]: ok, 1472 bytes, 4 literals, 4 resources
+  PASS glsl_pack.c:glsl_ca44599827bbdb23_frag_spirv [xsdk, optimize]: ok, 1316 bytes, 4 literals, 4 resources
+  PASS glsl_pack.c:glsl_cad12b640d1cfd9c_frag_spirv [libxenon]: ok, 1248 bytes, 1 literals, 3 resources
+  PASS glsl_pack.c:glsl_cad12b640d1cfd9c_frag_spirv [libxenon, optimize]: ok, 1056 bytes, 1 literals, 3 resources
+  PASS glsl_pack.c:glsl_cad12b640d1cfd9c_frag_spirv [xsdk]: ok, 1248 bytes, 1 literals, 3 resources
+  PASS glsl_pack.c:glsl_cad12b640d1cfd9c_frag_spirv [xsdk, optimize]: ok, 1056 bytes, 1 literals, 3 resources
+  PASS glsl_pack.c:glsl_cbed2c9db6f723a5_frag_spirv [libxenon]: ok, 424 bytes, 3 literals, 1 resources
+  PASS glsl_pack.c:glsl_cbed2c9db6f723a5_frag_spirv [libxenon, optimize]: ok, 376 bytes, 3 literals, 1 resources
+  PASS glsl_pack.c:glsl_cbed2c9db6f723a5_frag_spirv [xsdk]: ok, 424 bytes, 3 literals, 1 resources
+  PASS glsl_pack.c:glsl_cbed2c9db6f723a5_frag_spirv [xsdk, optimize]: ok, 376 bytes, 3 literals, 1 resources
+  PASS glsl_pack.c:glsl_ce4bffbb0b973310_frag_spirv [libxenon]: ok, 180 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_ce4bffbb0b973310_frag_spirv [libxenon, optimize]: ok, 180 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_ce4bffbb0b973310_frag_spirv [xsdk]: ok, 180 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_ce4bffbb0b973310_frag_spirv [xsdk, optimize]: ok, 180 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_cefc467138f9dac7_vert_spirv [libxenon]: ok, 1268 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_cefc467138f9dac7_vert_spirv [libxenon, optimize]: ok, 1192 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_cefc467138f9dac7_vert_spirv [xsdk]: ok, 1268 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_cefc467138f9dac7_vert_spirv [xsdk, optimize]: ok, 1192 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_d5d99e338acc096e_vert_spirv [libxenon]: ok, 1012 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_d5d99e338acc096e_vert_spirv [libxenon, optimize]: ok, 980 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_d5d99e338acc096e_vert_spirv [xsdk]: ok, 1012 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_d5d99e338acc096e_vert_spirv [xsdk, optimize]: ok, 980 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_d8658b0e39305f51_vert_spirv [libxenon]: ok, 5348 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_d8658b0e39305f51_vert_spirv [libxenon, optimize]: ok, 4660 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_d8658b0e39305f51_vert_spirv [xsdk]: ok, 5348 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_d8658b0e39305f51_vert_spirv [xsdk, optimize]: ok, 4660 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_d8d724f61446ecbb_vert_spirv [libxenon]: ok, 1376 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_d8d724f61446ecbb_vert_spirv [libxenon, optimize]: ok, 1312 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_d8d724f61446ecbb_vert_spirv [xsdk]: ok, 1376 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_d8d724f61446ecbb_vert_spirv [xsdk, optimize]: ok, 1312 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_d90889c31c82dbe8_vert_spirv [libxenon]: ok, 4216 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_d90889c31c82dbe8_vert_spirv [libxenon, optimize]: ok, 3744 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_d90889c31c82dbe8_vert_spirv [xsdk]: ok, 4216 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_d90889c31c82dbe8_vert_spirv [xsdk, optimize]: ok, 3744 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_da2593920df168c8_vert_spirv [libxenon]: ok, 964 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_da2593920df168c8_vert_spirv [libxenon, optimize]: ok, 964 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_da2593920df168c8_vert_spirv [xsdk]: ok, 964 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_da2593920df168c8_vert_spirv [xsdk, optimize]: ok, 964 bytes, 2 literals, 2 resources
+  PASS glsl_pack.c:glsl_dae9addf7280e276_frag_spirv [libxenon]: ok, 564 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_dae9addf7280e276_frag_spirv [libxenon, optimize]: ok, 528 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_dae9addf7280e276_frag_spirv [xsdk]: ok, 564 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_dae9addf7280e276_frag_spirv [xsdk, optimize]: ok, 528 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_dee3af7655c47a63_frag_spirv [libxenon]: ok, 1800 bytes, 7 literals, 4 resources
+  PASS glsl_pack.c:glsl_dee3af7655c47a63_frag_spirv [libxenon, optimize]: ok, 1560 bytes, 7 literals, 4 resources
+  PASS glsl_pack.c:glsl_dee3af7655c47a63_frag_spirv [xsdk]: ok, 1800 bytes, 7 literals, 4 resources
+  PASS glsl_pack.c:glsl_dee3af7655c47a63_frag_spirv [xsdk, optimize]: ok, 1560 bytes, 7 literals, 4 resources
+  PASS glsl_pack.c:glsl_e09e6878603dc742_frag_spirv [libxenon]: ok, 220 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_e09e6878603dc742_frag_spirv [libxenon, optimize]: ok, 208 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_e09e6878603dc742_frag_spirv [xsdk]: ok, 220 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_e09e6878603dc742_frag_spirv [xsdk, optimize]: ok, 208 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_e19f86ee747cb140_frag_spirv [libxenon]: ok, 828 bytes, 1 literals, 3 resources
+  PASS glsl_pack.c:glsl_e19f86ee747cb140_frag_spirv [libxenon, optimize]: ok, 732 bytes, 1 literals, 3 resources
+  PASS glsl_pack.c:glsl_e19f86ee747cb140_frag_spirv [xsdk]: ok, 828 bytes, 1 literals, 3 resources
+  PASS glsl_pack.c:glsl_e19f86ee747cb140_frag_spirv [xsdk, optimize]: ok, 732 bytes, 1 literals, 3 resources
+  PASS glsl_pack.c:glsl_e2cfed9f9f80cbf0_frag_spirv [libxenon]: ok, 2536 bytes, 9 literals, 6 resources
+  PASS glsl_pack.c:glsl_e2cfed9f9f80cbf0_frag_spirv [libxenon, optimize]: ok, 2128 bytes, 9 literals, 6 resources
+  PASS glsl_pack.c:glsl_e2cfed9f9f80cbf0_frag_spirv [xsdk]: ok, 2536 bytes, 9 literals, 6 resources
+  PASS glsl_pack.c:glsl_e2cfed9f9f80cbf0_frag_spirv [xsdk, optimize]: ok, 2128 bytes, 9 literals, 6 resources
+  PASS glsl_pack.c:glsl_e2f1c3a692fdfb84_frag_spirv [libxenon]: ok, 496 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_e2f1c3a692fdfb84_frag_spirv [libxenon, optimize]: ok, 472 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_e2f1c3a692fdfb84_frag_spirv [xsdk]: ok, 496 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_e2f1c3a692fdfb84_frag_spirv [xsdk, optimize]: ok, 472 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_e3fba406929fde97_frag_spirv [libxenon]: registers: pixel shader needs 18 registers (r0..r17), over the 16 it may use; it would hang the GPU
+  PASS glsl_pack.c:glsl_e3fba406929fde97_frag_spirv [libxenon, optimize]: registers: pixel shader needs 17 registers (r0..r16), over the 16 it may use; it would hang the GPU
+  PASS glsl_pack.c:glsl_e3fba406929fde97_frag_spirv [xsdk]: ok, 1012 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_e3fba406929fde97_frag_spirv [xsdk, optimize]: ok, 892 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_e4c0798e6cc9e4ba_frag_spirv [libxenon]: ok, 1236 bytes, 1 literals, 3 resources
+  PASS glsl_pack.c:glsl_e4c0798e6cc9e4ba_frag_spirv [libxenon, optimize]: ok, 1056 bytes, 1 literals, 3 resources
+  PASS glsl_pack.c:glsl_e4c0798e6cc9e4ba_frag_spirv [xsdk]: ok, 1236 bytes, 1 literals, 3 resources
+  PASS glsl_pack.c:glsl_e4c0798e6cc9e4ba_frag_spirv [xsdk, optimize]: ok, 1056 bytes, 1 literals, 3 resources
+  PASS glsl_pack.c:glsl_e5c535debebde1ed_frag_spirv [libxenon]: ok, 188 bytes, 0 literals, 0 resources
+  PASS glsl_pack.c:glsl_e5c535debebde1ed_frag_spirv [libxenon, optimize]: ok, 176 bytes, 0 literals, 0 resources
+  PASS glsl_pack.c:glsl_e5c535debebde1ed_frag_spirv [xsdk]: ok, 188 bytes, 0 literals, 0 resources
+  PASS glsl_pack.c:glsl_e5c535debebde1ed_frag_spirv [xsdk, optimize]: ok, 176 bytes, 0 literals, 0 resources
+  PASS glsl_pack.c:glsl_e5ea8b62e2ebf4ac_vert_spirv [libxenon]: ok, 5228 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_e5ea8b62e2ebf4ac_vert_spirv [libxenon, optimize]: ok, 4508 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_e5ea8b62e2ebf4ac_vert_spirv [xsdk]: ok, 5228 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_e5ea8b62e2ebf4ac_vert_spirv [xsdk, optimize]: ok, 4508 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_e6ec5aee8cc08f41_frag_spirv [libxenon]: ok, 552 bytes, 2 literals, 1 resources
+  PASS glsl_pack.c:glsl_e6ec5aee8cc08f41_frag_spirv [libxenon, optimize]: ok, 516 bytes, 2 literals, 1 resources
+  PASS glsl_pack.c:glsl_e6ec5aee8cc08f41_frag_spirv [xsdk]: ok, 552 bytes, 2 literals, 1 resources
+  PASS glsl_pack.c:glsl_e6ec5aee8cc08f41_frag_spirv [xsdk, optimize]: ok, 516 bytes, 2 literals, 1 resources
+  PASS glsl_pack.c:glsl_e7fe951996d1f40b_frag_spirv [libxenon]: ok, 1628 bytes, 5 literals, 4 resources
+  PASS glsl_pack.c:glsl_e7fe951996d1f40b_frag_spirv [libxenon, optimize]: ok, 1412 bytes, 5 literals, 4 resources
+  PASS glsl_pack.c:glsl_e7fe951996d1f40b_frag_spirv [xsdk]: ok, 1628 bytes, 5 literals, 4 resources
+  PASS glsl_pack.c:glsl_e7fe951996d1f40b_frag_spirv [xsdk, optimize]: ok, 1412 bytes, 5 literals, 4 resources
+  PASS glsl_pack.c:glsl_e9d14d2c939cffe4_vert_spirv [libxenon]: ok, 5032 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_e9d14d2c939cffe4_vert_spirv [libxenon, optimize]: ok, 4420 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_e9d14d2c939cffe4_vert_spirv [xsdk]: ok, 5032 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_e9d14d2c939cffe4_vert_spirv [xsdk, optimize]: ok, 4420 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_e9e5df17e9c42a02_frag_spirv [libxenon]: ok, 1048 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_e9e5df17e9c42a02_frag_spirv [libxenon, optimize]: ok, 868 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_e9e5df17e9c42a02_frag_spirv [xsdk]: ok, 1048 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_e9e5df17e9c42a02_frag_spirv [xsdk, optimize]: ok, 868 bytes, 1 literals, 2 resources
+  PASS glsl_pack.c:glsl_ece2618e566d8623_frag_spirv [libxenon]: ok, 276 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_ece2618e566d8623_frag_spirv [libxenon, optimize]: ok, 276 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_ece2618e566d8623_frag_spirv [xsdk]: ok, 276 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_ece2618e566d8623_frag_spirv [xsdk, optimize]: ok, 276 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_ed3667059b5c9028_frag_spirv [libxenon]: ok, 1364 bytes, 5 literals, 3 resources
+  PASS glsl_pack.c:glsl_ed3667059b5c9028_frag_spirv [libxenon, optimize]: ok, 1160 bytes, 5 literals, 3 resources
+  PASS glsl_pack.c:glsl_ed3667059b5c9028_frag_spirv [xsdk]: ok, 1364 bytes, 5 literals, 3 resources
+  PASS glsl_pack.c:glsl_ed3667059b5c9028_frag_spirv [xsdk, optimize]: ok, 1160 bytes, 5 literals, 3 resources
+  PASS glsl_pack.c:glsl_f12926532ee0b4d0_vert_spirv [libxenon]: ok, 2316 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_f12926532ee0b4d0_vert_spirv [libxenon, optimize]: ok, 2144 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_f12926532ee0b4d0_vert_spirv [xsdk]: ok, 2316 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_f12926532ee0b4d0_vert_spirv [xsdk, optimize]: ok, 2144 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_f1f88472976e4bfb_vert_spirv [libxenon]: ok, 4464 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_f1f88472976e4bfb_vert_spirv [libxenon, optimize]: ok, 3928 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_f1f88472976e4bfb_vert_spirv [xsdk]: ok, 4464 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_f1f88472976e4bfb_vert_spirv [xsdk, optimize]: ok, 3928 bytes, 3 literals, 3 resources
+  PASS glsl_pack.c:glsl_f3825523049d31cf_frag_spirv [libxenon]: ok, 1952 bytes, 8 literals, 4 resources
+  PASS glsl_pack.c:glsl_f3825523049d31cf_frag_spirv [libxenon, optimize]: ok, 1676 bytes, 8 literals, 4 resources
+  PASS glsl_pack.c:glsl_f3825523049d31cf_frag_spirv [xsdk]: ok, 1952 bytes, 8 literals, 4 resources
+  PASS glsl_pack.c:glsl_f3825523049d31cf_frag_spirv [xsdk, optimize]: ok, 1676 bytes, 8 literals, 4 resources
+  PASS glsl_pack.c:glsl_f526e9ffb3616812_frag_spirv [libxenon]: ok, 288 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_f526e9ffb3616812_frag_spirv [libxenon, optimize]: ok, 264 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_f526e9ffb3616812_frag_spirv [xsdk]: ok, 288 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_f526e9ffb3616812_frag_spirv [xsdk, optimize]: ok, 264 bytes, 1 literals, 1 resources
+  PASS glsl_pack.c:glsl_f544e71db9210106_frag_spirv [libxenon]: ok, 208 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_f544e71db9210106_frag_spirv [libxenon, optimize]: ok, 208 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_f544e71db9210106_frag_spirv [xsdk]: ok, 208 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_f544e71db9210106_frag_spirv [xsdk, optimize]: ok, 208 bytes, 0 literals, 1 resources
+  PASS glsl_pack.c:glsl_f5cb41c6eaf01a5f_frag_spirv [libxenon]: ok, 1600 bytes, 4 literals, 4 resources
+  PASS glsl_pack.c:glsl_f5cb41c6eaf01a5f_frag_spirv [libxenon, optimize]: ok, 1384 bytes, 4 literals, 4 resources
+  PASS glsl_pack.c:glsl_f5cb41c6eaf01a5f_frag_spirv [xsdk]: ok, 1600 bytes, 4 literals, 4 resources
+  PASS glsl_pack.c:glsl_f5cb41c6eaf01a5f_frag_spirv [xsdk, optimize]: ok, 1384 bytes, 4 literals, 4 resources
+  PASS glsl_pack.c:glsl_f7c1df6fe6364447_frag_spirv [libxenon]: ok, 884 bytes, 6 literals, 2 resources
+  PASS glsl_pack.c:glsl_f7c1df6fe6364447_frag_spirv [libxenon, optimize]: ok, 848 bytes, 6 literals, 2 resources
+  PASS glsl_pack.c:glsl_f7c1df6fe6364447_frag_spirv [xsdk]: ok, 884 bytes, 6 literals, 2 resources
+  PASS glsl_pack.c:glsl_f7c1df6fe6364447_frag_spirv [xsdk, optimize]: ok, 848 bytes, 6 literals, 2 resources
+1068 of 1068 match; python gave 1041 ok, 20 refused, 3 registers, 4 value

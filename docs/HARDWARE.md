@@ -2818,3 +2818,24 @@ the header, the microcode and its record (src/shader.c). Logs: `results/2026-10-
   17.7 ms of GPU time a frame against 17.6, the end frame the same pixel for pixel.
 - **Broken on purpose,** xost's default creator put back, the creator check failed for every way xost makes a
   container; xcomb's alone put back, xcomb's parity with the Python combiner failed.
+
+## xost's compiler in C on the console (2026-10-14)
+
+xost's compiler, SPIR-V to a Xenos container, is C in libxsdk now (xsdk `02dede7`, src/xsc_*.c), so a title can
+compile shaders on the console (docs/scope/shader-compiling.md, step 2). Its probe (`tests/probe_xsc.c`, its programs
+from Dusklight's pack through `tools/gen_xsc_probe.py`) compiles the SPIR-V of each of the pack's 145 programs at
+xsdk's register split with the optimiser on, as the pack was built, on a thread of its own with a 1 MB stack, and
+compares the container, literals and resources with the pack's, which the Python compiler made on the PC. It also
+compiles two shaders xost refuses. Logs: `results/2026-10-14-xsc-c/`.
+- **All 145 came out as the pack's,** and both refusals gave the PC's messages (`probe_xsc.log`).
+- **1.33 s for the 145:** 9.1 ms a program on average, 76 ms at most, `407248b726bcb428.vert`, the program glslang
+  took longest over too. With glslang's 11.3 ms ("glslang on the console"), GLSL becomes a container in about 20 ms.
+- **Heap:** the heap grew to 1.06 MB at most, from 32 bytes in use; what stayed in use between programs never passed
+  5.7 KB, as each compile frees its memory at its end.
+- **Stack:** 30 KB at most (29,840 bytes), from the stack painted before the first program and read after the last.
+- **Broken on purpose,** built with the fetch layout off, 117 of the 145 matched and the probe failed
+  (`probe_xsc_break.log`).
+- **On the PC,** the C gave the same bytes as the Python for all 1068 compilations of xost's testdata, vulkan4xenon's
+  shaders and Dusklight's pack over both register splits, the optimiser off and on (`parity.txt`, run at `02dede7`
+  while the Python was there); its encoder matched on 8000 random instructions (`encode.txt`). Rebuilt through it,
+  vulkan4xenon's shader files and Dusklight's pack are byte-identical to those committed (`rebuild.txt`).
