@@ -9,11 +9,13 @@
 #include <unistd.h>
 
 #include "path_private.h"
+#include "socket_private.h"
 #include "time_private.h"
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
 
-// newlib's descriptor calls on Nt*File; descriptors 0-2 are the console, and stdout and stderr go to the log.
+// newlib's descriptor calls on Nt*File; descriptors 0-2 are the console, and stdout and stderr go to the log. Sockets
+// take the descriptors after these (src/socket.c), and close, read, write, fstat and isatty hand them on.
 
 enum {
 	FILE_SLOTS = 32,
@@ -31,6 +33,8 @@ typedef struct {
 	// A directory's kernel path, which openat and unlinkat resolve against.
 	char path[XSDK_PATH_BYTES];
 } FileSlot;
+
+_Static_assert(FIRST_FILE_FD + FILE_SLOTS == XSDK_FIRST_SOCKET_FD, "sockets take the descriptors after files");
 
 static FileSlot files[FILE_SLOTS];
 
@@ -219,6 +223,8 @@ int close(int fd)
 {
 	if (is_console(fd))
 		return 0;
+	if (xsdk_socket_fd(fd))
+		return xsdk_socket_close(fd);
 	FileSlot *file = find_slot(fd);
 	if (!file) {
 		errno = EBADF;
@@ -244,6 +250,8 @@ static ssize_t read_at(
 
 ssize_t read(int fd, void *buffer, size_t length_bytes)
 {
+	if (xsdk_socket_fd(fd))
+		return xsdk_socket_read(fd, buffer, length_bytes);
 	FileSlot *file = find_slot(fd);
 	if (!file) {
 		errno = EBADF;
@@ -275,6 +283,8 @@ ssize_t write(int fd, const void *buffer, size_t length_bytes)
 		xsdk_log_write_bytes(buffer, length_bytes);
 		return (ssize_t)length_bytes;
 	}
+	if (xsdk_socket_fd(fd))
+		return xsdk_socket_write(fd, buffer, length_bytes);
 	FileSlot *file = find_slot(fd);
 	if (!file) {
 		errno = EBADF;
@@ -328,6 +338,11 @@ int fstat(int fd, struct stat *info)
 		info->st_mode = S_IFCHR;
 		return 0;
 	}
+	if (xsdk_socket_fd(fd)) {
+		memset(info, 0, sizeof(*info));
+		info->st_mode = S_IFSOCK;
+		return 0;
+	}
 	FileSlot *file = find_slot(fd);
 	if (!file) {
 		errno = EBADF;
@@ -358,6 +373,6 @@ int isatty(int fd)
 {
 	if (is_console(fd))
 		return 1;
-	errno = find_slot(fd) ? ENOTTY : EBADF;
+	errno = find_slot(fd) || xsdk_socket_fd(fd) ? ENOTTY : EBADF;
 	return 0;
 }

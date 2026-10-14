@@ -20,7 +20,7 @@ LIBS := -Wl,--start-group $(BUILD)/libxsdk.a -lstdc++ -lc -lm -lgcc -Wl,--end-gr
 SDK_SOURCES := src/start.c src/log.c src/sbrk.c src/thread.c src/file.c src/path.c src/dir.c \
 	src/pthread.c src/lock.c src/reent.c src/time.c src/sysconf.c src/entropy.c src/exit.c src/gpu.c \
 	src/gpu_setup.c src/gpu_resolve.c src/gpu_draw.c src/gpu_constants.c src/display.c src/shader.c src/microcode.c \
-	src/texture.c src/texture_layout.c src/tiled.c src/present.c src/splash.c src/copy.c
+	src/texture.c src/texture_layout.c src/tiled.c src/present.c src/splash.c src/copy.c src/socket.c src/netdb.c
 IMPORT_NAMES := $(shell $(PYTHON) tools/gen_imports.py --list imports/imports.txt)
 IMPORT_SOURCES := $(IMPORT_NAMES:%=$(BUILD)/imports/%.S)
 SDK_OBJECTS := $(patsubst src/%,$(BUILD)/sdk/%.o,$(basename $(SDK_SOURCES))) $(IMPORT_NAMES:%=$(BUILD)/imports/%.o)
@@ -34,7 +34,7 @@ TEST_SOURCES := tests/main.c tests/test_image.c tests/test_memory.c tests/test_t
 	tests/test_render.c tests/test_pacing.c tests/bar_scene.c tests/test_scale.c tests/test_constants.c \
 	tests/test_indexed.c tests/test_depth.c tests/test_raster.c tests/test_sampling.c tests/test_anisotropy.c \
 	tests/test_formats.c tests/test_vertex.c tests/test_replay.c tests/test_registers.c tests/test_copy.c \
-	tests/test_microcode.c tests/test_multisample.c tests/test_hiz.c
+	tests/test_microcode.c tests/test_multisample.c tests/test_hiz.c tests/test_net.c
 TEST_OBJECTS := $(patsubst tests/%,$(BUILD)/tests/%.o,$(basename $(TEST_SOURCES)))
 # A title for listening to the audio frame layout on the console.
 AUDIO_CHECK_SOURCES := tests/audio_check.c tests/audio_frame.c

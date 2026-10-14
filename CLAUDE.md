@@ -13,6 +13,8 @@ layer that drives Xenos directly. Scope, sources and milestones are in SCOPE.md.
   which. No Microsoft tooling, no leaked SDK material, no OpenXeChain.
 - Hardware runs are on the user's RGH console. The user copies the `.xex` over FTP, launches it, and sends back the
   log. Ask for a hardware run only when a milestone or a question about the real kernel needs one.
+- xsdk_test's network checks talk to `tools/net_echo.py` on the PC; `net_host.txt` beside the `.xex` holds the PC's
+  address and the port, as "192.168.0.125 7370". Without both, those checks fail.
 - Xenia Canary (`C:\Users\Mena\Downloads\xenia_canary\xenia_canary.exe`, which may be moved) is for crash and smoke
   checks only. Launch it with the `.xex` path; it stays open after the title exits, so stop it after a few seconds.
   A title's log lands in its `cache` folder, named after the `.xex` (`cache\xsdk_test.log`), and `DbgPrint` output
@@ -28,7 +30,8 @@ layer that drives Xenos directly. Scope, sources and milestones are in SCOPE.md.
   `NtCreateFile`'s share access (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_io.cc:102-145), so the check that the log
   can be read while it's open passes there even broken on purpose. Its GPU registers hold what was last written
   (xenia:src/xenia/gpu/graphics_system.cc:181-205), so the performance counter that times fence waits never counts,
-  and the check that a wait returns soon after its fence fails there.
+  and the check that a wait returns soon after its fence fails there. Its `NetDll_XNetDnsLookup` is a stub
+  (xenia:src/xenia/kernel/xam/xam_net.cc:542-560), so the check that `getaddrinfo` looks a name up fails there too.
 - Xenia skips instructions it doesn't implement, silently (xenia:src/xenia/cpu/ppc/ppc_emit_*.cc,
   `XEINSTRNOTIMPLEMENTED`). GCC emits some of them: `mcrf`, rare now that the toolchain reserves CR2-CR7, and `rldic`
   under `-mpowerpc64`. Each link runs `tools/xenia_scan.py`, which lists such instructions by function; treat any Xenia

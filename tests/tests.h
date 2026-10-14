@@ -55,6 +55,8 @@ EntryChanged test_entry_changed(const EntryRegs *regs);
 void test_files(void);
 // The SDK's memcpy and memmove (milestone 20).
 void test_copy(void);
+// Sockets, against tools/net_echo.py on the PC (docs/scope/networking.md).
+void test_net(void);
 void test_input(void);
 void test_audio(void);
 

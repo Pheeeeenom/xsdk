@@ -361,7 +361,62 @@ void XeCryptRandom(void *buffer, uint32_t length_bytes);
 uint32_t XexGetModuleHandle(const char *module_name, HANDLE *module);
 NTSTATUS XexGetProcedureAddress(HANDLE module, uint32_t ordinal, void **address);
 
+// XAM's sockets are Winsock's calls with the caller's type first, a title's XNCALLER_TITLE
+// (xenia:src/xenia/kernel/xam/xam_net.cc:42-47); their sockets are XAM's handles, and their errors Winsock's.
+enum {
+	XNCALLER_TITLE = 1,
+	XNET_DNS_ADDRESSES = 8,
+	WSA_FD_SET_SOCKETS = 64,
+};
+
+// XNDNS, which NetDll_XNetDnsLookup fills in, status 0 once found (xam_net.cc:60-64).
+typedef struct {
+	int32_t status;
+	uint32_t count;
+	uint32_t addresses[XNET_DNS_ADDRESSES];
+} XNDNS;
+
+// Winsock's fd_set and timeval, as NetDll_select reads them (xam_net.cc:818-821).
+typedef struct {
+	uint32_t count;
+	int32_t sockets[WSA_FD_SET_SOCKETS];
+} WSA_FD_SET;
+
+typedef struct {
+	int32_t seconds;
+	int32_t microseconds;
+} WSA_TIMEVAL;
+
 // xam.xex
+int32_t NetDll_accept(uint32_t caller, int32_t socket, void *address, int32_t *length);
+int32_t NetDll_bind(uint32_t caller, int32_t socket, const void *address, int32_t length);
+int32_t NetDll_closesocket(uint32_t caller, int32_t socket);
+int32_t NetDll_connect(uint32_t caller, int32_t socket, const void *address, int32_t length);
+int32_t NetDll_getpeername(uint32_t caller, int32_t socket, void *address, int32_t *length);
+int32_t NetDll_getsockname(uint32_t caller, int32_t socket, void *address, int32_t *length);
+int32_t NetDll_getsockopt(uint32_t caller, int32_t socket, int32_t level, int32_t name, void *value, int32_t *length);
+int32_t NetDll_ioctlsocket(uint32_t caller, int32_t socket, uint32_t command, uint32_t *argument);
+int32_t NetDll_listen(uint32_t caller, int32_t socket, int32_t backlog);
+int32_t NetDll_recv(uint32_t caller, int32_t socket, void *buffer, int32_t length, int32_t flags);
+int32_t NetDll_recvfrom(
+	uint32_t caller, int32_t socket, void *buffer, int32_t length, int32_t flags, void *from, int32_t *from_length);
+int32_t NetDll_select(
+	uint32_t caller, int32_t count, WSA_FD_SET *read, WSA_FD_SET *write, WSA_FD_SET *error, const WSA_TIMEVAL *timeout);
+int32_t NetDll_send(uint32_t caller, int32_t socket, const void *buffer, int32_t length, int32_t flags);
+int32_t NetDll_sendto(uint32_t caller, int32_t socket, const void *buffer, int32_t length, int32_t flags,
+	const void *to, int32_t to_length);
+int32_t NetDll_setsockopt(
+	uint32_t caller, int32_t socket, int32_t level, int32_t name, const void *value, int32_t length);
+int32_t NetDll_shutdown(uint32_t caller, int32_t socket, int32_t how);
+int32_t NetDll_socket(uint32_t caller, int32_t family, int32_t type, int32_t protocol);
+int32_t NetDll_WSAGetLastError(void);
+int32_t NetDll_WSAStartup(uint32_t caller, uint16_t version, void *data);
+// Starts the lookup and gives its XNDNS, which XAM fills in and sets event, if one is given, when done
+// (xam_net.cc:542-560).
+int32_t NetDll_XNetDnsLookup(uint32_t caller, const char *name, HANDLE event, XNDNS **result);
+int32_t NetDll_XNetDnsRelease(uint32_t caller, XNDNS *result);
+// params is XNetStartupParams, 13 bytes, its first its size (xam_net.cc:154-168).
+int32_t NetDll_XNetStartup(uint32_t caller, const uint8_t *params);
 uint32_t XamInputGetState(uint32_t user_index, uint32_t flags, INPUT_STATE *state);
 uint32_t XamInputSetState(uint32_t user_index, uint32_t flags, const INPUT_VIBRATION *vibration);
 void XamLoaderTerminateTitle(void);

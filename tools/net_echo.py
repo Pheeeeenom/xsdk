@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """The PC's side of the console's network checks (docs/scope/networking.md): echoes what arrives over TCP and UDP on
-one port, and on a TCP line "back <port>" answers "ok", then connects to the sender on that port and sends
-"hello from the PC". Logs each event; runs until stopped, or for --seconds."""
+one port. On a TCP line "back <port>" it answers "ok", then connects to the sender on that port and sends
+"hello from the PC"; on "addr" it answers with the sender's address. Logs each event; runs until stopped, or for
+--seconds."""
 
 import argparse
 import socket
@@ -40,6 +41,8 @@ def serve_tcp_client(client, address):
         if text.startswith("back "):
             client.sendall(b"ok\n")
             threading.Thread(target=connect_back, args=(address[0], int(text.split()[1])), daemon=True).start()
+        elif text == "addr":
+            client.sendall(f"{address[0]}\n".encode("ascii"))
         else:
             client.sendall(data)
 

@@ -40,6 +40,7 @@ int main(int argc, char **argv)
 	test_kernel_entry();
 	test_files();
 	test_copy();
+	test_net();
 	test_cpp_objects();
 	test_cpp_threads();
 	test_cpp_atomics();
