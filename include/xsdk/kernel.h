@@ -71,6 +71,13 @@ typedef struct {
 	uint64_t end_of_file;
 } FILE_END_OF_FILE_INFORMATION;
 
+// 16 bytes (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_io_info.cc:170-172), laid out as the original Xbox kernel's.
+typedef struct {
+	uint8_t replace_if_exists;
+	HANDLE root_directory;
+	ANSI_STRING name;
+} FILE_RENAME_INFORMATION;
+
 // INPUT_GAMEPAD's buttons (xenia:src/xenia/hid/input.h:32-46).
 enum {
 	INPUT_GAMEPAD_DPAD_UP = 0x0001,
@@ -250,6 +257,7 @@ enum {
 
 // File information classes (xenia:src/xenia/kernel/info/file.h:19-55).
 enum {
+	FILE_RENAME_INFORMATION_CLASS = 10,
 	FILE_DISPOSITION_INFORMATION_CLASS = 13,
 	FILE_END_OF_FILE_INFORMATION_CLASS = 20,
 	FILE_NETWORK_OPEN_INFORMATION_CLASS = 34,

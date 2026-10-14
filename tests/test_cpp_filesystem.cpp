@@ -62,6 +62,27 @@ extern "C" void test_cpp_filesystem(void)
 	check("filesystem reaches a file through absolute() and weakly_canonical()",
 		!absolute_error && !canonical_error && reads_hello(absolute) && reads_hello(canonical));
 
+	// As Dusklight saves its settings: written aside, then renamed over the old file.
+	const fs::path renames = directory / "renames";
+	std::error_code file_error;
+	std::error_code directory_error;
+	fs::create_directories(renames / "before", error);
+	std::ofstream(renames / "new.txt") << "hello";
+	std::ofstream(renames / "old.txt") << "old";
+	std::ofstream(renames / "before" / "inside.txt") << "hello";
+	fs::rename(renames / "new.txt", renames / "old.txt", file_error);
+	fs::rename(renames / "before", renames / "after", directory_error);
+	if (file_error || directory_error)
+		xsdk_log_write("filesystem: rename: %s; %s", file_error.message().c_str(), directory_error.message().c_str());
+	check("filesystem renames a file over another, and a directory",
+		!file_error && !directory_error && reads_hello(renames / "old.txt") && !fs::exists(renames / "new.txt") &&
+			reads_hello(renames / "after" / "inside.txt") && !fs::exists(renames / "before"));
+	// One at a time: remove_all fails on a folder within a folder here (TODO.md).
+	for (const char *name : { "after/inside.txt", "after", "old.txt", "new.txt", "before/inside.txt", "before", "" }) {
+		if (fs::exists(renames / name))
+			fs::remove(renames / name, error);
+	}
+
 	const std::uintmax_t removed = fs::remove_all(directory, error);
 	if (error)
 		xsdk_log_write("filesystem: remove_all: %s", error.message().c_str());

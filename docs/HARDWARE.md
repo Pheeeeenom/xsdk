@@ -2843,3 +2843,17 @@ compiles two shaders xost refuses. Logs: `results/2026-10-14-xsc-c/`.
   pixel shader with four fetches laid out, compile into the container, literals and resources the PC makes
   (`tests/test_xsc.c`). Both passed, 296 checks in all and the controller's two failing as ever (`xsdk_test.log`);
   with the fetch layout off, the pixel shader's failed (`xsdk_test_break.log`).
+
+## Files renamed on the console (2026-10-14)
+
+`rename` opens the file for `DELETE` and hands `NtSetInformationFile` the rename class, 10, with 16 bytes
+(xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_io_info.cc:170-172): whether to replace what's at the new name, a byte padded
+to 4; a root directory handle, 0; and the new name as an ANSI string, the whole kernel path, `game:\...`, as xsdk opens
+files by (src/path.c). `std::filesystem::rename` comes to it too. Logs: `results/2026-10-14-rename/`.
+- **A file renamed over another takes its place,** and its old name is gone; a folder with a file in it renames, the
+  file going with it (xsdk_test, `xsdk_test.log`).
+- **The first byte is the replace flag:** with it 0, renaming over a file fails with 0xC0000035,
+  `STATUS_OBJECT_NAME_COLLISION`, and both checks failed (`xsdk_test_break.log`); the folder still renamed.
+- **Xenia renames nothing:** its handler takes the class and has no case for it (xboxkrnl_io_info.cc:202-251).
+- **A folder within a folder doesn't go through `remove_all`,** as xsdk opens everything sharing nothing and libstdc++
+  deletes the inner folder while it still holds it open: 0xC0000043, a sharing violation (TODO.md).

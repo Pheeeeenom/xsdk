@@ -28,7 +28,8 @@ layer that drives Xenos directly. Scope, sources and milestones are in SCOPE.md.
   It runs each of the title's threads on a host thread of its own (xenia:src/xenia/kernel/xthread.cc:378), so two
   busy threads placed on one hardware thread don't share it there, and that placement check fails too. It ignores
   `NtCreateFile`'s share access (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_io.cc:102-145), so the check that the log
-  can be read while it's open passes there even broken on purpose. Its GPU registers hold what was last written
+  can be read while it's open passes there even broken on purpose. Its `NtSetInformationFile` takes the rename class
+  and renames nothing (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_io_info.cc:202-251), so the rename checks fail there. Its GPU registers hold what was last written
   (xenia:src/xenia/gpu/graphics_system.cc:181-205), so the performance counter that times fence waits never counts,
   and the check that a wait returns soon after its fence fails there. Its `NetDll_XNetDnsLookup` is a stub
   (xenia:src/xenia/kernel/xam/xam_net.cc:542-560), so the check that `getaddrinfo` looks a name up fails there too.

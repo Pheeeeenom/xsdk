@@ -266,6 +266,33 @@ int unlink(const char *path)
 	return unlinkat(AT_FDCWD, path, 0);
 }
 
+_Static_assert(sizeof(FILE_RENAME_INFORMATION) == 16, "the rename class takes 16 bytes");
+
+// Replaces what's at the new name, as POSIX's does; std::filesystem::rename comes here too. Linked ahead of newlib's,
+// which falls back to link and unlink.
+int rename(const char *old_path, const char *new_path)
+{
+	char from[XSDK_PATH_BYTES];
+	char to[XSDK_PATH_BYTES];
+	if (resolve_or_fail(AT_FDCWD, old_path, from) != 0 || resolve_or_fail(AT_FDCWD, new_path, to) != 0)
+		return -1;
+	HANDLE handle;
+	NTSTATUS status = open_resolved(from, DELETE, FILE_OPEN, 0, &handle);
+	if (!NT_SUCCESS(status))
+		return fail_with_status("rename: NtCreateFile", from, status);
+	const uint16_t length = (uint16_t)strlen(to);
+	const FILE_RENAME_INFORMATION information = { .replace_if_exists = 1,
+		.name = { .length = length, .maximum_length = (uint16_t)(length + 1), .pointer = to } };
+	IO_STATUS_BLOCK io_status;
+	status = NtSetInformationFile(handle, &io_status, &information, sizeof(information), FILE_RENAME_INFORMATION_CLASS);
+	const NTSTATUS close_status = NtClose(handle);
+	if (!NT_SUCCESS(status))
+		return fail_with_status("rename: NtSetInformationFile", from, status);
+	if (!NT_SUCCESS(close_status))
+		return fail_with_status("rename: NtClose", from, close_status);
+	return 0;
+}
+
 int truncate(const char *path, off_t length_bytes)
 {
 	if (length_bytes < 0) {

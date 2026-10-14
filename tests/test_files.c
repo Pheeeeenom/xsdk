@@ -128,6 +128,20 @@ static void check_log_readable(void)
 	check("log read while it's open", NT_SUCCESS(status) && strcmp(start, "log: ") == 0);
 }
 
+// The test file, renamed over another, takes its place, and its own name is gone.
+static void check_rename(const char *path)
+{
+	char other[PATH_BYTES];
+	strcpy(other, path);
+	strcpy(strrchr(other, '\\') + 1, "xsdk_rename_test.txt");
+	FILE *file = fopen(other, "w");
+	const bool made = file && fputs("old\n", file) >= 0 && fclose(file) == 0;
+	const bool renamed = made && rename(path, other) == 0;
+	check("rename: a file renamed over another takes its place",
+		renamed && file_size(other) == 27 && file_size(path) < 0);
+	(void)unlink(other);
+}
+
 void test_files(void)
 {
 	check_log_readable();
@@ -158,4 +172,5 @@ void test_files(void)
 	check("file append", appended && file_size(path) == 27);
 	check_pread(path);
 	check_flockfile();
+	check_rename(path);
 }
