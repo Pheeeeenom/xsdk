@@ -62,6 +62,7 @@ enum {
 	MAG_FILTER_SHIFT = 19,
 	MIN_FILTER_SHIFT = 21,
 	MIP_FILTER_SHIFT = 23,
+	ANISO_FILTER_SHIFT = 25,
 	MIP_MAX_LEVEL_SHIFT = 6,
 	LOD_BIAS_SHIFT = 12,
 	// A signed 10-bit field with 5 fractional bits.
@@ -359,12 +360,19 @@ void xsdk_texture_free(XsdkTexture *texture)
 	*texture = (XsdkTexture){ .texels = NULL };
 }
 
+// AnisoFilter: off, then at most 1, 2, 4, 8 and 16 to 1 (xenia:src/xenia/gpu/xenos.h:140-148).
+static uint32_t aniso_filter(uint32_t max_anisotropy)
+{
+	return max_anisotropy ? 32 - (uint32_t)__builtin_clz(max_anisotropy) : 0;
+}
+
 void xsdk_texture_sampler_state(XsdkSamplerState *state, const XsdkSampler *sampler)
 {
 	assert(sampler->mag_filter <= XSDK_FILTER_LINEAR && sampler->min_filter <= XSDK_FILTER_LINEAR);
 	assert(sampler->mip_filter <= XSDK_FILTER_LINEAR);
 	assert(sampler->address_u <= XSDK_ADDRESS_CLAMP && sampler->address_v <= XSDK_ADDRESS_CLAMP);
 	assert(sampler->lod_bias >= -16.0f && sampler->lod_bias < 16.0f);
+	assert(sampler->max_anisotropy <= XSDK_MAX_ANISOTROPY);
 	const float steps = sampler->lod_bias * LOD_BIAS_STEPS;
 	const int32_t bias = (int32_t)(steps < 0.0f ? steps - 0.5f : steps + 0.5f);
 	*state = (XsdkSamplerState){ .fetch = {
@@ -372,7 +380,8 @@ void xsdk_texture_sampler_state(XsdkSamplerState *state, const XsdkSampler *samp
 									 0,
 									 0,
 									 sampler->mag_filter << MAG_FILTER_SHIFT | sampler->min_filter << MIN_FILTER_SHIFT |
-										 sampler->mip_filter << MIP_FILTER_SHIFT,
+										 sampler->mip_filter << MIP_FILTER_SHIFT |
+										 aniso_filter(sampler->max_anisotropy) << ANISO_FILTER_SHIFT,
 									 ((uint32_t)bias & LOD_BIAS_MASK) << LOD_BIAS_SHIFT,
 									 0,
 								 } };

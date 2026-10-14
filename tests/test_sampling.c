@@ -145,7 +145,7 @@ static const XsdkVertexElement vertex_layout[] = {
 };
 
 static const XsdkSampler point_clamped = { XSDK_FILTER_POINT, XSDK_FILTER_POINT, XSDK_FILTER_POINT, XSDK_ADDRESS_CLAMP,
-	XSDK_ADDRESS_CLAMP, 0.0f };
+	XSDK_ADDRESS_CLAMP, 0.0f, 0 };
 
 static uint32_t image[MAX_LEVEL_TEXELS];
 
@@ -215,28 +215,28 @@ static uint32_t add_grid(Cell *cells, uint32_t count)
 	const Cell grid[] = {
 		// Four pixels a texel; the other filter is set the other way, so using it fails.
 		{ "magnified, point", GROUP_FILTERS, TEXTURE_CHECKER_SMALL, 0, 480, 40, CELL_SIZE, CELL_SIZE, 0.0f, 0.0f, 1.0f,
-			1.0f, { POINT, LINEAR, POINT, CLAMP, CLAMP, 0.0f } },
+			1.0f, { POINT, LINEAR, POINT, CLAMP, CLAMP, 0.0f, 0 } },
 		{ "magnified, linear", GROUP_FILTERS, TEXTURE_CHECKER_SMALL, 0, 660, 40, CELL_SIZE, CELL_SIZE, 0.0f, 0.0f, 1.0f,
-			1.0f, { LINEAR, POINT, POINT, CLAMP, CLAMP, 0.0f } },
+			1.0f, { LINEAR, POINT, POINT, CLAMP, CLAMP, 0.0f, 0 } },
 		// Two texels a pixel.
 		{ "minified, point", GROUP_FILTERS, TEXTURE_CHECKER_LARGE, 0, 840, 40, CELL_SIZE, CELL_SIZE, in, in, 1.0f + in,
-			1.0f + in, { LINEAR, POINT, POINT, CLAMP, CLAMP, 0.0f } },
+			1.0f + in, { LINEAR, POINT, POINT, CLAMP, CLAMP, 0.0f, 0 } },
 		{ "minified, linear", GROUP_FILTERS, TEXTURE_CHECKER_LARGE, 0, 1020, 40, CELL_SIZE, CELL_SIZE, in, in,
-			1.0f + in, 1.0f + in, { POINT, LINEAR, POINT, CLAMP, CLAMP, 0.0f } },
+			1.0f + in, 1.0f + in, { POINT, LINEAR, POINT, CLAMP, CLAMP, 0.0f, 0 } },
 		// Level 1, biased to 1.375: the nearest level is 1, and linear takes 3/8 of level 2.
 		{ "mip point", GROUP_FILTERS, TEXTURE_SOLID_LEVELS, 0, 480, 240, CELL_SIZE, CELL_SIZE, 0.0f, 0.0f, 1.0f, 1.0f,
-			{ POINT, POINT, POINT, CLAMP, CLAMP, 0.375f } },
+			{ POINT, POINT, POINT, CLAMP, CLAMP, 0.375f, 0 } },
 		{ "mip linear", GROUP_FILTERS, TEXTURE_SOLID_LEVELS, 0, 660, 240, CELL_SIZE, CELL_SIZE, 0.0f, 0.0f, 1.0f, 1.0f,
-			{ POINT, POINT, LINEAR, CLAMP, CLAMP, 0.375f } },
+			{ POINT, POINT, LINEAR, CLAMP, CLAMP, 0.375f, 0 } },
 		// Half the texture past each edge, two pixels a texel.
 		{ "wrap", GROUP_ADDRESSING, TEXTURE_BLOCKS, 0, 480, 440, CELL_SIZE, CELL_SIZE, -0.5f, -0.5f, 1.5f, 1.5f,
-			{ POINT, POINT, POINT, WRAP, WRAP, 0.0f } },
+			{ POINT, POINT, POINT, WRAP, WRAP, 0.0f, 0 } },
 		{ "mirror", GROUP_ADDRESSING, TEXTURE_BLOCKS, 0, 660, 440, CELL_SIZE, CELL_SIZE, -0.5f, -0.5f, 1.5f, 1.5f,
-			{ POINT, POINT, POINT, MIRROR, MIRROR, 0.0f } },
+			{ POINT, POINT, POINT, MIRROR, MIRROR, 0.0f, 0 } },
 		{ "clamp", GROUP_ADDRESSING, TEXTURE_BLOCKS, 0, 840, 440, CELL_SIZE, CELL_SIZE, -0.5f, -0.5f, 1.5f, 1.5f,
-			{ POINT, POINT, POINT, CLAMP, CLAMP, 0.0f } },
+			{ POINT, POINT, POINT, CLAMP, CLAMP, 0.0f, 0 } },
 		{ "mirror across, clamp down", GROUP_ADDRESSING, TEXTURE_BLOCKS, 0, 1020, 440, CELL_SIZE, CELL_SIZE, -0.5f,
-			-0.5f, 1.5f, 1.5f, { POINT, POINT, POINT, MIRROR, CLAMP, 0.0f } },
+			-0.5f, 1.5f, 1.5f, { POINT, POINT, POINT, MIRROR, CLAMP, 0.0f, 0 } },
 	};
 	for (uint32_t i = 0; i < sizeof grid / sizeof grid[0]; i++)
 		cells[count++] = grid[i];

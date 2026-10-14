@@ -15,6 +15,7 @@ extern "C" {
 enum {
 	XSDK_TEXTURE_MAX_SIZE = 8192,
 	XSDK_TEXTURE_FETCH_DWORDS = 6,
+	XSDK_MAX_ANISOTROPY = 16,
 };
 
 // Formats, read as Vulkan's red, green, blue and alpha; uploads take each format's units in the CPU's order.
@@ -94,6 +95,8 @@ typedef struct {
 	uint32_t address_v;
 	// Added to the level the GPU works out, from -16 to under 16, in steps of 1/32.
 	float lod_bias;
+	// The most anisotropy, 1 to 16, rounded down to a power of two; 0 is none.
+	uint32_t max_anisotropy;
 } XsdkSampler;
 
 typedef struct {

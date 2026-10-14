@@ -101,6 +101,9 @@ void test_raster(void);
 // Sampling and mipmaps (milestone 15).
 void test_sampling(void);
 
+// Anisotropic filtering (milestone 33).
+void test_anisotropy(void);
+
 // Texture formats (milestone 16).
 void test_formats(void);
 
