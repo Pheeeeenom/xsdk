@@ -24,7 +24,9 @@ If a rule gets in the way of correct code, change the rule in this file first, i
 - Console code is C17 with GNU extensions (`-std=gnu17`). C++23 appears only in the C++ runtime tests and samples.
 - Assembly only where C can't do it (entry point, import stubs, callback trampolines), in `.S` files run through the
   preprocessor. Assembly never writes `r2` or `r13`: `r13` holds the processor control region.
-- Host tools are Python 3.11 or later, standard library only, and run both on Windows and in WSL.
+- Host tools are Python 3.11 or later, standard library only, and run both on Windows and in WSL. The exception is
+  xost's compiler, which is the SDK's own C (`src/xsc_*.c`) built for the PC in WSL too: the tools that compile shaders
+  call it through `ctypes` and run in WSL.
 - Zero warnings: our C builds with `-Wall -Wextra -Werror`.
 - Dependencies are the xenon toolchain (GCC, binutils, newlib) only. No libxenon in titles: it drives bare metal, not
   the retail kernel. Adding a library needs a reason in the commit message.
