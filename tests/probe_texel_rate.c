@@ -16,7 +16,7 @@
 // Times four samples a pixel, at coordinates each pixel shader works out, laid out a way each
 // (tools/gen_texel_shaders.py; docs/scope/36-texel-rate.md): fills of a 1280x720 target, checked after each, then with
 // more registers declared, under a split giving pixel shaders more, and from a 64-bit texture filtered between two
-// levels.
+// levels. Last, whether xost's build of the same GLSL runs within 5% of the fastest hand-built layout.
 
 enum {
 	WIDTH = 1280,
@@ -25,6 +25,8 @@ enum {
 	SAMPLES = 4,
 	// The GPU's published clock, and its texture units' published 16 bilinear samples a clock.
 	GPU_MHZ = 500,
+	// How much slower than the fastest hand-built layout xost's build may run, in percent.
+	XOST_SLACK_PERCENT = 5,
 	BATCH_US = 100000,
 	CALIBRATION_UNITS = 4,
 	WARM_UP_UNITS = 2,
@@ -82,8 +84,9 @@ typedef struct {
 static const Layout layouts[] = {
 	{ "reference, four fetches at the interpolated coordinates", texel_reference_shader, sizeof texel_reference_shader,
 		true },
-	{ "xost's, each add then its fetch, all through r2", texel_xost_shader, sizeof texel_xost_shader, false },
-	{ "xost's, waiting", texel_xost_wait_shader, sizeof texel_xost_wait_shader, false },
+	{ "xost's before milestone 36, each add then its fetch, all through r2", texel_xost_shader,
+		sizeof texel_xost_shader, false },
+	{ "xost's before milestone 36, waiting", texel_xost_wait_shader, sizeof texel_xost_wait_shader, false },
 	{ "each coordinate in its own register", texel_own_shader, sizeof texel_own_shader, false },
 	{ "each coordinate in its own register, waiting", texel_own_wait_shader, sizeof texel_own_wait_shader, false },
 	{ "the coordinates first, the fetches together", texel_together_shader, sizeof texel_together_shader, false },
@@ -97,11 +100,14 @@ static const Layout layouts[] = {
 
 enum {
 	LAYOUTS = sizeof layouts / sizeof layouts[0],
+	// The hand-built layouts of the four coordinates, those xost's build is held to, after the reference.
+	FIRST_HAND_BUILT = 1,
+	XOST_BUILD = LAYOUTS - 1,
 	// The layouts without the wait bit, which the registers and the 64-bit texture are tried with.
-	PLAIN_LAYOUTS = 5,
+	PLAIN_LAYOUTS = 6,
 };
 
-static const uint32_t plain_layouts[PLAIN_LAYOUTS] = { 0, 1, 3, 5, 7 };
+static const uint32_t plain_layouts[PLAIN_LAYOUTS] = { 0, 1, 3, 5, 7, XOST_BUILD };
 
 enum {
 	FILTER_POINT,
@@ -136,6 +142,8 @@ static volatile uint32_t *vertices;
 static volatile uint32_t *pixels;
 static uint32_t narrow_quad_address;
 static uint32_t wide_quad_address;
+// Each layout's bilinear Mtexels/s with its own registers under xsdk's split.
+static uint64_t bilinear_mtexels[LAYOUTS];
 
 static uint64_t now_us(void)
 {
@@ -423,7 +431,25 @@ static bool measure(uint32_t index, uint32_t registers, uint32_t vertex_share, u
 		layout->name, (unsigned)(registers ? registers : own_registers), registers ? " declared" : "",
 		(unsigned)(SPLIT_TOTAL - vertex_share), filter_names[filter], (unsigned)count, (unsigned)elapsed_us,
 		(unsigned)mtexels, (unsigned)(mtexels / GPU_MHZ), (unsigned)(mtexels * 100 / GPU_MHZ % 100), outcome);
+	if (!registers && vertex_share == SPLIT_XSDK_VERTEX && filter == FILTER_BILINEAR)
+		bilinear_mtexels[index] = drew ? mtexels : 0;
 	return elapsed_us && finish() && (drew || filter == FILTER_TRILINEAR_64);
+}
+
+// Logs whether xost's build, bilinear, ran within XOST_SLACK_PERCENT of the fastest hand-built layout.
+static void judge_xost(void)
+{
+	uint32_t fastest = FIRST_HAND_BUILT;
+	for (uint32_t i = FIRST_HAND_BUILT; i < XOST_BUILD; i++)
+		if (bilinear_mtexels[i] > bilinear_mtexels[fastest])
+			fastest = i;
+	const uint64_t built = bilinear_mtexels[XOST_BUILD];
+	const uint64_t best = bilinear_mtexels[fastest];
+	const bool close = best && built * 100 >= best * (100 - XOST_SLACK_PERCENT);
+	xsdk_log_write("texel rate: xost's build %u.%02u a clock, the fastest hand-built (%s) %u.%02u: %s",
+		(unsigned)(built / GPU_MHZ), (unsigned)(built * 100 / GPU_MHZ % 100), layouts[fastest].name,
+		(unsigned)(best / GPU_MHZ), (unsigned)(best * 100 / GPU_MHZ % 100),
+		close ? "within 5%" : "FAIL, more than 5% slower");
 }
 
 int main(void)
@@ -459,6 +485,8 @@ int main(void)
 	for (uint32_t i = 0; i < PLAIN_LAYOUTS && ran; i++)
 		for (uint32_t r = 0; r < 2 && ran; r++)
 			ran = measure(plain_layouts[i], registers[r], SPLIT_XSDK_VERTEX, FILTER_TRILINEAR_64);
+	if (ran)
+		judge_xost();
 	xsdk_log_write("texel rate: %s", ran ? "done" : "stopped");
 	xsdk_log_write("texel rate: GPU close 0x%08X", (unsigned)xsdk_gpu_close());
 	return 0;
