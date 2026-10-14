@@ -1,0 +1,28 @@
+log: game:\probe_net.log
+log: named after \Device\Harddisk0\Partition1\XSDK\net\probe_net.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+net probe
+net: XNetStartup, flags 1: 0
+net: WSAStartup 2.2: 0
+net: link status 0000000B, active
+net: title address: status 00000068 after 0 ms, 192.168.0.227, MAC 7C:ED:8D:3F:86:89
+net: the PC at 192.168.0.125, port 7370
+net:   connect didn't complete within 3000 ms; SO_ERROR 0
+net: plain: TCP to the PC and back: no
+net:   no datagram came back in 3000 ms
+net: plain: UDP to the PC and back: no
+net:   connect didn't complete within 3000 ms; SO_ERROR 0
+net:   couldn't ask the PC to connect back
+net: plain: a connection from the PC, accepted: no
+net:   connect didn't complete within 5000 ms; SO_ERROR 0
+net: plain: TCP to 1.1.1.1:443: no
+net: marked 0x5801: TCP to the PC and back: yes
+net: marked 0x5801: UDP to the PC and back: yes
+net: marked 0x5801: a connection from the PC, accepted: yes
+net: marked 0x5801: TCP to 1.1.1.1:443: connected
+net: DNS: example.com is 172.66.147.243, 2 addresses, in about 50 ms
+net:   connect didn't complete within 5000 ms; SO_ERROR 0
+net: plain: HTTP from example.com: no reply
+net: marked 0x5801: HTTP from example.com: HTTP/1.1 200 OK
+net probe: done
+exit: status 0

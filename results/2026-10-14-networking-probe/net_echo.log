@@ -1,0 +1,11 @@
+02:53:17 listening on TCP and UDP port 7370
+02:53:19 tcp 192.168.0.125:20317: 'self test'
+02:53:19 udp 192.168.0.125:53253: 'udp self test'
+02:53:47 tcp 192.168.0.227:1103: 'tcp echo, marked 0x5801'
+02:53:47 udp 192.168.0.227:1104: 'udp echo, marked 0x5801'
+02:53:47 tcp 192.168.0.227:1105: 'back 7372'
+02:53:47 tcp: connected back to 192.168.0.227:7372
+02:54:20 tcp 192.168.0.227:1116: 'tcp echo, marked 0x5801'
+02:54:20 udp 192.168.0.227:1117: 'udp echo, marked 0x5801'
+02:54:20 tcp 192.168.0.227:1118: 'back 7372'
+02:54:20 tcp: connected back to 192.168.0.227:7372

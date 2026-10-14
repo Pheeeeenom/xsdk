@@ -2578,3 +2578,31 @@ Built clean with `ee5577d`'s code, every title built against it (logs: the `_wai
 With that, milestones 30 and 31 are done: Dusklight's logo shot draws as before, in less GPU time. A fence wait
 returns within microseconds of its fence when the title asks, and otherwise sleeps between looks, leaving the core to
 the thread beside it.
+
+## Sockets reach the LAN and the internet when marked insecure (2026-10-14)
+
+`tests/probe_net.c` finds XAM's network exports by ordinal (xenia:src/xenia/kernel/xam/xam_table.inc:15-75) and calls
+them as a title, `XNCALLER_TITLE` (xenia:src/xenia/kernel/xam/xam_net.cc:42-47). Every socket is non-blocking, and
+every wait has a timeout. Each test runs on a plain socket, then on one given `SOL_SOCKET` option 0x5801, which Xenia
+takes as disabling a socket's encryption (xenia:src/xenia/kernel/xsocket.cc:78-82). `tools/net_echo.py` answered on
+the PC. Logs: `results/2026-10-14-networking-probe/`, one run with `NetDll_XNetStartup`'s flags at 0
+(`probe_net_flags0.log`) and one at 1 (`probe_net_flags1.log`), which came out the same.
+- **Starting up.** `NetDll_XNetStartup`, given its 13 bytes with either flags, and `NetDll_WSAStartup` 2.2 both
+  returned 0.
+- **The link.** `NetDll_XNetGetEthernetLinkStatus` returned 0x0B: active, 100 Mbit/s, full duplex (xam_net.cc:529-535).
+- **The address.** `NetDll_XNetGetTitleXnAddr` returned 0x68 at once, DHCP with a gateway and DNS (xam_net.cc:429-450),
+  with the console's address, 192.168.0.227, and its MAC.
+- **Plain sockets reached nothing.** TCP connections to the PC and to 1.1.1.1:443 never completed, `SO_ERROR` 0, and
+  UDP datagrams to the PC never came back. The PC's echo server logged nothing from them (`net_echo.log`).
+- **Marked sockets reached everything.** With option 0x5801 set before connecting:
+  - TCP to the PC came back byte for byte, and so did UDP;
+  - a connection the PC made back to a marked listening socket was accepted, and its line read;
+  - TCP to 1.1.1.1:443 connected;
+  - an HTTP/1.0 request to example.com on port 80 got `HTTP/1.1 200 OK`.
+- **Names resolve.** `NetDll_XNetDnsLookup` found example.com, two addresses, in about 50 ms, with no event given.
+  Xenia stubs it (xam_net.cc:542-560).
+- **Winsock's values hold.** `NetDll_ioctlsocket` took Winsock's `FIONBIO` (0x8004667E) without an error, and the
+  plain sockets' connects returned at once, then waited out their timeouts in `NetDll_select`; the probe doesn't log
+  whether they returned `WSAEWOULDBLOCK` or `WSAEINPROGRESS`.
+
+So xsdk's sockets set option 0x5801 on each socket, and the startup flags don't matter.
