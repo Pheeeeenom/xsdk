@@ -2839,3 +2839,7 @@ compiles two shaders xost refuses. Logs: `results/2026-10-14-xsc-c/`.
   shaders and Dusklight's pack over both register splits, the optimiser off and on (`parity.txt`, run at `02dede7`
   while the Python was there); its encoder matched on 8000 random instructions (`encode.txt`). Rebuilt through it,
   vulkan4xenon's shader files and Dusklight's pack are byte-identical to those committed (`rebuild.txt`).
+- **xsdk_test checks it on every run:** two of xost's test shaders, a vertex shader with blocks and a literal and a
+  pixel shader with four fetches laid out, compile into the container, literals and resources the PC makes
+  (`tests/test_xsc.c`). Both passed, 296 checks in all and the controller's two failing as ever (`xsdk_test.log`);
+  with the fetch layout off, the pixel shader's failed (`xsdk_test_break.log`).
