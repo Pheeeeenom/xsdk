@@ -26,7 +26,6 @@ enum {
 	FRAMES = 60,
 	FRAME_MS = 16,
 	FENCE_TIMEOUT_MS = 1000,
-	SHOW_MS = 5000,
 	MAX_MISSES_LOGGED = 6,
 	CLEAR_ARGB = 0xFF202020,
 	VERTEX_FLOATS = 4,
@@ -257,8 +256,8 @@ static void draw_frames(uint32_t vertices, volatile uint32_t *const *buffers, bo
 	if (has_display)
 		check("registers: every frame shown", landed && shown);
 	if (has_display && landed) {
-		xsdk_log_write("registers: the last frame stays on screen for %u ms for a capture", (unsigned)SHOW_MS);
-		(void)xsdk_thread_sleep(SHOW_MS);
+		xsdk_log_write("registers: the last frame stays on screen for %u ms for a capture", (unsigned)TEST_SHOW_MS);
+		(void)xsdk_thread_sleep(TEST_SHOW_MS);
 	}
 }
 

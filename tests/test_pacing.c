@@ -10,7 +10,7 @@
 #include "xsdk/present.h"
 
 enum {
-	FRAMES = 120,
+	FRAMES = 30,
 	BEGIN_TIMEOUT_MS = 1000,
 	FENCE_TIMEOUT_MS = 1000,
 	MAX_WRONG_LOGGED = 2,

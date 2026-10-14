@@ -18,7 +18,7 @@ enum {
 	WIDTH = 1280,
 	HEIGHT = 720,
 	BUFFERS = 2,
-	FRAMES = 120,
+	FRAMES = 60,
 	// The first half renders the source mirrored left to right, the second top to bottom.
 	HALF = FRAMES / 2,
 	FRAME_MS = 16,

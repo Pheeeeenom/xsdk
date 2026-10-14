@@ -24,7 +24,6 @@ enum {
 	FRAMES = 60,
 	FRAME_MS = 16,
 	FENCE_TIMEOUT_MS = 1000,
-	SHOW_MS = 5000,
 	MAX_MISSES_LOGGED = 6,
 	CLEAR_ARGB = 0xFF202020,
 	VERTEX_FLOATS = 4,
@@ -258,8 +257,8 @@ static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint3
 	check(name, fences_landed && frames_wrong == 0);
 	if (has_display) {
 		check("constants: every frame shown", shown);
-		xsdk_log_write("constants: the last frame stays on screen for %u ms for a capture", (unsigned)SHOW_MS);
-		(void)xsdk_thread_sleep(SHOW_MS);
+		xsdk_log_write("constants: the last frame stays on screen for %u ms for a capture", (unsigned)TEST_SHOW_MS);
+		(void)xsdk_thread_sleep(TEST_SHOW_MS);
 	}
 }
 

@@ -21,7 +21,6 @@ enum {
 	BUFFERS = 2,
 	FRAMES = 4,
 	FENCE_TIMEOUT_MS = 1000,
-	SHOW_MS = 2000,
 	CLEAR_ARGB = 0xFF202020,
 	TEXTURE_SIZE = 256,
 	LEVELS = 9,
@@ -218,8 +217,8 @@ static void check_frames(const Scene *scene)
 	if (!scene->has_display)
 		return;
 	check("anisotropy: the last frame shown", NT_SUCCESS(xsdk_display_show(xsdk_gpu_address(last), WIDTH)));
-	xsdk_log_write("anisotropy: the last frame stays on screen for %u ms for a capture", (unsigned)SHOW_MS);
-	(void)xsdk_thread_sleep(SHOW_MS);
+	xsdk_log_write("anisotropy: the last frame stays on screen for %u ms for a capture", (unsigned)TEST_SHOW_MS);
+	(void)xsdk_thread_sleep(TEST_SHOW_MS);
 }
 
 void test_anisotropy(void)

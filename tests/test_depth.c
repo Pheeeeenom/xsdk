@@ -23,7 +23,6 @@ enum {
 	DEPTH_OFF_FRAMES = 10,
 	FRAME_MS = 16,
 	FENCE_TIMEOUT_MS = 1000,
-	SHOW_MS = 5000,
 	MAX_MISSES_LOGGED = 6,
 	CLEAR_ARGB = 0xFF202020,
 	VERTEX_FLOATS = 4,
@@ -281,8 +280,8 @@ static void run(const XsdkShader *vertex, const XsdkShader *pixel, uint32_t vert
 			off.others_all_right == off.frames);
 	if (has_display) {
 		check("depth: every frame shown", shown);
-		xsdk_log_write("depth: the depth-tested frame stays on screen for %u ms for a capture", (unsigned)SHOW_MS);
-		(void)xsdk_thread_sleep(SHOW_MS);
+		xsdk_log_write("depth: the depth-tested frame stays on screen for %u ms for a capture", (unsigned)TEST_SHOW_MS);
+		(void)xsdk_thread_sleep(TEST_SHOW_MS);
 	}
 }
 

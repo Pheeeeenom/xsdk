@@ -10,6 +10,12 @@ extern "C" {
 
 void check(const char *name, bool passed);
 
+enum {
+	// How long a test leaves its last frame on screen. Each check takes a second at most, so a run is quick; a build
+	// made for a capture lengthens this.
+	TEST_SHOW_MS = 500,
+};
+
 void test_image(void);
 // The memory the kernel leaves a title (milestone 21).
 void test_memory(void);

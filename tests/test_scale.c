@@ -15,7 +15,6 @@
 enum {
 	WIDTH = 1280,
 	HEIGHT = 720,
-	SHOW_MS = 10000,
 	// A few frames, so the scaler has taken locked settings at a vblank before they're read.
 	SETTLE_MS = 100,
 	CORNER = 32,
@@ -202,8 +201,8 @@ void test_scale(void)
 			scaler_matches(values, expected, "shown", true));
 		xsdk_log_write("scale: 1280x720 on the %ux%u output, desktop height %u; showing it for %u ms for a capture",
 			(unsigned)video.display_width, (unsigned)video.display_height,
-			(unsigned)probe_gpu_registers[AVIVO_D1MODE_DESKTOP_HEIGHT], (unsigned)SHOW_MS);
-		(void)xsdk_thread_sleep(SHOW_MS);
+			(unsigned)probe_gpu_registers[AVIVO_D1MODE_DESKTOP_HEIGHT], (unsigned)TEST_SHOW_MS);
+		(void)xsdk_thread_sleep(TEST_SHOW_MS);
 	}
 	xsdk_display_close();
 	if (has_display) {

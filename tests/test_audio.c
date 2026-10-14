@@ -8,7 +8,7 @@
 
 enum {
 	TONE_HZ = 375,
-	TONE_MS = 2000,
+	TONE_MS = 500,
 };
 
 void test_audio_callback(const uint32_t *context);

@@ -23,7 +23,6 @@ enum {
 	FRAMES = 60,
 	FRAME_MS = 16,
 	FENCE_TIMEOUT_MS = 1000,
-	SHOW_MS = 5000,
 	MAX_MISSES_LOGGED = 8,
 	CLEAR_ARGB = 0xFF202020,
 	QUAD_VERTICES = 6,
@@ -551,8 +550,8 @@ static void draw_frames(const Scene *scene)
 		check(group_checks[i], fences_landed && checked > 0 && wrong[i] == 0);
 	if (scene->has_display) {
 		check("sampling: every frame shown", shown);
-		xsdk_log_write("sampling: the last frame stays on screen for %u ms for a capture", (unsigned)SHOW_MS);
-		(void)xsdk_thread_sleep(SHOW_MS);
+		xsdk_log_write("sampling: the last frame stays on screen for %u ms for a capture", (unsigned)TEST_SHOW_MS);
+		(void)xsdk_thread_sleep(TEST_SHOW_MS);
 	}
 }
 
