@@ -550,7 +550,7 @@ static void build_constant_table(const const_desc_t *cs, int n_cs,
     target_off = (uint32_t)b.len;
     w_bytes(&b, "ps_3_0", 7);          /* NUL included, no pad yet */
     creator_off = (uint32_t)b.len;
-    w_str_pad(&b, "2.0.11626.0");
+    w_str_pad(&b, "xost");
 
     if (b.err) { out->err = 1; return; }
 

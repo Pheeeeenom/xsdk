@@ -35,6 +35,8 @@ USAGE_POSITION, USAGE_NORMAL, USAGE_TEXCOORD, USAGE_COLOR = 0, 3, 5, 10
 
 VERSION_TOKEN = {"vertex": 0xFFFE0300, "pixel": 0xFFFF0300}
 TARGET_STR = {"vertex": "vs_3_0", "pixel": "ps_3_0"}
+# The tool that wrote the container; loaders skip it (libxenon:drivers/xenos/xe.c:614-629, ../src/shader.c).
+CREATOR = "xost"
 MAGIC = {"vertex": 0x102A1101, "pixel": 0x102A1100}
 
 
@@ -81,7 +83,7 @@ class Interpolator:
 
 
 def build_constant_table(shader_type: str, constants: list[Constant],
-                         creator: str = "2.0.11626.0") -> bytes:
+                         creator: str = CREATOR) -> bytes:
     """D3DX-style big-endian constant table incl. the u32 size wrapper."""
     HDR = 0x1C               # sizeof ConstantTable
     CI = 0x14                # sizeof ConstantInfo
@@ -132,7 +134,7 @@ def build_container(shader_type: str,
                     # pixel shaders:
                     ps_field18: int = 0x30007,
                     ps_outputs: int = 0x1,
-                    creator: str = "2.0.11626.0") -> bytes:
+                    creator: str = CREATOR) -> bytes:
     """Assemble a full shader container around raw big-endian ucode bytes."""
     assert len(ucode) % 12 == 0, "ucode must be whole 96-bit slots"
     ctab = build_constant_table(shader_type, constants, creator)

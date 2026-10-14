@@ -2800,3 +2800,21 @@ made, by its length and its FNV-1a hash as vulkan4xenon takes it. Logs: `results
   and read after the last.
 - **Broken on purpose,** built to target SPIR-V 1.3, every program compiled and none came out the same, and that check
   failed (`glslang_probe_spirv_1_3.log`).
+
+## Containers name xost as their creator (2026-10-14)
+
+xost wrote the XDK compiler's version, 2.0.11626.0, as the creator in the constant table of every container it made,
+as the containers it was first checked against had it; xsdk's own generators already wrote `xsdk`
+(tools/gen_triangle_shaders.py). xost writes `xost` now, in Python and in xcomb, and
+`xenos-toolchain/tests/test_container_creator.py` checks each way it makes a container. libxenon's loader reads the
+header's magic and the shader record, not the table's strings (libxenon:drivers/xenos/xe.c:614-629), and xsdk's reads
+the header, the microcode and its record (src/shader.c). Logs: `results/2026-10-14-xost-creator/`.
+- **174 containers carried the XDK's version:** the texel rate probe's 10, vulkan4xenon's 19 and the 145 in
+  Dusklight's pack. Rebuilt, each differs from before only in its creator: the same microcode, program control,
+  context and shader record (`compare.py`), and the SPIR-V beside them is unchanged.
+- **On the console** every title built with them ran as before: xsdk_test passed 294 of 296, the controller's two;
+  vulkan4xenon_test 80 of 80; vkbench 14 of 14, its times within 0.2% of milestone 36's run; the texel rate probe as
+  then, xost's build 15.90 a clock; Dusklight's title scene at 29.1 to 30.0 fps once loaded, and its logo shot in
+  17.7 ms of GPU time a frame against 17.6, the end frame the same pixel for pixel.
+- **Broken on purpose,** xost's default creator put back, the creator check failed for every way xost makes a
+  container; xcomb's alone put back, xcomb's parity with the Python combiner failed.
