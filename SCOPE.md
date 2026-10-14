@@ -923,9 +923,9 @@ gap that something running on xsdk meets becomes a milestone; the rest wait (aft
     - xsdk_test, vulkan4xenon_test and vkbench pass on the console.
 
 35. **Loop unrolling.** GCC at -O2 keeps a loop of 8 independent multiply-add chains rolled, 8 multiply-adds to a
-    branch, and a thread does 3.6 GFLOPS of double multiply-adds through it, 0.45 a clock at 3.2 GHz. Whether
-    unrolling gets more out of the in-order core, and costs Dusklight nothing, is to be measured. The toolchain's
-    default is what every title and port gets.
+    branch, and a thread does 3.6 GFLOPS of double multiply-adds through it, 0.56 multiply-adds a clock at 3.2 GHz.
+    Whether unrolling gets more out of the in-order core, and costs Dusklight nothing, is to be measured. The
+    toolchain's default is what every title and port gets.
 
     So:
     - Dusklight's title scene and logo shot, and a CPU benchmark, with `-funroll-loops` and without, the GPU and
