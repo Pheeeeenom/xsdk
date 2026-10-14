@@ -943,6 +943,11 @@ gap that something running on xsdk meets becomes a milestone; the rest wait (aft
     - if it's turned on, xsdk_test, vulkan4xenon_test, vkbench and Dusklight pass on the console with the rebuilt
       titles; if not, the record says why.
 
+36. **The texel rate.** Proposed, not yet agreed: docs/scope/36-texel-rate.md.
+
+**Networking**, a scope of its own rather than a numbered milestone: sockets, and TLS 1.2 in the title's own code.
+Agreed on 2026-10-14, before milestone 36: docs/scope/networking.md.
+
 **Waiting for a use** (CODE_GUIDELINES.md 1.2), each a milestone when something running on xsdk needs it: render targets
 of 64 bits a pixel and resolves into other formats (Xenia's ColorRenderTargetFormat); 128-bit textures
 (`k_32_32_32_32_FLOAT`); clearing eDRAM without a copy; memory export from shaders, which xost doesn't emit. The CPU's
