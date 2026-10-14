@@ -2781,3 +2781,22 @@ With that, milestone 36 is done: xost lays a pixel shader's fetches out together
 coordinates run 15.9 texels a clock where they ran 10.2, and 3.9 from a 64-bit texture filtered trilinearly where
 they ran 1.2. Left for later, as agreed: a register split giving pixel shaders more, under which 12 registers ran
 16.6 a clock rather than 12.2.
+
+## glslang on the console (2026-10-14)
+
+glslang 16.3.0 builds for xsdk with the toolchain, as a static library a title links (glslang-xenon `1d9d8b04`), and
+compiles GLSL to SPIR-V on the console (docs/scope/shader-compiling.md, step 1). Its probe (glslang-xenon
+`8755a431`, `xsdk/glslang_probe.cpp`) compiles each of the 145 GLSL programs in Dusklight's shader pack as
+`glslang -V` does on the PC: Vulkan 1.0 rules, SPIR-V 1.0, parsed, linked alone and turned into SPIR-V, on a thread of
+its own with a 1 MB stack. It compares each program's SPIR-V with what the pack holds, which the PC's glslang 16.3.0
+made, by its length and its FNV-1a hash as vulkan4xenon takes it. Logs: `results/2026-10-14-glslang/`.
+- **All 145 came out the same as on the PC** (`glslang_probe.log`).
+- **The first took 0.94 s,** as it also has glslang set up its built-in symbols; the first vertex shader after it took
+  8 ms, so that covers both stages. The other 144 took 11.3 ms each on average, 1.63 s together, and 30 ms at most,
+  `407248b726bcb428.vert`. On the PC, the same glslang took 15.1 s for the 145, each run in a process of its own.
+- **Heap:** 13.5 MB in use at most after a program, glslang's built-in symbols among it, and the heap grew to 30.5 MB
+  at most. Dusklight's title scene runs with 118 MB free (vulkan4xenon:docs/ROADMAP.md, milestone 12).
+- **Stack:** 68 KB at most below the compiling thread's first frame, from the stack painted before the first program
+  and read after the last.
+- **Broken on purpose,** built to target SPIR-V 1.3, every program compiled and none came out the same, and that check
+  failed (`glslang_probe_spirv_1_3.log`).

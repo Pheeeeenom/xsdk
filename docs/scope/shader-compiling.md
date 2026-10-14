@@ -34,6 +34,10 @@ in Dusklight's pack from its GLSL. It logs each program's time, the slowest, the
 SPIR-V is the same as the PC's glslang makes. HARDWARE.md records them. glslang's port lives as Mbed TLS's does, in a
 fork of its own.
 
+Done on 2026-10-14 (docs/HARDWARE.md, "glslang on the console"; glslang-xenon): all 145 programs came out as on the PC,
+the first in 0.94 s with glslang's built-in symbols and the rest in 11.3 ms each on average, 30 ms at most, with
+13.5 MB of heap in use at most and 68 KB of stack.
+
 ### 2. xost's compiler in C
 
 The part of xost that turns SPIR-V into a container, C17 as the guidelines have console code: `xsc/` and `xasm/`'s
