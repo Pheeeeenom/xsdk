@@ -1,0 +1,37 @@
+03:09:19 listening on TCP and UDP port 7370
+03:09:22 tcp 192.168.0.125:33081: 'addr'
+03:09:39 tcp 192.168.0.227:1133: 'tcp through send'
+03:09:39 tcp 192.168.0.227:1134: 'addr'
+03:09:39 tcp 192.168.0.227:1135: 'tcp through write'
+03:09:39 udp 192.168.0.227:1136: 'udp through sendto'
+03:09:39 tcp 192.168.0.227:1137: 'back 7373'
+03:09:40 tcp: connected back to 192.168.0.227:7373
+03:09:40 tcp 192.168.0.227:1139: ''
+03:12:18 tcp 192.168.0.227:1143: 'tcp through send'
+03:12:18 tcp 192.168.0.227:1144: 'addr'
+03:12:18 tcp 192.168.0.227:1145: 'tcp through write'
+03:12:18 udp 192.168.0.227:1146: 'udp through sendto'
+03:12:18 tcp 192.168.0.227:1147: 'back 7373'
+03:12:18 tcp: connected back to 192.168.0.227:7373
+03:12:18 tcp 192.168.0.227:1149: 'x'
+03:15:21 tcp 192.168.0.227:1153: 'tcp through send'
+03:15:21 tcp 192.168.0.227:1154: 'addr'
+03:15:21 tcp 192.168.0.227:1155: 'tcp through write'
+03:15:21 udp 192.168.0.227:1156: 'udp through sendto'
+03:15:21 tcp 192.168.0.227:1157: 'back 7373'
+03:15:21 tcp: connected back to 192.168.0.227:7373
+03:15:21 tcp 192.168.0.227:1159: 'x'
+03:21:00 tcp 192.168.0.227:1163: 'tcp through send'
+03:21:00 tcp 192.168.0.227:1164: 'addr'
+03:21:00 tcp 192.168.0.227:1165: 'tcp through write'
+03:21:00 udp 192.168.0.227:1166: 'udp through sendto'
+03:21:00 tcp 192.168.0.227:1167: 'back 7373'
+03:21:00 tcp: connected back to 192.168.0.227:7373
+03:21:00 tcp 192.168.0.227:1170: 'tcp without blocking'
+03:23:16 tcp 192.168.0.227:1174: 'tcp through send'
+03:23:16 tcp 192.168.0.227:1175: 'addr'
+03:23:16 tcp 192.168.0.227:1176: 'tcp through write'
+03:23:16 udp 192.168.0.227:1177: 'udp through sendto'
+03:23:16 tcp 192.168.0.227:1178: 'back 7373'
+03:23:16 tcp: connected back to 192.168.0.227:7373
+03:23:16 tcp 192.168.0.227:1181: 'tcp without blocking'

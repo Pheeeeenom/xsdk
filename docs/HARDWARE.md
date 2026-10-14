@@ -2606,3 +2606,40 @@ the PC. Logs: `results/2026-10-14-networking-probe/`, one run with `NetDll_XNetS
   whether they returned `WSAEWOULDBLOCK` or `WSAEINPROGRESS`.
 
 So xsdk's sockets set option 0x5801 on each socket, and the startup flags don't matter.
+
+## Sockets in xsdk (2026-10-14)
+
+xsdk's POSIX sockets (`5de3f6e`, src/socket.c, src/netdb.c) run on XAM's exports, each socket marked with option 0x5801
+as it's made. xsdk_test's network checks ran against `tools/net_echo.py` on the PC (logs:
+`results/2026-10-14-sockets/`).
+- **xsdk_test passed 295 of 295** (`xsdk_test.log`):
+  - TCP to the PC and back through `send` and `recv`, and through `write`, `read` and `close`, `fstat` giving
+    `S_IFSOCK`;
+  - UDP through `sendto` and `recvfrom`;
+  - a connection the PC made, accepted;
+  - `getaddrinfo` found example.com through `NetDll_XNetDnsLookup`, waiting on an event this time;
+  - a blocking connection to a closed port on the console itself got `ECONNREFUSED`;
+  - a non-blocking one to the PC completed through `poll`, and `recv` with nothing there gave `EAGAIN`;
+  - 1000 sockets opened and closed in turn.
+
+  The whole run took 58 s on the console, with each check now a second at most (`232bdde`).
+- **Broken on purpose,** `close` leaving XAM's socket open, the 24th socket of the 1000 failed with `ENOBUFS`, 33
+  sockets then open, and that check failed (`xsdk_test_close_left_open.log`); the controller's two failed besides,
+  disconnected for that run.
+- **vulkan4xenon_test** passed 80 of 80 and **vkbench** 14 of 14, rebuilt against it (`vulkan4xenon_test.log`,
+  `vkbench.log`).
+
+What XAM does that POSIX code doesn't expect:
+- **No `SO_ERROR`.** `NetDll_getsockopt` refuses it with `WSAENOPROTOOPT`. A build of the checks asking every
+  `SOL_SOCKET` option from 0x0001 to 0x0100, 0x1001 to 0x1020 and in five other ranges got answers to 0x0002, 0x0004,
+  0x0080 (60), 0x1001 (16384), 0x1002 (17520), 0x1008 (1), 0x5801 (1) and 0x5802 (0) only
+  (`xsdk_test_option_scan.log`). None gives a failed connection's cause.
+- **A failed non-blocking connection says only that it failed.** `NetDll_select` put it in the write and error sets at
+  once. A build of the checks that went on to try the socket (`xsdk_test_after_connect.log`) found:
+  - after the refused connection, a second `connect` in progress again, `EINPROGRESS` through xsdk, and `recv` and
+    `send` giving `WSAENOTCONN`;
+  - after the one that succeeded, a second `connect` giving `WSAEISCONN`, `recv` `WSAEWOULDBLOCK`, and `send` sending.
+
+  So xsdk's `SO_ERROR` is 0 until `NetDll_select` puts the socket in its error set, and `EIO` after.
+- **`NetDll_getsockname` gives 0.0.0.0** for a connected socket, with its port; the checks ask the PC what address it
+  sees.

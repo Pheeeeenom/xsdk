@@ -79,6 +79,9 @@ Done on 2026-10-14 (docs/HARDWARE.md, "Sockets reach the LAN and the internet wh
 - Broken on purpose, `close` leaving the socket open, the last of those fails on the console.
 - xsdk_test, vulkan4xenon_test and vkbench pass on the console.
 
+Done on 2026-10-14 (docs/HARDWARE.md, "Sockets in xsdk"). XAM refuses `SO_ERROR`, so xsdk gives 0 until its select
+puts a socket in the error set, and `EIO` after; `getsockname` gives 0.0.0.0 for a connected socket.
+
 ### 3. TLS 1.2
 
 - **A port of its own.** A TLS library ported as its own repository, as SDL is (CODE_GUIDELINES.md section 14). It's
