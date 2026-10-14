@@ -155,8 +155,10 @@ void xsdk_gpu_put_back(void);
 // libxenon's Xe_pSetSurfaceClip with no offset, and its cache invalidation with a wait.
 void xsdk_gpu_put_window(GpuPackets *packets, uint32_t width, uint32_t height);
 void xsdk_gpu_put_coherency(GpuPackets *packets, uint32_t actions, uint32_t base, uint32_t size_bytes);
-// The eDRAM layout for a colour and depth target of this size, where the last target was placed.
+// The eDRAM layout for a colour and depth target of this size, with the last target's samples, where it was placed.
 void xsdk_gpu_put_surface(GpuPackets *packets, uint32_t width, uint32_t height);
+// RB_COPY_CONTROL's sample select that averages the last target's samples.
+uint32_t xsdk_gpu_copy_sample_select(void);
 // Points the shown surface at another buffer of its size; for the vblank callback, so it never sleeps.
 void xsdk_display_flip(uint32_t address);
 // For xsdk_present_open: whether the splash's display can be taken over, leaving the logo up, and its size.

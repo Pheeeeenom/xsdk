@@ -40,9 +40,14 @@
 
 enum {
 	DRAW_MAX_DWORDS = 96,
-	// eDRAM tiles without multisampling (xenia:src/xenia/gpu/xenos.h:414-416).
+	// eDRAM tiles of samples (xenia:src/xenia/gpu/xenos.h:414-416).
 	TILE_WIDTH = 80,
 	TILE_HEIGHT = 16,
+	// A resolve's width is whole columns of 32 pixels.
+	RESOLVE_COLUMN = 32,
+	// RB_SURFACE_INFO's fields (xenia:src/xenia/gpu/registers.h:670-679).
+	SURFACE_SAMPLES_SHIFT = 16,
+	SURFACE_HIZ_PITCH_SHIFT = 18,
 	EDRAM_MODE_COLOR_DEPTH = 4,
 	// libxenon's control state from RB_DEPTHCONTROL on, less depth and culling (xe.c:1403-1416).
 	BLEND_ONE_ZERO = 0x00010001,
@@ -95,6 +100,7 @@ enum {
 	FACE_CLOCKWISE = 1 << 2,
 	POLY_OFFSET_FRONT_ENABLE = 1 << 11,
 	POLY_OFFSET_BACK_ENABLE = 1 << 12,
+	MSAA_ENABLE = 1 << 15,
 	VTX_WINDOW_OFFSET_ENABLE = 1 << 16,
 	// The slope scale register counts 1/16-pixel subpixels (xenia:src/xenia/gpu/xenos.h:404-407).
 	SUBPIXELS_PER_PIXEL = 16,
@@ -108,39 +114,85 @@ static uint32_t float_bits(float value)
 	return bits;
 }
 
-// Where xsdk_gpu_set_target_at put the target's colour and depth, in eDRAM tiles.
+// PA_SC_AA_CONFIG: the samples less one, and the farthest from a pixel's centre in 16ths from bit 13
+// (Linux:drivers/gpu/drm/msm/registers/adreno/a2xx.xml:1540-1543); libxenon's 2 and 4 fail (docs/HARDWARE.md).
+static const uint32_t aa_configs[] = { 0, 0x00008001, 0x0000C003 };
+// RB_COPY_CONTROL's copy_sample_select: sample 0, or the average of samples 0-1 or 0-3
+// (xenia:src/xenia/gpu/registers.h:858; xenos.h:1000-1008), as libxenon picks them (xe.c:1096-1105).
+static const uint32_t copy_sample_selects[] = { 0, 4, 6 };
+
+// The last target's samples a pixel, and where xsdk_gpu_set_target_samples_at put its colour and depth, in eDRAM tiles.
+static uint32_t target_samples = 1;
 static bool target_placed;
 static uint32_t placed_color_tile;
 static uint32_t placed_depth_tile;
 
-// An even number of tiles across (xe.c:998-1036).
-static uint32_t tiles_across(uint32_t width)
+// MsaaSamples, 0 to 2 for 1, 2 and 4 samples (xenia:src/xenia/gpu/xenos.h:288-292).
+static uint32_t samples_log2(uint32_t samples)
 {
-	return ((width + TILE_WIDTH - 1) / TILE_WIDTH + 1) & ~1u;
+	return samples / 2;
+}
+
+// A pixel's 2 samples sit one above the other, its 4 two by two (xenia:src/xenia/gpu/shaders/edram.xesli:27-32).
+static uint32_t samples_across(uint32_t samples)
+{
+	return samples == 4 ? 2 : 1;
+}
+
+// An even number of tiles across (xe.c:998-1036), over whole resolve columns, so resolving a texture's pitch reads the
+// rows where its draws put them.
+static uint32_t tiles_across(uint32_t width, uint32_t samples)
+{
+	const uint32_t columns = (width + RESOLVE_COLUMN - 1) & ~(uint32_t)(RESOLVE_COLUMN - 1);
+	return ((columns * samples_across(samples) + TILE_WIDTH - 1) / TILE_WIDTH + 1) & ~1u;
+}
+
+uint32_t xsdk_gpu_target_sample_tiles(uint32_t width, uint32_t height, uint32_t samples)
+{
+	assert(samples == 1 || samples == 2 || samples == 4);
+	const uint32_t rows = height * (samples / samples_across(samples));
+	return tiles_across(width, samples) * ((rows + TILE_HEIGHT - 1) / TILE_HEIGHT);
 }
 
 uint32_t xsdk_gpu_target_tiles(uint32_t width, uint32_t height)
 {
-	return tiles_across(width) * ((height + TILE_HEIGHT - 1) / TILE_HEIGHT);
+	return xsdk_gpu_target_sample_tiles(width, height, 1);
+}
+
+uint32_t xsdk_gpu_copy_sample_select(void)
+{
+	return copy_sample_selects[samples_log2(target_samples)];
+}
+
+// As libxenon sets it (xe.c:1411-1412): without msaa_enable the console's edges don't blend (docs/HARDWARE.md).
+static uint32_t msaa_enable(void)
+{
+	return target_samples > 1 ? MSAA_ENABLE : 0;
 }
 
 // Xe_SetRenderTarget's layout unless placed: depth then colour, as many tiles each (xe.c:998-1036).
 void xsdk_gpu_put_surface(GpuPackets *packets, uint32_t width, uint32_t height)
 {
-	const uint32_t target_tiles = xsdk_gpu_target_tiles(width, height);
+	const uint32_t target_tiles = xsdk_gpu_target_sample_tiles(width, height, target_samples);
 	const uint32_t color_tile = target_placed ? placed_color_tile : target_tiles;
 	const uint32_t depth_tile = target_placed ? placed_depth_tile : 0;
 	assert(color_tile + target_tiles <= XSDK_EDRAM_TILES && depth_tile + target_tiles <= XSDK_EDRAM_TILES);
-	const uint32_t edram_pitch = tiles_across(width) * TILE_WIDTH;
-	const uint32_t surface[] = { edram_pitch | edram_pitch << 18, color_tile, depth_tile };
+	// The pitch counts pixels (xenia:src/xenia/gpu/xenos.h:426-437).
+	const uint32_t edram_pitch = tiles_across(width, target_samples) * TILE_WIDTH / samples_across(target_samples);
+	const uint32_t surface[] = { edram_pitch | samples_log2(target_samples) << SURFACE_SAMPLES_SHIFT |
+			edram_pitch << SURFACE_HIZ_PITCH_SHIFT,
+		color_tile, depth_tile };
 	gpu_put_registers(packets, RB_SURFACE_INFO, surface, 3);
+	// Resolves too take the target's samples here, else they miss pixels or copy zeros (docs/HARDWARE.md).
+	gpu_put_register(packets, PA_SC_AA_CONFIG, aa_configs[samples_log2(target_samples)]);
+	gpu_put_register(packets, PA_SC_AA_MASK, 0xFFFF);
 }
 
 // Xe_pSetState's control and miscellaneous state (xe.c:1688-1744).
 static void put_target(uint32_t width, uint32_t height)
 {
-	const uint32_t control[] = { 0, BLEND_ONE_ZERO, COLOR_CONTROL, 0, CLIP_D3D_SPACE, SC_MODE_WINDOW_OFFSET_NO_CULL,
-		VTE_VIEWPORT_AND_W0, 0, EDRAM_MODE_COLOR_DEPTH };
+	const uint32_t control[] = { 0, BLEND_ONE_ZERO, COLOR_CONTROL, 0, CLIP_D3D_SPACE,
+		SC_MODE_WINDOW_OFFSET_NO_CULL | msaa_enable(), VTE_VIEWPORT_AND_W0, 0, EDRAM_MODE_COLOR_DEPTH };
 	const uint32_t indices[] = { MAX_VERTEX_INDEX, 0 };
 	// The stencil masks, alpha reference 0, then a viewport over the target with z from 0 to 1.
 	const uint32_t viewport[] = { STENCIL_MASKS, STENCIL_MASKS, 0, float_bits(width / 2.0f), float_bits(width / 2.0f),
@@ -157,24 +209,37 @@ static void put_target(uint32_t width, uint32_t height)
 	gpu_put_registers(&packets, VGT_MAX_VTX_INDX, indices, 2);
 	gpu_put_register(&packets, RB_COLOR_MASK, 0xF);
 	gpu_put_registers(&packets, RB_STENCILREFMASK_BF, viewport, 9);
-	gpu_put_register(&packets, PA_SC_AA_CONFIG, 0);
-	gpu_put_register(&packets, PA_SC_AA_MASK, 0xFFFF);
 	xsdk_gpu_write(&packets);
 }
 
-void xsdk_gpu_set_target(uint32_t width, uint32_t height)
+void xsdk_gpu_set_target_samples(uint32_t width, uint32_t height, uint32_t samples)
 {
+	assert(samples == 1 || samples == 2 || samples == 4);
+	target_samples = samples;
 	target_placed = false;
 	put_target(width, height);
 }
 
-// A base is any tile: Xenia adds it to each pixel's tile, wrapping (xenia:src/xenia/gpu/draw_util.cc:1111-1138).
-void xsdk_gpu_set_target_at(uint32_t width, uint32_t height, uint32_t color_tile, uint32_t depth_tile)
+void xsdk_gpu_set_target(uint32_t width, uint32_t height)
 {
+	xsdk_gpu_set_target_samples(width, height, 1);
+}
+
+// A base is any tile: Xenia adds it to each pixel's tile, wrapping (xenia:src/xenia/gpu/draw_util.cc:1111-1138).
+void xsdk_gpu_set_target_samples_at(
+	uint32_t width, uint32_t height, uint32_t samples, uint32_t color_tile, uint32_t depth_tile)
+{
+	assert(samples == 1 || samples == 2 || samples == 4);
+	target_samples = samples;
 	target_placed = true;
 	placed_color_tile = color_tile;
 	placed_depth_tile = depth_tile;
 	put_target(width, height);
+}
+
+void xsdk_gpu_set_target_at(uint32_t width, uint32_t height, uint32_t color_tile, uint32_t depth_tile)
+{
+	xsdk_gpu_set_target_samples_at(width, height, 1, color_tile, depth_tile);
 }
 
 // IM_LOAD takes address | type, then the size in dwords (xenia:src/xenia/gpu/command_processor.cc:1535-1539).
@@ -316,7 +381,7 @@ void xsdk_gpu_set_raster(const XsdkRasterState *state)
 {
 	uint32_t dwords[DRAW_MAX_DWORDS];
 	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
-	gpu_put_register(&packets, PA_SU_SC_MODE_CNTL, state->mode_control);
+	gpu_put_register(&packets, PA_SU_SC_MODE_CNTL, state->mode_control | msaa_enable());
 	gpu_put_registers(&packets, PA_SU_POLY_OFFSET_FRONT_SCALE, state->polygon_offset, 4);
 	xsdk_gpu_write(&packets);
 }

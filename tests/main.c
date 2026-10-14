@@ -64,6 +64,7 @@ int main(int argc, char **argv)
 	test_raster();
 	test_sampling();
 	test_formats();
+	test_multisample();
 	test_vertex();
 	test_replay();
 	test_microcode();

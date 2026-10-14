@@ -92,7 +92,7 @@ void xsdk_gpu_resolve_texture(const XsdkTexture *texture, uint32_t clear_argb);
 void xsdk_gpu_set_resolve_clears(bool color, bool depth_stencil);
 
 enum {
-	// eDRAM's tiles of 80x16 pixels at 32 bits (xenia:src/xenia/gpu/xenos.h:414-416).
+	// eDRAM's tiles of 80x16 samples at 32 bits (xenia:src/xenia/gpu/xenos.h:414-416).
 	XSDK_EDRAM_TILES = 2048,
 };
 
@@ -102,6 +102,11 @@ void xsdk_gpu_set_target(uint32_t width, uint32_t height);
 void xsdk_gpu_set_target_at(uint32_t width, uint32_t height, uint32_t color_tile, uint32_t depth_tile);
 // The eDRAM tiles a target this size takes for its colour, and as many again for its depth.
 uint32_t xsdk_gpu_target_tiles(uint32_t width, uint32_t height);
+// The three above with 1, 2 or 4 samples a pixel, where they take 1; resolves average a pixel's samples.
+void xsdk_gpu_set_target_samples(uint32_t width, uint32_t height, uint32_t samples);
+void xsdk_gpu_set_target_samples_at(
+	uint32_t width, uint32_t height, uint32_t samples, uint32_t color_tile, uint32_t depth_tile);
+uint32_t xsdk_gpu_target_sample_tiles(uint32_t width, uint32_t height, uint32_t samples);
 // Loads both shaders with IM_LOAD and sets the program registers; a resolve replaces the vertex shader.
 void xsdk_gpu_set_shaders(const XsdkShader *vertex, const XsdkShader *pixel);
 // After the CPU writes vertices, indices or texels, xsdk_texture_upload's included, and before the draws that read

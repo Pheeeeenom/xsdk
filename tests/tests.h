@@ -104,6 +104,9 @@ void test_sampling(void);
 // Texture formats (milestone 16).
 void test_formats(void);
 
+// Multisampled targets (milestone 32).
+void test_multisample(void);
+
 // Vertex input (milestone 17).
 void test_vertex(void);
 

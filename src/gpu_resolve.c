@@ -50,6 +50,7 @@ enum {
 	EDRAM_MODE_COPY = 6,
 	// Copy colour into k_8_8_8_8, then clear colour or depth (xe.c:1104-1108).
 	COPY_CONTROL_CONVERT = 1 << 20,
+	COPY_SAMPLE_SELECT_SHIFT = 4,
 	COPY_DEST_INFO_8888 = 6 << 7,
 	// RB_COPY_CONTROL's clears (xenia:src/xenia/gpu/registers.h:860-861).
 	COPY_CONTROL_COLOR_CLEAR = 1 << 8,
@@ -116,7 +117,8 @@ static void resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t 
 	assert(width % 32 == 0);
 	const uint32_t vertices = xsdk_gpu_rectangle(width, height);
 	const uint32_t viewport[] = { 0x44000000, 0x44000000, 0xC3B40000, 0x43B40000, 0x3F800000, 0 };
-	const uint32_t copy[] = { COPY_CONTROL_CONVERT | clears, address, pitch | height << 16, dest_info };
+	const uint32_t copy[] = { COPY_CONTROL_CONVERT | xsdk_gpu_copy_sample_select() << COPY_SAMPLE_SELECT_SHIFT | clears,
+		address, pitch | height << 16, dest_info };
 	const uint32_t program[] = { PROGRAM_CNTL_RESOLVE, 0 };
 	const uint32_t indices[] = { 0xFFFF, 0, 0 };
 	const uint32_t clip[] = { CLIP_DISABLE, VTX_WINDOW_OFFSET_ENABLE, VTE_XY_Z_ALREADY_TRANSFORMED };
@@ -144,9 +146,6 @@ static void resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t 
 	gpu_put_register(&packets, RB_HIZCONTROL, 0);
 	gpu_put_registers(&packets, VGT_MAX_VTX_INDX, indices, 3);
 	gpu_put_registers(&packets, PA_CL_CLIP_CNTL, clip, 3);
-	// XAM may leave multisampling on, halving the copy (docs/HARDWARE.md, "A resolve needs multisampling off").
-	gpu_put_register(&packets, PA_SC_AA_CONFIG, 0);
-	gpu_put_register(&packets, PA_SC_AA_MASK, 0xFFFF);
 	gpu_put_register(&packets, COHER_DEST_BASE_7, 0);
 	gpu_put_registers(&packets, SHADER_CONSTANT_FETCH_00_0, fetch, 6);
 	gpu_put_registers(&packets, SHADER_CONSTANT_FLUSH_FETCH_0, flush_fetch, 3);
