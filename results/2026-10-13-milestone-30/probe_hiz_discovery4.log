@@ -1,0 +1,95 @@
+log: game:\probe_hiz_discovery4.log
+log: named after \Device\Harddisk0\Partition1\XSDK\hiz\probe_hiz_discovery4.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+hiz probe 4
+hiz probe: GPU 0x00000000
+hiz probe: nothing, cleared to 0.25 from far, probe at 0.4: right
+hiz probe: nothing, cleared far from 0.25, probe at 0.9: 199 pixels off in (1248, 0) to (1278, 7)
+hiz probe: nothing, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 0): #################################...............................
+hiz probe: nothing, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 1): #################################.............................##
+hiz probe: nothing, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 2): #################################............................###
+hiz probe: nothing, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 3): #################################..........................#####
+hiz probe: nothing, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 4): #################################........................#######
+hiz probe: nothing, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 5): #################################......................#########
+hiz probe: nothing, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 6): #################################....................###########
+hiz probe: nothing, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 7): #################################...................############
+hiz probe: nothing, drawn at 0.2 over far, probe at 0.4: 199 pixels off in (1248, 0) to (1278, 7)
+hiz probe: nothing, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 0): .................................###############################
+hiz probe: nothing, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 1): .................................#############################..
+hiz probe: nothing, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 2): .................................############################...
+hiz probe: nothing, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 3): .................................##########################.....
+hiz probe: nothing, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 4): .................................########################.......
+hiz probe: nothing, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 5): .................................######################.........
+hiz probe: nothing, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 6): .................................####################...........
+hiz probe: nothing, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 7): .................................###################............
+hiz probe: nothing, drawn at 0.7 with always over 0.2, probe at 0.6: 199 pixels off in (1248, 0) to (1278, 7)
+hiz probe: nothing, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 0): #################################...............................
+hiz probe: nothing, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 1): #################################.............................##
+hiz probe: nothing, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 2): #################################............................###
+hiz probe: nothing, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 3): #################################..........................#####
+hiz probe: nothing, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 4): #################################........................#######
+hiz probe: nothing, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 5): #################################......................#########
+hiz probe: nothing, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 6): #################################....................###########
+hiz probe: nothing, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 7): #################################...................############
+hiz probe: nothing, cleared to 0.25 from far, small probe at 0.4: right
+hiz probe: nothing, cleared far from 0.25, small probe at 0.9: 22 pixels off in (592, 300) to (598, 303)
+hiz probe: nothing, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 300): #########################################################.......
+hiz probe: nothing, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 301): #########################################################......#
+hiz probe: nothing, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 302): #########################################################.....##
+hiz probe: nothing, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 303): #########################################################....###
+hiz probe: nothing, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 304): ################################################################
+hiz probe: nothing, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 305): ################################################################
+hiz probe: nothing, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 306): ################################################################
+hiz probe: nothing, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 307): ################################################################
+hiz probe: nothing: 619 pixels off in all
+hiz probe: EVENT_WRITE CACHE_FLUSH, cleared to 0.25 from far, probe at 0.4: right
+hiz probe: EVENT_WRITE CACHE_FLUSH, cleared far from 0.25, probe at 0.9: 199 pixels off in (1248, 0) to (1278, 7)
+hiz probe: EVENT_WRITE CACHE_FLUSH, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 0): #################################...............................
+hiz probe: EVENT_WRITE CACHE_FLUSH, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 1): #################################.............................##
+hiz probe: EVENT_WRITE CACHE_FLUSH, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 2): #################################............................###
+hiz probe: EVENT_WRITE CACHE_FLUSH, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 3): #################################..........................#####
+hiz probe: EVENT_WRITE CACHE_FLUSH, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 4): #################################........................#######
+hiz probe: EVENT_WRITE CACHE_FLUSH, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 5): #################################......................#########
+hiz probe: EVENT_WRITE CACHE_FLUSH, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 6): #################################....................###########
+hiz probe: EVENT_WRITE CACHE_FLUSH, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 7): #################################...................############
+hiz probe: EVENT_WRITE CACHE_FLUSH, drawn at 0.2 over far, probe at 0.4: 199 pixels off in (1248, 0) to (1278, 7)
+hiz probe: EVENT_WRITE CACHE_FLUSH, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 0): .................................###############################
+hiz probe: EVENT_WRITE CACHE_FLUSH, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 1): .................................#############################..
+hiz probe: EVENT_WRITE CACHE_FLUSH, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 2): .................................############################...
+hiz probe: EVENT_WRITE CACHE_FLUSH, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 3): .................................##########################.....
+hiz probe: EVENT_WRITE CACHE_FLUSH, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 4): .................................########################.......
+hiz probe: EVENT_WRITE CACHE_FLUSH, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 5): .................................######################.........
+hiz probe: EVENT_WRITE CACHE_FLUSH, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 6): .................................####################...........
+hiz probe: EVENT_WRITE CACHE_FLUSH, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 7): .................................###################............
+hiz probe: EVENT_WRITE CACHE_FLUSH, drawn at 0.7 with always over 0.2, probe at 0.6: 199 pixels off in (1248, 0) to (1278, 7)
+hiz probe: EVENT_WRITE CACHE_FLUSH, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 0): #################################...............................
+hiz probe: EVENT_WRITE CACHE_FLUSH, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 1): #################################.............................##
+hiz probe: EVENT_WRITE CACHE_FLUSH, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 2): #################################............................###
+hiz probe: EVENT_WRITE CACHE_FLUSH, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 3): #################################..........................#####
+hiz probe: EVENT_WRITE CACHE_FLUSH, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 4): #################################........................#######
+hiz probe: EVENT_WRITE CACHE_FLUSH, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 5): #################################......................#########
+hiz probe: EVENT_WRITE CACHE_FLUSH, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 6): #################################....................###########
+hiz probe: EVENT_WRITE CACHE_FLUSH, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 7): #################################...................############
+hiz probe: EVENT_WRITE CACHE_FLUSH, cleared to 0.25 from far, small probe at 0.4: right
+hiz probe: EVENT_WRITE CACHE_FLUSH, cleared far from 0.25, small probe at 0.9: 22 pixels off in (592, 300) to (598, 303)
+hiz probe: EVENT_WRITE CACHE_FLUSH, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 300): #########################################################.......
+hiz probe: EVENT_WRITE CACHE_FLUSH, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 301): #########################################################......#
+hiz probe: EVENT_WRITE CACHE_FLUSH, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 302): #########################################################.....##
+hiz probe: EVENT_WRITE CACHE_FLUSH, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 303): #########################################################....###
+hiz probe: EVENT_WRITE CACHE_FLUSH, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 304): ################################################################
+hiz probe: EVENT_WRITE CACHE_FLUSH, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 305): ################################################################
+hiz probe: EVENT_WRITE CACHE_FLUSH, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 306): ################################################################
+hiz probe: EVENT_WRITE CACHE_FLUSH, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 307): ################################################################
+hiz probe: EVENT_WRITE CACHE_FLUSH: 619 pixels off in all
+hiz probe: fence 31 didn't land
+hiz probe: fence 32 didn't land
+hiz probe: fence 33 didn't land
+hiz probe: fence 34 didn't land
+hiz probe: fence 35 didn't land
+hiz probe: fence 36 didn't land
+hiz probe: fence 37 didn't land
+hiz probe: EVENT_WRITE SC_WAIT_WC: 0 pixels off in all
+hiz probe: stopped early
+gpu: the GPU didn't finish: 0xC00000B5; keeping it and its memory
+hiz probe: GPU close 0xC00000B5
+exit: status 0

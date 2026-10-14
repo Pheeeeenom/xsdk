@@ -1,0 +1,52 @@
+log: game:\probe_hiz_discovery5.log
+log: named after \Device\Harddisk0\Partition1\XSDK\hiz\probe_hiz_discovery5.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+hiz probe 5
+hiz probe: GPU 0x00000000
+hiz probe: next, a resolve clearing depth to 1.00
+hiz probe: next, a resolve clearing depth to 1.00
+hiz probe: less, decal at 0.51 biased by -0.02 over 0.5: every pixel FFE0E040
+hiz probe: next, a resolve clearing depth to 1.00
+hiz probe: next, a resolve clearing depth to 1.00
+hiz probe: less, the same with the buffer off: every pixel FFE0E040
+hiz probe: next, a resolve clearing depth to 0.00
+hiz probe: next, a resolve clearing depth to 0.00
+hiz probe: greater, decal at 0.49 biased by 0.02 over 0.5: every pixel FFE0E040
+hiz probe: next, a resolve clearing depth to 0.00
+hiz probe: next, a resolve clearing depth to 0.00
+hiz probe: greater, the same with the buffer off: every pixel FFE0E040
+hiz probe: next, a resolve clearing depth to 1.00
+hiz probe: next, a resolve clearing depth to 1.00
+hiz probe: next, a resolve clearing depth to 1.00
+hiz probe: less, far at 0.7 after a clear over near at 0.1: every pixel FFE0E040
+hiz probe: next, a resolve clearing depth to 1.00
+hiz probe: next, a resolve clearing depth to 1.00
+hiz probe: next, a resolve clearing depth to 1.00
+hiz probe: less, far at 0.7 after a clear over near at 0.1: every pixel FFE0E040
+hiz probe: next, a resolve clearing depth to 1.00
+hiz probe: next, a resolve clearing depth to 1.00
+hiz probe: next, a resolve clearing depth to 1.00
+hiz probe: less, far at 0.7 after a clear over near at 0.1: every pixel FFE0E040
+hiz probe: next, a resolve clearing depth to 1.00
+hiz probe: next, a resolve clearing depth to 1.00
+hiz probe: next, a resolve clearing depth to 1.00
+hiz probe: less, far at 0.7 after a clear over near at 0.1: every pixel FFE0E040
+hiz probe: next, a resolve clearing depth to 0.00
+hiz probe: next, a resolve clearing depth to 0.00
+hiz probe: next, a resolve clearing depth to 0.00
+hiz probe: greater, far at 0.3 after a clear over near at 0.9: every pixel FFE0E040
+hiz probe: next, a resolve clearing depth to 0.00
+hiz probe: next, a resolve clearing depth to 0.00
+hiz probe: next, a resolve clearing depth to 0.00
+hiz probe: greater, far at 0.3 after a clear over near at 0.9: every pixel FFE0E040
+hiz probe: next, a resolve clearing depth to 0.00
+hiz probe: next, a resolve clearing depth to 0.00
+hiz probe: next, a resolve clearing depth to 0.00
+hiz probe: greater, far at 0.3 after a clear over near at 0.9: every pixel FFE0E040
+hiz probe: next, a resolve clearing depth to 0.00
+hiz probe: next, a resolve clearing depth to 0.00
+hiz probe: next, a resolve clearing depth to 0.00
+hiz probe: greater, far at 0.3 after a clear over near at 0.9: every pixel FFE0E040
+hiz probe: done
+hiz probe: GPU close 0x00000000
+exit: status 0

@@ -1,0 +1,95 @@
+--- a/src/gpu.c
++++ b/src/gpu.c
+@@ -40,7 +40,7 @@
+ 	SEGMENT_ALIGN_DWORDS = 32,
+ 	// A one-dword packet that does nothing (libxenon:drivers/xenos/xe.c:1217-1221).
+ 	TYPE2_NOP = 0x80000000,
+-	RECTANGLE_FLOATS = 6,
++	RECTANGLE_FLOATS = 8,
+ 	// Resolve sizes kept at once, so a frame resolving at a few sizes doesn't wait for the GPU.
+ 	RECTANGLE_SLOTS = 8,
+ 	RECTANGLE_STRIDE = 0x20,
+@@ -386,6 +386,8 @@
+ }
+ 
+ // The slot for this size, else the one used longest ago, after the GPU is done with it.
++float xsdk_probe_rectangle_top_right_y;
++
+ static uint32_t rectangle_slot(uint32_t width, uint32_t height)
+ {
+ 	uint32_t oldest = 0;
+@@ -402,7 +404,8 @@
+ 		(void)xsdk_gpu_wait(rectangle->fence, CLOSE_TIMEOUT_MS);
+ 	}
+ 	// libxenon's three corners, half a pixel up and left (libxenon:drivers/xenos/xe.c:1074-1081).
+-	const float corners[RECTANGLE_FLOATS] = { -0.5f, -0.5f, width - 0.5f, 0, width - 0.5f, height - 0.5f };
++	const float corners[RECTANGLE_FLOATS] = { -0.5f, -0.5f, width - 0.5f, xsdk_probe_rectangle_top_right_y, width - 0.5f, height - 0.5f, -0.5f,
++		height - 0.5f };
+ 	for (uint32_t i = 0; i < RECTANGLE_FLOATS; i++)
+ 		writeback[(RECTANGLE_OFFSET + oldest * RECTANGLE_STRIDE) / 4 + i] = float_bits(corners[i]);
+ 	rectangle->width = width;
+--- a/src/gpu_resolve.c
++++ b/src/gpu_resolve.c
+@@ -36,7 +36,7 @@
+ #include "gpu_private.h"
+ 
+ enum {
+-	RESOLVE_MAX_DWORDS = 128,
++	RESOLVE_MAX_DWORDS = 192,
+ 	// The size libxenon invalidates for its vertex pool: 12000 bytes and a page (xe.c:33, 1850, 1871).
+ 	RECTANGLE_INVALIDATE_BYTES = 12000 + 0x1000,
+ 	INVALIDATE_VERTEX_SHADER = 1 << 8,
+@@ -93,6 +93,9 @@
+ 
+ static uint32_t depth_clear = DEPTH_CLEAR_FAR;
+ static uint32_t clears = COPY_CONTROL_COLOR_CLEAR | COPY_CONTROL_DEPTH_CLEAR;
++uint32_t xsdk_probe_resolve_hiz;
++uint32_t xsdk_probe_second_pass;
++uint32_t xsdk_probe_strip_pass;
+ 
+ // RB_COLOR_CLEAR wants the packed colour, red low (xenia:src/xenia/gpu/shaders/pixel_formats.xesli:113-116).
+ static uint32_t packed_8888(uint32_t argb)
+@@ -143,7 +146,7 @@
+ 	gpu_put(&packets, INVALIDATE_VERTEX_SHADER);
+ 	put_shader(&packets);
+ 	gpu_put_registers(&packets, SQ_PROGRAM_CNTL, program, 2);
+-	gpu_put_register(&packets, RB_HIZCONTROL, 0);
++	gpu_put_register(&packets, RB_HIZCONTROL, xsdk_probe_resolve_hiz);
+ 	gpu_put_registers(&packets, VGT_MAX_VTX_INDX, indices, 3);
+ 	gpu_put_registers(&packets, PA_CL_CLIP_CNTL, clip, 3);
+ 	gpu_put_register(&packets, COHER_DEST_BASE_7, 0);
+@@ -159,6 +162,34 @@
+ 	gpu_put_register(&packets, RB_COPY_DEST_INFO, 0);
+ 	// Xe_Sync's wait for idle (xe.c:1223-1226, 1278-1282).
+ 	gpu_put_register(&packets, WAIT_UNTIL, WAIT_3D_IDLE_CLEAN);
++	if (xsdk_probe_second_pass) {
++		gpu_put_register(&packets, RB_MODECONTROL, xsdk_probe_second_pass == 1 ? 0 : xsdk_probe_second_pass == 2 ? 6 : 5);
++		if (xsdk_probe_second_pass == 2)
++			gpu_put_register(&packets, RB_COPY_CONTROL, 3u << 20);
++		if (xsdk_probe_second_pass == 3)
++			gpu_put_register(&packets, RB_DEPTHCONTROL, 2);
++		gpu_put_register(&packets, RB_HIZCONTROL, 2);
++		gpu_put_type3(&packets, PM4_DRAW_INDX_2, 1);
++		gpu_put(&packets, RECTANGLE_LIST_AUTO_INDEX_3);
++		gpu_put_register(&packets, RB_COPY_CONTROL, 0);
++		gpu_put_register(&packets, WAIT_UNTIL, WAIT_3D_IDLE_CLEAN);
++	}
++	if (xsdk_probe_strip_pass) {
++		const uint32_t strip_fetch[] = { vertices | VERTEX_FETCH_TYPE, 1 << 28 | 8 << 2 | 2, 0, 0, 0, 0 };
++		gpu_put_register(&packets, RB_MODECONTROL, 5);
++		gpu_put_register(&packets, RB_DEPTHCONTROL, 2);
++		gpu_put_register(&packets, RB_HIZCONTROL, xsdk_probe_strip_pass == 1 ? 2 : 0x12);
++		if (xsdk_probe_strip_pass == 2) {
++			const uint32_t z_zero[] = { 0, 0 };
++			gpu_put_register(&packets, PA_CL_VTE_CNTL, VTE_XY_Z_ALREADY_TRANSFORMED | 0x30);
++			gpu_put_registers(&packets, PA_CL_VPORT_ZSCALE, z_zero, 2);
++		}
++		gpu_put_registers(&packets, SHADER_CONSTANT_FETCH_00_0, strip_fetch, 6);
++		gpu_put_registers(&packets, SHADER_CONSTANT_FLUSH_FETCH_0, flush_fetch, 3);
++		gpu_put_type3(&packets, PM4_DRAW_INDX_2, 1);
++		gpu_put(&packets, 6 | 2 << 6 | 4 << 16);
++		gpu_put_register(&packets, WAIT_UNTIL, WAIT_3D_IDLE_CLEAN);
++	}
+ 	xsdk_gpu_write(&packets);
+ 	xsdk_gpu_undo_target();
+ }

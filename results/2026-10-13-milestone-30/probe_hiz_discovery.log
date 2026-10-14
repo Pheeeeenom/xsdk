@@ -1,0 +1,139 @@
+log: game:\probe_hiz_discovery.log
+log: named after \Device\Harddisk0\Partition1\XSDK\hiz\probe_hiz_discovery.xex
+sbrk: the heap may grow to 467 MB, the title's free memory
+hiz probe
+hiz probe: GPU 0x00000000
+hiz probe: as XAM left them: RB_HIZCONTROL 00000000, RB_HIZ_CLEAR 00000FFF, RB_DEPTHCONTROL 00000000, RB_SURFACE_INFO 14000500, RB_DEPTH_INFO 00000100, RB_DEPTH_CLEAR FFFFFF00, RB_COPY_CONTROL 00000000
+hiz probe: first clear: 614400 of 921600 pixels wrong; 614400 FF00FFFF for 00000000
+hiz probe: start, RB_HIZCONTROL 0: 0 of 921600 pixels wrong
+hiz probe: start, RB_HIZCONTROL 0: ladder, sixteenths drawn at depths 1/32 to 31/32: GGGGGGGGGGGGGGGG
+hiz probe: start, RB_HIZCONTROL 2: 0 of 921600 pixels wrong
+hiz probe: start, RB_HIZCONTROL 2: ladder, sixteenths drawn at depths 1/32 to 31/32: GGGGGGGGGGGGGGGG
+hiz probe: start, RB_HIZCONTROL 3: 0 of 921600 pixels wrong
+hiz probe: start, RB_HIZCONTROL 3: ladder, sixteenths drawn at depths 1/32 to 31/32: GGGGGGGGGGGGGGGG
+hiz probe: hidden pixels, RB_HIZCONTROL 0: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 0: 8 draws of 1280x720 at 0.900 took 20067 us, 367 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 1: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 1: 8 draws of 1280x720 at 0.900 took 20068 us, 367 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 2: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 2: 8 draws of 1280x720 at 0.900 took 241 us, 30592 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 3: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 3: 8 draws of 1280x720 at 0.900 took 242 us, 30466 Mpixel/s
+hiz probe: after the RB_HIZCONTROL 3 run and a plain resolve: 518400 of 921600 pixels wrong; 57600 FF202020 for FF70808F; 57600 FF202020 for FF80807F; 57600 FF202020 for FF90806F; 57600 FF202020 for FFA0805F
+hiz probe: after the RB_HIZCONTROL 3 run and a plain resolve: ladder, sixteenths drawn at depths 1/32 to 31/32: GGGGGGG000000000
+hiz probe: clear plain, before: 0 of 921600 pixels wrong
+hiz probe: clear plain, after: 518400 of 921600 pixels wrong; 57600 FF202020 for FF70808F; 57600 FF202020 for FF80807F; 57600 FF202020 for FF90806F; 57600 FF202020 for FFA0805F
+hiz probe: clear plain, after: ladder, sixteenths drawn at depths 1/32 to 31/32: GGGGGGG000000000
+hiz probe: clear plain, RB_HIZ_CLEAR FFFFFFFF, before: 0 of 921600 pixels wrong
+hiz probe: clear plain, RB_HIZ_CLEAR FFFFFFFF, after: 518400 of 921600 pixels wrong; 57600 FF202020 for FF70808F; 57600 FF202020 for FF80807F; 57600 FF202020 for FF90806F; 57600 FF202020 for FFA0805F
+hiz probe: clear plain, RB_HIZ_CLEAR FFFFFFFF, after: ladder, sixteenths drawn at depths 1/32 to 31/32: GGGGGGG000000000
+hiz probe: clear plain, then always at 1 with RB_HIZCONTROL 1, before: 0 of 921600 pixels wrong
+hiz probe: clear plain, then always at 1 with RB_HIZCONTROL 1, after: 0 of 921600 pixels wrong
+hiz probe: clear plain, then always at 1 with RB_HIZCONTROL 1, after: ladder, sixteenths drawn at depths 1/32 to 31/32: GGGGGGGGGGGGGGGG
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR FFFFFFFF, before: 0 of 921600 pixels wrong
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR FFFFFFFF, after: 0 of 921600 pixels wrong
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR FFFFFFFF, after: ladder, sixteenths drawn at depths 1/32 to 31/32: GGGGGGGGGGGGGGGG
+hiz probe: clear resolve RB_HIZCONTROL 3, RB_HIZ_CLEAR FFFFFFFF, before: 921600 of 921600 pixels wrong; 57600 FF0080FF for FF40E040; 57600 FF1080EF for FF40E040; 57600 FF2080DF for FF40E040; 57600 FF3080CF for FF40E040
+hiz probe: clear resolve RB_HIZCONTROL 3, RB_HIZ_CLEAR FFFFFFFF, after: 518400 of 921600 pixels wrong; 57600 FF40E040 for FF70808F; 57600 FF40E040 for FF80807F; 57600 FF40E040 for FF90806F; 57600 FF40E040 for FFA0805F
+hiz probe: clear resolve RB_HIZCONTROL 3, RB_HIZ_CLEAR FFFFFFFF, after: ladder, sixteenths drawn at depths 1/32 to 31/32: GGGGGGG000000000
+hiz probe: clear resolve RB_HIZCONTROL 2, RB_HIZ_CLEAR FFFFFFFF, before: 403200 of 921600 pixels wrong; 57600 FF0080FF for FF40E040; 57600 FF1080EF for FF40E040; 57600 FF2080DF for FF40E040; 57600 FF3080CF for FF40E040
+hiz probe: clear resolve RB_HIZCONTROL 2, RB_HIZ_CLEAR FFFFFFFF, after: 518400 of 921600 pixels wrong; 57600 FF40E040 for FF70808F; 57600 FF40E040 for FF80807F; 57600 FF40E040 for FF90806F; 57600 FF40E040 for FFA0805F
+hiz probe: clear resolve RB_HIZCONTROL 2, RB_HIZ_CLEAR FFFFFFFF, after: ladder, sixteenths drawn at depths 1/32 to 31/32: GGGGGGG000000000
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR FFFFFF00, before: 0 of 921600 pixels wrong
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR FFFFFF00, after: 115200 of 921600 pixels wrong; 57600 FF202020 for FFE0801F; 57600 FF202020 for FFF0800F
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR FFFFFF00, after: ladder, sixteenths drawn at depths 1/32 to 31/32: GGGGGGGGGGGGGG00
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR 00FFFFFF, before: 0 of 921600 pixels wrong
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR 00FFFFFF, after: 0 of 921600 pixels wrong
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR 00FFFFFF, after: ladder, sixteenths drawn at depths 1/32 to 31/32: GGGGGGGGGGGGGGGG
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR 7FFFFF00, before: 0 of 921600 pixels wrong
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR 7FFFFF00, after: 115200 of 921600 pixels wrong; 57600 FF202020 for FFE0801F; 57600 FF202020 for FFF0800F
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR 7FFFFF00, after: ladder, sixteenths drawn at depths 1/32 to 31/32: GGGGGGGGGGGGGG00
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR 007FFFFF, before: 0 of 921600 pixels wrong
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR 007FFFFF, after: 0 of 921600 pixels wrong
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR 007FFFFF, after: ladder, sixteenths drawn at depths 1/32 to 31/32: GGGGGGGGGGGGGGGG
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR 3F000000, before: 0 of 921600 pixels wrong
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR 3F000000, after: 921600 of 921600 pixels wrong; 57600 FF202020 for FF0080FF; 57600 FF202020 for FF1080EF; 57600 FF202020 for FF2080DF; 57600 FF202020 for FF3080CF
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR 3F000000, after: ladder, sixteenths drawn at depths 1/32 to 31/32: 0000000000000000
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR 00002000, before: 921600 of 921600 pixels wrong; 921600 FF202020 for FF40E040
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR 00002000, after: 921600 of 921600 pixels wrong; 57600 FF202020 for FF0080FF; 57600 FF202020 for FF1080EF; 57600 FF202020 for FF2080DF; 57600 FF202020 for FF3080CF
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR 00002000, after: ladder, sixteenths drawn at depths 1/32 to 31/32: 0000000000000000
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR 0, before: 921600 of 921600 pixels wrong; 921600 FF202020 for FF40E040
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR 0, after: 921600 of 921600 pixels wrong; 57600 FF202020 for FF0080FF; 57600 FF202020 for FF1080EF; 57600 FF202020 for FF2080DF; 57600 FF202020 for FF3080CF
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR 0, after: ladder, sixteenths drawn at depths 1/32 to 31/32: 0000000000000000
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR FFFFFFFF again, before: 921600 of 921600 pixels wrong; 921600 FF202020 for FF40E040
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR FFFFFFFF again, after: 0 of 921600 pixels wrong
+hiz probe: clear resolve RB_HIZCONTROL 1, RB_HIZ_CLEAR FFFFFFFF again, after: ladder, sixteenths drawn at depths 1/32 to 31/32: GGGGGGGGGGGGGGGG
+hiz probe: killed near quad, RB_HIZCONTROL 3: 0 of 921600 pixels wrong
+hiz probe: killed near quad, RB_HIZCONTROL 2: 0 of 921600 pixels wrong
+hiz probe: always at 0.7 with RB_HIZCONTROL 1: 160 of 921600 pixels wrong; 160 FF4040E0 for FFE0E040
+hiz probe: always at 0.7 with RB_HIZCONTROL 3: 921504 of 921600 pixels wrong; 921492 FF40E040 for FFE0E040; 12 FF4040E0 for FFE0E040
+hiz probe: always at 0.7 with RB_HIZCONTROL 0: 921561 of 921600 pixels wrong; 921561 FF4040E0 for FFE0E040
+hiz probe: clear to 0: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 0: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 0: 4 draws of 1280x720 at 0.300 took 10037 us, 367 Mpixel/s
+hiz probe: greater, RB_HIZCONTROL 3: 921575 of 921600 pixels wrong; 691175 FFE04040 for FF40E040; 230400 FFE04040 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 3: 4 draws of 1280x720 at 0.300 took 10038 us, 367 Mpixel/s
+hiz probe: clear to 1: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 00000007: 921536 of 921600 pixels wrong; 921536 FF202020 for FF40E040
+hiz probe: hidden pixels, RB_HIZCONTROL 00000007: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 0000000B: 921600 of 921600 pixels wrong; 921600 FF202020 for FF40E040
+hiz probe: hidden pixels, RB_HIZCONTROL 0000000B: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 00000013: 64 of 921600 pixels wrong; 64 FFE04040 for FF40E040
+hiz probe: hidden pixels, RB_HIZCONTROL 00000013: 4 draws of 1280x720 at 0.900 took 10038 us, 367 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 00000023: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 00000023: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 00000043: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 00000043: 4 draws of 1280x720 at 0.900 took 124 us, 29729 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 00000083: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 00000083: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 00000103: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 00000103: 4 draws of 1280x720 at 0.900 took 124 us, 29729 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 00000203: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 00000203: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 00000403: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 00000403: 4 draws of 1280x720 at 0.900 took 124 us, 29729 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 00000803: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 00000803: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 00001003: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 00001003: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 00002003: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 00002003: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 00004003: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 00004003: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 00008003: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 00008003: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 00010003: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 00010003: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 00020003: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 00020003: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 00040003: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 00040003: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 00080003: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 00080003: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 00100003: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 00100003: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 00200003: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 00200003: 4 draws of 1280x720 at 0.900 took 124 us, 29729 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 00400003: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 00400003: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 00800003: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 00800003: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 01000003: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 01000003: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 02000003: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 02000003: 4 draws of 1280x720 at 0.900 took 124 us, 29729 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 04000003: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 04000003: 4 draws of 1280x720 at 0.900 took 126 us, 29257 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 08000003: 135168 of 921600 pixels wrong; 135168 FF202020 for FF40E040
+hiz probe: hidden pixels, RB_HIZCONTROL 08000003: 4 draws of 1280x720 at 0.900 took 124 us, 29729 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 10000003: 557056 of 921600 pixels wrong; 557056 FF202020 for FF40E040
+hiz probe: hidden pixels, RB_HIZCONTROL 10000003: 4 draws of 1280x720 at 0.900 took 1178 us, 3129 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 20000003: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 20000003: 4 draws of 1280x720 at 0.900 took 124 us, 29729 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 40000003: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 40000003: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: hidden pixels, RB_HIZCONTROL 80000003: 0 of 921600 pixels wrong
+hiz probe: hidden pixels, RB_HIZCONTROL 80000003: 4 draws of 1280x720 at 0.900 took 126 us, 29257 Mpixel/s
+hiz probe: done
+hiz probe: GPU close 0x00000000
+exit: status 0

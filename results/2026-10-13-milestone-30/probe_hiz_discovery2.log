@@ -1,0 +1,313 @@
+log: game:\probe_hiz_discovery2.log
+log: named after \Device\Harddisk0\Partition1\XSDK\hiz\probe_hiz_discovery2.xex
+sbrk: the heap may grow to 466 MB, the title's free memory
+hiz probe 2
+hiz probe: GPU 0x00000000
+hiz probe: first clear: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 307200 FF000000 for FF202020; 614400 FF00FFFF for FF202020
+hiz probe: RB_HIZ_CLEAR 000007FF: 0 of 921600 pixels wrong
+hiz probe: RB_HIZ_CLEAR 000007FF: 0 of 921600 pixels wrong
+hiz probe: RB_HIZ_CLEAR 000007FF: ladder at (i + 0.5) / 64, sixteenths drawn: GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG; first not whole: 64
+hiz probe: RB_HIZ_CLEAR 00000FFF: 0 of 921600 pixels wrong
+hiz probe: RB_HIZ_CLEAR 00000FFF: 0 of 921600 pixels wrong
+hiz probe: RB_HIZ_CLEAR 00000FFF: ladder at (i + 0.5) / 64, sixteenths drawn: GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG; first not whole: 64
+hiz probe: RB_HIZ_CLEAR 00000400: 0 of 921600 pixels wrong
+hiz probe: RB_HIZ_CLEAR 00000400: 460800 of 921600 pixels wrong in (640, 0) to (1279, 719); 14400 FF202020 for FF80807F; 14400 FF202020 for FF84807B; 14400 FF202020 for FF888077; 14400 FF202020 for FF8C8073
+hiz probe: RB_HIZ_CLEAR 00000400: ladder at (i + 0.5) / 64, sixteenths drawn: GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG00000000000000000000000000000000; first not whole: 32
+hiz probe: RB_HIZ_CLEAR 00000200: 0 of 921600 pixels wrong
+hiz probe: RB_HIZ_CLEAR 00000200: 691200 of 921600 pixels wrong in (320, 0) to (1279, 719); 14400 FF202020 for FF4080BF; 14400 FF202020 for FF4480BB; 14400 FF202020 for FF4880B7; 14400 FF202020 for FF4C80B3
+hiz probe: RB_HIZ_CLEAR 00000200: ladder at (i + 0.5) / 64, sixteenths drawn: GGGGGGGGGGGGGGGG000000000000000000000000000000000000000000000000; first not whole: 16
+hiz probe: RB_HIZ_CLEAR 00000600: 0 of 921600 pixels wrong
+hiz probe: RB_HIZ_CLEAR 00000600: 230400 of 921600 pixels wrong in (960, 0) to (1279, 719); 14400 FF202020 for FFC0803F; 14400 FF202020 for FFC4803B; 14400 FF202020 for FFC88037; 14400 FF202020 for FFCC8033
+hiz probe: RB_HIZ_CLEAR 00000600: ladder at (i + 0.5) / 64, sixteenths drawn: GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG0000000000000000; first not whole: 48
+hiz probe: RB_HIZ_CLEAR 00000700: 0 of 921600 pixels wrong
+hiz probe: RB_HIZ_CLEAR 00000700: 115200 of 921600 pixels wrong in (1120, 0) to (1279, 719); 14400 FF202020 for FFE0801F; 14400 FF202020 for FFE4801B; 14400 FF202020 for FFE88017; 14400 FF202020 for FFEC8013
+hiz probe: RB_HIZ_CLEAR 00000700: ladder at (i + 0.5) / 64, sixteenths drawn: GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG00000000; first not whole: 56
+hiz probe: RB_HIZ_CLEAR 000007C0: 0 of 921600 pixels wrong
+hiz probe: RB_HIZ_CLEAR 000007C0: 28800 of 921600 pixels wrong in (1240, 0) to (1279, 719); 14400 FF202020 for FFF88007; 14400 FF202020 for FFFC8003
+hiz probe: RB_HIZ_CLEAR 000007C0: ladder at (i + 0.5) / 64, sixteenths drawn: GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG00; first not whole: 62
+hiz probe: RB_HIZ_CLEAR 000003FF: 0 of 921600 pixels wrong
+hiz probe: RB_HIZ_CLEAR 000003FF: 460800 of 921600 pixels wrong in (640, 0) to (1279, 719); 14400 FF202020 for FF80807F; 14400 FF202020 for FF84807B; 14400 FF202020 for FF888077; 14400 FF202020 for FF8C8073
+hiz probe: RB_HIZ_CLEAR 000003FF: ladder at (i + 0.5) / 64, sixteenths drawn: GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG00000000000000000000000000000000; first not whole: 32
+hiz probe: RB_HIZ_CLEAR 00000401: 0 of 921600 pixels wrong
+hiz probe: RB_HIZ_CLEAR 00000401: 460800 of 921600 pixels wrong in (640, 0) to (1279, 719); 14400 FF202020 for FF80807F; 14400 FF202020 for FF84807B; 14400 FF202020 for FF888077; 14400 FF202020 for FF8C8073
+hiz probe: RB_HIZ_CLEAR 00000401: ladder at (i + 0.5) / 64, sixteenths drawn: GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG00000000000000000000000000000000; first not whole: 32
+hiz probe: RB_HIZ_CLEAR 00000100: 0 of 921600 pixels wrong
+hiz probe: RB_HIZ_CLEAR 00000100: 806400 of 921600 pixels wrong in (160, 0) to (1279, 719); 14400 FF202020 for FF2080DF; 14400 FF202020 for FF2480DB; 14400 FF202020 for FF2880D7; 14400 FF202020 for FF2C80D3
+hiz probe: RB_HIZ_CLEAR 00000100: ladder at (i + 0.5) / 64, sixteenths drawn: GGGGGGGG00000000000000000000000000000000000000000000000000000000; first not whole: 8
+hiz probe: RB_HIZ_CLEAR 00000080: 0 of 921600 pixels wrong
+hiz probe: RB_HIZ_CLEAR 00000080: 864000 of 921600 pixels wrong in (80, 0) to (1279, 719); 14400 FF202020 for FF1080EF; 14400 FF202020 for FF1480EB; 14400 FF202020 for FF1880E7; 14400 FF202020 for FF1C80E3
+hiz probe: RB_HIZ_CLEAR 00000080: ladder at (i + 0.5) / 64, sixteenths drawn: GGGG000000000000000000000000000000000000000000000000000000000000; first not whole: 4
+hiz probe: RB_HIZ_CLEAR 00000800: 0 of 921600 pixels wrong
+hiz probe: RB_HIZ_CLEAR 00000800: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 14400 FF202020 for FF0080FF; 14400 FF202020 for FF0480FB; 14400 FF202020 for FF0880F7; 14400 FF202020 for FF0C80F3
+hiz probe: RB_HIZ_CLEAR 00000800: ladder at (i + 0.5) / 64, sixteenths drawn: 0000000000000000000000000000000000000000000000000000000000000000; first not whole: 0
+hiz probe: RB_HIZ_CLEAR 00000A00: 0 of 921600 pixels wrong
+hiz probe: RB_HIZ_CLEAR 00000A00: 691200 of 921600 pixels wrong in (320, 0) to (1279, 719); 14400 FF202020 for FF4080BF; 14400 FF202020 for FF4480BB; 14400 FF202020 for FF4880B7; 14400 FF202020 for FF4C80B3
+hiz probe: RB_HIZ_CLEAR 00000A00: ladder at (i + 0.5) / 64, sixteenths drawn: GGGGGGGGGGGGGGGG000000000000000000000000000000000000000000000000; first not whole: 16
+hiz probe: RB_HIZ_CLEAR 00000C00: 0 of 921600 pixels wrong
+hiz probe: RB_HIZ_CLEAR 00000C00: 460800 of 921600 pixels wrong in (640, 0) to (1279, 719); 14400 FF202020 for FF80807F; 14400 FF202020 for FF84807B; 14400 FF202020 for FF888077; 14400 FF202020 for FF8C8073
+hiz probe: RB_HIZ_CLEAR 00000C00: ladder at (i + 0.5) / 64, sixteenths drawn: GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG00000000000000000000000000000000; first not whole: 32
+hiz probe: RB_HIZ_CLEAR 00001000: 0 of 921600 pixels wrong
+hiz probe: RB_HIZ_CLEAR 00001000: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 14400 FF202020 for FF0080FF; 14400 FF202020 for FF0480FB; 14400 FF202020 for FF0880F7; 14400 FF202020 for FF0C80F3
+hiz probe: RB_HIZ_CLEAR 00001000: ladder at (i + 0.5) / 64, sixteenths drawn: 0000000000000000000000000000000000000000000000000000000000000000; first not whole: 0
+hiz probe: RB_HIZ_CLEAR 00001400: 0 of 921600 pixels wrong
+hiz probe: RB_HIZ_CLEAR 00001400: 460800 of 921600 pixels wrong in (640, 0) to (1279, 719); 14400 FF202020 for FF80807F; 14400 FF202020 for FF84807B; 14400 FF202020 for FF888077; 14400 FF202020 for FF8C8073
+hiz probe: RB_HIZ_CLEAR 00001400: ladder at (i + 0.5) / 64, sixteenths drawn: GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG00000000000000000000000000000000; first not whole: 32
+hiz probe: RB_HIZ_CLEAR 00002000: 0 of 921600 pixels wrong
+hiz probe: RB_HIZ_CLEAR 00002000: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 14400 FF202020 for FF0080FF; 14400 FF202020 for FF0480FB; 14400 FF202020 for FF0880F7; 14400 FF202020 for FF0C80F3
+hiz probe: RB_HIZ_CLEAR 00002000: ladder at (i + 0.5) / 64, sixteenths drawn: 0000000000000000000000000000000000000000000000000000000000000000; first not whole: 0
+hiz probe: RB_HIZ_CLEAR 00004000: 0 of 921600 pixels wrong
+hiz probe: RB_HIZ_CLEAR 00004000: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 14400 FF202020 for FF0080FF; 14400 FF202020 for FF0480FB; 14400 FF202020 for FF0880F7; 14400 FF202020 for FF0C80F3
+hiz probe: RB_HIZ_CLEAR 00004000: ladder at (i + 0.5) / 64, sixteenths drawn: 0000000000000000000000000000000000000000000000000000000000000000; first not whole: 0
+hiz probe: RB_HIZ_CLEAR 00008000: 0 of 921600 pixels wrong
+hiz probe: RB_HIZ_CLEAR 00008000: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 14400 FF202020 for FF0080FF; 14400 FF202020 for FF0480FB; 14400 FF202020 for FF0880F7; 14400 FF202020 for FF0C80F3
+hiz probe: RB_HIZ_CLEAR 00008000: ladder at (i + 0.5) / 64, sixteenths drawn: 0000000000000000000000000000000000000000000000000000000000000000; first not whole: 0
+hiz probe: RB_HIZ_CLEAR 00007FFF: 0 of 921600 pixels wrong
+hiz probe: RB_HIZ_CLEAR 00007FFF: 0 of 921600 pixels wrong
+hiz probe: RB_HIZ_CLEAR 00007FFF: ladder at (i + 0.5) / 64, sixteenths drawn: GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG; first not whole: 64
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less-equal then equal at 0.5: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: stencil depth-fail, RB_HIZCONTROL 3: 921504 of 921600 pixels wrong in (0, 0) to (1279, 719); 921504 FF40E040 for FFFFFFFF
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: stencil depth-fail, RB_HIZCONTROL 1: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: no depth write, RB_HIZCONTROL 3: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: always at 0.70 with RB_HIZCONTROL 1: 160 of 921600 pixels wrong in (1248, 0) to (1271, 7); 160 FF4040E0 for FFE0E040
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: always at 1.00 with RB_HIZCONTROL 1: 160 of 921600 pixels wrong in (1248, 0) to (1271, 7); 160 FF4040E0 for FFE0E040
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: always at 0.95 with RB_HIZCONTROL 1: 160 of 921600 pixels wrong in (1248, 0) to (1271, 7); 160 FF4040E0 for FFE0E040
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: always at 0.7 in a rectangle with RB_HIZCONTROL 1: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: rectangles, RB_HIZCONTROL 3: 0 of 921600 pixels wrong
+hiz probe: clear to 0.5: 0 of 921600 pixels wrong
+hiz probe: rectangles, RB_HIZCONTROL 3, over a clear to 0.5: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: rectangles, RB_HIZCONTROL 0: 0 of 921600 pixels wrong
+hiz probe: clear to 0.5: 0 of 921600 pixels wrong
+hiz probe: rectangles, RB_HIZCONTROL 0, over a clear to 0.5: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00000003: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00000003: 4 draws of 1280x720 at 0.900 took 124 us, 29729 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 00000001: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 00000003: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 00000003: 4 draws of 1280x720 at 0.300 took 124 us, 29729 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00000007: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00000007: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 00000005: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 00000007: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 00000007: 4 draws of 1280x720 at 0.300 took 124 us, 29729 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 0000000B: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 0000000B: 4 draws of 1280x720 at 0.900 took 126 us, 29257 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 00000009: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 0000000B: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 0000000B: 4 draws of 1280x720 at 0.300 took 125 us, 29491 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00000013: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 921600 FF202020 for FF40E040
+hiz probe: less, RB_HIZCONTROL 00000013: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 00000011: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 00000013: 199 of 921600 pixels wrong in (1248, 0) to (1278, 7); 199 FFE04040 for FF40E040
+hiz probe: greater, RB_HIZCONTROL 00000013: 4 draws of 1280x720 at 0.300 took 126 us, 29257 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00000023: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00000023: 4 draws of 1280x720 at 0.900 took 123 us, 29970 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 00000021: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 00000023: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 00000023: 4 draws of 1280x720 at 0.300 took 125 us, 29491 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00000043: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00000043: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 00000041: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 00000043: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 00000043: 4 draws of 1280x720 at 0.300 took 124 us, 29729 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00000083: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00000083: 4 draws of 1280x720 at 0.900 took 124 us, 29729 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 00000081: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 00000083: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 00000083: 4 draws of 1280x720 at 0.300 took 124 us, 29729 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00000103: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00000103: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 00000101: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 00000103: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 00000103: 4 draws of 1280x720 at 0.300 took 124 us, 29729 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00000203: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00000203: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 00000201: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 00000203: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 00000203: 4 draws of 1280x720 at 0.300 took 124 us, 29729 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00000403: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00000403: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 00000401: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 00000403: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 00000403: 4 draws of 1280x720 at 0.300 took 124 us, 29729 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00000803: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00000803: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 00000801: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 00000803: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 00000803: 4 draws of 1280x720 at 0.300 took 124 us, 29729 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00001003: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00001003: 4 draws of 1280x720 at 0.900 took 124 us, 29729 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 00001001: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 00001003: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 00001003: 4 draws of 1280x720 at 0.300 took 125 us, 29491 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00002003: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00002003: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 00002001: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 00002003: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 00002003: 4 draws of 1280x720 at 0.300 took 126 us, 29257 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00004003: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00004003: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 00004001: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 00004003: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 00004003: 4 draws of 1280x720 at 0.300 took 125 us, 29491 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00008003: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00008003: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 00008001: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 00008003: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 00008003: 4 draws of 1280x720 at 0.300 took 125 us, 29491 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00010003: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00010003: 4 draws of 1280x720 at 0.900 took 124 us, 29729 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 00010001: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 00010003: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 00010003: 4 draws of 1280x720 at 0.300 took 124 us, 29729 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00020003: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00020003: 4 draws of 1280x720 at 0.900 took 124 us, 29729 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 00020001: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 00020003: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 00020003: 4 draws of 1280x720 at 0.300 took 125 us, 29491 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00040003: 512 of 921600 pixels wrong in (1216, 704) to (1247, 719); 512 FF202020 for FF40E040
+hiz probe: less, RB_HIZCONTROL 00040003: 4 draws of 1280x720 at 0.900 took 124 us, 29729 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 00040001: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 00040003: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 00040003: 4 draws of 1280x720 at 0.300 took 125 us, 29491 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00080003: 1024 of 921600 pixels wrong in (1152, 704) to (1215, 719); 1024 FF202020 for FF40E040
+hiz probe: less, RB_HIZCONTROL 00080003: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 00080001: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 00080003: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 00080003: 4 draws of 1280x720 at 0.300 took 125 us, 29491 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00100003: 2048 of 921600 pixels wrong in (1024, 704) to (1151, 719); 2048 FF202020 for FF40E040
+hiz probe: less, RB_HIZCONTROL 00100003: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 00100001: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 00100003: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 00100003: 4 draws of 1280x720 at 0.300 took 125 us, 29491 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00200003: 4096 of 921600 pixels wrong in (768, 704) to (1023, 719); 4096 FF202020 for FF40E040
+hiz probe: less, RB_HIZCONTROL 00200003: 4 draws of 1280x720 at 0.900 took 126 us, 29257 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 00200001: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 00200003: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 00200003: 4 draws of 1280x720 at 0.300 took 125 us, 29491 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00400003: 8192 of 921600 pixels wrong in (256, 704) to (767, 719); 8192 FF202020 for FF40E040
+hiz probe: less, RB_HIZCONTROL 00400003: 4 draws of 1280x720 at 0.900 took 124 us, 29729 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 00400001: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 00400003: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 00400003: 4 draws of 1280x720 at 0.300 took 125 us, 29491 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 00800003: 16384 of 921600 pixels wrong in (0, 688) to (1279, 719); 16384 FF202020 for FF40E040
+hiz probe: less, RB_HIZCONTROL 00800003: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 00800001: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 00800003: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 00800003: 4 draws of 1280x720 at 0.300 took 124 us, 29729 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 01000003: 32768 of 921600 pixels wrong in (0, 656) to (1279, 703); 32768 FF202020 for FF40E040
+hiz probe: less, RB_HIZCONTROL 01000003: 4 draws of 1280x720 at 0.900 took 124 us, 29729 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 01000001: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 01000003: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 01000003: 4 draws of 1280x720 at 0.300 took 125 us, 29491 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 02000003: 65536 of 921600 pixels wrong in (0, 608) to (1279, 671); 65536 FF202020 for FF40E040
+hiz probe: less, RB_HIZCONTROL 02000003: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 02000001: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 02000003: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 02000003: 4 draws of 1280x720 at 0.300 took 125 us, 29491 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 04000003: 131072 of 921600 pixels wrong in (0, 512) to (1279, 623); 131072 FF202020 for FF40E040
+hiz probe: less, RB_HIZCONTROL 04000003: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 04000001: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 04000003: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 04000003: 4 draws of 1280x720 at 0.300 took 125 us, 29491 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 08000003: 479232 of 921600 pixels wrong in (0, 304) to (1279, 719); 479232 FF202020 for FF40E040
+hiz probe: less, RB_HIZCONTROL 08000003: 4 draws of 1280x720 at 0.900 took 124 us, 29729 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 08000001: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 08000003: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 08000003: 4 draws of 1280x720 at 0.300 took 125 us, 29491 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 10000003: 819200 of 921600 pixels wrong in (0, 0) to (1279, 639); 819200 FF202020 for FF40E040
+hiz probe: less, RB_HIZCONTROL 10000003: 4 draws of 1280x720 at 0.900 took 1178 us, 3129 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 10000001: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 10000003: 819200 of 921600 pixels wrong in (0, 0) to (1279, 639); 588800 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 10000003: 4 draws of 1280x720 at 0.300 took 1178 us, 3129 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 20000003: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 20000003: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 20000001: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 20000003: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 20000003: 4 draws of 1280x720 at 0.300 took 125 us, 29491 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 40000003: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 40000003: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 40000001: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 40000003: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 40000003: 4 draws of 1280x720 at 0.300 took 125 us, 29491 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 80000003: 0 of 921600 pixels wrong
+hiz probe: less, RB_HIZCONTROL 80000003: 4 draws of 1280x720 at 0.900 took 125 us, 29491 Mpixel/s
+hiz probe: clear to 0 with RB_HIZCONTROL 80000001: 0 of 921600 pixels wrong
+hiz probe: greater, RB_HIZCONTROL 80000003: 921600 of 921600 pixels wrong in (0, 0) to (1279, 719); 691200 FF202020 for FF40E040; 230400 FF202020 for FFE0E040
+hiz probe: greater, RB_HIZCONTROL 80000003: 4 draws of 1280x720 at 0.300 took 125 us, 29491 Mpixel/s
+hiz probe: reset: 0 of 921600 pixels wrong
+hiz probe: done
+hiz probe: GPU close 0x00000000
+exit: status 0

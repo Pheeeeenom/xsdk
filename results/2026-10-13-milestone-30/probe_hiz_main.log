@@ -1,0 +1,13 @@
+log: game:\probe_hiz_main.log
+log: named after \Device\Harddisk0\Partition1\XSDK\hiz\probe_hiz_main.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+hiz probe
+hiz probe: GPU 0x00000000
+hiz probe: less-than over a clear to 1: 16 hidden quads took 40125 us on, 367 Mpixel/s, and 40125 us off, 367 Mpixel/s; on is 1.0 times as fast
+hiz probe: less-than over a clear to 1: pixels not the near quad's colour: 0 on, 0 off
+hiz probe: greater-than over a clear to 0: 16 hidden quads took 40125 us on, 367 Mpixel/s, and 40125 us off, 367 Mpixel/s; on is 1.0 times as fast
+hiz probe: greater-than over a clear to 0: pixels not the near quad's colour: 0 on, 0 off
+hiz probe: 16 resolves clearing colour took 4665 us, 291 us each
+hiz probe: 16 resolves clearing colour and depth took 4648 us, 290 us each
+hiz probe: GPU close 0x00000000
+exit: status 0

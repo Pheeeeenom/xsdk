@@ -1,0 +1,134 @@
+log: game:\probe_hiz_discovery7f.log
+log: named after \Device\Harddisk0\Partition1\XSDK\hiz\probe_hiz_discovery7f.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+hiz probe 7, second pass 5
+hiz probe: GPU 0x00000000
+hiz probe: next, a plain resolve
+hiz probe: a plain resolve: landed
+hiz probe: next, RB_HIZ_CLEAR 7FF and RB_DEPTH_CLEAR FFFFFF00 in one packet
+hiz probe: RB_HIZ_CLEAR and RB_DEPTH_CLEAR in one packet: landed
+hiz probe: next, a resolve clearing the buffer with RB_HIZCONTROL 1
+hiz probe: a resolve clearing the buffer with RB_HIZCONTROL 1: landed
+hiz probe: next, the sequences with no second pass
+hiz probe: no second pass, cleared to 0.25 from far, probe at 0.4: right
+hiz probe: no second pass, cleared far from 0.25, probe at 0.9: 199 pixels off in (1248, 0) to (1278, 7)
+hiz probe: no second pass, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 0): #################################...............................
+hiz probe: no second pass, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 1): #################################.............................##
+hiz probe: no second pass, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 2): #################################............................###
+hiz probe: no second pass, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 3): #################################..........................#####
+hiz probe: no second pass, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 4): #################################........................#######
+hiz probe: no second pass, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 5): #################################......................#########
+hiz probe: no second pass, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 6): #################################....................###########
+hiz probe: no second pass, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 7): #################################...................############
+hiz probe: no second pass, drawn at 0.2 over far, probe at 0.4: 199 pixels off in (1248, 0) to (1278, 7)
+hiz probe: no second pass, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 0): .................................###############################
+hiz probe: no second pass, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 1): .................................#############################..
+hiz probe: no second pass, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 2): .................................############################...
+hiz probe: no second pass, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 3): .................................##########################.....
+hiz probe: no second pass, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 4): .................................########################.......
+hiz probe: no second pass, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 5): .................................######################.........
+hiz probe: no second pass, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 6): .................................####################...........
+hiz probe: no second pass, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 7): .................................###################............
+hiz probe: no second pass, drawn at 0.7 with always over 0.2, probe at 0.6: 199 pixels off in (1248, 0) to (1278, 7)
+hiz probe: no second pass, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 0): #################################...............................
+hiz probe: no second pass, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 1): #################################.............................##
+hiz probe: no second pass, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 2): #################################............................###
+hiz probe: no second pass, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 3): #################################..........................#####
+hiz probe: no second pass, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 4): #################################........................#######
+hiz probe: no second pass, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 5): #################################......................#########
+hiz probe: no second pass, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 6): #################################....................###########
+hiz probe: no second pass, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 7): #################################...................############
+hiz probe: no second pass, cleared to 0.25 from far, small probe at 0.4: right
+hiz probe: no second pass, cleared far from 0.25, small probe at 0.9: 22 pixels off in (592, 300) to (598, 303)
+hiz probe: no second pass, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 300): #########################################################.......
+hiz probe: no second pass, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 301): #########################################################......#
+hiz probe: no second pass, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 302): #########################################################.....##
+hiz probe: no second pass, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 303): #########################################################....###
+hiz probe: no second pass, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 304): ################################################################
+hiz probe: no second pass, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 305): ################################################################
+hiz probe: no second pass, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 306): ################################################################
+hiz probe: no second pass, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 307): ################################################################
+hiz probe: no second pass: 619 pixels off in all
+hiz probe: next, the sequences with second pass, null copy
+hiz probe: second pass, null copy, cleared to 0.25 from far, probe at 0.4: right
+hiz probe: second pass, null copy, cleared far from 0.25, probe at 0.9: right
+hiz probe: second pass, null copy, drawn at 0.2 over far, probe at 0.4: 199 pixels off in (1248, 0) to (1278, 7)
+hiz probe: second pass, null copy, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 0): .................................###############################
+hiz probe: second pass, null copy, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 1): .................................#############################..
+hiz probe: second pass, null copy, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 2): .................................############################...
+hiz probe: second pass, null copy, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 3): .................................##########################.....
+hiz probe: second pass, null copy, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 4): .................................########################.......
+hiz probe: second pass, null copy, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 5): .................................######################.........
+hiz probe: second pass, null copy, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 6): .................................####################...........
+hiz probe: second pass, null copy, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 7): .................................###################............
+hiz probe: second pass, null copy, drawn at 0.7 with always over 0.2, probe at 0.6: right
+hiz probe: second pass, null copy, cleared to 0.25 from far, small probe at 0.4: right
+hiz probe: second pass, null copy, cleared far from 0.25, small probe at 0.9: right
+hiz probe: second pass, null copy: 199 pixels off in all
+hiz probe: next, the sequences with second pass, depth only
+hiz probe: second pass, depth only, cleared to 0.25 from far, probe at 0.4: right
+hiz probe: second pass, depth only, cleared far from 0.25, probe at 0.9: right
+hiz probe: second pass, depth only, drawn at 0.2 over far, probe at 0.4: 199 pixels off in (1248, 0) to (1278, 7)
+hiz probe: second pass, depth only, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 0): .................................###############################
+hiz probe: second pass, depth only, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 1): .................................#############################..
+hiz probe: second pass, depth only, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 2): .................................############################...
+hiz probe: second pass, depth only, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 3): .................................##########################.....
+hiz probe: second pass, depth only, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 4): .................................########################.......
+hiz probe: second pass, depth only, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 5): .................................######################.........
+hiz probe: second pass, depth only, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 6): .................................####################...........
+hiz probe: second pass, depth only, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 7): .................................###################............
+hiz probe: second pass, depth only, drawn at 0.7 with always over 0.2, probe at 0.6: right
+hiz probe: second pass, depth only, cleared to 0.25 from far, small probe at 0.4: right
+hiz probe: second pass, depth only, cleared far from 0.25, small probe at 0.9: right
+hiz probe: second pass, depth only: 199 pixels off in all
+hiz probe: next, the sequences with strip pass at z 1, less-than
+hiz probe: strip pass at z 1, less-than, cleared to 0.25 from far, probe at 0.4: right
+hiz probe: strip pass at z 1, less-than, cleared far from 0.25, probe at 0.9: right
+hiz probe: strip pass at z 1, less-than, drawn at 0.2 over far, probe at 0.4: 199 pixels off in (1248, 0) to (1278, 7)
+hiz probe: strip pass at z 1, less-than, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 0): .................................###############################
+hiz probe: strip pass at z 1, less-than, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 1): .................................#############################..
+hiz probe: strip pass at z 1, less-than, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 2): .................................############################...
+hiz probe: strip pass at z 1, less-than, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 3): .................................##########################.....
+hiz probe: strip pass at z 1, less-than, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 4): .................................########################.......
+hiz probe: strip pass at z 1, less-than, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 5): .................................######################.........
+hiz probe: strip pass at z 1, less-than, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 6): .................................####################...........
+hiz probe: strip pass at z 1, less-than, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 7): .................................###################............
+hiz probe: strip pass at z 1, less-than, drawn at 0.7 with always over 0.2, probe at 0.6: 199 pixels off in (1248, 0) to (1278, 7)
+hiz probe: strip pass at z 1, less-than, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 0): #################################...............................
+hiz probe: strip pass at z 1, less-than, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 1): #################################.............................##
+hiz probe: strip pass at z 1, less-than, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 2): #################################............................###
+hiz probe: strip pass at z 1, less-than, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 3): #################################..........................#####
+hiz probe: strip pass at z 1, less-than, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 4): #################################........................#######
+hiz probe: strip pass at z 1, less-than, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 5): #################################......................#########
+hiz probe: strip pass at z 1, less-than, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 6): #################################....................###########
+hiz probe: strip pass at z 1, less-than, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 7): #################################...................############
+hiz probe: strip pass at z 1, less-than, cleared to 0.25 from far, small probe at 0.4: right
+hiz probe: strip pass at z 1, less-than, cleared far from 0.25, small probe at 0.9: right
+hiz probe: strip pass at z 1, less-than: 398 pixels off in all
+hiz probe: next, the sequences with strip pass at z 0, greater-than
+hiz probe: strip pass at z 0, greater-than, cleared to 0.25 from far, probe at 0.4: right
+hiz probe: strip pass at z 0, greater-than, cleared far from 0.25, probe at 0.9: right
+hiz probe: strip pass at z 0, greater-than, drawn at 0.2 over far, probe at 0.4: 199 pixels off in (1248, 0) to (1278, 7)
+hiz probe: strip pass at z 0, greater-than, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 0): .................................###############################
+hiz probe: strip pass at z 0, greater-than, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 1): .................................#############################..
+hiz probe: strip pass at z 0, greater-than, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 2): .................................############################...
+hiz probe: strip pass at z 0, greater-than, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 3): .................................##########################.....
+hiz probe: strip pass at z 0, greater-than, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 4): .................................########################.......
+hiz probe: strip pass at z 0, greater-than, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 5): .................................######################.........
+hiz probe: strip pass at z 0, greater-than, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 6): .................................####################...........
+hiz probe: strip pass at z 0, greater-than, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 7): .................................###################............
+hiz probe: strip pass at z 0, greater-than, drawn at 0.7 with always over 0.2, probe at 0.6: 199 pixels off in (1248, 0) to (1278, 7)
+hiz probe: strip pass at z 0, greater-than, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 0): #################################...............................
+hiz probe: strip pass at z 0, greater-than, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 1): #################################.............................##
+hiz probe: strip pass at z 0, greater-than, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 2): #################################............................###
+hiz probe: strip pass at z 0, greater-than, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 3): #################################..........................#####
+hiz probe: strip pass at z 0, greater-than, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 4): #################################........................#######
+hiz probe: strip pass at z 0, greater-than, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 5): #################################......................#########
+hiz probe: strip pass at z 0, greater-than, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 6): #################################....................###########
+hiz probe: strip pass at z 0, greater-than, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 7): #################################...................############
+hiz probe: strip pass at z 0, greater-than, cleared to 0.25 from far, small probe at 0.4: right
+hiz probe: strip pass at z 0, greater-than, cleared far from 0.25, small probe at 0.9: right
+hiz probe: strip pass at z 0, greater-than: 398 pixels off in all
+hiz probe: done
+hiz probe: GPU close 0x00000000
+exit: status 0

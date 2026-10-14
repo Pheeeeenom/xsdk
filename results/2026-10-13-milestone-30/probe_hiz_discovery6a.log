@@ -1,0 +1,164 @@
+log: game:\probe_hiz_discovery6a.log
+log: named after \Device\Harddisk0\Partition1\XSDK\hiz\probe_hiz_discovery6a.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+hiz probe 6, candidates 0 to 3
+hiz probe: GPU 0x00000000
+hiz probe: nothing, cleared to 0.25 from far, probe at 0.4: right
+hiz probe: nothing, cleared far from 0.25, probe at 0.9: 199 pixels off in (1248, 0) to (1278, 7)
+hiz probe: nothing, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 0): #################################...............................
+hiz probe: nothing, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 1): #################################.............................##
+hiz probe: nothing, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 2): #################################............................###
+hiz probe: nothing, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 3): #################################..........................#####
+hiz probe: nothing, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 4): #################################........................#######
+hiz probe: nothing, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 5): #################################......................#########
+hiz probe: nothing, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 6): #################################....................###########
+hiz probe: nothing, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 7): #################################...................############
+hiz probe: nothing, drawn at 0.2 over far, probe at 0.4: 199 pixels off in (1248, 0) to (1278, 7)
+hiz probe: nothing, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 0): .................................###############################
+hiz probe: nothing, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 1): .................................#############################..
+hiz probe: nothing, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 2): .................................############################...
+hiz probe: nothing, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 3): .................................##########################.....
+hiz probe: nothing, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 4): .................................########################.......
+hiz probe: nothing, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 5): .................................######################.........
+hiz probe: nothing, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 6): .................................####################...........
+hiz probe: nothing, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 7): .................................###################............
+hiz probe: nothing, drawn at 0.7 with always over 0.2, probe at 0.6: 199 pixels off in (1248, 0) to (1278, 7)
+hiz probe: nothing, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 0): #################################...............................
+hiz probe: nothing, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 1): #################################.............................##
+hiz probe: nothing, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 2): #################################............................###
+hiz probe: nothing, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 3): #################################..........................#####
+hiz probe: nothing, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 4): #################################........................#######
+hiz probe: nothing, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 5): #################################......................#########
+hiz probe: nothing, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 6): #################################....................###########
+hiz probe: nothing, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 7): #################################...................############
+hiz probe: nothing, cleared to 0.25 from far, small probe at 0.4: right
+hiz probe: nothing, cleared far from 0.25, small probe at 0.9: 22 pixels off in (592, 300) to (598, 303)
+hiz probe: nothing, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 300): #########################################################.......
+hiz probe: nothing, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 301): #########################################################......#
+hiz probe: nothing, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 302): #########################################################.....##
+hiz probe: nothing, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 303): #########################################################....###
+hiz probe: nothing, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 304): ################################################################
+hiz probe: nothing, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 305): ################################################################
+hiz probe: nothing, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 306): ################################################################
+hiz probe: nothing, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 307): ################################################################
+hiz probe: nothing: 619 pixels off in all
+hiz probe: a never-passing full-screen draw testing the buffer, cleared to 0.25 from far, probe at 0.4: right
+hiz probe: a never-passing full-screen draw testing the buffer, cleared far from 0.25, probe at 0.9: right
+hiz probe: a never-passing full-screen draw testing the buffer, drawn at 0.2 over far, probe at 0.4: 199 pixels off in (1248, 0) to (1278, 7)
+hiz probe: a never-passing full-screen draw testing the buffer, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 0): .................................###############################
+hiz probe: a never-passing full-screen draw testing the buffer, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 1): .................................#############################..
+hiz probe: a never-passing full-screen draw testing the buffer, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 2): .................................############################...
+hiz probe: a never-passing full-screen draw testing the buffer, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 3): .................................##########################.....
+hiz probe: a never-passing full-screen draw testing the buffer, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 4): .................................########################.......
+hiz probe: a never-passing full-screen draw testing the buffer, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 5): .................................######################.........
+hiz probe: a never-passing full-screen draw testing the buffer, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 6): .................................####################...........
+hiz probe: a never-passing full-screen draw testing the buffer, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 7): .................................###################............
+hiz probe: a never-passing full-screen draw testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: 199 pixels off in (1248, 0) to (1278, 7)
+hiz probe: a never-passing full-screen draw testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 0): #################################...............................
+hiz probe: a never-passing full-screen draw testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 1): #################################.............................##
+hiz probe: a never-passing full-screen draw testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 2): #################################............................###
+hiz probe: a never-passing full-screen draw testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 3): #################################..........................#####
+hiz probe: a never-passing full-screen draw testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 4): #################################........................#######
+hiz probe: a never-passing full-screen draw testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 5): #################################......................#########
+hiz probe: a never-passing full-screen draw testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 6): #################################....................###########
+hiz probe: a never-passing full-screen draw testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 7): #################################...................############
+hiz probe: a never-passing full-screen draw testing the buffer, cleared to 0.25 from far, small probe at 0.4: right
+hiz probe: a never-passing full-screen draw testing the buffer, cleared far from 0.25, small probe at 0.9: right
+hiz probe: a never-passing full-screen draw testing the buffer: 398 pixels off in all
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared to 0.25 from far, probe at 0.4: 71 pixels off in (1264, 0) to (1278, 7)
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared to 0.25 from far, probe at 0.4: probe drawn at (1215, 0): .................................................###############
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared to 0.25 from far, probe at 0.4: probe drawn at (1215, 1): .................................................#############..
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared to 0.25 from far, probe at 0.4: probe drawn at (1215, 2): .................................................############...
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared to 0.25 from far, probe at 0.4: probe drawn at (1215, 3): .................................................##########.....
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared to 0.25 from far, probe at 0.4: probe drawn at (1215, 4): .................................................########.......
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared to 0.25 from far, probe at 0.4: probe drawn at (1215, 5): .................................................######.........
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared to 0.25 from far, probe at 0.4: probe drawn at (1215, 6): .................................................####...........
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared to 0.25 from far, probe at 0.4: probe drawn at (1215, 7): .................................................###............
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared far from 0.25, probe at 0.9: 71 pixels off in (1264, 0) to (1278, 7)
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 0): #################################################...............
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 1): #################################################.............##
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 2): #################################################............###
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 3): #################################################..........#####
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 4): #################################################........#######
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 5): #################################################......#########
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 6): #################################################....###########
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 7): #################################################...############
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, drawn at 0.2 over far, probe at 0.4: 199 pixels off in (1248, 0) to (1278, 7)
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 0): .................................###############################
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 1): .................................#############################..
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 2): .................................############################...
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 3): .................................##########################.....
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 4): .................................########################.......
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 5): .................................######################.........
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 6): .................................####################...........
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 7): .................................###################............
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: 71 pixels off in (1264, 0) to (1278, 7)
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 0): #################################################...............
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 1): #################################################.............##
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 2): #################################################............###
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 3): #################################################..........#####
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 4): #################################################........#######
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 5): #################################################......#########
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 6): #################################################....###########
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 7): #################################################...############
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared to 0.25 from far, small probe at 0.4: right
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared far from 0.25, small probe at 0.9: 22 pixels off in (592, 300) to (598, 303)
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 300): #########################################################.......
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 301): #########################################################......#
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 302): #########################################################.....##
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 303): #########################################################....###
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 304): ################################################################
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 305): ################################################################
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 306): ################################################################
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 307): ################################################################
+hiz probe: never-passing one-pixel draws at (0, 719) and (640, 360) testing the buffer: 434 pixels off in all
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared to 0.25 from far, probe at 0.4: 71 pixels off in (1264, 0) to (1278, 7)
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared to 0.25 from far, probe at 0.4: probe drawn at (1215, 0): .................................................###############
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared to 0.25 from far, probe at 0.4: probe drawn at (1215, 1): .................................................#############..
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared to 0.25 from far, probe at 0.4: probe drawn at (1215, 2): .................................................############...
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared to 0.25 from far, probe at 0.4: probe drawn at (1215, 3): .................................................##########.....
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared to 0.25 from far, probe at 0.4: probe drawn at (1215, 4): .................................................########.......
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared to 0.25 from far, probe at 0.4: probe drawn at (1215, 5): .................................................######.........
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared to 0.25 from far, probe at 0.4: probe drawn at (1215, 6): .................................................####...........
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared to 0.25 from far, probe at 0.4: probe drawn at (1215, 7): .................................................###............
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared far from 0.25, probe at 0.9: 199 pixels off in (1248, 0) to (1278, 7)
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 0): #################################...............................
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 1): #################################.............................##
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 2): #################################............................###
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 3): #################################..........................#####
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 4): #################################........................#######
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 5): #################################......................#########
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 6): #################################....................###########
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared far from 0.25, probe at 0.9: probe drawn at (1215, 7): #################################...................############
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, drawn at 0.2 over far, probe at 0.4: 199 pixels off in (1248, 0) to (1278, 7)
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 0): .................................###############################
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 1): .................................#############################..
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 2): .................................############################...
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 3): .................................##########################.....
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 4): .................................########################.......
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 5): .................................######################.........
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 6): .................................####################...........
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, drawn at 0.2 over far, probe at 0.4: probe drawn at (1215, 7): .................................###################............
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: 199 pixels off in (1248, 0) to (1278, 7)
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 0): #################################...............................
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 1): #################################.............................##
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 2): #################################............................###
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 3): #################################..........................#####
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 4): #################################........................#######
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 5): #################################......................#########
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 6): #################################....................###########
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, drawn at 0.7 with always over 0.2, probe at 0.6: probe drawn at (1215, 7): #################################...................############
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared to 0.25 from far, small probe at 0.4: right
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared far from 0.25, small probe at 0.9: 22 pixels off in (592, 300) to (598, 303)
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 300): #########################################################.......
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 301): #########################################################......#
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 302): #########################################################.....##
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 303): #########################################################....###
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 304): ################################################################
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 305): ################################################################
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 306): ################################################################
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer, cleared far from 0.25, small probe at 0.9: probe drawn at (535, 307): ################################################################
+hiz probe: a never-passing one-pixel draw at (1279, 0) testing the buffer: 690 pixels off in all
+hiz probe: done
+hiz probe: GPU close 0x00000000
+exit: status 0

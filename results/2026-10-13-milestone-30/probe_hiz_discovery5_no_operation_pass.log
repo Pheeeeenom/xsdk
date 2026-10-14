@@ -1,0 +1,10 @@
+log: game:\probe_hiz_discovery5.log
+log: named after \Device\Harddisk0\Partition1\XSDK\hiz\probe_hiz_discovery5.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+hiz probe 5
+hiz probe: GPU 0x00000000
+hiz probe: fence 2 didn't land
+hiz probe: stopped early
+gpu: the GPU didn't finish: 0xC00000B5; keeping it and its memory
+hiz probe: GPU close 0xC00000B5
+exit: status 0

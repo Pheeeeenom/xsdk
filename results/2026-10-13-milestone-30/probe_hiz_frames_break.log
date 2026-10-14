@@ -1,0 +1,25 @@
+log: game:\probe_hiz_frames_break.log
+log: named after \Device\Harddisk0\Partition1\XSDK\hiz\probe_hiz_frames_break.xex
+sbrk: the heap may grow to 470 MB, the title's free memory
+PASS: hiz: GPU open
+PASS: hiz: shaders load
+PASS: hiz: vertex and resolve buffers
+hiz: 8 hidden full-screen quads through the long shader took 239 us, 8 drawn ones 20064 us
+PASS: hiz: hidden pixels through a long shader cost under an eighth of drawn ones
+hiz frames probe: frame 0: first rectangle 34 us, 0 pixels wrong
+hiz frames probe: frame 1: first rectangle 34 us, 0 pixels wrong
+hiz frames probe: frame 2: first rectangle 35 us, 0 pixels wrong
+hiz frames probe: frame 3: first rectangle 34 us, 0 pixels wrong
+hiz frames probe: frame 4: first rectangle 2512 us, 0 pixels wrong
+hiz frames probe: frame 5: first rectangle 34 us, 0 pixels wrong
+hiz frames probe: frame 6: first rectangle 34 us, 0 pixels wrong
+hiz frames probe: frame 7: first rectangle 34 us, 0 pixels wrong
+hiz frames probe: frame 8: first rectangle 2513 us, 0 pixels wrong
+hiz frames probe: frame 9: first rectangle 34 us, 0 pixels wrong
+hiz frames probe: frame 10: first rectangle 2513 us, 0 pixels wrong
+hiz frames probe: frame 11: first rectangle 2513 us, 0 pixels wrong
+hiz: 0 of 12 frames held a wrong pixel, 0 pixels in all
+PASS: hiz: every frame's fence landed
+PASS: hiz: near and far drawn both ways over depth clears, less-than and greater-than, every pixel right
+PASS: hiz: GPU close
+exit: status 0

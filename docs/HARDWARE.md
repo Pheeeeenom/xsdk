@@ -2442,3 +2442,91 @@ paid in xsdk's and vulkan4xenon's own code, 6 to 10% of vkbench's CPU time with 
 the default for everything a title builds.
 
 With that, milestone 35 is done: the console's numbers keep loop unrolling at GCC's -O2 default.
+
+## Hierarchical depth, milestone 30 (2026-10-13)
+
+Draws that test depth now skip hidden pixels before the pixel shader, through Xenos's only early rejection, hierarchical
+depth (xenia:src/xenia/gpu/xenos.h:893-894). Xenia names `RB_HIZCONTROL`'s bit 0 hiz_write_enable and bit 1 hiz_enable
+(xenia-canary:src/xenia/gpu/registers.h:822-831, from its commit `692cd59`), and nothing public had more, so discovery
+probes settled the rest. Each drew full-screen and smaller quads, checked every pixel against the CPU's depth test, and
+read what the buffer holds back through columns at many depths, with depth itself cleared past them
+(`probe_hiz_discovery*.c` and their logs; built from xsdk without the milestone's code and with `xsdk-probe.patch`,
+which lets them pick the resolve's `RB_HIZCONTROL` and the extra passes below; runs 1 to 6 on `db55e35`, run 7 on
+`079f061`). Logs: `results/2026-10-13-milestone-30/`.
+- **Bit 0 writes the buffer and bit 1 tests it.** Eight full-screen quads through a 64 multiply-add pixel shader behind
+  a near quad took 20067 us with 0 and with 1, 367 Mpixel/s as drawn ones, and 241 us with 2 and 242 with 3, 30
+  Gpixel/s or 61 pixels a clock; with 2 alone they were rejected against what the run with 1 had written
+  (`probe_hiz_discovery.log`). XAM leaves 0 in `RB_HIZCONTROL` and 0x00000FFF in `RB_HIZ_CLEAR`.
+- **Bit 4 turns the test to greater-than.** With it, less-than draws over a buffer cleared far were all rejected, and
+  greater-than draws over one cleared to 0 drew right and their hidden pixels were rejected; without it greater-than
+  draws were tested as less-than ones (`probe_hiz_discovery2.log`). Bits 18 to 26 seem to move the buffer: each hid
+  pixels it shouldn't at the end of the target, 512 for bit 18 and twice as many for each bit up; bit 27 hid 479232
+  and bit 28 819200, from the top. Bits 2, 3, 5 to 17 and 29 to 31 changed nothing seen. xsdk uses bits 0, 1 and 4.
+- **The test ignores the depth compare.** A draw with always and bit 1 was rejected behind a nearer quad
+  (`probe_hiz_discovery.log`).
+- **A resolve clearing depth with bit 0 sets the buffer from `RB_HIZ_CLEAR`.** Without bit 0 the buffer kept what it
+  held: after a near quad at 0.438 and a clear, columns from 0.469 on stayed hidden. With bit 1 too, the buffer
+  rejected the copy itself (`probe_hiz_discovery.log`). `RB_HIZ_CLEAR`'s low 11 bits are depth in 2048ths: 0x400 hid
+  depth from 0.5 + 1/2048 up and passed 0.50043, 0x200 hid from 0.25, and 0x7FF hid nothing, up to 1.0 with
+  less-equal; the bits above are ignored, 0x800 holding 0 and 0xC00 0x400 (`probe_hiz_discovery2.log`,
+  `probe_hiz_discovery3.log`). So xsdk writes there the top 11 bits of `RB_DEPTH_CLEAR`'s depth.
+- **What changes the buffer.** Killed pixels and draws that test without writing depth left it alone; equal depths
+  passed less-equal and equal; 48 overlapping rectangles at random depths, less-than and less-equal, came out right
+  over clears to 1 and 0.5 (`probe_hiz_discovery.log`, `probe_hiz_discovery2.log`). The test takes depth bias: a decal
+  at 0.51 biased by -0.02 drew over 0.5 everywhere, as with the buffer off, and so did greater-than's mirror of it
+  (`probe_hiz_discovery5.log`). It covered a 1280x1024 target whole (`probe_hiz_discovery3.log`).
+- **Pixels the test rejects skip stencil.** A far quad failing depth everywhere, its depth-fail operation replacing
+  stencil, marked 96 of 921600 pixels with the test on and every one with only the write on
+  (`probe_hiz_discovery2.log`).
+- **A draw's first block can test old values.** After a clear, or a draw writing the buffer, the next draw tested,
+  where its first triangle starts, what the buffer held before: 199 pixels of a full-screen quad, (1248, 0) to
+  (1278, 7), its first triangle's part of the top right 32x8 pixels, and 22 at the top right of a 200x200 rectangle;
+  in 640x480 and 1280x1024 targets alike, and with the resolve's rectangle square (`probe_hiz_discovery3.log`). After
+  a draw nearer, that only rejects less; after a clear or a draw farther, it hides what should show. After each clear:
+  `EVENT_WRITE` CACHE_FLUSH changed nothing, and SC_WAIT_WC hung the GPU, after the target was set and in the resolve
+  alike (`probe_hiz_discovery4.log`, `probe_hiz_discovery5_wait_in_resolve.log`); one-pixel draws testing the buffer
+  left 71 of the 199 pixels; a full-screen draw testing it put every pixel right (`probe_hiz_discovery6a.log`). So did
+  the resolve's rectangle drawn once more testing it, in copy mode with the null copy command, in depth-only mode, or
+  as two triangles in depth-only mode at z 1 testing less-than or at z 0 testing greater-than, which the buffer
+  rejects whole; in no-operation mode that pass hung the GPU (`probe_hiz_discovery7a.log`, `probe_hiz_discovery7f.log`,
+  `probe_hiz_discovery5_no_operation_pass.log`).
+
+So xsdk:
+- after a resolve that clears depth, writes the buffer from the clear, then draws the resolve's rectangle again in
+  depth-only mode, which Xenia takes to skip the pixel shader (xenia:src/xenia/gpu/xenos.h:889-907), with depth
+  tested with never and the buffer tested from the side that rejects it whole: at z 0 testing greater-than, or over a
+  clear to 0 at the rectangle's z of 1;
+- takes the clear's side for the buffer: below 0.5 greater-than, else less-than;
+- in `xsdk_gpu_set_depth_stencil`, tests the buffer for compares on that side, never, equal and the clear's two, and
+  writes it when they write depth; leaves the test off when a stencil fail operation isn't keep;
+- leaves the buffer off until depth is next cleared after a depth write with a compare off that side, which can push
+  depth past the buffer's bound, after a target of another size, samples or depth tile, and when a recording begins
+  or runs; multisampled targets aren't tried and keep it off.
+
+Then, with the milestone's code on top of milestones 31, 33 and 34 (`a5eaa6f`):
+- **probe_hiz** (`probe_hiz.log`): 16 hidden full-screen quads through the long shader took 473 us with the buffer on
+  and 40124 us off, 84.8 times as fast, less-than over a clear to 1, and 474 us against 40124, greater-than over a
+  clear to 0; every pixel kept the near quad's colour both ways. A resolve clearing colour and depth took 319 us, 290
+  clearing colour alone; on `a5eaa6f` they took 290 and 291 (`probe_hiz_main.log`). With the rectangle's second pass
+  not rejected, at z 1 over a clear to 1, a resolve clearing depth took 424 us (on `079f061`).
+- **xsdk_test passed 282 of 284** (`xsdk_test.log`), the two failures the controller's, which was disconnected
+  (`XamInputGetState` returned 0x48F). 8 hidden full-screen quads through the long shader took 239 us, 8 drawn ones
+  20065; 12 frames of near and far rectangles, less-than and greater-than over clears to 1, 0.75 and 0, each ending
+  with near depth everywhere and the next drawing far over it first, held no wrong pixel. A run before it, the
+  controller connected, passed all but one check: pacing at three buffers and every vblank missed one, as runs that
+  evening did with and without the milestones (milestone 34, above) (`xsdk_test_pacing_missed.log`). On milestone 32
+  alone the same code passed 276 of 276, the controller connected (`xsdk_test_on_32.log`); of two runs before that,
+  one missed a vblank in replay (`xsdk_test_on_32_replay_missed.log`), and one's log stopped 42 s in, during scale's
+  10-second show, with no exit line (`xsdk_test_on_32_cut_short.log`).
+- **Broken on purpose,** the resolve leaving the buffer uncleared when it clears depth, 6 of the 12 frames held wrong
+  pixels, 5499024 in all, the far quads hidden where the frame before had drawn near, and that check failed; so did
+  raster's, its depth bias cell hidden by the frame before's (`xsdk_test_hiz_uncleared.log`). A first form of the
+  check ended each frame by drawing the near quad's colour everywhere, hiding the far quads' rejection: the probe
+  timing each frame's first quad took 34 us there, as rejected, and 2512 us with the buffer cleared
+  (`probe_hiz_frames.c`, `probe_hiz_frames_break.log`, `probe_hiz_frames_r5.log`).
+- **vulkan4xenon_test** passed 80 of 80 and **vkbench** 14 of 14. Against milestone 31's run the scenes' GPU times rose
+  4 to 41 us, most by 25 to 30, the second pass of their one resolve a frame clearing depth, and the CPU's times
+  stayed within 4%; vulkan4xenon's state scenes write a dword more a draw, `RB_HIZCONTROL`.
+
+With that, milestone 30 is done on the console but for Dusklight's logo shot: draws testing depth skip hidden pixels,
+the buffer stays right across depth clears, writes and compare changes, and every title built with it passes.
