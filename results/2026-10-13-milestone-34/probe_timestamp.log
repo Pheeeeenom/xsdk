@@ -1,0 +1,62 @@
+log: game:\probe_timestamp.log
+log: named after \Device\Harddisk0\Partition1\XSDK\aniso\probe_timestamp.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+timestamp probe
+timestamp: xsdk_gpu_open 0x00000000
+timestamp: as found: CP_PERFCOUNTER0_LOW 00000000 then 00000000 over 1001765 ns, 0 more
+timestamp: as found: CP_PERFCOUNTER0_HI 00000000 then 00000000 over 1001765 ns, 0 more
+timestamp: as found: RBBM_PERFCOUNTER0_LOW 00000000 then 00000000 over 1001765 ns, 0 more
+timestamp: as found: RBBM_PERFCOUNTER0_HI 00000000 then 00000000 over 1001765 ns, 0 more
+timestamp: as found: RBBM_PERFCOUNTER1_LOW 00000000 then 00000000 over 1001765 ns, 0 more
+timestamp: as found: RBBM_PERFCOUNTER1_HI 00000000 then 00000000 over 1001765 ns, 0 more
+timestamp: as found: R500_D1MODE_V_COUNTER 0000008E then 000000AE over 1001765 ns, 32 more
+timestamp: selects 0 and perfmon 1 from the CPU: CP_PERFCOUNTER0_LOW 00000000 then 0007A061 over 1001764 ns, 499809 more
+timestamp: selects 0 and perfmon 1 from the CPU: CP_PERFCOUNTER0_HI 00000000 then 00000000 over 1001764 ns, 0 more
+timestamp: selects 0 and perfmon 1 from the CPU: RBBM_PERFCOUNTER0_LOW 0000011B then 0007A13E over 1001764 ns, 499747 more
+timestamp: selects 0 and perfmon 1 from the CPU: RBBM_PERFCOUNTER0_HI 00000000 then 00000000 over 1001764 ns, 0 more
+timestamp: selects 0 and perfmon 1 from the CPU: RBBM_PERFCOUNTER1_LOW 000001E6 then 0007A20B over 1001764 ns, 499749 more
+timestamp: selects 0 and perfmon 1 from the CPU: RBBM_PERFCOUNTER1_HI 00000000 then 00000000 over 1001764 ns, 0 more
+timestamp: selects 0 and perfmon 1 from the CPU: R500_D1MODE_V_COUNTER 0000005C then 0000007A over 1001764 ns, 30 more
+timestamp: written through the ring: fence landed
+timestamp: selects 0 and perfmon 1 through the ring: CP_PERFCOUNTER0_LOW 00243332 then 002BD2CD over 1001724 ns, 499611 more
+timestamp: selects 0 and perfmon 1 through the ring: CP_PERFCOUNTER0_HI 00000000 then 00000000 over 1001724 ns, 0 more
+timestamp: selects 0 and perfmon 1 through the ring: RBBM_PERFCOUNTER0_LOW 00243412 then 002BD3AC over 1001724 ns, 499610 more
+timestamp: selects 0 and perfmon 1 through the ring: RBBM_PERFCOUNTER0_HI 00000000 then 00000000 over 1001724 ns, 0 more
+timestamp: selects 0 and perfmon 1 through the ring: RBBM_PERFCOUNTER1_LOW 002434DC then 002BD479 over 1001724 ns, 499613 more
+timestamp: selects 0 and perfmon 1 through the ring: RBBM_PERFCOUNTER1_HI 00000000 then 00000000 over 1001724 ns, 0 more
+timestamp: selects 0 and perfmon 1 through the ring: R500_D1MODE_V_COUNTER 00000192 then 000001B0 over 1001724 ns, 30 more
+timestamp: REG_TO_MEM CP_PERFCOUNTER0_LOW: CPU 047983DE, GPU 04798796, CPU 04798936; fence landed
+timestamp: REG_TO_MEM CP_PERFCOUNTER0_HI: CPU 00000000, GPU 00000000, CPU 00000000; fence landed
+timestamp: REG_TO_MEM RBBM_PERFCOUNTER0_LOW: CPU 0549D83D, GPU 0549DB90, CPU 0549DD4C; fence landed
+timestamp: REG_TO_MEM RBBM_PERFCOUNTER0_HI: CPU 00000000, GPU 00000000, CPU 00000000; fence landed
+timestamp: REG_TO_MEM RBBM_PERFCOUNTER1_LOW: CPU 05F312A5, GPU 05F31581, CPU 05F31785; fence landed
+timestamp: REG_TO_MEM RBBM_PERFCOUNTER1_HI: CPU 00000000, GPU 00000000, CPU 00000000; fence landed
+timestamp: REG_TO_MEM R500_D1MODE_V_COUNTER: CPU 000001AE, GPU 000001AE, CPU 000001AE; fence landed
+timestamp: EVENT_WRITE_SHD bit 31, write 0: 0C592319; RBBM1 06F0F18D, CP 06F0F1F2 before; fence landed
+timestamp: EVENT_WRITE_SHD bit 31, write 1: 0CB55A02; RBBM1 074D288A, CP 074D28EF before; fence landed
+timestamp: EVENT_WRITE_SHD bit 30, write 0: 12345678; RBBM1 07A1CB85, CP 07A1CBEA before; fence landed
+timestamp: EVENT_WRITE_SHD bit 30, write 1: 12345678; RBBM1 07F65BF2, CP 07F65C57 before; fence landed
+timestamp: a fence alone: submitted in 1244 ns, passed 1343 ns later by spinning (landed); xsdk_gpu_wait took 1064401 ns, 0x00000000
+timestamp: a fence alone: submitted in 1102 ns, passed 1364 ns later by spinning (landed); xsdk_gpu_wait took 1966556 ns, 0x00000000
+timestamp: a fence alone: submitted in 963 ns, passed 1383 ns later by spinning (landed); xsdk_gpu_wait took 1714206 ns, 0x00000000
+timestamp: a fence alone: submitted in 962 ns, passed 1404 ns later by spinning (landed); xsdk_gpu_wait took 1612391 ns, 0x00000000
+timestamp: a fence alone: submitted in 1183 ns, passed 1343 ns later by spinning (landed); xsdk_gpu_wait took 1356051 ns, 0x00000000
+timestamp: one 1280x720 resolve: submitted in 8702 ns, passed 289684 ns later by spinning (landed); xsdk_gpu_wait took 1900592 ns, 0x00000000
+timestamp: one 1280x720 resolve: submitted in 6797 ns, passed 290707 ns later by spinning (landed); xsdk_gpu_wait took 1704842 ns, 0x00000000
+timestamp: one 1280x720 resolve: submitted in 4170 ns, passed 290386 ns later by spinning (landed); xsdk_gpu_wait took 1552341 ns, 0x00000000
+timestamp: one 1280x720 resolve: submitted in 3990 ns, passed 290687 ns later by spinning (landed); xsdk_gpu_wait took 1353664 ns, 0x00000000
+timestamp: one 1280x720 resolve: submitted in 3910 ns, passed 290065 ns later by spinning (landed); xsdk_gpu_wait took 2199840 ns, 0x00000000
+timestamp: four 1280x720 resolves: submitted in 12511 ns, passed 1158056 ns later by spinning (landed); xsdk_gpu_wait took 2113604 ns, 0x00000000
+timestamp: four 1280x720 resolves: submitted in 12391 ns, passed 1157594 ns later by spinning (landed); xsdk_gpu_wait took 1959138 ns, 0x00000000
+timestamp: four 1280x720 resolves: submitted in 12231 ns, passed 1156090 ns later by spinning (landed); xsdk_gpu_wait took 2555348 ns, 0x00000000
+timestamp: four 1280x720 resolves: submitted in 12210 ns, passed 1158135 ns later by spinning (landed); xsdk_gpu_wait took 1547308 ns, 0x00000000
+timestamp: four 1280x720 resolves: submitted in 12150 ns, passed 1159960 ns later by spinning (landed); xsdk_gpu_wait took 1406215 ns, 0x00000000
+timestamp: at the end: CP_PERFCOUNTER0_LOW 0FB6C65B then 0FBE6709 over 1001965 ns, 499886 more
+timestamp: at the end: CP_PERFCOUNTER0_HI 00000000 then 00000000 over 1001965 ns, 0 more
+timestamp: at the end: RBBM_PERFCOUNTER0_LOW 0FB6C745 then 0FBE67E5 over 1001965 ns, 499872 more
+timestamp: at the end: RBBM_PERFCOUNTER0_HI 00000000 then 00000000 over 1001965 ns, 0 more
+timestamp: at the end: RBBM_PERFCOUNTER1_LOW 0FB6C812 then 0FBE68B0 over 1001965 ns, 499870 more
+timestamp: at the end: RBBM_PERFCOUNTER1_HI 00000000 then 00000000 over 1001965 ns, 0 more
+timestamp: at the end: R500_D1MODE_V_COUNTER 00000076 then 00000094 over 1001965 ns, 30 more
+timestamp: xsdk_gpu_close 0x00000000
+exit: status 0

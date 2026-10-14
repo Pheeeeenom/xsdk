@@ -2219,3 +2219,75 @@ constant, its `tfetch` built with AnisoFilter 7 (tools/gen_texture_shaders.py; x
 
 With that, milestone 33 is done: a title's samplers take up to 16 times anisotropy, and every title built with it passes
 on the console.
+
+## A clock the GPU and the CPU both read (2026-10-13)
+
+`probe_timestamp.c`, built as a probe against xsdk `96c3597`, looked for a GPU time stamp to time fence waits by (log:
+`results/2026-10-13-milestone-34/probe_timestamp.log`, its source beside it).
+- **The performance counters stood at 0 as XAM left them:** `CP_PERFCOUNTER0_LOW`, `RBBM_PERFCOUNTER0_LOW` and
+  `RBBM_PERFCOUNTER1_LOW` (xenia:src/xenia/gpu/register_table.inc:42-52) read 0 and didn't move in 1 ms.
+- **With `CP_PERFMON_CNTL` reset and then set to 1, and the counters' selects 0,** written from the CPU or through the
+  ring alike, each counted 499,747 to 499,809 in 1,001,764 ns of the CPU's clock: 498.9 a microsecond, near the GPU's
+  published 500 MHz. Linux's Adreno 2xx registers name those values PERF_STATE_ENABLE, RBBM1_COUNT and ALWAYS_COUNT
+  (Linux:drivers/gpu/drm/msm/registers/adreno/a2xx.xml:719-720, 738-739, 1022-1025).
+- **`PM4_REG_TO_MEM` copied each counter into memory** (xenia:src/xenia/gpu/command_processor.cc:1069-1090), the copy
+  between the CPU's reads of it before the fence and after: the command processor and the CPU read the same clock.
+- **`PM4_EVENT_WRITE_SHD` with its initiator's bit 31 set wrote a clock in place of the packet's value,** as Xenia has
+  it (command_processor.cc:1204-1206). Two such writes differed by 6,043,369 while `RBBM_PERFCOUNTER1` moved 6,043,389
+  between them, so it runs at the GPU's clock too, from another start, and no register read by the CPU was found to
+  hold it. With bit 30 set instead, it wrote the packet's value.
+- **Fences, timed by spinning on them:** a fence alone passed 1.3 us after its submit, a 1280x720 resolve 290 us after
+  it, four resolves 1,157 us. `xsdk_gpu_wait`, sleeping 1 ms between looks, returned 1.06 to 2.56 ms after the submit
+  for each of them.
+
+## Looking at a fence costs the GPU (2026-10-13)
+
+The first build of milestone 34 looked at the fence without a break for up to 2 ms. Its xsdk_test timed each 1280x720
+resolve at 287 to 290 us by `RBBM_PERFCOUNTER1` (`results/2026-10-13-milestone-34/xsdk_test_looks_unspaced.log`),
+where a wait that sleeps first, as the broken build's does, leaves it 269 us (`xsdk_test_sleep_first.log`). Every
+look reads the fence from uncached memory, which the GPU shares. `probe_fence_look.c`, built against that first build,
+timed 16 resolves for each way of waiting (`probe_fence_look.log`, its source beside it):
+
+| While the CPU waits | The resolve, mean | The wait's return after the fence, at most |
+|---|---|---|
+| asleep, then looking once | 134,582 clocks, 269.2 us | (the sleep's) |
+| looking without a break | 140,266 clocks, 4.2% longer | 1.4 us |
+| looking every 1 us | 0.45% longer | 2.2 us |
+| looking every 2 us | 0.27% longer | 2.9 us |
+| looking every 5 us | 0.13% longer | 4.2 us |
+| looking every 10 us | 0.05% longer | 11 us |
+| looking every 20 or 50 us | as asleep | 17 and 33 us |
+
+So `xsdk_gpu_wait` looks every 5 us, spinning on the time base in between.
+
+## Fence waits, and drawing after a resolve, milestone 34 (2026-10-13)
+
+`xsdk_gpu_wait` looks at the fence every 5 us for up to 2 ms, as long as one of its 1 ms sleeps takes (1993 us, "Sleeps,
+write speeds, and a set-up that wouldn't run from a cached stream"), then sleeps as before (src/gpu.c). A draw after a
+resolve, before the target was set again, hung the GPU while milestones 30 to 35 were measured (SCOPE.md, milestone
+34): a resolve leaves eDRAM copying with the viewport transform off, and keeps only where `xsdk_gpu_set_target_at` put
+the target. Draws now assert that the target was set since the last resolve; draws into a recording aren't checked, as
+they run when their buffer does (src/gpu_draw.c). Logs: `results/2026-10-13-milestone-34/`.
+- **xsdk_test passed 263 of 265** (`xsdk_test.log`), the two failures the controller's, which was disconnected
+  (`XamInputGetState` returned 0x48F). Eight waits on a fence after a 1280x720 resolve returned 3.8 to 5.0 us after it
+  by `RBBM_PERFCOUNTER1`, copied by `PM4_REG_TO_MEM` once the GPU was idle just before the fence and read by the CPU as
+  each wait returned; the resolves took 279 us. The assert held through every test.
+- **Two earlier runs of the same build missed vblanks in pacing,** one at two buffers and every second vblank, two at
+  two buffers and every vblank (`xsdk_test_2.log`, `xsdk_test_3.log`); their waits returned 1.3 to 4.7 us after their
+  fences, the resolves taking 271 and 279 us. The misses came with the console that evening, not with the milestones:
+  xsdk_test built at `db55e35`, before milestone 33, missed two in replay (`xsdk_test_before.log`), and two of
+  milestone 33's runs missed some too. Pacing's frames wait in `xsdk_present_begin`'s own sleeps, not in
+  `xsdk_gpu_wait`. No recorded run before that evening missed one, and other sessions' probes ran on the console
+  between these runs.
+- **Broken on purpose,** sleeping 1 ms before the first look, the waits returned 317 us to 1.55 ms after their fences,
+  and that check failed besides the controller's two (`xsdk_test_sleep_first.log`).
+- **probe_draw_after_resolve stopped at the assert** (`probe_draw_after_resolve.log`). After drawing a triangle,
+  resolving and waiting, it drew again without setting the target. Its log ended with newlib's line for the assert,
+  `assertion "!target_undone || xsdk_gpu_recording()" failed`, in `xsdk_gpu_draw` at src/gpu_draw.c:263, then
+  `exit: signal 6` and status 134. The draw never reached the GPU, and the console went back to Aurora.
+- **vulkan4xenon_test** passed 80 of 80 with the assert in, and **vkbench** 14 of 14, its CPU times within 1% of
+  milestone 33's run and its GPU times within 4%; its frames look at their fences themselves.
+
+With that, milestone 34 is done: a fence wait returns within microseconds of a short job's fence, a draw after a
+resolve stops at an assert, and every title built with them passes on the console. Why the console missed vblanks that
+evening, with xsdk_test from before the milestones too, isn't known.

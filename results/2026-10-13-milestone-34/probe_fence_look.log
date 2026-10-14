@@ -1,0 +1,20 @@
+log: game:\probe_fence_look.log
+log: named after \Device\Harddisk0\Partition1\XSDK\aniso\probe_fence_look.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+fence look probe, 500 GPU clocks a microsecond
+fence look: asleep 5 ms: resolve 134589 to 134589 clocks, mean 134589; returned at most 2855843 clocks after the fence, mean 2699786; every fence landed
+fence look: looking without a break: resolve 140115 to 140729 clocks, mean 140307; returned at most 687 clocks after the fence, mean 500; every fence landed
+fence look: looking every 1 us: resolve 134896 to 136124 clocks, mean 135186; returned at most 1083 clocks after the fence, mean 713; every fence landed
+fence look: looking every 2 us: resolve 134896 to 135203 clocks, mean 134945; returned at most 1454 clocks after the fence, mean 864; every fence landed
+fence look: looking every 5 us: resolve 134589 to 134896 clocks, mean 134756; returned at most 2084 clocks after the fence, mean 1667; every fence landed
+fence look: looking every 10 us: resolve 134589 to 134896 clocks, mean 134655; returned at most 5517 clocks after the fence, mean 1449; every fence landed
+fence look: looking every 20 us: resolve 134282 to 134678 clocks, mean 134576; returned at most 8440 clocks after the fence, mean 8153; every fence landed
+fence look: looking every 50 us: resolve 134589 to 134589 clocks, mean 134589; returned at most 16324 clocks after the fence, mean 16190; every fence landed
+fence look: asleep 5 ms again: resolve 134282 to 134678 clocks, mean 134575; returned at most 2855644 clocks after the fence, mean 2816610; every fence landed
+fence look: looking without a break again: resolve 139897 to 140511 clocks, mean 140225; returned at most 583 clocks after the fence, mean 490; every fence landed
+fence look: xsdk_gpu_wait on a fence alone took 2767 ns, 0x00000000
+fence look: xsdk_gpu_wait on a fence alone took 2506 ns, 0x00000000
+fence look: xsdk_gpu_wait on a fence alone took 2426 ns, 0x00000000
+fence look: xsdk_gpu_wait on a fence alone took 2366 ns, 0x00000000
+fence look: xsdk_gpu_close 0x00000000
+exit: status 0
