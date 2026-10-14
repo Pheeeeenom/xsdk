@@ -1,0 +1,345 @@
+log: game:\probe_pixel_rate.log
+log: named after \Device\Harddisk0\Partition1\XSDK\pixelrate\probe_pixel_rate.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+pixel rate probe
+pixel rate: as the console left them: 0C85 00000003 0D00 00040400 0D01 04004000 0D02 00010800 0D04 00000000 0E42 00001F60 0F01 0000200E 0F02 00000000 2000 14000500
+pixel rate: as the console left them: 2001 000002D0 2002 00000000 2104 00000000 2180 1000000E 2181 00000000 2182 00010001 2200 00000000 2201 07060706 2202 87000007
+pixel rate: as the console left them: 2203 00000000 2204 00010000 2205 00010000 2206 00000300 2208 00000004 2284 00000000 2292 00000000 2293 00000000 2294 00000000
+pixel rate: as the console left them: 2300 00000400 2301 00000000 2302 00000004 2309 02730273 230A 00000000 2312 0000FFFF 2316 0000000E 2317 00000010 2324 00000002
+pixel rate: GPU 0x00000000
+pixel rate: xsdk's state: opaque fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: xsdk's state: blended fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: xsdk's state: depth fill, colour masked: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: xsdk's state: depth fill, kDepthOnly: 742 in 99434 us: 6877 Mpixels/s, 13.75 a clock; drew right
+pixel rate: xsdk's state: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: xsdk's state: 4 bilinear samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: xsdk's state: 8-pixel triangles: 553 in 99150 us: 1285 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: xsdk's state: 8-pixel triangles, indexed: 572 in 99140 us: 1329 Mpixels/s, 2.65 a clock, 166 Mtriangles/s; drew right
+pixel rate: xsdk's state: resolves: 333 in 97361 us: 3152 Mpixels/s, 6.30 a clock; drew right
+pixel rate: centres only (SQ_CONTEXT_MISC sc_sample_cntl 1): opaque fill: 372 in 99584 us: 3442 Mpixels/s, 6.88 a clock; drew right
+pixel rate: centres only (SQ_CONTEXT_MISC sc_sample_cntl 1): blended fill: 372 in 99586 us: 3442 Mpixels/s, 6.88 a clock; drew right
+pixel rate: centres only (SQ_CONTEXT_MISC sc_sample_cntl 1): depth fill, colour masked: 372 in 99586 us: 3442 Mpixels/s, 6.88 a clock; drew right
+pixel rate: centres only (SQ_CONTEXT_MISC sc_sample_cntl 1): depth fill, kDepthOnly: 743 in 99567 us: 6877 Mpixels/s, 13.75 a clock; drew right
+pixel rate: centres only (SQ_CONTEXT_MISC sc_sample_cntl 1): 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: centres only (SQ_CONTEXT_MISC sc_sample_cntl 1): 4 bilinear samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: centres only (SQ_CONTEXT_MISC sc_sample_cntl 1): 8-pixel triangles: 553 in 99101 us: 1285 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: centres only (SQ_CONTEXT_MISC sc_sample_cntl 1): 8-pixel triangles, indexed: 856 in 98901 us: 1994 Mpixels/s, 3.98 a clock, 249 Mtriangles/s; drew right
+pixel rate: centres only (SQ_CONTEXT_MISC sc_sample_cntl 1): resolves: 334 in 98799 us: 3115 Mpixels/s, 6.23 a clock; drew right
+pixel rate: centroids only (sc_sample_cntl 0): opaque fill: 371 in 99814 us: 3425 Mpixels/s, 6.85 a clock; drew right
+pixel rate: centroids only (sc_sample_cntl 0): blended fill: 370 in 99550 us: 3425 Mpixels/s, 6.85 a clock; drew right
+pixel rate: centroids only (sc_sample_cntl 0): depth fill, colour masked: 371 in 99827 us: 3425 Mpixels/s, 6.85 a clock; drew right
+pixel rate: centroids only (sc_sample_cntl 0): depth fill, kDepthOnly: 724 in 99434 us: 6710 Mpixels/s, 13.42 a clock; drew right
+pixel rate: centroids only (sc_sample_cntl 0): 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: centroids only (sc_sample_cntl 0): 4 bilinear samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: centroids only (sc_sample_cntl 0): 8-pixel triangles: 555 in 99433 us: 1286 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: centroids only (sc_sample_cntl 0): 8-pixel triangles, indexed: 856 in 98901 us: 1994 Mpixels/s, 3.98 a clock, 249 Mtriangles/s; drew right
+pixel rate: centroids only (sc_sample_cntl 0): resolves: 333 in 98466 us: 3116 Mpixels/s, 6.23 a clock; drew right
+pixel rate: SQ_CONTEXT_MISC inst_pred_optimize: opaque fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: SQ_CONTEXT_MISC inst_pred_optimize: blended fill: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: SQ_CONTEXT_MISC inst_pred_optimize: depth fill, colour masked: 215 in 99542 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: SQ_CONTEXT_MISC inst_pred_optimize: depth fill, kDepthOnly: 725 in 99605 us: 6708 Mpixels/s, 13.41 a clock; drew right
+pixel rate: SQ_CONTEXT_MISC inst_pred_optimize: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: SQ_CONTEXT_MISC inst_pred_optimize: 4 bilinear samples: 215 in 99545 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: SQ_CONTEXT_MISC inst_pred_optimize: 8-pixel triangles: 554 in 99234 us: 1286 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: SQ_CONTEXT_MISC inst_pred_optimize: 8-pixel triangles, indexed: 572 in 99136 us: 1329 Mpixels/s, 2.65 a clock, 166 Mtriangles/s; drew right
+pixel rate: SQ_CONTEXT_MISC inst_pred_optimize: resolves: 334 in 98744 us: 3117 Mpixels/s, 6.23 a clock; drew right
+pixel rate: SQ_CONTEXT_MISC yield_optimize: opaque fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: SQ_CONTEXT_MISC yield_optimize: blended fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: SQ_CONTEXT_MISC yield_optimize: depth fill, colour masked: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: SQ_CONTEXT_MISC yield_optimize: depth fill, kDepthOnly: 725 in 99590 us: 6709 Mpixels/s, 13.41 a clock; drew right
+pixel rate: SQ_CONTEXT_MISC yield_optimize: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: SQ_CONTEXT_MISC yield_optimize: 4 bilinear samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: SQ_CONTEXT_MISC yield_optimize: 8-pixel triangles: 554 in 99253 us: 1286 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: SQ_CONTEXT_MISC yield_optimize: 8-pixel triangles, indexed: 573 in 99309 us: 1329 Mpixels/s, 2.65 a clock, 166 Mtriangles/s; drew right
+pixel rate: SQ_CONTEXT_MISC yield_optimize: resolves: 334 in 98779 us: 3116 Mpixels/s, 6.23 a clock; drew right
+pixel rate: SQ_INTERPOLATOR_CNTL param_shade 0: opaque fill: 215 in 99542 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: SQ_INTERPOLATOR_CNTL param_shade 0: blended fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: SQ_INTERPOLATOR_CNTL param_shade 0: depth fill, colour masked: 215 in 99542 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: SQ_INTERPOLATOR_CNTL param_shade 0: depth fill, kDepthOnly: 724 in 99391 us: 6713 Mpixels/s, 13.42 a clock; drew right
+pixel rate: SQ_INTERPOLATOR_CNTL param_shade 0: 4 point samples: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF00D080 at (640, 360)
+pixel rate: SQ_INTERPOLATOR_CNTL param_shade 0: 4 bilinear samples: 215 in 99545 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF808080 at (0, 0)
+pixel rate: SQ_INTERPOLATOR_CNTL param_shade 0: 8-pixel triangles: 554 in 99258 us: 1285 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: SQ_INTERPOLATOR_CNTL param_shade 0: 8-pixel triangles, indexed: 573 in 99310 us: 1329 Mpixels/s, 2.65 a clock, 166 Mtriangles/s; drew right
+pixel rate: SQ_INTERPOLATOR_CNTL param_shade 0: resolves: 333 in 98479 us: 3116 Mpixels/s, 6.23 a clock; drew right
+pixel rate: PA_SU_SC_MODE_CNTL sc_one_quad_per_clock: opaque fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: PA_SU_SC_MODE_CNTL sc_one_quad_per_clock: blended fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: PA_SU_SC_MODE_CNTL sc_one_quad_per_clock: depth fill, colour masked: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: PA_SU_SC_MODE_CNTL sc_one_quad_per_clock: depth fill, kDepthOnly: 215 in 99542 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: PA_SU_SC_MODE_CNTL sc_one_quad_per_clock: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: PA_SU_SC_MODE_CNTL sc_one_quad_per_clock: 4 bilinear samples: 215 in 99545 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: PA_SU_SC_MODE_CNTL sc_one_quad_per_clock: 8-pixel triangles: 554 in 99253 us: 1286 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: PA_SU_SC_MODE_CNTL sc_one_quad_per_clock: 8-pixel triangles, indexed: 573 in 99312 us: 1329 Mpixels/s, 2.65 a clock, 166 Mtriangles/s; drew right
+pixel rate: PA_SU_SC_MODE_CNTL sc_one_quad_per_clock: resolves: 334 in 98760 us: 3116 Mpixels/s, 6.23 a clock; drew right
+pixel rate: PA_SU_SC_MODE_CNTL quad_order_enable: opaque fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: PA_SU_SC_MODE_CNTL quad_order_enable: blended fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: PA_SU_SC_MODE_CNTL quad_order_enable: depth fill, colour masked: 215 in 99542 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: PA_SU_SC_MODE_CNTL quad_order_enable: depth fill, kDepthOnly: 728 in 99724 us: 6727 Mpixels/s, 13.45 a clock; drew right
+pixel rate: PA_SU_SC_MODE_CNTL quad_order_enable: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: PA_SU_SC_MODE_CNTL quad_order_enable: 4 bilinear samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: PA_SU_SC_MODE_CNTL quad_order_enable: 8-pixel triangles: 554 in 99270 us: 1285 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: PA_SU_SC_MODE_CNTL quad_order_enable: 8-pixel triangles, indexed: 573 in 99310 us: 1329 Mpixels/s, 2.65 a clock, 166 Mtriangles/s; drew right
+pixel rate: PA_SU_SC_MODE_CNTL quad_order_enable: resolves: 333 in 98517 us: 3115 Mpixels/s, 6.23 a clock; drew right
+pixel rate: PA_SU_SC_MODE_CNTL persp_corr_dis: opaque fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: PA_SU_SC_MODE_CNTL persp_corr_dis: blended fill: 215 in 99542 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: PA_SU_SC_MODE_CNTL persp_corr_dis: depth fill, colour masked: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: PA_SU_SC_MODE_CNTL persp_corr_dis: depth fill, kDepthOnly: 724 in 99415 us: 6711 Mpixels/s, 13.42 a clock; drew right
+pixel rate: PA_SU_SC_MODE_CNTL persp_corr_dis: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: PA_SU_SC_MODE_CNTL persp_corr_dis: 4 bilinear samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: PA_SU_SC_MODE_CNTL persp_corr_dis: 8-pixel triangles: 552 in 98891 us: 1286 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: PA_SU_SC_MODE_CNTL persp_corr_dis: 8-pixel triangles, indexed: 573 in 99310 us: 1329 Mpixels/s, 2.65 a clock, 166 Mtriangles/s; drew right
+pixel rate: PA_SU_SC_MODE_CNTL persp_corr_dis: resolves: 333 in 96722 us: 3172 Mpixels/s, 6.34 a clock; drew right
+pixel rate: RB_SURFACE_INFO without the HiZ pitch: opaque fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: RB_SURFACE_INFO without the HiZ pitch: blended fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: RB_SURFACE_INFO without the HiZ pitch: depth fill, colour masked: 215 in 99542 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: RB_SURFACE_INFO without the HiZ pitch: depth fill, kDepthOnly: 743 in 99567 us: 6877 Mpixels/s, 13.75 a clock; drew right
+pixel rate: RB_SURFACE_INFO without the HiZ pitch: 4 point samples: 215 in 99545 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: RB_SURFACE_INFO without the HiZ pitch: 4 bilinear samples: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: RB_SURFACE_INFO without the HiZ pitch: 8-pixel triangles: 554 in 99244 us: 1286 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: RB_SURFACE_INFO without the HiZ pitch: 8-pixel triangles, indexed: 573 in 99310 us: 1329 Mpixels/s, 2.65 a clock, 166 Mtriangles/s; drew right
+pixel rate: RB_SURFACE_INFO without the HiZ pitch: resolves: 341 in 98377 us: 3194 Mpixels/s, 6.38 a clock; drew right
+pixel rate: PA_SC_VIZ_QUERY 0: opaque fill: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: PA_SC_VIZ_QUERY 0: blended fill: 215 in 99542 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: PA_SC_VIZ_QUERY 0: depth fill, colour masked: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: PA_SC_VIZ_QUERY 0: depth fill, kDepthOnly: 742 in 99433 us: 6877 Mpixels/s, 13.75 a clock; drew right
+pixel rate: PA_SC_VIZ_QUERY 0: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: PA_SC_VIZ_QUERY 0: 4 bilinear samples: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: PA_SC_VIZ_QUERY 0: 8-pixel triangles: 552 in 98906 us: 1285 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: PA_SC_VIZ_QUERY 0: 8-pixel triangles, indexed: 573 in 99309 us: 1329 Mpixels/s, 2.65 a clock, 166 Mtriangles/s; drew right
+pixel rate: PA_SC_VIZ_QUERY 0: resolves: 332 in 95872 us: 3191 Mpixels/s, 6.38 a clock; drew right
+pixel rate: PA_SC_MPASS_PS_CNTL 0: opaque fill: 215 in 99542 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: PA_SC_MPASS_PS_CNTL 0: blended fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: PA_SC_MPASS_PS_CNTL 0: depth fill, colour masked: 215 in 99542 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: PA_SC_MPASS_PS_CNTL 0: depth fill, kDepthOnly: 743 in 99566 us: 6877 Mpixels/s, 13.75 a clock; drew right
+pixel rate: PA_SC_MPASS_PS_CNTL 0: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: PA_SC_MPASS_PS_CNTL 0: 4 bilinear samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: PA_SC_MPASS_PS_CNTL 0: 8-pixel triangles: 554 in 99272 us: 1285 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: PA_SC_MPASS_PS_CNTL 0: 8-pixel triangles, indexed: 573 in 99310 us: 1329 Mpixels/s, 2.65 a clock, 166 Mtriangles/s; drew right
+pixel rate: PA_SC_MPASS_PS_CNTL 0: resolves: 333 in 98477 us: 3116 Mpixels/s, 6.23 a clock; drew right
+pixel rate: VGT_ENHANCE 0: opaque fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: VGT_ENHANCE 0: blended fill: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: VGT_ENHANCE 0: depth fill, colour masked: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: VGT_ENHANCE 0: depth fill, kDepthOnly: 725 in 97704 us: 6838 Mpixels/s, 13.67 a clock; drew right
+pixel rate: VGT_ENHANCE 0: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: VGT_ENHANCE 0: 4 bilinear samples: 215 in 99545 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: VGT_ENHANCE 0: 8-pixel triangles: 555 in 99447 us: 1285 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: VGT_ENHANCE 0: 8-pixel triangles, indexed: 573 in 99310 us: 1329 Mpixels/s, 2.65 a clock, 166 Mtriangles/s; drew right
+pixel rate: VGT_ENHANCE 0: resolves: 334 in 98763 us: 3116 Mpixels/s, 6.23 a clock; drew right
+pixel rate: SQ_DEBUG_MISC_0 and _1 0: opaque fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: SQ_DEBUG_MISC_0 and _1 0: blended fill: 215 in 99542 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: SQ_DEBUG_MISC_0 and _1 0: depth fill, colour masked: 215 in 99542 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: SQ_DEBUG_MISC_0 and _1 0: depth fill, kDepthOnly: 724 in 99401 us: 6712 Mpixels/s, 13.42 a clock; drew right
+pixel rate: SQ_DEBUG_MISC_0 and _1 0: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: SQ_DEBUG_MISC_0 and _1 0: 4 bilinear samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: SQ_DEBUG_MISC_0 and _1 0: 8-pixel triangles: 554 in 99260 us: 1285 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: SQ_DEBUG_MISC_0 and _1 0: 8-pixel triangles, indexed: 573 in 99309 us: 1329 Mpixels/s, 2.65 a clock, 166 Mtriangles/s; drew right
+pixel rate: SQ_DEBUG_MISC_0 and _1 0: resolves: 334 in 98757 us: 3116 Mpixels/s, 6.23 a clock; drew right
+pixel rate: RB_SAMPLE_COUNT_CTL 0: opaque fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: RB_SAMPLE_COUNT_CTL 0: blended fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: RB_SAMPLE_COUNT_CTL 0: depth fill, colour masked: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: RB_SAMPLE_COUNT_CTL 0: depth fill, kDepthOnly: 724 in 99476 us: 6707 Mpixels/s, 13.41 a clock; drew right
+pixel rate: RB_SAMPLE_COUNT_CTL 0: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: RB_SAMPLE_COUNT_CTL 0: 4 bilinear samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: RB_SAMPLE_COUNT_CTL 0: 8-pixel triangles: 554 in 99262 us: 1285 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: RB_SAMPLE_COUNT_CTL 0: 8-pixel triangles, indexed: 573 in 99309 us: 1329 Mpixels/s, 2.65 a clock, 166 Mtriangles/s; drew right
+pixel rate: RB_SAMPLE_COUNT_CTL 0: resolves: 333 in 98474 us: 3116 Mpixels/s, 6.23 a clock; drew right
+pixel rate: fill reading its interpolant: opaque fill: 215 in 99542 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: fill reading its interpolant: blended fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: fill reading its interpolant: depth fill, colour masked: 215 in 99542 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: fill reading its interpolant: depth fill, kDepthOnly: 724 in 99466 us: 6708 Mpixels/s, 13.41 a clock; drew right
+pixel rate: fill reading its interpolant: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: fill reading its interpolant: 4 bilinear samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: fill reading its interpolant: 8-pixel triangles: 554 in 99252 us: 1286 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: fill reading its interpolant: 8-pixel triangles, indexed: 573 in 99310 us: 1329 Mpixels/s, 2.65 a clock, 166 Mtriangles/s; drew right
+pixel rate: fill reading its interpolant: resolves: 335 in 99042 us: 3117 Mpixels/s, 6.23 a clock; drew right
+pixel rate: colour first in eDRAM: opaque fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: colour first in eDRAM: blended fill: 215 in 99542 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: colour first in eDRAM: depth fill, colour masked: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: colour first in eDRAM: depth fill, kDepthOnly: 727 in 97758 us: 6853 Mpixels/s, 13.70 a clock; drew right
+pixel rate: colour first in eDRAM: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: colour first in eDRAM: 4 bilinear samples: 215 in 99545 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: colour first in eDRAM: 8-pixel triangles: 554 in 99260 us: 1285 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: colour first in eDRAM: 8-pixel triangles, indexed: 573 in 99310 us: 1329 Mpixels/s, 2.65 a clock, 166 Mtriangles/s; drew right
+pixel rate: colour first in eDRAM: resolves: 342 in 98660 us: 3194 Mpixels/s, 6.38 a clock; drew right
+pixel rate: sampled shader with 12 registers: opaque fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: sampled shader with 12 registers: blended fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: sampled shader with 12 registers: depth fill, colour masked: 215 in 99542 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: sampled shader with 12 registers: depth fill, kDepthOnly: 736 in 98630 us: 6877 Mpixels/s, 13.75 a clock; drew right
+pixel rate: sampled shader with 12 registers: 4 point samples: 171 in 99608 us: 1582 Mpixels/s, 3.16 a clock, 6328 Mtexels/s; drew right
+pixel rate: sampled shader with 12 registers: 4 bilinear samples: 171 in 99591 us: 1582 Mpixels/s, 3.16 a clock, 6328 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: sampled shader with 12 registers: 8-pixel triangles: 554 in 99253 us: 1286 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: sampled shader with 12 registers: 8-pixel triangles, indexed: 572 in 99136 us: 1329 Mpixels/s, 2.65 a clock, 166 Mtriangles/s; drew right
+pixel rate: sampled shader with 12 registers: resolves: 341 in 98379 us: 3194 Mpixels/s, 6.38 a clock; drew right
+pixel rate: PA_CL_ENHANCE 7, the kernel's: opaque fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: PA_CL_ENHANCE 7, the kernel's: blended fill: 215 in 99542 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: PA_CL_ENHANCE 7, the kernel's: depth fill, colour masked: 215 in 99542 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: PA_CL_ENHANCE 7, the kernel's: depth fill, kDepthOnly: 725 in 99533 us: 6712 Mpixels/s, 13.42 a clock; drew right
+pixel rate: PA_CL_ENHANCE 7, the kernel's: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: PA_CL_ENHANCE 7, the kernel's: 4 bilinear samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: PA_CL_ENHANCE 7, the kernel's: 8-pixel triangles: 554 in 99247 us: 1286 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: PA_CL_ENHANCE 7, the kernel's: 8-pixel triangles, indexed: 573 in 99310 us: 1329 Mpixels/s, 2.65 a clock, 166 Mtriangles/s; drew right
+pixel rate: PA_CL_ENHANCE 7, the kernel's: resolves: 342 in 98654 us: 3194 Mpixels/s, 6.38 a clock; drew right
+pixel rate: SQ_FLOW_CONTROL 0x04007000, the kernel's: opaque fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: SQ_FLOW_CONTROL 0x04007000, the kernel's: blended fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: SQ_FLOW_CONTROL 0x04007000, the kernel's: depth fill, colour masked: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: SQ_FLOW_CONTROL 0x04007000, the kernel's: depth fill, kDepthOnly: 724 in 99403 us: 6712 Mpixels/s, 13.42 a clock; drew right
+pixel rate: SQ_FLOW_CONTROL 0x04007000, the kernel's: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: SQ_FLOW_CONTROL 0x04007000, the kernel's: 4 bilinear samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: SQ_FLOW_CONTROL 0x04007000, the kernel's: 8-pixel triangles: 555 in 99439 us: 1285 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: SQ_FLOW_CONTROL 0x04007000, the kernel's: 8-pixel triangles, indexed: 573 in 99310 us: 1329 Mpixels/s, 2.65 a clock, 166 Mtriangles/s; drew right
+pixel rate: SQ_FLOW_CONTROL 0x04007000, the kernel's: resolves: 333 in 98488 us: 3116 Mpixels/s, 6.23 a clock; drew right
+pixel rate: split 16 vertex, 112 pixel: opaque fill: 215 in 98616 us: 2009 Mpixels/s, 4.01 a clock; drew right
+pixel rate: split 16 vertex, 112 pixel: blended fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: split 16 vertex, 112 pixel: depth fill, colour masked: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: split 16 vertex, 112 pixel: depth fill, kDepthOnly: 725 in 98832 us: 6760 Mpixels/s, 13.52 a clock; drew right
+pixel rate: split 16 vertex, 112 pixel: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: split 16 vertex, 112 pixel: 4 bilinear samples: 215 in 99545 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: split 16 vertex, 112 pixel: 8-pixel triangles: 554 in 99256 us: 1285 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: split 16 vertex, 112 pixel: 8-pixel triangles, indexed: 573 in 99310 us: 1329 Mpixels/s, 2.65 a clock, 166 Mtriangles/s; drew right
+pixel rate: split 16 vertex, 112 pixel: resolves: 333 in 98499 us: 3115 Mpixels/s, 6.23 a clock; drew right
+pixel rate: split 96 vertex, 32 pixel: opaque fill: 215 in 99542 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: split 96 vertex, 32 pixel: blended fill: 215 in 99542 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: split 96 vertex, 32 pixel: depth fill, colour masked: 215 in 99542 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: split 96 vertex, 32 pixel: depth fill, kDepthOnly: 724 in 99371 us: 6714 Mpixels/s, 13.42 a clock; drew right
+pixel rate: split 96 vertex, 32 pixel: 4 point samples: 194 in 99472 us: 1797 Mpixels/s, 3.59 a clock, 7188 Mtexels/s; drew right
+pixel rate: split 96 vertex, 32 pixel: 4 bilinear samples: 194 in 99449 us: 1797 Mpixels/s, 3.59 a clock, 7188 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: split 96 vertex, 32 pixel: 8-pixel triangles: 554 in 99247 us: 1286 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: split 96 vertex, 32 pixel: 8-pixel triangles, indexed: 573 in 99310 us: 1329 Mpixels/s, 2.65 a clock, 166 Mtriangles/s; drew right
+pixel rate: split 96 vertex, 32 pixel: resolves: 342 in 98684 us: 3193 Mpixels/s, 6.38 a clock; drew right
+pixel rate: centres, inst_pred_optimize: opaque fill: 372 in 99583 us: 3442 Mpixels/s, 6.88 a clock; drew right
+pixel rate: centres, inst_pred_optimize: blended fill: 372 in 99586 us: 3442 Mpixels/s, 6.88 a clock; drew right
+pixel rate: centres, inst_pred_optimize: depth fill, colour masked: 372 in 99586 us: 3442 Mpixels/s, 6.88 a clock; drew right
+pixel rate: centres, inst_pred_optimize: depth fill, kDepthOnly: 743 in 99566 us: 6877 Mpixels/s, 13.75 a clock; drew right
+pixel rate: centres, inst_pred_optimize: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: centres, inst_pred_optimize: 4 bilinear samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: centres, inst_pred_optimize: 8-pixel triangles: 554 in 99242 us: 1286 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: centres, inst_pred_optimize: 8-pixel triangles, indexed: 856 in 98902 us: 1994 Mpixels/s, 3.98 a clock, 249 Mtriangles/s; drew right
+pixel rate: centres, inst_pred_optimize: resolves: 334 in 98767 us: 3116 Mpixels/s, 6.23 a clock; drew right
+pixel rate: centres, yield_optimize: opaque fill: 370 in 99557 us: 3425 Mpixels/s, 6.85 a clock; drew right
+pixel rate: centres, yield_optimize: blended fill: 371 in 99822 us: 3425 Mpixels/s, 6.85 a clock; drew right
+pixel rate: centres, yield_optimize: depth fill, colour masked: 371 in 99823 us: 3425 Mpixels/s, 6.85 a clock; drew right
+pixel rate: centres, yield_optimize: depth fill, kDepthOnly: 724 in 99413 us: 6711 Mpixels/s, 13.42 a clock; drew right
+pixel rate: centres, yield_optimize: 4 point samples: 215 in 99545 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: centres, yield_optimize: 4 bilinear samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: centres, yield_optimize: 8-pixel triangles: 554 in 99258 us: 1285 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: centres, yield_optimize: 8-pixel triangles, indexed: 856 in 98901 us: 1994 Mpixels/s, 3.98 a clock, 249 Mtriangles/s; drew right
+pixel rate: centres, yield_optimize: resolves: 334 in 98768 us: 3116 Mpixels/s, 6.23 a clock; drew right
+pixel rate: centres, param_shade 0: opaque fill: 371 in 99830 us: 3424 Mpixels/s, 6.84 a clock; drew right
+pixel rate: centres, param_shade 0: blended fill: 370 in 99565 us: 3424 Mpixels/s, 6.84 a clock; drew right
+pixel rate: centres, param_shade 0: depth fill, colour masked: 371 in 99818 us: 3425 Mpixels/s, 6.85 a clock; drew right
+pixel rate: centres, param_shade 0: depth fill, kDepthOnly: 724 in 99442 us: 6709 Mpixels/s, 13.41 a clock; drew right
+pixel rate: centres, param_shade 0: 4 point samples: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF00D080 at (640, 360)
+pixel rate: centres, param_shade 0: 4 bilinear samples: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF808080 at (0, 0)
+pixel rate: centres, param_shade 0: 8-pixel triangles: 555 in 99431 us: 1286 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: centres, param_shade 0: 8-pixel triangles, indexed: 858 in 99131 us: 1994 Mpixels/s, 3.98 a clock, 249 Mtriangles/s; drew right
+pixel rate: centres, param_shade 0: resolves: 334 in 98782 us: 3116 Mpixels/s, 6.23 a clock; drew right
+pixel rate: centres, sc_one_quad_per_clock: opaque fill: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: centres, sc_one_quad_per_clock: blended fill: 215 in 99542 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: centres, sc_one_quad_per_clock: depth fill, colour masked: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: centres, sc_one_quad_per_clock: depth fill, kDepthOnly: 215 in 99542 us: 1990 Mpixels/s, 3.98 a clock; drew right
+pixel rate: centres, sc_one_quad_per_clock: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: centres, sc_one_quad_per_clock: 4 bilinear samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: centres, sc_one_quad_per_clock: 8-pixel triangles: 554 in 99265 us: 1285 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: centres, sc_one_quad_per_clock: 8-pixel triangles, indexed: 573 in 99298 us: 1329 Mpixels/s, 2.65 a clock, 166 Mtriangles/s; drew right
+pixel rate: centres, sc_one_quad_per_clock: resolves: 334 in 97305 us: 3163 Mpixels/s, 6.32 a clock; drew right
+pixel rate: centres, quad_order_enable: opaque fill: 372 in 99594 us: 3442 Mpixels/s, 6.88 a clock; drew right
+pixel rate: centres, quad_order_enable: blended fill: 372 in 99594 us: 3442 Mpixels/s, 6.88 a clock; drew right
+pixel rate: centres, quad_order_enable: depth fill, colour masked: 372 in 99591 us: 3442 Mpixels/s, 6.88 a clock; drew right
+pixel rate: centres, quad_order_enable: depth fill, kDepthOnly: 743 in 99560 us: 6877 Mpixels/s, 13.75 a clock; drew right
+pixel rate: centres, quad_order_enable: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: centres, quad_order_enable: 4 bilinear samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: centres, quad_order_enable: 8-pixel triangles: 555 in 99436 us: 1285 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: centres, quad_order_enable: 8-pixel triangles, indexed: 856 in 98902 us: 1994 Mpixels/s, 3.98 a clock, 249 Mtriangles/s; drew right
+pixel rate: centres, quad_order_enable: resolves: 334 in 98765 us: 3116 Mpixels/s, 6.23 a clock; drew right
+pixel rate: centres, persp_corr_dis: opaque fill: 370 in 99564 us: 3424 Mpixels/s, 6.84 a clock; drew right
+pixel rate: centres, persp_corr_dis: blended fill: 371 in 99838 us: 3424 Mpixels/s, 6.84 a clock; drew right
+pixel rate: centres, persp_corr_dis: depth fill, colour masked: 370 in 99567 us: 3424 Mpixels/s, 6.84 a clock; drew right
+pixel rate: centres, persp_corr_dis: depth fill, kDepthOnly: 725 in 99581 us: 6709 Mpixels/s, 13.41 a clock; drew right
+pixel rate: centres, persp_corr_dis: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: centres, persp_corr_dis: 4 bilinear samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: centres, persp_corr_dis: 8-pixel triangles: 553 in 99093 us: 1285 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: centres, persp_corr_dis: 8-pixel triangles, indexed: 856 in 98901 us: 1994 Mpixels/s, 3.98 a clock, 249 Mtriangles/s; drew right
+pixel rate: centres, persp_corr_dis: resolves: 334 in 98788 us: 3115 Mpixels/s, 6.23 a clock; drew right
+pixel rate: centres, no HiZ pitch: opaque fill: 370 in 99564 us: 3424 Mpixels/s, 6.84 a clock; drew right
+pixel rate: centres, no HiZ pitch: blended fill: 371 in 99847 us: 3424 Mpixels/s, 6.84 a clock; drew right
+pixel rate: centres, no HiZ pitch: depth fill, colour masked: 370 in 99584 us: 3424 Mpixels/s, 6.84 a clock; drew right
+pixel rate: centres, no HiZ pitch: depth fill, kDepthOnly: 724 in 99474 us: 6707 Mpixels/s, 13.41 a clock; drew right
+pixel rate: centres, no HiZ pitch: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: centres, no HiZ pitch: 4 bilinear samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: centres, no HiZ pitch: 8-pixel triangles: 554 in 99257 us: 1285 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: centres, no HiZ pitch: 8-pixel triangles, indexed: 856 in 98901 us: 1994 Mpixels/s, 3.98 a clock, 249 Mtriangles/s; drew right
+pixel rate: centres, no HiZ pitch: resolves: 334 in 97749 us: 3149 Mpixels/s, 6.29 a clock; drew right
+pixel rate: centres, fill reading its interpolant: opaque fill: 372 in 99583 us: 3442 Mpixels/s, 6.88 a clock; drew right
+pixel rate: centres, fill reading its interpolant: blended fill: 372 in 99585 us: 3442 Mpixels/s, 6.88 a clock; drew right
+pixel rate: centres, fill reading its interpolant: depth fill, colour masked: 372 in 99586 us: 3442 Mpixels/s, 6.88 a clock; drew right
+pixel rate: centres, fill reading its interpolant: depth fill, kDepthOnly: 743 in 99568 us: 6877 Mpixels/s, 13.75 a clock; drew right
+pixel rate: centres, fill reading its interpolant: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: centres, fill reading its interpolant: 4 bilinear samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: centres, fill reading its interpolant: 8-pixel triangles: 554 in 99238 us: 1286 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: centres, fill reading its interpolant: 8-pixel triangles, indexed: 856 in 98901 us: 1994 Mpixels/s, 3.98 a clock, 249 Mtriangles/s; drew right
+pixel rate: centres, fill reading its interpolant: resolves: 334 in 98803 us: 3115 Mpixels/s, 6.23 a clock; drew right
+pixel rate: centres, colour first in eDRAM: opaque fill: 371 in 99548 us: 3434 Mpixels/s, 6.86 a clock; drew right
+pixel rate: centres, colour first in eDRAM: blended fill: 372 in 99585 us: 3442 Mpixels/s, 6.88 a clock; drew right
+pixel rate: centres, colour first in eDRAM: depth fill, colour masked: 372 in 99585 us: 3442 Mpixels/s, 6.88 a clock; drew right
+pixel rate: centres, colour first in eDRAM: depth fill, kDepthOnly: 743 in 99568 us: 6877 Mpixels/s, 13.75 a clock; drew right
+pixel rate: centres, colour first in eDRAM: 4 point samples: 215 in 99543 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: centres, colour first in eDRAM: 4 bilinear samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: centres, colour first in eDRAM: 8-pixel triangles: 554 in 99239 us: 1286 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: centres, colour first in eDRAM: 8-pixel triangles, indexed: 856 in 98901 us: 1994 Mpixels/s, 3.98 a clock, 249 Mtriangles/s; drew right
+pixel rate: centres, colour first in eDRAM: resolves: 343 in 98965 us: 3194 Mpixels/s, 6.38 a clock; drew right
+pixel rate: centres, sampled shader with 12 registers: opaque fill: 372 in 99585 us: 3442 Mpixels/s, 6.88 a clock; drew right
+pixel rate: centres, sampled shader with 12 registers: blended fill: 372 in 99586 us: 3442 Mpixels/s, 6.88 a clock; drew right
+pixel rate: centres, sampled shader with 12 registers: depth fill, colour masked: 372 in 99583 us: 3442 Mpixels/s, 6.88 a clock; drew right
+pixel rate: centres, sampled shader with 12 registers: depth fill, kDepthOnly: 743 in 99567 us: 6877 Mpixels/s, 13.75 a clock; drew right
+pixel rate: centres, sampled shader with 12 registers: 4 point samples: 171 in 99605 us: 1582 Mpixels/s, 3.16 a clock, 6328 Mtexels/s; drew right
+pixel rate: centres, sampled shader with 12 registers: 4 bilinear samples: 171 in 99590 us: 1582 Mpixels/s, 3.16 a clock, 6328 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: centres, sampled shader with 12 registers: 8-pixel triangles: 554 in 99249 us: 1286 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: centres, sampled shader with 12 registers: 8-pixel triangles, indexed: 856 in 98901 us: 1994 Mpixels/s, 3.98 a clock, 249 Mtriangles/s; drew right
+pixel rate: centres, sampled shader with 12 registers: resolves: 342 in 98656 us: 3194 Mpixels/s, 6.38 a clock; drew right
+pixel rate: centres, PA_CL_ENHANCE 7: opaque fill: 372 in 99584 us: 3442 Mpixels/s, 6.88 a clock; drew right
+pixel rate: centres, PA_CL_ENHANCE 7: blended fill: 372 in 99583 us: 3442 Mpixels/s, 6.88 a clock; drew right
+pixel rate: centres, PA_CL_ENHANCE 7: depth fill, colour masked: 372 in 99584 us: 3442 Mpixels/s, 6.88 a clock; drew right
+pixel rate: centres, PA_CL_ENHANCE 7: depth fill, kDepthOnly: 743 in 99567 us: 6877 Mpixels/s, 13.75 a clock; drew right
+pixel rate: centres, PA_CL_ENHANCE 7: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: centres, PA_CL_ENHANCE 7: 4 bilinear samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: centres, PA_CL_ENHANCE 7: 8-pixel triangles: 554 in 99265 us: 1285 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: centres, PA_CL_ENHANCE 7: 8-pixel triangles, indexed: 856 in 98901 us: 1994 Mpixels/s, 3.98 a clock, 249 Mtriangles/s; drew right
+pixel rate: centres, PA_CL_ENHANCE 7: resolves: 334 in 98753 us: 3117 Mpixels/s, 6.23 a clock; drew right
+pixel rate: centres, SQ_FLOW_CONTROL 0x04007000: opaque fill: 371 in 99852 us: 3424 Mpixels/s, 6.84 a clock; drew right
+pixel rate: centres, SQ_FLOW_CONTROL 0x04007000: blended fill: 370 in 99574 us: 3424 Mpixels/s, 6.84 a clock; drew right
+pixel rate: centres, SQ_FLOW_CONTROL 0x04007000: depth fill, colour masked: 370 in 99572 us: 3424 Mpixels/s, 6.84 a clock; drew right
+pixel rate: centres, SQ_FLOW_CONTROL 0x04007000: depth fill, kDepthOnly: 725 in 99521 us: 6713 Mpixels/s, 13.42 a clock; drew right
+pixel rate: centres, SQ_FLOW_CONTROL 0x04007000: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: centres, SQ_FLOW_CONTROL 0x04007000: 4 bilinear samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: centres, SQ_FLOW_CONTROL 0x04007000: 8-pixel triangles: 553 in 99084 us: 1285 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: centres, SQ_FLOW_CONTROL 0x04007000: 8-pixel triangles, indexed: 856 in 98901 us: 1994 Mpixels/s, 3.98 a clock, 249 Mtriangles/s; drew right
+pixel rate: centres, SQ_FLOW_CONTROL 0x04007000: resolves: 333 in 98546 us: 3114 Mpixels/s, 6.22 a clock; drew right
+pixel rate: centres, split 16 vertex, 112 pixel: opaque fill: 371 in 99507 us: 3436 Mpixels/s, 6.87 a clock; drew right
+pixel rate: centres, split 16 vertex, 112 pixel: blended fill: 372 in 99585 us: 3442 Mpixels/s, 6.88 a clock; drew right
+pixel rate: centres, split 16 vertex, 112 pixel: depth fill, colour masked: 372 in 99585 us: 3442 Mpixels/s, 6.88 a clock; drew right
+pixel rate: centres, split 16 vertex, 112 pixel: depth fill, kDepthOnly: 743 in 99566 us: 6877 Mpixels/s, 13.75 a clock; drew right
+pixel rate: centres, split 16 vertex, 112 pixel: 4 point samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: centres, split 16 vertex, 112 pixel: 4 bilinear samples: 215 in 99544 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: centres, split 16 vertex, 112 pixel: 8-pixel triangles: 554 in 99257 us: 1285 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: centres, split 16 vertex, 112 pixel: 8-pixel triangles, indexed: 856 in 98903 us: 1994 Mpixels/s, 3.98 a clock, 249 Mtriangles/s; drew right
+pixel rate: centres, split 16 vertex, 112 pixel: resolves: 334 in 98751 us: 3117 Mpixels/s, 6.23 a clock; drew right
+pixel rate: centres, split 16 vertex, 112 pixel, sampled shader with 12 registers: opaque fill: 371 in 99838 us: 3424 Mpixels/s, 6.84 a clock; drew right
+pixel rate: centres, split 16 vertex, 112 pixel, sampled shader with 12 registers: blended fill: 371 in 99838 us: 3424 Mpixels/s, 6.84 a clock; drew right
+pixel rate: centres, split 16 vertex, 112 pixel, sampled shader with 12 registers: depth fill, colour masked: 370 in 99570 us: 3424 Mpixels/s, 6.84 a clock; drew right
+pixel rate: centres, split 16 vertex, 112 pixel, sampled shader with 12 registers: depth fill, kDepthOnly: 724 in 99473 us: 6707 Mpixels/s, 13.41 a clock; drew right
+pixel rate: centres, split 16 vertex, 112 pixel, sampled shader with 12 registers: 4 point samples: 215 in 99552 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; drew right
+pixel rate: centres, split 16 vertex, 112 pixel, sampled shader with 12 registers: 4 bilinear samples: 215 in 99551 us: 1990 Mpixels/s, 3.98 a clock, 7960 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: centres, split 16 vertex, 112 pixel, sampled shader with 12 registers: 8-pixel triangles: 553 in 99077 us: 1285 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: centres, split 16 vertex, 112 pixel, sampled shader with 12 registers: 8-pixel triangles, indexed: 856 in 98901 us: 1994 Mpixels/s, 3.98 a clock, 249 Mtriangles/s; drew right
+pixel rate: centres, split 16 vertex, 112 pixel, sampled shader with 12 registers: resolves: 334 in 98772 us: 3116 Mpixels/s, 6.23 a clock; drew right
+pixel rate: centres, split 96 vertex, 32 pixel: opaque fill: 370 in 99562 us: 3424 Mpixels/s, 6.84 a clock; drew right
+pixel rate: centres, split 96 vertex, 32 pixel: blended fill: 371 in 99831 us: 3424 Mpixels/s, 6.84 a clock; drew right
+pixel rate: centres, split 96 vertex, 32 pixel: depth fill, colour masked: 371 in 99828 us: 3425 Mpixels/s, 6.85 a clock; drew right
+pixel rate: centres, split 96 vertex, 32 pixel: depth fill, kDepthOnly: 724 in 99466 us: 6708 Mpixels/s, 13.41 a clock; drew right
+pixel rate: centres, split 96 vertex, 32 pixel: 4 point samples: 194 in 99490 us: 1797 Mpixels/s, 3.59 a clock, 7188 Mtexels/s; drew right
+pixel rate: centres, split 96 vertex, 32 pixel: 4 bilinear samples: 194 in 99467 us: 1797 Mpixels/s, 3.59 a clock, 7188 Mtexels/s; WRONG: FF040480 at (0, 0)
+pixel rate: centres, split 96 vertex, 32 pixel: 8-pixel triangles: 554 in 99257 us: 1285 Mpixels/s, 2.57 a clock, 160 Mtriangles/s; drew right
+pixel rate: centres, split 96 vertex, 32 pixel: 8-pixel triangles, indexed: 856 in 98901 us: 1994 Mpixels/s, 3.98 a clock, 249 Mtriangles/s; drew right
+pixel rate: centres, split 96 vertex, 32 pixel: resolves: 334 in 98780 us: 3116 Mpixels/s, 6.23 a clock; drew right
+pixel rate: done
+pixel rate: GPU close 0x00000000
+exit: status 0

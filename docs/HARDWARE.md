@@ -2291,3 +2291,71 @@ they run when their buffer does (src/gpu_draw.c). Logs: `results/2026-10-13-mile
 With that, milestone 34 is done: a fence wait returns within microseconds of a short job's fence, a draw after a
 resolve stops at an assert, and every title built with them passes on the console. Why the console missed vblanks that
 evening, with xsdk_test from before the milestones too, isn't known.
+
+## The pixel rate, milestone 31 (2026-10-13)
+
+Every pixel shader xsdk drew asked the scan converter for centroids and centres, `SQ_CONTEXT_MISC`'s sc_sample_cntl 2
+(xenia:src/xenia/gpu/registers.h:157; xenos.h:804-808): xost writes it into every pixel shader it builds
+(xost:xasm/program.py:604), xsdk's own generators do too, and `xsdk_gpu_set_shaders` passed it on. On the console that
+holds the pixels to a quad a clock. xsdk now asks for centres only, whatever the shaders say (xsdk `4b137de`,
+src/gpu_draw.c). No pixel changes: xsdk interpolates every interpolant at its centre (`SQ_INTERPOLATOR_CNTL`
+0xFFFFFFFF, libxenon:drivers/xenos/xe.c:1400), the pattern that centroids and centres samples by
+(xenia:src/xenia/gpu/xenos.h:810-831). Logs: `results/2026-10-13-milestone-31/`.
+
+`tests/probe_pixel_rate.c` times, into a 1280x720 target: full-screen quads, opaque, blended, and depth-only with the
+colour masked and with `RB_MODECONTROL`'s kDepthOnly (xenos.h:886-911); 4 point or 4 bilinear samples a pixel from a
+256x256 tiled texture, a texel a pixel; 28,800 triangles of 8 pixels, listed and by index; and 1280x720 resolves.
+Each batch takes about 100 ms by the time base and ends with a fence it looks at every 20 us ("Looking at a fence costs
+the GPU"), and after each, a resolve checks its pixels. The fill's pixel shader writes c0 in one instruction and reads
+no register; the sampled one takes its 4 samples into r1 to r4 and sums them, 5 registers (tools/gen_fill_shaders.py);
+the vertex shader is tools/gen_texture_shaders.py's. A clock is the published 500 MHz. Each variant changes one piece
+of xsdk's state, from Xenia, libxenon or the console's own values.
+- **Centroids and centres hold the pixels to a quad a clock.** Built before the fix (`probe_pixel_rate_before.log`, an
+  earlier version of the probe, on xsdk before milestones 32 to 34), opaque, blended and colour-masked depth fills all
+  ran 1990 Mpixels/s, 3.98 a clock, and 8-pixel triangles by index 166 million a second, 3 quads a triangle. With
+  sc_sample_cntl 1, centres only, the fills ran 3442 Mpixels/s, 6.88 a clock, and the triangles 249 million; with 0,
+  centroids only, 3424, 6.85. `PA_SU_SC_MODE_CNTL`'s sc_one_quad_per_clock (registers.h:483) brought every fill to
+  the same 3.98, kDepthOnly's too, under any sample control.
+- **With centres only in xsdk** (`probe_pixel_rate.log`) the fills run 3442 Mpixels/s, 6.88 a clock, and the indexed
+  triangles 249 million a second; every check drew right.
+- **Broken on purpose,** built with `xsdk_gpu_set_shaders` passing the shaders' sample control on as before, xsdk's
+  state fell back to 1990 Mpixels/s, 3.98 a clock, and 166 million triangles (`probe_pixel_rate_fix_reverted.log`).
+- **Nothing else tried moved the fills past 6.91 a clock** on top of centres only, nor, of those the earlier version
+  tried, from 3.98 under the old state (`probe_pixel_rate_before.log`):
+  - `SQ_CONTEXT_MISC`'s inst_pred_optimize and yield_optimize (registers.h:155, 236);
+  - `SQ_INTERPOLATOR_CNTL`'s param_shade 0 (registers.h:247), which also put the texture coordinates wrong, those
+    checks failing, so xsdk's 0xFFFF there is right;
+  - `PA_SU_SC_MODE_CNTL`'s quad_order_enable and persp_corr_dis (registers.h:479-482);
+  - `RB_SURFACE_INFO` without its HiZ pitch (registers.h:676), and colour before depth in eDRAM;
+  - `PA_SC_VIZ_QUERY`, `PA_SC_MPASS_PS_CNTL`, `VGT_ENHANCE`, `SQ_DEBUG_MISC_0` and `_1` and `RB_SAMPLE_COUNT_CTL`
+    written 0, which xsdk never writes (xenia:src/xenia/gpu/register_table.inc:567-607);
+  - `PA_CL_ENHANCE` 7, as the kernel leaves it, for libxenon's 3, and `SQ_FLOW_CONTROL` 0x04007000 for 0x04000000
+    ("libxenon's set-up makes the resolves work"); read at title start in these runs, `SQ_FLOW_CONTROL` held 0x04001000,
+    0x04004000 or 0x04005000, so its bits 12-15 change by themselves;
+  - the register split at 16 vertex and 112 pixel registers, and at 96 and 32, stepped as libxenon steps it;
+  - the fill reading its interpolant, taking its colour through a second instruction, or with its alloc unserialized
+    (xenia:src/xenia/gpu/ucode.h:488);
+  - each quad drawn as one rectangle with clipping off, as the resolve draws (xenos.h:53; libxenon xe.c:1140).
+
+  So fills through a pixel shader reach 6.88 of the 8 a clock, and what holds the rest isn't found.
+- **kDepthOnly ran 6711 to 6897 Mpixels/s, 13.42 to 13.79 a clock,** under every state but sc_one_quad_per_clock, its
+  depth written (a quad behind it then drew nowhere): past the 8, so the pixel shader doesn't hold it, as Xenia supposes
+  it isn't run there (xenos.h:888-910). xsdk doesn't use the mode.
+- **4 samples a pixel ran 1990 Mpixels/s, 7960 Mtexels/s, 15.9 a clock,** point and bilinear, before the fix and after:
+  the texture units' 16, with the shader's 5 registers. Declared with 12 it ran 6344 Mtexels/s, 12.7 a clock, and with
+  12 and the split at 112 pixel registers 7960 again; with 5 and 32 pixel registers, 7224. So what held a sampled fill
+  was threads in flight, as xost's register packing found (xost `cbf5c3e`), not the sample control.
+- **Listed 8-pixel triangles ran 162 million a second** under every state, 3 vertices each, about a vertex a clock.
+- **A 1280x720 resolve took 270 to 279 us, 3298 to 3416 Mpixels/s,** under every state; the earlier version of the
+  probe, which looked at its fences without a break, timed them 4 to 7% longer.
+- **xsdk_test passed 275 of 277** (`xsdk_test.log`), the two failures the controller's, none connected:
+  `XamInputGetState` returned 0x48F. Milestone 32's edges counted as before, 2368, 956 and 1552 at 2 samples and 2132,
+  464, 500, 452 and 1328 at 4. No vblank was missed.
+- **vulkan4xenon_test** passed 80 of 80 and **vkbench** 14 of 14 (`vulkan4xenon_test.log`, `vkbench.log`). Against
+  milestone 34's run the CPU's times moved within 6%, and the GPU's fell where pixels fill the frame: `fill_16` from
+  7708 to 4578 us and `fill_4` from 2153 to 1366 in both backends, `stream_8000` from 6829 to 4119 and `stream_1000`
+  from 1112 to 774, `draws_250` and `states_250` to 0.70 to 0.79 of their times; the rest moved within 5%.
+
+Dusklight's logo shot isn't run here. With that, milestone 31 is done but for it: fills through a pixel shader run
+6.88 pixels a clock where they ran 3.98, small indexed triangles 249 million a second where they ran 166, and every
+title built with it passes on the console; what holds the fills below 8 isn't found.
