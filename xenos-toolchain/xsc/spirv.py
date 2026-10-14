@@ -117,6 +117,8 @@ class Module:
     member_decorations: dict = field(default_factory=dict)
     entry_points: list = field(default_factory=list)  # (model,id,name,iface)
     by_result: dict = field(default_factory=dict)     # id -> Instr
+    # The module's words, little-endian, for xost's compiler in C (xsc/native.py).
+    blob: bytes = b""
 
     def _index(self):
         for ins in self.instrs:
@@ -159,6 +161,7 @@ class Module:
                 raise ValueError(f"bad SPIR-V magic {magic:#010x}")
         words = struct.unpack(f"<{len(data)//4}I", data)
         m = Module(version, generator, bound)
+        m.blob = data
         i = 5
         while i < len(words):
             head = words[i]

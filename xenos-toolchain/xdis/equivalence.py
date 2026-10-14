@@ -1,12 +1,8 @@
 #!/usr/bin/env python3
 """Runs a straight-line Xenos program on the CPU, as Xenia's shader interpreter does
-(xenia:src/xenia/gpu/shader_interpreter.cc:287-957), to compare two compilations of one shader: what xasm/optimize.py
-gives against what it was given (tools/check_optimize.py, tests/test_optimize.py). xdis/simulate.py runs a program for
-its numbers; this one tracks which values are undefined, and runs xasm's instructions before they're encoded too.
-
-It runs either the program's microcode (run) or the instructions xasm built before they were encoded (run_fields),
-whose registers aren't allocated yet: comparing those shows what a pass over the instructions changed, with every
-temp that's read before anything writes it known to be undefined.
+(xenia:src/xenia/gpu/shader_interpreter.cc:287-957), to compare two compilations of one shader: what the compiler's
+optimiser (xsdk:src/xsc_optimize.c) gives against what it was given (tools/check_optimize.py, tests/test_optimize.py).
+xdis/simulate.py runs a program for its numbers; this one tracks which values are undefined.
 
 A register component nothing has written is None (undefined), and anything computed from one is too, so a comparison
 can skip what the original program never defined. Fetches return values that depend only on what they read, so two
@@ -198,81 +194,6 @@ class _Microcode:
         return reg & 0x3F, bool(reg & 0x80)
 
 
-class _Fields:
-    """An ALU instruction's fields, as xasm built them (whole registers, ABS_SOURCE marking an absolute value)."""
-
-    def __init__(self, f, abs_flag):
-        self.f, self.abs_flag = f, abs_flag
-
-    def vector_opcode(self):
-        return V(self.f.get("vector_opcode", V.kMax))
-
-    def scalar_opcode(self):
-        return S(self.f.get("scalar_opcode", S.kRetainPrev))
-
-    def is_export(self):
-        return bool(self.f.get("is_export"))
-
-    def is_predicated(self):
-        return bool(self.f.get("is_predicated"))
-
-    def vector_dest(self):
-        return self.f.get("vector_dest", 0)
-
-    def scalar_dest(self):
-        return self.f.get("scalar_dest", 0)
-
-    def vector_clamp(self):
-        return bool(self.f.get("vector_clamp"))
-
-    def scalar_clamp(self):
-        return bool(self.f.get("scalar_clamp"))
-
-    def is_vector_dest_relative(self):
-        return bool(self.f.get("is_vector_dest_relative"))
-
-    def is_scalar_dest_relative(self):
-        return bool(self.f.get("is_scalar_dest_relative"))
-
-    def GetVectorOpResultWriteMask(self):
-        mask = self.f.get("vector_write_mask", 0)
-        return mask & ~self.f.get("scalar_write_mask", 0) if self.is_export() else mask
-
-    def GetScalarOpResultWriteMask(self):
-        mask = self.f.get("scalar_write_mask", 0)
-        return mask & ~self.f.get("vector_write_mask", 0) if self.is_export() else mask
-
-    def GetConstant0WriteMask(self):
-        if not self.is_export() or not self.is_scalar_dest_relative():
-            return 0
-        return 0xF & ~(self.f.get("vector_write_mask", 0) | self.f.get("scalar_write_mask", 0))
-
-    def GetConstant1WriteMask(self):
-        if not self.is_export():
-            return 0
-        return self.f.get("vector_write_mask", 0) & self.f.get("scalar_write_mask", 0)
-
-    def src_reg(self, n):
-        return self.f.get(f"src{n}_reg", 0)
-
-    def src_is_temp(self, n):
-        return bool(self.f.get(f"src{n}_is_temp", True))
-
-    def src_swizzle(self, n):
-        return self.f.get(f"src{n}_swizzle", 0)
-
-    def src_negate(self, n):
-        return bool(self.f.get(f"src{n}_negate"))
-
-    def src_const_is_addressed(self, n):
-        return bool(self.f.get(f"src{n}_const_rel") or self.f.get("is_const_0_addressed") or
-                    self.f.get("is_const_1_addressed"))
-
-    def temp(self, n):
-        reg = self.src_reg(n)
-        return reg & (self.abs_flag - 1), bool(reg & self.abs_flag)
-
-
 # ---- the executor ----
 
 class _State:
@@ -392,48 +313,3 @@ def run(blob: bytes, registers: dict, constants: dict) -> dict:
         elif rec.kind == "alu":
             _execute_alu(_Microcode(xu.AluInstruction(*rec.raw)), state)
     return state.exports
-
-
-def run_fields(instructions, registers: dict, constants: dict, abs_flag: int) -> dict:
-    """Runs xasm instructions as built, before encoding: [(kind, fields)] in program order, registers whole."""
-    state = _State(registers, constants)
-    for kind, f in instructions:
-        if kind == "alu":
-            _execute_alu(_Fields(f, abs_flag), state)
-        elif kind == "tfetch":
-            if f.get("is_predicated") or f.get("is_dest_relative") or f.get("is_src_relative"):
-                raise Unsupported("a predicated or relative fetch")
-            _texture_fetch(state, f["dest"], f.get("dest_swizzle", 0), f.get("src", 0), f.get("src_swizzle", 0),
-                           f.get("fetch_constant_index", 0))
-        elif kind == "vfetch":
-            if f.get("is_predicated") or f.get("is_dest_relative"):
-                raise Unsupported("a predicated or relative fetch")
-            constant = f.get("const_index", 0) * 3 + f.get("const_index_sel", 0)
-            _store_fetch(state.reg(f["dest"]), f.get("dest_swizzle", 0),
-                         _vertex_element(constant, f.get("offset", 0), int(f.get("data_format", 0))))
-        else:
-            raise Unsupported(f"instruction {kind}")
-    return state.exports
-
-
-def inputs(instructions) -> set:
-    """The registers xasm instructions read whole before anything writes them: a pixel shader's interpolators and
-    pixel parameters, a vertex shader's index."""
-    written, read_first = set(), set()
-    for kind, f in instructions:
-        if kind == "alu":
-            for n in (1, 2, 3):
-                if f.get(f"src{n}_is_temp", True):
-                    r = f.get(f"src{n}_reg", 0) & 0xFFFF
-                    if r not in written:
-                        read_first.add(r)
-            if not f.get("is_export"):
-                if f.get("vector_write_mask", 0):
-                    written.add(f.get("vector_dest", 0))
-                if f.get("scalar_write_mask", 0):
-                    written.add(f.get("scalar_dest", 0))
-        else:
-            if f.get("src", 0) not in written:
-                read_first.add(f.get("src", 0))
-            written.add(f["dest"])
-    return read_first

@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-"""xasm/optimize.py's rewrites, case by case, on hand-built pixel programs.
+"""The compiler's optimiser (xsdk:src/xsc_optimize.c), case by case, on hand-built pixel programs the C builds as it
+builds the compiler's (tests/xsc_internals.py).
 
 Each case builds a program twice, without and with the pass, and checks:
-  - the instructions the pass gave compute the same exports as those it was given, run on random inputs and constants
-    by xdis/equivalence.py, and so does the allocated microcode;
+  - the two microcodes compute the same exports, run on random inputs and constants by xdis/equivalence.py, on the
+    components the first defines;
   - the pass left the number of ALU instructions the case expects: what it may remove it does, and what it mustn't
     touch (a move other values share a register with, a source changed in between, a third constant) it keeps.
-A last case hands the comparison a wrong rewrite, to show it would see one.
+A last case hands the comparison a wrong rewrite, to show it would see one. Runs in WSL, where make builds
+build/host/libxsc.so.
 
 tools/check_optimize.py runs the same comparison over a folder of real shaders.
 """
@@ -18,13 +20,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+sys.path.insert(0, str(ROOT / "tests"))
+
 import xasm.program as program  # noqa: E402
 import xdis.container as container  # noqa: E402
 import xdis.container_emit as ce  # noqa: E402
 import xdis.equivalence as equivalence  # noqa: E402
 import xdis.xenos_ucode as xu  # noqa: E402
-from xasm.program import ABS_SOURCE, PixelProgram, XSDK_REGISTERS  # noqa: E402
+from xasm.program import XSDK_REGISTERS  # noqa: E402
 from xsc.lower import _templates  # noqa: E402
+from xsc_internals import ABS_SOURCE, pixel_program  # noqa: E402
 
 V = xu.AluVectorOpcode
 S = xu.AluScalarOpcode
@@ -67,25 +72,7 @@ def export(src):
 
 
 def build(body, exports, optimize):
-    """The container, and the instructions as the pass left them [(kind, fields)]."""
-    p = PixelProgram(XSDK_REGISTERS)
-    p.whole_sources = True
-    p.optimize = optimize
-    for i in range(INPUTS):
-        p.input(i, ce.USAGE_TEXCOORD, i)
-    for f in body:
-        p.alu(**f)
-    p.alloc_colors()
-    for f in exports:
-        p.alu(**f)
-    seen = []
-    original = p._optimize
-
-    def capture():
-        original()
-        seen.extend((ins.kind, dict(ins.fields)) for stage in p._stages for ins in stage)
-    p._optimize = capture
-    return p.finish([]), seen
+    return pixel_program(INPUTS, ce.USAGE_TEXCOORD, body, exports, XSDK_REGISTERS.pixel, optimize)
 
 
 def alu_count(blob):
@@ -99,31 +86,25 @@ def differ(a, b):
     return a != b and not (math.isnan(a) and math.isnan(b))
 
 
-def compare(before, after, plain, optimized, trials=8):
-    """What differs between the two, if anything: the instructions, then the microcode on what they define."""
+def compare(plain, optimized, trials=8):
+    """What differs between the two microcodes' exports, if anything, on the components the first defines."""
     rng = random.Random(7)
     for trial in range(trials):
         registers = {i: [rng.uniform(-3.0, 3.0) for _ in range(4)] for i in range(INPUTS)}
         constants = {i: [rng.uniform(-3.0, 3.0) for _ in range(4)] for i in range(16)}
-        want = equivalence.run_fields(before, registers, constants, ABS_SOURCE)
-        got = equivalence.run_fields(after, registers, constants, ABS_SOURCE)
+        want = equivalence.run(plain, registers, constants)
+        got = equivalence.run(optimized, registers, constants)
         for reg in want:
             for i in range(4):
                 if want[reg][i] is not None and differ(want[reg][i], got.get(reg, [None] * 4)[i]):
-                    return f"trial {trial}: instructions' export {reg}.{'xyzw'[i]} {want[reg][i]} -> {got[reg][i]}"
-        hw_want = equivalence.run(plain, registers, constants)
-        hw_got = equivalence.run(optimized, registers, constants)
-        for reg in want:
-            for i in range(4):
-                if want[reg][i] is not None and differ(hw_want[reg][i], hw_got[reg][i]):
-                    return f"trial {trial}: microcode's export {reg}.{'xyzw'[i]} {hw_want[reg][i]} -> {hw_got[reg][i]}"
+                    return f"trial {trial}: export {reg}.{'xyzw'[i]} {want[reg][i]} -> {got[reg][i]}"
     return None
 
 
 def case(name, body, exports, expect_alu):
-    plain, before = build(body, exports, False)
-    optimized, after = build(body, exports, True)
-    problem = compare(before, after, plain, optimized)
+    plain = build(body, exports, False)
+    optimized = build(body, exports, True)
+    problem = compare(plain, optimized)
     count = alu_count(optimized)
     ok = problem is None and count == expect_alu
     detail = problem or f"{alu_count(plain)} -> {count} ALU instructions, {expect_alu} expected"
@@ -181,13 +162,9 @@ CASES = [
 
 def wrong_rewrite_is_seen():
     """A rewrite that reads the wrong component must show as a difference."""
-    body = [move(2, r(0, "yxwz")), alu(V.kAdd, 3, 0xF, r(2), c(0))]
-    plain, before = build(body, [export(r(3))], False)
-    wrong, _ = build([alu(V.kAdd, 3, 0xF, r(0), c(0))], [export(r(3))], False)
-    after = [(kind, dict(f)) for kind, f in before]
-    after[1][1]["src1_reg"], after[1][1]["src1_swizzle"] = 0, program.swizzle4("xyzw")
-    after.pop(0)
-    problem = compare(before, after, plain, wrong)
+    plain = build([move(2, r(0, "yxwz")), alu(V.kAdd, 3, 0xF, r(2), c(0))], [export(r(3))], False)
+    wrong = build([alu(V.kAdd, 3, 0xF, r(0), c(0))], [export(r(3))], False)
+    problem = compare(plain, wrong)
     print(f"  {'PASS' if problem else 'FAIL'} a wrong rewrite shows: {problem or 'nothing seen'}")
     return problem is not None
 

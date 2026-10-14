@@ -5,7 +5,7 @@ each. The layouts are written in xost's assembly (xenos-toolchain/xasm/textasm.p
 and assembled by it; one more is xost's own build of the same GLSL, compiled by glslang and lowered by xsc as
 vulkan4xenon's shaders are. Prints the containers as C initializers, then their disassembly. With --before, xost's
 build is laid out as xost did before milestone 36, its fetches each after its coordinate's work, to break the probe's
-check on purpose.
+check on purpose. Runs in WSL, where xost's compiler is built, with xost's Windows glslang.
 """
 
 import struct
@@ -19,7 +19,7 @@ from gen_fill_shaders import print_array
 
 XOST = tri.ROOT / "xenos-toolchain"
 
-from xasm.program import XSDK_REGISTERS, PixelProgram  # noqa: E402
+from xasm.program import XSDK_REGISTERS  # noqa: E402
 from xasm.textasm import assemble_container  # noqa: E402
 from xsc import spirv  # noqa: E402
 from xsc.lower import lower_ex  # noqa: E402
@@ -40,17 +40,24 @@ void main()
 """
 
 
+def host_path(path) -> str:
+    """A path the Windows glslang can open from WSL."""
+    if not sys.platform.startswith("linux"):
+        return str(path)
+    return subprocess.run(["wslpath", "-w", str(path)], capture_output=True, text=True, check=True).stdout.strip()
+
+
 def xost_build(before):
     """xost's container for GLSL, with its optimiser on, as vulkan4xenon's shaders are built; laid out as before
     milestone 36 if before."""
-    if before:
-        PixelProgram._group_fetches = lambda self: None
     with tempfile.TemporaryDirectory() as directory:
         source = Path(directory) / "texel.frag"
         source.write_text(GLSL, newline="\n")
         output = Path(directory) / "texel.spv"
-        subprocess.run([str(GLSLANG), "-V", str(source), "-o", str(output)], check=True, capture_output=True)
-        blob, literals = lower_ex(spirv.Module.parse(output.read_bytes()), XSDK_REGISTERS, True)
+        subprocess.run([str(GLSLANG), "-V", host_path(source), "-o", host_path(output)], check=True,
+                       capture_output=True)
+        blob, literals = lower_ex(spirv.Module.parse(output.read_bytes()), XSDK_REGISTERS, True,
+                                  group_fetches=not before)
     if literals:
         sys.exit(f"xost wants literal constants the probe doesn't set: {literals}")
     return blob

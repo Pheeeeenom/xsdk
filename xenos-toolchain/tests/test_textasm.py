@@ -26,6 +26,7 @@ from xasm.textasm import AsmError, assemble_text  # noqa: E402
 from xsc import templates  # noqa: E402
 from xsc.lower import LowerError, lower_ex  # noqa: E402
 from test_xcomb_parity import BANK  # noqa: E402
+from test_xsc_lower import host_path  # noqa: E402
 
 TESTDATA = ROOT / "xsc" / "testdata"
 
@@ -140,8 +141,7 @@ def source_mode_smoke():
     hdr = (ROOT / "reference" / "XenosRecomp" / "XenosRecomp" /
            "shader_common.h")
     if rc.exists():
-        r = subprocess.run([str(rc), str(outbin),
-                            str(outbin.with_suffix(".hlsl")), str(hdr)],
+        r = subprocess.run([str(rc), host_path(outbin), host_path(outbin.with_suffix(".hlsl")), host_path(hdr)],
                            capture_output=True)
         return r.returncode == 0
     return True

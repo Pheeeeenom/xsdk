@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Register allocation past r63, and dependent texture reads, as vulkan4xenon's milestone 11 needs for Aurora's
-lighting, fog and indirect texturing (xasm/program.py, xsc/lower.py).
+lighting, fog and indirect texturing (xsdk:src/xsc_program.c, xasm/program.py for hand-built shaders).
 
 - vk_many_live.vert holds forty values live at once among more than sixty-four: it encodes only when the allocator
   recycles dead temporaries, which a vertex shader's now does past r63. Run on xdis.simulate, it gives the sums a
-  reference gives, and the oracle accepts it. Without the allocator it's refused; with an allocation corrupted, the
-  simulation's numbers are wrong, so the check would see a wrong allocation.
+  reference gives, and the oracle accepts it. With an allocation corrupted, the simulation's numbers are wrong, so the
+  check would see a wrong allocation.
 - vk_dependent_read.frag samples an image where an offsets texture says: the offsets are fetched first, and the
   simulation samples the image at the offset coordinates.
 - A pixel shader whose hardware loop reads a value from before the loop: the allocator keeps that value's register
@@ -19,13 +19,12 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tests"))
 
-import xasm.program as program  # noqa: E402
 import xdis.container as container  # noqa: E402
 import xdis.container_emit as ce  # noqa: E402
 import xdis.simulate as simulate  # noqa: E402
 import xdis.xenos_ucode as xu  # noqa: E402
 import xsc.spirv as spirv  # noqa: E402
-from xasm.program import PixelProgram, RegisterBudgetError, XSDK_REGISTERS  # noqa: E402
+from xasm.program import PixelProgram, XSDK_REGISTERS  # noqa: E402
 from xsc.lower import _templates, lower_ex  # noqa: E402
 from test_xsc_lower import TD, oracle_hlsl  # noqa: E402
 
@@ -68,6 +67,21 @@ def many_live_sums(blob, manifest):
     return result.exports.get(0), result.exports.get(int(xu.ExportRegister.kVSPosition))
 
 
+def corrupted(blob):
+    """The container with its last add of two different temps reading its first source twice."""
+    c = container.Container(blob)
+    words = list(c.ucode_dwords)
+    for rec in reversed(records(blob)):
+        ins = xu.AluInstruction(*rec.raw) if rec.kind == "alu" else None
+        if ins and ins.vector_opcode() == V.kAdd and ins.src_is_temp(1) and ins.src_is_temp(2) and \
+                ins.src_reg(1) != ins.src_reg(2):
+            at = next(i for i in range(0, len(words), 3) if tuple(words[i:i + 3]) == tuple(rec.raw))
+            words[at + 2] = (words[at + 2] & ~0xFF00) | ins.src_reg(1) << 8
+            start = c.offset + c.sh_off
+            return blob[:start] + struct.pack(f">{len(words)}I", *words) + blob[start + c.sh_size:]
+    return blob
+
+
 def check_many_live():
     failures = []
     blob, manifest = lowered("vk_many_live.vert.spv")
@@ -81,42 +95,13 @@ def check_many_live():
     if oracle_hlsl(blob, "many_live") is None:
         failures.append("vk_many_live.vert: XenosRecomp rejected it")
 
-    # Without the allocator, a vertex shader past r63 is refused.
-    original = program._Program._allocate_registers
-    program._Program._allocate_registers = lambda self: None
-    try:
-        lowered("vk_many_live.vert.spv")
-        failures.append("vk_many_live.vert: lowered without the allocator, past r63")
-    except RegisterBudgetError as error:
-        print(f"  PASS without the allocator it's refused: {error}")
-    finally:
-        program._Program._allocate_registers = original
-
     # An allocation that gives one source the wrong register is seen by the numbers: the last add of two temps reads
     # its first operand twice.
-
-    def corrupted(self):
-        original(self)
-        instrs = [ins for stage in self._stages for ins in stage if ins.kind == "alu"]
-        for ins in reversed(instrs):
-            f = dict(ins.fields)
-            if f.get("vector_opcode") == V.kAdd and f.get("src1_is_temp") and f.get("src2_is_temp") and \
-                    f["src1_reg"] != f["src2_reg"]:
-                f["src2_reg"] = f["src1_reg"]
-                ins.fields = f
-                ins.triple = tuple(program.enc.build_alu(**f))
-                break
-
-    program._Program._allocate_registers = corrupted
-    try:
-        blob, manifest = lowered("vk_many_live.vert.spv")
-        got, _ = many_live_sums(blob, manifest)
-        if got is not None and close(got, want):
-            failures.append("vk_many_live.vert: a corrupted allocation gave the reference's sums")
-        else:
-            print("  PASS a corrupted allocation gives other sums")
-    finally:
-        program._Program._allocate_registers = original
+    got, _ = many_live_sums(corrupted(blob), manifest)
+    if got is not None and close(got, want):
+        failures.append("vk_many_live.vert: a corrupted allocation gave the reference's sums")
+    else:
+        print("  PASS a corrupted allocation gives other sums")
     return failures
 
 

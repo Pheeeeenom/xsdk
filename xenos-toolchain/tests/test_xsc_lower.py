@@ -43,12 +43,20 @@ def compile_glsl(name):
     return lower(spirv.Module.parse((TD / f"{name}.spv").read_bytes()))
 
 
+def host_path(path) -> str:
+    """A path the oracle, a Windows program, can open: in WSL, where the tests that compile shaders run, its Windows
+    form."""
+    if not sys.platform.startswith("linux"):
+        return str(path)
+    return subprocess.run(["wslpath", "-w", str(path)], capture_output=True, text=True, check=True).stdout.strip()
+
+
 def oracle_hlsl(blob, tag):
     binp = TD / f"_{tag}.bin"
     hlsl = TD / f"_{tag}.hlsl"
     binp.write_bytes(blob)
-    r = subprocess.run([str(RECOMP), str(binp), str(hlsl),
-                        str(SHADER_COMMON)], capture_output=True)
+    r = subprocess.run([str(RECOMP), host_path(binp), host_path(hlsl),
+                        host_path(SHADER_COMMON)], capture_output=True)
     if r.returncode != 0:
         return None
     return hlsl.read_text()
@@ -410,10 +418,10 @@ def main():
         else:
             print(f"  PASS {name}.frag: {desc} ({len(blob)} B)")
 
-    # loops: constant-trip for/while unrolled to branch-free SSA (xsc.unroll),
+    # loops: constant-trip for/while unrolled to branch-free SSA (xsdk:src/xsc_unroll.c),
     # then lowered + oracle-validated. Assert the loop was eliminated and the
-    # body replicated the right number of times (the induction var is folded).
-    from xsc.unroll import unroll as _unroll
+    # body replicated the right number of times (the induction var is folded):
+    # an add a pass, but the first, to the zero the sum starts at, is a move.
     for name, want_adds, desc in [
         ("loop_accum", 4, "for i<4: s+=uv.x -> 4x unrolled accumulate"),
         ("loop_weight", 4, "for i<4: s+=uv.x*float(i) -> induction folded"),
@@ -421,11 +429,12 @@ def main():
         ("loop_nested", 9, "nested for 3x3 -> 9x (innermost-first)"),
         ("loop_stair", 5, "5x step() staircase + post-loop *0.2 (mem2reg RMW)"),
     ]:
-        mu = spirv.Module.parse((TD / f"{name}.frag.spv").read_bytes())
-        _unroll(mu)
-        n_loop = sum(1 for i in mu.instrs if i.opcode == 246)  # OpLoopMerge
-        n_add = sum(1 for i in mu.instrs if i.opcode == 129)   # OpFAdd
         blob = compile_glsl(f"{name}.frag")
+        c = container.Container(blob)
+        recs = xu._decode_program(c.ucode_dwords, c.shader_type)[0]
+        n_loop = sum(1 for r in recs if r.kind == "cf" and r.text.startswith("loop"))
+        n_add = 1 + sum(1 for r in recs if r.kind == "alu" and
+                        xu.AluInstruction(*r.raw).vector_opcode() == xu.AluVectorOpcode.kAdd)
         h = oracle_hlsl(blob, f"{name}_frag")
         if h is None or n_loop != 0 or n_add != want_adds:
             ok = False

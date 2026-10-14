@@ -2,14 +2,17 @@
 
 Pipeline: **GLSL → glslang → SPIR-V → xsc → Xenos container**. glslang
 (Khronos reference compiler) does parsing/semantics/optimization; xsc lowers
-the SPIR-V to microcode through the hardware-proven Program builder. The
+the SPIR-V to microcode through the hardware-proven Program builder. xsc is C,
+xsdk's `src/xsc_*.c`: titles call `xsdk_xsc_compile` (`include/xsdk/xsc.h`), and
+on the PC `xsc/lower.py` calls the same code built as `build/host/libxsc.so`.
+Until 2026-10-14 it was Python; the C port gives the same bytes. The
 Mesa/NIR optimizer is a someday option; the runtime combiner case is already
 served by `xcomb`.
 
 ## Use
 
 ```
-python -m xsc.lower shader.vert.spv -o shader.bin     # SPIR-V -> container
+python3 -m xsc.lower shader.vert.spv -o shader.bin     # SPIR-V -> container, in WSL
 ```
 Library: `lower(module) -> bytes`, `lower_ex(module) -> (bytes, manifest)`.
 Get the SPIR-V with: `glslang -G --target-env opengl shader.frag -o out.spv`,
@@ -171,8 +174,9 @@ split: `LIBXENON_REGISTERS` by default, `XSDK_REGISTERS` for xsdk's titles
 --vertex-registers 64` on `xsc.lower` and `xasm.textasm`). A shader past its
 share raises `RegisterBudgetError`.
 
-`xasm/program.py` runs a **linear-scan register allocator** in `finish()` on
-every program xsc lowers, and on a hand-built one only when it needs >16
+The program builder runs a **linear-scan register allocator** when it finishes
+every program xsc lowers (`xsdk:src/xsc_program.c`), and `xasm/program.py` on a
+hand-built one only when it needs >16
 registers (pixel) or >64 (vertex, the most an instruction names), so those
 compile byte-for-byte as before: it recycles dead temporaries (live range =
 first def → last use), pins the read-only interpolator inputs and pixel
@@ -184,13 +188,13 @@ four samples went from 12 registers to 6, and sampled 1.6-1.8 times as fast on
 the console. A self-check asserts no two
 simultaneously-live temps share a register. xsc numbers a temp for each value,
 so its programs hold whole registers in their instructions' fields, encoded
-once the allocator has packed them (`whole_sources`, `ABS_SOURCE`).
+once the allocator has packed them (`whole_sources`, `XSC_ABS_SOURCE`).
 `tests/test_register_alloc.py` checks a vertex shader of 145 temps on
 `xdis/simulate.py`, which runs a program's ALU, fetches and exports on the CPU.
 
 ## Fetch layout
 
-Before allocation, `xasm/program.py`'s `_group_fetches` lays out each block of
+Before allocation, the builder's `group_stage` (`xsdk:src/xsc_program.c`) lays out each block of
 a pixel shader xsc lowers: the work its fetches' coordinates need as soon as
 it's ready, then every fetch that's ready, again for fetches reading what
 others fetched, then the rest in its own order. A block whose ALU work runs
@@ -210,7 +214,7 @@ simulator's results and those shaders.
 glslang (`-G --target-env opengl`) lowers `for`/`while` to mutable-memory form:
 an `OpLoopMerge` header, loop-carried values held in Function-storage
 `OpVariable`s mutated by `OpStore`, and an integer induction variable. xsc's
-`unroll.py` runs as a pre-pass **whenever a module contains a loop** and rewrites
+unroller (`xsdk:src/xsc_unroll.c`) runs as a pre-pass **whenever a module contains a loop** and rewrites
 the whole function body into flat, branch-free SSA by symbolically executing the
 structured CFG:
 
@@ -248,7 +252,7 @@ constant condition** inside a loop body unrolls (the arm is picked per pass).
 
 ## Not yet / out of scope
 - **Data-dependent if/else inside a loop body** — a conditional *store* in the
-  body can't be modelled by the unroller's mem2reg env; raises `UnrollError`
+  body can't be modelled by the unroller's mem2reg env; it's refused (`LowerError`)
   (the constant-condition case above is handled). Constant-trip loops with a
   data-dependent body conditional are the remaining loop edge.
 - **Bitwise (`& | ^ ~`) and dynamic shifts** — the Xenos ALU has no bit

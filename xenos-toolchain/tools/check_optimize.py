@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""check_optimize.py <shader or folder>...: compiles each GLSL shader with and without xasm/optimize.py, at xsdk's
-register split, and checks the two give the same exports, run on random inputs and constants by xdis/equivalence.py:
-first the instructions just before and after the pass, whose undefined reads show, then the two programs' microcode,
-on the export components the first run found defined. Prints each shader's ALU instructions and registers before and
-after, and the totals; exits 1 if any differ.
+"""check_optimize.py <shader or folder>...: compiles each GLSL shader with and without the compiler's optimiser
+(xsdk:src/xsc_optimize.c), at xsdk's register split, and checks the two programs' microcode gives the same exports, run
+on random inputs and constants by xdis/equivalence.py, on the export components the first defines. Prints each
+shader's ALU instructions and registers before and after, and the totals; exits 1 if any differ. Runs in WSL, as the
+compiler does, with xost's Windows glslang.
 
-    python tools/check_optimize.py ../local/m11-xenia-record/shaders --trials 20
+    python3 tools/check_optimize.py ../local/m11-xenia-record/shaders --trials 20
 """
 import argparse
 import math
@@ -18,30 +18,41 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-import xasm.program as program  # noqa: E402
 import xdis.container as container  # noqa: E402
 import xdis.equivalence as simulate  # noqa: E402
 import xdis.xenos_ucode as xu  # noqa: E402
 import xsc.spirv as spirv  # noqa: E402
-from xasm.program import ABS_SOURCE, XSDK_REGISTERS  # noqa: E402
+from xasm.program import XSDK_REGISTERS  # noqa: E402
 from xsc.lower import lower_ex  # noqa: E402
 
 GLSLANG = ROOT / "tools" / "glslang" / "bin" / "glslang.exe"
 
-# Each program's instructions just before and after the pass, [(kind, fields)], from the last finish().
-_captured = []
-_optimize = program._Program._optimize
 
 
-def _capture(self):
-    def snapshot():
-        return [(ins.kind, dict(ins.fields)) for stage in self._stages for ins in stage]
-    before = snapshot()
-    _optimize(self)
-    _captured.append((before, snapshot()))
+def host_path(path) -> str:
+    """A path the Windows glslang can open from WSL."""
+    if not sys.platform.startswith("linux"):
+        return str(path)
+    return subprocess.run(["wslpath", "-w", str(path)], capture_output=True, text=True, check=True).stdout.strip()
 
 
-program._Program._optimize = _capture
+def inputs(blob):
+    """The registers the microcode reads before it writes them: a pixel shader's interpolators and pixel parameters, a
+    vertex shader's index."""
+    c = container.Container(blob)
+    written, read_first = set(), set()
+    for rec in xu._decode_program(c.ucode_dwords, c.shader_type)[0]:
+        if rec.kind == "alu":
+            ins = xu.AluInstruction(*rec.raw)
+            read_first |= {ins.src_reg(n) & 0x3F for n in (1, 2, 3) if ins.src_is_temp(n)} - written
+            if not ins.is_export():
+                written |= {ins.vector_dest()} if ins.vector_write_mask() else set()
+                written |= {ins.scalar_dest()} if ins.scalar_write_mask() else set()
+        elif rec.kind in ("tfetch", "vfetch"):
+            ins = (xu.TextureFetchInstruction if rec.kind == "tfetch" else xu.VertexFetchInstruction)(*rec.raw)
+            read_first |= {ins.src()} - written
+            written.add(ins.dest())
+    return read_first
 
 
 def counts(blob):
@@ -75,30 +86,22 @@ def differs(want, got, defined=None):
 def check(spv_bytes, trials, seed):
     """(before, after, problem): the ALU and register counts each way, and what differed, if anything."""
     plain, manifest = lower_ex(spirv.Module.parse(spv_bytes), XSDK_REGISTERS)
-    _captured.clear()
     optimized, manifest_opt = lower_ex(spirv.Module.parse(spv_bytes), XSDK_REGISTERS, optimize=True)
-    before, after = _captured[-1]
     if manifest != manifest_opt:
         return counts(plain), counts(optimized), "the literal constants differ"
     rng = random.Random(seed)
     for trial in range(trials):
-        registers = {r: [rng.uniform(-2.0, 2.0) for _ in range(4)] for r in simulate.inputs(before)}
+        registers = {r: [rng.uniform(-2.0, 2.0) for _ in range(4)] for r in inputs(plain)}
         constants = {i: [rng.uniform(-2.0, 2.0) for _ in range(4)] for i in range(256)}
         for entry in manifest:
             if len(entry) == 2 and isinstance(entry[0], int):
                 constants[entry[0]] = list(entry[1])
         try:
-            want = simulate.run_fields(before, registers, constants, ABS_SOURCE)
-            got = simulate.run_fields(after, registers, constants, ABS_SOURCE)
-            problem = differs(want, got)
-            if problem:
-                return counts(plain), counts(optimized), f"trial {trial}, instructions: {problem}"
-            problem = differs(simulate.run(plain, registers, constants),
-                              simulate.run(optimized, registers, constants), want)
-            if problem:
-                return counts(plain), counts(optimized), f"trial {trial}, microcode: {problem}"
+            problem = differs(simulate.run(plain, registers, constants), simulate.run(optimized, registers, constants))
         except simulate.Unsupported as e:
             return counts(plain), counts(optimized), f"not simulated: {e}"
+        if problem:
+            return counts(plain), counts(optimized), f"trial {trial}: {problem}"
     return counts(plain), counts(optimized), None
 
 
@@ -117,7 +120,8 @@ def main():
     with tempfile.TemporaryDirectory() as work:
         for source in sources:
             out = Path(work) / (source.name + ".spv")
-            subprocess.run([str(GLSLANG), "-V", str(source), "-o", str(out)], check=True, capture_output=True)
+            subprocess.run([str(GLSLANG), "-V", host_path(source), "-o", host_path(out)], check=True,
+                           capture_output=True)
             before, after, problem = check(out.read_bytes(), args.trials, args.seed)
             kind = source.suffix[1:]
             totals[kind][0] += before[0]

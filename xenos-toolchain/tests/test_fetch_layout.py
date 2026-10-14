@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""xsc lays a pixel shader's fetches out together, after the work their coordinates need (xasm/program.py,
-_group_fetches).
+"""xsc lays a pixel shader's fetches out together, after the work their coordinates need (xsdk:src/xsc_program.c,
+group_stage).
 
 Four fetches each right after its coordinate's add, the coordinates sharing a register, sampled 10 texels a clock on
 the console; the adds first and the four fetches together in an exec of their own, 16, the texture units' rate (the
@@ -22,7 +22,6 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tests"))
 
-import xasm.program as program  # noqa: E402
 import xdis.container as container  # noqa: E402
 import xdis.simulate as simulate  # noqa: E402
 import xdis.xenos_ucode as xu  # noqa: E402
@@ -48,12 +47,7 @@ def lower(name):
 
 
 def lower_without_layout(name):
-    grouped = program.PixelProgram._group_fetches
-    program.PixelProgram._group_fetches = lambda self: None
-    try:
-        return lower(name)
-    finally:
-        program.PixelProgram._group_fetches = grouped
+    return lower_ex(module(name), XSDK_REGISTERS, True, group_fetches=False)[0]
 
 
 def blocks(blob):
