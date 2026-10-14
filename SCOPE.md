@@ -943,7 +943,7 @@ gap that something running on xsdk meets becomes a milestone; the rest wait (aft
     - if it's turned on, xsdk_test, vulkan4xenon_test, vkbench and Dusklight pass on the console with the rebuilt
       titles; if not, the record says why.
 
-36. **The texel rate.** Proposed, not yet agreed: docs/scope/36-texel-rate.md.
+36. **The texel rate.** Agreed on 2026-10-14: docs/scope/36-texel-rate.md.
 
 **Networking**, a scope of its own rather than a numbered milestone: sockets, and TLS 1.2 in the title's own code.
 Agreed and done on 2026-10-14: docs/scope/networking.md.

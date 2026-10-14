@@ -1,6 +1,6 @@
 # Milestone 36: the texel rate
 
-Proposed on 2026-10-14; not yet agreed with the user.
+Agreed with the user on 2026-10-14, after networking.
 
 ## Why
 
