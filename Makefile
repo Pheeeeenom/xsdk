@@ -7,12 +7,14 @@ CXX := $(TOOLCHAIN)g++
 AR := $(TOOLCHAIN)ar
 OBJDUMP := $(TOOLCHAIN)objdump
 PYTHON ?= python3
+HOST_CC ?= gcc
 
 BUILD := build
 
 WARNINGS := -Wall -Wextra -Werror
 CFLAGS := -mcpu=cell -fno-pic -std=gnu17 -O2 -g $(WARNINGS) -Iinclude -MMD -MP
 CXXFLAGS := -mcpu=cell -fno-pic -std=c++23 -O2 -g $(WARNINGS) -Iinclude -MMD -MP
+HOST_CFLAGS := -std=gnu17 -O2 -g $(WARNINGS) -fPIC -Iinclude -MMD -MP
 ASFLAGS := -mcpu=cell -Wa,-mregnames -Iinclude -MMD -MP
 LDFLAGS := -static -nostdlib -T src/xsdk.ld
 LIBS := -Wl,--start-group $(BUILD)/libxsdk.a -lstdc++ -lc -lm -lgcc -Wl,--end-group
@@ -21,6 +23,12 @@ SDK_SOURCES := src/start.c src/log.c src/sbrk.c src/thread.c src/file.c src/path
 	src/pthread.c src/lock.c src/reent.c src/time.c src/sysconf.c src/entropy.c src/exit.c src/gpu.c \
 	src/gpu_setup.c src/gpu_resolve.c src/gpu_draw.c src/gpu_constants.c src/display.c src/shader.c src/microcode.c \
 	src/texture.c src/texture_layout.c src/tiled.c src/present.c src/splash.c src/copy.c src/socket.c src/netdb.c
+# xost's compiler, in the SDK for titles and built for the PC as libxsc.so for the shader tools.
+XSC_SOURCES := src/xsc_memory.c src/xsc_spirv.c src/xsc_resolve.c src/xsc_unroll.c src/xsc_encode.c src/xsc_container.c \
+	src/xsc_program.c src/xsc_optimize.c src/xsc_lower.c src/xsc_lower_block.c src/xsc_lower_matrix.c \
+	src/xsc_lower_glsl.c src/xsc_lower_stage.c src/xsc_lower_vertex.c src/xsc_lower_fragment.c src/xsc_lower_loop.c \
+	src/xsc_compile.c
+SDK_SOURCES += $(XSC_SOURCES)
 IMPORT_NAMES := $(shell $(PYTHON) tools/gen_imports.py --list imports/imports.txt)
 IMPORT_SOURCES := $(IMPORT_NAMES:%=$(BUILD)/imports/%.S)
 SDK_OBJECTS := $(patsubst src/%,$(BUILD)/sdk/%.o,$(basename $(SDK_SOURCES))) $(IMPORT_NAMES:%=$(BUILD)/imports/%.o)
@@ -53,7 +61,7 @@ UNROLL_LOOPS_OBJECTS := $(BUILD)/tests/unroll_loops_o2.o $(BUILD)/tests/unroll_l
 .PHONY: all clean cmake_check
 # Keep the ELFs and objects that pattern rules build on the way to a .xex.
 .SECONDARY:
-all: $(BUILD)/xsdk_test.xex $(BUILD)/audio_check.xex $(BUILD)/pacing_test.xex $(PROBES:%=$(BUILD)/%.xex)
+all: $(BUILD)/xsdk_test.xex $(BUILD)/host/libxsc.so $(BUILD)/audio_check.xex $(BUILD)/pacing_test.xex $(PROBES:%=$(BUILD)/%.xex)
 
 # A title built through cmake/xsdk.cmake, as CMake projects such as Dusklight build; needs CMake and Ninja.
 cmake_check: $(BUILD)/libxsdk.a
@@ -108,6 +116,32 @@ $(BUILD)/sdk/%.o: src/%.c
 
 # memcpy itself, so GCC mustn't turn its loops back into calls to memcpy.
 $(BUILD)/sdk/copy.o: CFLAGS += -fno-builtin -fno-tree-loop-distribute-patterns
+
+# xost folds constants in doubles, as Python does; a fused multiply-add rounds once and would differ.
+$(XSC_SOURCES:src/%.c=$(BUILD)/sdk/%.o): CFLAGS += -ffp-contract=off
+
+# The console probe of xost's compiler, from the shader pack Aurora's tools/build_glsl_pack.py wrote for Dusklight;
+# outside all, as the pack is Dusklight's. probe_xsc_break has the fetch layout off, so it must fail.
+XSC_PACK ?= ../dusklight-xenon/platforms/xenon/glsl_pack.c
+XSC_REFUSED := xenos-toolchain/xsc/testdata/vk_frag_coord_depth.frag.spv \
+	xenos-toolchain/xsc/testdata/vk_local_partial.frag.spv
+
+$(BUILD)/probe/probe_xsc_programs.h: $(XSC_PACK) tools/gen_xsc_probe.py $(BUILD)/host/libxsc.so
+	$(PYTHON) tools/gen_xsc_probe.py $(XSC_PACK) $@ $(XSC_REFUSED)
+
+$(BUILD)/tests/probe_xsc.o: CFLAGS += -I$(BUILD)/probe
+$(BUILD)/tests/probe_xsc.o: $(BUILD)/probe/probe_xsc_programs.h
+
+$(BUILD)/tests/probe_xsc_break.o: tests/probe_xsc.c $(BUILD)/probe/probe_xsc_programs.h
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) -I$(BUILD)/probe -DXSC_PROBE_BREAK -c $< -o $@
+
+$(BUILD)/host/libxsc.so: $(XSC_SOURCES:src/%.c=$(BUILD)/host/%.o)
+	$(HOST_CC) -shared -o $@ $^
+
+$(BUILD)/host/%.o: src/%.c
+	@mkdir -p $(@D)
+	$(HOST_CC) $(HOST_CFLAGS) -ffp-contract=off -c $< -o $@
 
 $(BUILD)/tests/%.o: tests/%.c
 	@mkdir -p $(@D)
