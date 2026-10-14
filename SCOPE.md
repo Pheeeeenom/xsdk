@@ -922,6 +922,11 @@ gap that something running on xsdk meets becomes a milestone; the rest wait (aft
       console;
     - xsdk_test, vulkan4xenon_test and vkbench pass on the console.
 
+    Looking first slowed Dusklight's frames 5%, its main thread sharing a core with Aurora's GPU waiter, so on
+    2026-10-14 waits went back to sleeping between looks unless a title asks to look first
+    (`xsdk_gpu_set_wait_spin`); xsdk_test's check asks (HARDWARE.md, "Milestones 30 to 35 together, and fence waits
+    that sleep again").
+
 35. **Loop unrolling.** GCC at -O2 keeps a loop of 8 independent multiply-add chains rolled, 8 multiply-adds to a
     branch, and a thread does 3.6 GFLOPS of double multiply-adds through it, 0.56 multiply-adds a clock at 3.2 GHz.
     Whether unrolling gets more out of the in-order core, and costs Dusklight nothing, is to be measured. The

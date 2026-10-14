@@ -2530,3 +2530,51 @@ Then, with the milestone's code on top of milestones 31, 33 and 34 (`a5eaa6f`):
 
 With that, milestone 30 is done on the console but for Dusklight's logo shot: draws testing depth skip hidden pixels,
 the buffer stays right across depth clears, writes and compare changes, and every title built with it passes.
+
+## Milestones 30 to 35 together, and fence waits that sleep again (2026-10-14)
+
+Milestones 30 to 35 together on main, with vulkan4xenon's and Dusklight's shaders register-packed by xost (`cbf5c3e`),
+built clean at `13ee341` (logs: `results/2026-10-14-milestones-30-to-35/`):
+- **xsdk_test passed 282 of 284** (`xsdk_test.log`), the two failures the controller's, which was disconnected
+  (`XamInputGetState` returned 0x48F). Eight waits after a resolve returned 3.6 to 5.5 us after their fences, and no
+  vblank was missed.
+- **vulkan4xenon_test** passed 80 of 80 and **vkbench** 14 of 14 (`vulkan4xenon_test.log`, `vkbench.log`); against
+  milestone 31's run the GPU's times rose 5 to 41 us, as in milestone 30's.
+- **Dusklight's title scene** ran at 29.9, 29.1, 30.0, 29.9 and 29.9 fps (`dusklight.log`), as in milestone 35's run.
+- **Dusklight's logo shot**, from the diagnostics build (`dusklight_diag.log`): in phase 0, nothing skipped, the GPU
+  took 17.6 ms from submit, where milestone 35's runs at -O2 took 20.1 and 20.3, and 12.2 ms over phases 0 to 8, where
+  they took 14.0; the render worker 14.8 ms, from 16.5 and 16.7, waiting less for resolve rectangles. The shot's last
+  frame came out the same, byte for byte, as in milestone 29's last run, and so it did in every run below.
+- **But its frames took 36.0 ms,** where milestone 35's, without milestone 34's code, took 34.8 and 35.3, the FIFO
+  worker 11.5 ms as there.
+
+Aurora runs the game's main thread on hardware thread 0 and its GPU waiter on hardware thread 1, one core
+(aurora-xenon:lib/thread.cpp:297-299). The waiter waits on each frame's fence through vulkan4xenon's `vkWaitForFences`
+(aurora-xenon:lib/vulkan4xenon/device.cpp:530, vulkan4xenon:src/sync.c:81), so under milestone 34 it looked at the
+fence every 5 us for the first 2 ms of each frame's wait. The same diagnostics build, relinked with that look cut to
+1 us, and the build as it was ran one after the other:
+
+| Phase 0, nothing skipped | Frame | GPU from submit | FIFO worker | Render worker |
+|---|---|---|---|---|
+| looking for 2 ms first (`dusklight_diag_spin.log`) | 36.0 ms | 17.6 ms | 11.6 ms | 14.8 ms |
+| sleeping between looks (`dusklight_diag_sleep.log`) | 34.3 ms | 17.6 ms | 11.5 ms | 14.8 ms |
+
+Phases 1 to 8 took 34.7 to 36.0 ms a frame with the look and 33.9 to 35.1 without. The game thread waited on Aurora
+0.0 ms a frame both ways, so its own work set the frame, and it alone shares the waiter's core: the look took 1.7 ms
+of its frame, 5%. So `xsdk_gpu_wait` sleeps between looks again, unless the title calls `xsdk_gpu_set_wait_spin` to
+look first for as long as it says (`ee5577d`); xsdk_test's wait check asks for 2 ms.
+
+Built clean with `ee5577d`'s code, every title built against it (logs: the `_waits_sleep` ones):
+- **xsdk_test passed 282 of 284** (`xsdk_test_waits_sleep.log`), the two failures the controller's. Its wait check,
+  asking for 2 ms, saw each wait return 3.9 to 5.5 us after its fence, and no vblank was missed.
+- **Broken on purpose,** `xsdk_gpu_set_wait_spin` ignoring what it's given, those waits returned 43 us to 1.74 ms
+  after their fences and the check failed, besides the controller's two (`xsdk_test_spin_ignored.log`).
+- **vulkan4xenon_test** passed 80 of 80 and **vkbench** 14 of 14, its times within 1% of the run above; its frames
+  look at their fences themselves.
+- **Dusklight's title scene** ran at 29.8, 29.1, 30.0, 30.0 and 29.9 fps (`dusklight_waits_sleep.log`), and its logo
+  shot at 34.8 ms a frame in phase 0, the GPU taking 17.9 ms, and 33.9 to 34.7 in phases 1 to 8
+  (`dusklight_diag_waits_sleep.log`), its last frame as before.
+
+With that, milestones 30 and 31 are done: Dusklight's logo shot draws as before, in less GPU time. A fence wait
+returns within microseconds of its fence when the title asks, and otherwise sleeps between looks, leaving the core to
+the thread beside it.
