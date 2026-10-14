@@ -42,6 +42,9 @@ layer that drives Xenos directly. Scope, sources and milestones are in SCOPE.md.
 - Write memory the GPU reads (write-combined or uncached) through `volatile` 32-bit stores. GCC merges plain stores
   into 64-bit `std`, and on the console one that isn't 8-byte aligned raises an alignment exception there
   (docs/HARDWARE.md, "A ring without VdInitializeEngines").
+- The console keeps only LR's low word across an interrupt, so the toolchain's GCC keeps LR to 32-bit values
+  (gcc-xsdk.patch), and assembly mustn't hold data in LR either (docs/HARDWARE.md, "The console keeps only LR's low
+  word across an interrupt").
 
 ## Build
 

@@ -38,6 +38,7 @@ int main(int argc, char **argv)
 	test_pthread();
 	test_clocks();
 	test_kernel_entry();
+	test_interrupts();
 	test_files();
 	test_copy();
 	test_net();

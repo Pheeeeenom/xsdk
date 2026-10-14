@@ -454,7 +454,19 @@
  
  #undef TARGET_OFFLOAD_OPTIONS
  #define TARGET_OFFLOAD_OPTIONS rs6000_offload_options
-@@ -2014,6 +2020,7 @@
+@@ -1946,6 +1952,11 @@
+     return (VECTOR_MEM_ALTIVEC_OR_VSX_P (mode)
+ 	    || mode == V1TImode);
+ 
++  /* Xbox 360 SDK: the console keeps only LR's low word across an interrupt,
++     so under -mcall-xsdk LR holds nothing wider (docs/HARDWARE.md).  */
++  if (TARGET_XSDK_CALL && regno == LR_REGNO)
++    return GET_MODE_SIZE (mode) <= 4;
++
+   /* We cannot put non-VSX TImode or PTImode anywhere except general register
+      and it must be able to fit within the register set.  */
+ 
+@@ -2014,6 +2025,7 @@
  {
    if (TARGET_32BIT
        && TARGET_POWERPC64
@@ -462,7 +474,7 @@
        && GET_MODE_SIZE (mode) > 4
        && INT_REGNO_P (regno))
      return true;
-@@ -9468,6 +9475,78 @@
+@@ -9468,6 +9480,78 @@
    return false;
  }
  
@@ -541,7 +553,7 @@
  /* Implement the TARGET_LEGITIMATE_COMBINED_INSN hook.  */
  
  static bool
-@@ -9508,6 +9587,20 @@
+@@ -9508,6 +9592,20 @@
  	  || icode == CODE_FOR_bdnztf_di))
      return false;
  
@@ -562,7 +574,7 @@
    return true;
  }
  
-@@ -10225,7 +10318,10 @@
+@@ -10225,7 +10323,10 @@
  
    if (TARGET_ALTIVEC_ABI)
      {
@@ -574,7 +586,7 @@
  	call_used_regs[i] = 1;
  
        /* AIX reserves VR20:31 in non-extended ABI mode.  */
-@@ -17044,22 +17140,25 @@
+@@ -17044,22 +17145,25 @@
        emit_unlikely_jump (x, label1);
      }
  
@@ -609,7 +621,7 @@
  }
  
  /* Expand an atomic exchange operation.  */
-@@ -17276,6 +17375,31 @@
+@@ -17276,6 +17380,31 @@
    return TARGET_32BIT ? SImode : DImode;
  }
  
@@ -641,7 +653,7 @@
  /* Implement the TARGET_OFFLOAD_OPTIONS hook.  */
  static char *
  rs6000_offload_options (void)
-@@ -21419,7 +21543,12 @@
+@@ -21419,7 +21548,12 @@
        if (rs6000_passes_vector)
  	fprintf (asm_out_file, "\t.gnu_attribute 8, %d\n",
  		 (TARGET_ALTIVEC_ABI ? 2 : 1));
@@ -655,7 +667,7 @@
  	fprintf (asm_out_file, "\t.gnu_attribute 12, %d\n",
  		 aix_struct_return ? 2 : 1);
      }
-@@ -23969,8 +24098,9 @@
+@@ -23969,8 +24103,9 @@
        return rs6000_parallel_return (mode, n_elts, elt_mode, first_reg, n_regs);
      }
  
@@ -667,7 +679,7 @@
      switch (mode)
        {
        default:
-@@ -23983,9 +24113,11 @@
+@@ -23983,9 +24118,11 @@
  	return rs6000_parallel_return (mode, count, SImode, GP_ARG_RETURN, 1);
        }
  
@@ -682,7 +694,7 @@
      mode = TARGET_32BIT ? SImode : DImode;
  
    if (DECIMAL_FLOAT_MODE_P (mode) && TARGET_HARD_FLOAT)
-@@ -24018,7 +24150,7 @@
+@@ -24018,7 +24155,7 @@
    unsigned int regno;
  
    /* Long long return value need be split in -mpowerpc64, 32bit ABI.  */

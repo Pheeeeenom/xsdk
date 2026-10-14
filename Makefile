@@ -34,7 +34,7 @@ TEST_SOURCES := tests/main.c tests/test_image.c tests/test_memory.c tests/test_t
 	tests/test_render.c tests/test_pacing.c tests/bar_scene.c tests/test_scale.c tests/test_constants.c \
 	tests/test_indexed.c tests/test_depth.c tests/test_raster.c tests/test_sampling.c tests/test_anisotropy.c \
 	tests/test_formats.c tests/test_vertex.c tests/test_replay.c tests/test_registers.c tests/test_copy.c \
-	tests/test_microcode.c tests/test_multisample.c tests/test_hiz.c tests/test_net.c
+	tests/test_microcode.c tests/test_multisample.c tests/test_hiz.c tests/test_net.c tests/test_interrupts.c
 TEST_OBJECTS := $(patsubst tests/%,$(BUILD)/tests/%.o,$(basename $(TEST_SOURCES)))
 # A title for listening to the audio frame layout on the console.
 AUDIO_CHECK_SOURCES := tests/audio_check.c tests/audio_frame.c

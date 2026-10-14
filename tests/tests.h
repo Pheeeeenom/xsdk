@@ -25,6 +25,8 @@ void test_placement(void);
 void test_pthread(void);
 void test_clocks(void);
 void test_kernel_entry(void);
+// 64-bit values held across the clock interrupt.
+void test_interrupts(void);
 
 // The registers the console's code keeps across a call, r14-r31 whole, f14-f31 and v14-v31, as kernel_entry_check.S
 // sets and reads them; bit 14 + i of each mask in EntryChanged stands for register 14 + i.
