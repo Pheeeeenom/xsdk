@@ -303,6 +303,7 @@ NTSTATUS xsdk_gpu_open(void)
 	last_block_fence = 0;
 	memset(&ring_stats, 0, sizeof ring_stats);
 	memset(rectangles, 0, sizeof rectangles);
+	xsdk_gpu_hiz_drop();
 
 	// No microcode: the kernel keeps the command processor's own (docs/HARDWARE.md).
 	const uint32_t engines = VdInitializeEngines(ENGINES_FLAGS, (void *)engines_shut_down, NULL, NULL, NULL);
@@ -498,6 +499,8 @@ void xsdk_gpu_record_begin(XsdkCommandBuffer *buffer)
 	buffer->count = 0;
 	recording = buffer;
 	recording_overflowed = false;
+	// Recorded draws may run when the hierarchical buffer holds another target's depth, so they leave it off.
+	xsdk_gpu_hiz_drop();
 }
 
 NTSTATUS xsdk_gpu_record_end(void)
@@ -520,6 +523,8 @@ void xsdk_gpu_execute(const XsdkCommandBuffer *buffer)
 	assert(!recording);
 	if (!buffer->count)
 		return;
+	// The hierarchical buffer doesn't follow what it draws.
+	xsdk_gpu_hiz_drop();
 	// From the ring, after what the stream holds: the console hasn't run a buffer from inside another
 	// (docs/HARDWARE.md).
 	submit_segment();

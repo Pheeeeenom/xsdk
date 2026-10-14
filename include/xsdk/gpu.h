@@ -169,9 +169,12 @@ typedef struct {
 } XsdkDepthStencilState;
 
 void xsdk_gpu_depth_stencil_state(XsdkDepthStencilState *state, const XsdkDepthStencil *setting);
-// Applies to the draws after; xsdk_gpu_set_target and resolves turn depth and stencil off.
+// Applies to the draws after; xsdk_gpu_set_target and resolves turn depth and stencil off. Draws testing depth skip
+// hidden pixels before the pixel shader from a resolve that clears depth until another target is set, a recording is
+// begun or run, or depth is written with a compare the clear doesn't suit (docs/HARDWARE.md, "Hierarchical depth").
 void xsdk_gpu_set_depth_stencil(const XsdkDepthStencilState *state);
-// The depth, 0 to 1, and stencil the later resolves clear to; far and 0 until set.
+// The depth, 0 to 1, and stencil the later resolves clear to; far and 0 until set. Below 0.5 suits greater-than
+// compares, else less-than ones; equal suits both.
 void xsdk_gpu_set_depth_clear(float depth, uint8_t stencil);
 
 // Blend factors (xenia:src/xenia/gpu/xenos.h:708-723), less the constant-colour ones, and operations (727-733).

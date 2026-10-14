@@ -64,6 +64,7 @@ enum {
 	RB_COPY_DEST_BASE = 0x2319,
 	RB_COPY_DEST_PITCH = 0x231A,
 	RB_COPY_DEST_INFO = 0x231B,
+	RB_HIZ_CLEAR = 0x231C,
 	RB_DEPTH_CLEAR = 0x231D,
 	RB_COLOR_CLEAR = 0x231E,
 	RB_COLOR_CLEAR_LO = 0x231F,
@@ -101,6 +102,11 @@ enum {
 	// COHER_STATUS_HOST's vc_action_ena and tc_action_ena (xenia:src/xenia/gpu/registers.h:84-85).
 	COHER_VERTEX_CACHE = 1 << 24,
 	COHER_TEXTURE_CACHE = 1 << 25,
+	// RB_HIZCONTROL's bits (xenia-canary:src/xenia/gpu/registers.h:822-831).
+	HIZ_WRITE_ENABLE = 1 << 0,
+	HIZ_ENABLE = 1 << 1,
+	// Turns the test to greater-than, on the console (docs/HARDWARE.md).
+	HIZ_GREATER = 1 << 4,
 };
 
 // Packets built in memory, then copied into the ring with xsdk_gpu_write.
@@ -163,6 +169,10 @@ uint32_t xsdk_gpu_copy_sample_select(void);
 void xsdk_gpu_undo_target(void);
 // Whether calls go into a command buffer, not the ring.
 bool xsdk_gpu_recording(void);
+// After a resolve that cleared depth to RB_DEPTH_CLEAR's depth_clear: the hierarchical buffer bounds that surface's.
+void xsdk_gpu_hiz_cleared(uint32_t width, uint32_t height, uint32_t depth_clear);
+// Leaves the hierarchical buffer off until depth is next cleared.
+void xsdk_gpu_hiz_drop(void);
 // Points the shown surface at another buffer of its size; for the vblank callback, so it never sleeps.
 void xsdk_display_flip(uint32_t address);
 // For xsdk_present_open: whether the splash's display can be taken over, leaving the logo up, and its size.

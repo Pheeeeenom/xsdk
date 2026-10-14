@@ -61,6 +61,7 @@ int main(int argc, char **argv)
 	test_constants();
 	test_indexed();
 	test_depth();
+	test_hiz();
 	test_raster();
 	test_sampling();
 	test_anisotropy();

@@ -34,7 +34,7 @@ TEST_SOURCES := tests/main.c tests/test_image.c tests/test_memory.c tests/test_t
 	tests/test_render.c tests/test_pacing.c tests/bar_scene.c tests/test_scale.c tests/test_constants.c \
 	tests/test_indexed.c tests/test_depth.c tests/test_raster.c tests/test_sampling.c tests/test_anisotropy.c \
 	tests/test_formats.c tests/test_vertex.c tests/test_replay.c tests/test_registers.c tests/test_copy.c \
-	tests/test_microcode.c tests/test_multisample.c
+	tests/test_microcode.c tests/test_multisample.c tests/test_hiz.c
 TEST_OBJECTS := $(patsubst tests/%,$(BUILD)/tests/%.o,$(basename $(TEST_SOURCES)))
 # A title for listening to the audio frame layout on the console.
 AUDIO_CHECK_SOURCES := tests/audio_check.c tests/audio_frame.c
@@ -45,7 +45,7 @@ PACING_OBJECTS := $(patsubst tests/%,$(BUILD)/tests/%.o,$(basename $(PACING_SOUR
 # Bring-up probes: titles that each answer one question on the console.
 PROBES := probe_spin probe_print probe_cp probe_ring probe_interrupt probe_exports probe_engines probe_swap \
 	probe_display probe_guide probe_resolve probe_triangle probe_vblank probe_720p probe_constants probe_mip_tail \
-	probe_draw_after_resolve probe_pixel_rate probe_unroll
+	probe_draw_after_resolve probe_pixel_rate probe_unroll probe_hiz
 # GCC's -O2 for PowerPC, which unrolls small loops only (gcc:common/config/rs6000/rs6000-common.cc:39-46).
 UNROLL_O2_FLAGS := -munroll-only-small-loops -fno-rename-registers
 UNROLL_LOOPS_OBJECTS := $(BUILD)/tests/unroll_loops_o2.o $(BUILD)/tests/unroll_loops_unrolled.o

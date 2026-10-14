@@ -36,7 +36,7 @@
 #include "gpu_private.h"
 
 enum {
-	RESOLVE_MAX_DWORDS = 128,
+	RESOLVE_MAX_DWORDS = 160,
 	// The size libxenon invalidates for its vertex pool: 12000 bytes and a page (xe.c:33, 1850, 1871).
 	RECTANGLE_INVALIDATE_BYTES = 12000 + 0x1000,
 	INVALIDATE_VERTEX_SHADER = 1 << 8,
@@ -47,7 +47,13 @@ enum {
 	CLIP_DISABLE = 1 << 16,
 	VTX_WINDOW_OFFSET_ENABLE = 1 << 16,
 	VTE_XY_Z_ALREADY_TRANSFORMED = 0x300,
+	// PA_CL_VTE_CNTL's vport_z_scale_ena and vport_z_offset_ena (xenia:src/xenia/gpu/registers.h:573-574).
+	VTE_Z_SCALE_OFFSET = 3 << 4,
+	// Depth only, which Xenia takes to skip the pixel shader (xenia:src/xenia/gpu/xenos.h:889-907).
+	EDRAM_MODE_DEPTH_ONLY = 5,
 	EDRAM_MODE_COPY = 6,
+	// RB_DEPTHCONTROL's z_enable, compare never, no write (xenia:src/xenia/gpu/registers.h:799-805).
+	DEPTH_TEST_NEVER = 1 << 1,
 	// Copy colour into k_8_8_8_8, then clear colour or depth (xe.c:1104-1108).
 	COPY_CONTROL_CONVERT = 1 << 20,
 	COPY_SAMPLE_SELECT_SHIFT = 4,
@@ -64,6 +70,8 @@ enum {
 	// (xenia:src/xenia/gpu/dxbc_shader_translator_om.cc:978).
 	DEPTH_CLEAR_FAR = 0xFFFFFF00,
 	DEPTH_CLEAR_SHIFT = 8,
+	// The hierarchical buffer holds depth in 2048ths: the top 11 bits of RB_DEPTH_CLEAR's (docs/HARDWARE.md).
+	HIZ_CLEAR_SHIFT = 21,
 	DEPTH_24_MAX = 0xFFFFFF,
 	DEPTH_STENCIL_ALWAYS_WRITE = 0x8777,
 	PROGRAM_CNTL_RESOLVE = 2 | 1 << 16,
@@ -110,6 +118,25 @@ static void put_shader(GpuPackets *packets)
 		gpu_put(packets, i < sizeof resolve_vertex_shader / 4 ? resolve_vertex_shader[i] : 0);
 }
 
+// After a clear, a draw's first block may test the buffer's old values until one draw tests it all (docs/HARDWARE.md).
+static void put_hiz_test(GpuPackets *packets, uint32_t hiz_clear)
+{
+	// Rejected whole it costs less: at z 0 testing greater-than over a clear above 0, at the rectangle's z of 1 over 0.
+	const uint32_t z_zero[] = { 0, 0 };
+	const bool at_zero = hiz_clear != 0;
+	// In eDRAM's no-operation mode this hung the GPU (docs/HARDWARE.md).
+	gpu_put_register(packets, RB_MODECONTROL, EDRAM_MODE_DEPTH_ONLY);
+	gpu_put_register(packets, RB_DEPTHCONTROL, DEPTH_TEST_NEVER);
+	gpu_put_register(packets, RB_HIZCONTROL, HIZ_ENABLE | (at_zero ? HIZ_GREATER : 0));
+	if (at_zero) {
+		gpu_put_register(packets, PA_CL_VTE_CNTL, VTE_XY_Z_ALREADY_TRANSFORMED | VTE_Z_SCALE_OFFSET);
+		gpu_put_registers(packets, PA_CL_VPORT_ZSCALE, z_zero, 2);
+	}
+	gpu_put_type3(packets, PM4_DRAW_INDX_2, 1);
+	gpu_put(packets, RECTANGLE_LIST_AUTO_INDEX_3);
+	gpu_put_register(packets, WAIT_UNTIL, WAIT_3D_IDLE_CLEAN);
+}
+
 // Xe_ResolveInto, less its scratch write, with the layout Xe_SetRenderTarget gives the target (xe.c:998-1165).
 static void resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t pitch, uint32_t dest_info,
 	uint32_t dest_bytes, uint32_t clear_argb)
@@ -124,6 +151,8 @@ static void resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t 
 	const uint32_t clip[] = { CLIP_DISABLE, VTX_WINDOW_OFFSET_ENABLE, VTE_XY_Z_ALREADY_TRANSFORMED };
 	const uint32_t fetch[] = { vertices | VERTEX_FETCH_TYPE, VERTEX_FETCH_SIZE_6_8IN32, 0, 0, 0, 0 };
 	const uint32_t flush_fetch[] = { 0, 0, 0 };
+	const uint32_t depth_clears[] = { depth_clear >> HIZ_CLEAR_SHIFT, depth_clear };
+	const bool clears_depth = clears & COPY_CONTROL_DEPTH_CLEAR;
 	uint32_t dwords[RESOLVE_MAX_DWORDS];
 	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = RESOLVE_MAX_DWORDS };
 	xsdk_gpu_put_window(&packets, width, height);
@@ -132,7 +161,7 @@ static void resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t 
 	gpu_put_register(&packets, RB_COLOR_MASK, 0xF);
 	gpu_put_registers(&packets, PA_CL_VPORT_XSCALE, viewport, 6);
 	gpu_put_registers(&packets, RB_COPY_CONTROL, copy, 4);
-	gpu_put_register(&packets, RB_DEPTH_CLEAR, depth_clear);
+	gpu_put_registers(&packets, RB_HIZ_CLEAR, depth_clears, 2);
 	gpu_put_register(&packets, RB_COLOR_CLEAR, packed_8888(clear_argb));
 	gpu_put_register(&packets, RB_COLOR_CLEAR_LO, packed_8888(clear_argb));
 	gpu_put_register(&packets, RB_MODECONTROL, EDRAM_MODE_COPY);
@@ -143,7 +172,8 @@ static void resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t 
 	gpu_put(&packets, INVALIDATE_VERTEX_SHADER);
 	put_shader(&packets);
 	gpu_put_registers(&packets, SQ_PROGRAM_CNTL, program, 2);
-	gpu_put_register(&packets, RB_HIZCONTROL, 0);
+	// Writing the buffer clears it to RB_HIZ_CLEAR with depth; testing it would reject the copy (docs/HARDWARE.md).
+	gpu_put_register(&packets, RB_HIZCONTROL, clears_depth ? HIZ_WRITE_ENABLE : 0);
 	gpu_put_registers(&packets, VGT_MAX_VTX_INDX, indices, 3);
 	gpu_put_registers(&packets, PA_CL_CLIP_CNTL, clip, 3);
 	gpu_put_register(&packets, COHER_DEST_BASE_7, 0);
@@ -159,8 +189,12 @@ static void resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t 
 	gpu_put_register(&packets, RB_COPY_DEST_INFO, 0);
 	// Xe_Sync's wait for idle (xe.c:1223-1226, 1278-1282).
 	gpu_put_register(&packets, WAIT_UNTIL, WAIT_3D_IDLE_CLEAN);
+	if (clears_depth)
+		put_hiz_test(&packets, depth_clears[0]);
 	xsdk_gpu_write(&packets);
 	xsdk_gpu_undo_target();
+	if (clears_depth)
+		xsdk_gpu_hiz_cleared(width, height, depth_clear);
 }
 
 uint32_t xsdk_gpu_resolve_bytes(uint32_t width, uint32_t height)

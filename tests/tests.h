@@ -95,6 +95,9 @@ void test_indexed(void);
 // Depth and stencil (milestone 13).
 void test_depth(void);
 
+// Hierarchical depth (milestone 30).
+void test_hiz(void);
+
 // Raster and blend state (milestone 14).
 void test_raster(void);
 

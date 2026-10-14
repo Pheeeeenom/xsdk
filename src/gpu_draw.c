@@ -91,6 +91,10 @@ enum {
 	STENCILZFAIL_SHIFT = 17,
 	STENCILMASK_SHIFT = 8,
 	STENCILWRITEMASK_SHIFT = 16,
+	COMPARE_MASK = 7,
+	STENCIL_FAIL_OPS = 7 << STENCILFAIL_SHIFT | 7 << STENCILZFAIL_SHIFT,
+	// RB_DEPTH_CLEAR's 0.5, depth above the stencil.
+	DEPTH_CLEAR_HALF = 0x80000000,
 	// RB_BLENDCONTROL's fields (xenia:src/xenia/gpu/registers.h:780-794).
 	COLOR_COMB_FCN_SHIFT = 5,
 	COLOR_DESTBLEND_SHIFT = 8,
@@ -132,6 +136,18 @@ static uint32_t placed_depth_tile;
 // A resolve leaves eDRAM copying with the viewport transform off, where a draw hung the GPU (docs/HARDWARE.md).
 static bool target_undone;
 
+typedef struct {
+	uint32_t pitch_tiles;
+	uint32_t height;
+	uint32_t samples;
+	uint32_t depth_tile;
+} Surface;
+
+// Whether the hierarchical buffer bounds the depth of the surface it was last cleared for, and from which side.
+static bool hiz_kept;
+static bool hiz_greater;
+static Surface hiz_surface;
+
 // MsaaSamples, 0 to 2 for 1, 2 and 4 samples (xenia:src/xenia/gpu/xenos.h:288-292).
 static uint32_t samples_log2(uint32_t samples)
 {
@@ -157,6 +173,33 @@ uint32_t xsdk_gpu_target_sample_tiles(uint32_t width, uint32_t height, uint32_t 
 	assert(samples == 1 || samples == 2 || samples == 4);
 	const uint32_t rows = height * (samples / samples_across(samples));
 	return tiles_across(width, samples) * ((rows + TILE_HEIGHT - 1) / TILE_HEIGHT);
+}
+
+static Surface surface_of(uint32_t width, uint32_t height)
+{
+	const uint32_t depth_tile = target_placed ? placed_depth_tile : 0;
+	return (Surface){ tiles_across(width, target_samples), height, target_samples, depth_tile };
+}
+
+static bool is_hiz_surface(uint32_t width, uint32_t height)
+{
+	const Surface surface = surface_of(width, height);
+	return surface.pitch_tiles == hiz_surface.pitch_tiles && surface.height == hiz_surface.height &&
+		surface.samples == hiz_surface.samples && surface.depth_tile == hiz_surface.depth_tile;
+}
+
+void xsdk_gpu_hiz_cleared(uint32_t width, uint32_t height, uint32_t depth_clear)
+{
+	hiz_surface = surface_of(width, height);
+	// Multisampled targets haven't been tried with the buffer on the console.
+	hiz_kept = target_samples == 1;
+	// Reversed depth clears to 0 and tests greater-than.
+	hiz_greater = depth_clear < DEPTH_CLEAR_HALF;
+}
+
+void xsdk_gpu_hiz_drop(void)
+{
+	hiz_kept = false;
 }
 
 uint32_t xsdk_gpu_target_tiles(uint32_t width, uint32_t height)
@@ -204,6 +247,9 @@ static void put_target(uint32_t width, uint32_t height)
 		float_bits(-(float)height / 2.0f), float_bits(height / 2.0f), float_bits(1.0f), 0 };
 	// Xe_pStuff's zeros before every draw (xe.c:1233-1238).
 	const uint32_t polygon_offset[8] = { 0 };
+	// The buffer is laid out by the surface, which another target's depth may also overlap.
+	if (!is_hiz_surface(width, height))
+		hiz_kept = false;
 	uint32_t dwords[DRAW_MAX_DWORDS];
 	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
 	gpu_put_registers(&packets, PA_SU_POLY_OFFSET_FRONT_SCALE, polygon_offset, 8);
@@ -352,12 +398,30 @@ void xsdk_gpu_depth_stencil_state(XsdkDepthStencilState *state, const XsdkDepthS
 		(uint32_t)setting->stencil_write_mask << STENCILWRITEMASK_SHIFT;
 }
 
+// What the hierarchical buffer can do for this setting; a depth write it can't follow drops it (docs/HARDWARE.md).
+static uint32_t hiz_control(uint32_t depth_control)
+{
+	const uint32_t compare = depth_control >> ZFUNC_SHIFT & COMPARE_MASK;
+	// Less-than's never pass a pixel farther than the buffer holds, nor greater-than's, the even ones, a nearer one.
+	const bool follows =
+		(depth_control & Z_ENABLE) && (hiz_greater ? (compare & 1) == 0 : compare < XSDK_COMPARE_GREATER);
+	const bool writes = depth_control & Z_WRITE_ENABLE;
+	if (writes && !follows)
+		hiz_kept = false;
+	if (!hiz_kept || !follows)
+		return 0;
+	// A pixel the buffer rejects skips the stencil test, and with it the fail operations.
+	const bool stencil_kept = !(depth_control & STENCIL_ENABLE) || !(depth_control & STENCIL_FAIL_OPS);
+	return (hiz_greater ? HIZ_GREATER : 0) | (writes ? HIZ_WRITE_ENABLE : 0) | (stencil_kept ? HIZ_ENABLE : 0);
+}
+
 // With backface_enable clear, the front face's stencil setting serves both faces, as D3D's one-sided stencil does.
 void xsdk_gpu_set_depth_stencil(const XsdkDepthStencilState *state)
 {
 	uint32_t dwords[DRAW_MAX_DWORDS];
 	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
 	gpu_put_register(&packets, RB_DEPTHCONTROL, state->depth_control);
+	gpu_put_register(&packets, RB_HIZCONTROL, hiz_control(state->depth_control));
 	gpu_put_register(&packets, RB_STENCILREFMASK, state->stencil_ref_mask);
 	xsdk_gpu_write(&packets);
 }
