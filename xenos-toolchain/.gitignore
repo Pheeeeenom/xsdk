@@ -1,0 +1,9 @@
+reference/
+__pycache__/
+*.pyc
+tools/glslang/
+xsc/testdata/*.bin
+xsc/testdata/*.hlsl
+xsc/testdata/_*
+xsc/samples/*.spv
+tests/xcomb_parity/build/

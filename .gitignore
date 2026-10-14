@@ -2,5 +2,4 @@ build/
 __pycache__/
 local/
 .claude/worktrees/
-/xenos-toolchain/
 /xenos-toolchain.zip

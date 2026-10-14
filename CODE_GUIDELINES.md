@@ -30,8 +30,8 @@ If a rule gets in the way of correct code, change the rule in this file first, i
   the retail kernel. Adding a library needs a reason in the commit message.
 - No Microsoft tooling, no leaked SDK material, no OpenXeChain.
 - Never commit Microsoft binaries, retail executables, firmware or kernel dumps, keys, the command processor microcode
-  (SCOPE.md section 3.2), XDK compiler output, or build output. `local/` holds files that must stay out of git, and
-  `xenos-toolchain/` is a separate repository used only as reference.
+  (SCOPE.md section 3.2), XDK compiler output, or build output. `local/` holds files that must stay out of git, and so
+  do the reference clones in `xenos-toolchain/reference/`.
 - Code or tables taken from Xenia or libxenon keep their BSD-3 notice and name their source file.
 
 ## 3. Formatting

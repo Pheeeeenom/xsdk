@@ -14,7 +14,8 @@ translation layer comes later and is out of this scope. So are games.
   It's cited below as `xenia:<path>:<line>`, paths relative to `reference/xenia/`.
 - **libxenon.** Its copy is in the same zip, cited as `libxenon:<path>:<line>`, relative to
   `reference/libxenon/libxenon/`.
-- **The user's toolchain** is cited as `xost:<path>:<line>`, relative to `xenos-toolchain/`.
+- **The user's toolchain** is cited as `xost:<path>:<line>`, relative to `xenos-toolchain/`. It's been part of xsdk since
+  2026-10-14; its commits before then are cited by the hashes of its own repository, xenosworks/xenos-toolchain.
 - **Unverified.** Where something isn't settled by these sources, it's marked unverified.
 
 ## 1. What already exists: the user's shader toolchain ("xost")

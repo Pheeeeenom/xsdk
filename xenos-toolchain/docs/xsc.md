@@ -1,0 +1,283 @@
+# xsc — GLSL → Xenos shader compiler
+
+Pipeline: **GLSL → glslang → SPIR-V → xsc → Xenos container**. glslang
+(Khronos reference compiler) does parsing/semantics/optimization; xsc lowers
+the SPIR-V to microcode through the hardware-proven Program builder. The
+Mesa/NIR optimizer is a someday option; the runtime combiner case is already
+served by `xcomb`.
+
+## Use
+
+```
+python -m xsc.lower shader.vert.spv -o shader.bin     # SPIR-V -> container
+```
+Library: `lower(module) -> bytes`, `lower_ex(module) -> (bytes, manifest)`.
+Get the SPIR-V with: `glslang -G --target-env opengl shader.frag -o out.spv`,
+or Vulkan's with `glslang -V shader.frag -o out.spv`: vertex inputs, varyings
+and outputs lower the same either way (`tests/test_vulkan_spirv.py`).
+Vulkan's uniform blocks, push constants and samplers land as "Interface
+conventions" says; `resolve_interface(module).blocks` and `.samplers` give where.
+
+Instruction templates (the field skeletons the lowering fills in) come from
+Xenia's definitions, `xsc/templates.py`. Before xost joined xsdk,
+`tests/test_templates.py` checked them against the instructions they first
+came from; that test and its test vectors stay in xost's archived repo (github.com/xenosworks/xenos-toolchain, last commit 4a785c6).
+
+## Supported (v1, branch-free)
+
+| GLSL / SPIR-V | Xenos lowering |
+|---|---|
+| vertex `mvp * pos` (MatrixTimesVector) | 4× `dp4` → oPos |
+| vertex chained `mat4 * (mat4 * pos)` | first mat4 x vec4 into a temp, second mat4 x vec4 -> oPos |
+| vertex `vec4 * mat4` (VectorTimesMatrix) | row-vector `mul`+`mad` |
+| vertex `(mat4 * mat4) * vec4` | product rows via `vec*mat`, then 4× `dp4` |
+| vertex `+` `-` `*`, `vec * scalar`, `dot()`, swizzled temps | same ALU lowering subset as fragment, feeding position or interpolator exports |
+| passthrough varyings | interpolator exports (max o*N*) |
+| `texture()` (ImageSampleImplicitLod) | `tfetch2D` |
+| samplerCube `texture()` | cube swizzles + rcp/bias + `tfetchCube .yxw` |
+| `*` `+` `-` (FMul/FAdd/FSub) | mul / add / add-neg |
+| `/` (FDiv) | `a · rcp(b)`; scalar-pipe `rcp` per component (scalar divisor: once + broadcast) |
+| `mod()` (OpFMod) | `a − b·floor(a/b)` |
+| `vec * float` (VectorTimesScalar) | mul, scalar `.xxxx` broadcast |
+| scalar int -> float | folded literals or float-backed `trunc` + add/mul |
+| `dot()` / `cross()` | `dp3`/`dp4` broadcast / yzx·zxy mad |
+| `mix` / `max` / `min` / `clamp(x,0,1)` (GLSL.std.450) | sub+mad / max / min / `_sat` modifier (free) |
+| `step` / `smoothstep` | `kSge` / `t·t·(3−2t)`, `t=sat((x−e0)/(e1−e0))` |
+| `normalize` / `length` / `distance` | dp3·rsq·mul / dp+sqrt / sub+dp+sqrt (scalar pipe) |
+| `sqrt` `inversesqrt` `exp2` `log2` `exp` `log` | scalar-pipe `kSqrt`/`kRsq`/`kExp`/`kLog` (+const for natural) |
+| `pow(x,y)` | per-component `exp2(y·log2 x)` (scalar pipe) |
+| `reflect(i,n)` | `i - 2·dot(n,i)·n` (dp + mad) |
+| `sin` / `cos` / `tan` | scalar `kSin`/`kCos`; `tan = sin·rcp(cos)` — **range-limited ~[-π,π]** (see below) |
+| `asin` / `acos` / `atan` | polynomial approx (A-S sqrt form / π/2−asin / odd poly); ~7e-5 over [-1,1], atan range [-1,1] (see below) |
+| `.rgb` `.xy` (identity) / `.bgra` (reorder) / two-source `vec4(a.xy,b.zw)` | same regs / swizzled mov / per-component masked movs |
+| `v.x` (CompositeExtract), `vec4(a,b,c,d)` (CompositeConstruct) | masked exports |
+| `floor` / `ceil` / `trunc` / `round` / `fract` | `kFloor` / `-floor(-x)` / `kTrunc` / `floor(x+.5)` / `kFrc` |
+| `abs()` / `sign()` | `max(x,-x)` / `sgt(x,-x)−sgt(-x,x)` |
+| `radians` / `degrees` | mul by pooled `π/180` / `180/π` |
+| `clamp(x, lo, hi)` arbitrary | `min(max(x,lo),hi)`, lo/hi pooled literals |
+| **`if/else`**, incl. **nested**, assigning the output | branch-free chained `cndgt`/`cndge`/`cndeq` selects |
+| **`if/else` assigning a Function-local** later read by the output | branch-free `cnd*` select into a temp registered as that local's merged value (pixel shaders) |
+| `if/else`, or a `?:` glslang branches for, in a **vertex** shader | refused: lowered as straight-line code it would take its last arm (`tests/test_vertex_branches.py`) |
+| **`discard` / `OpKill` inside `if(cond)`** | `kill_gt`/`kill_ge`/`kill_eq`/`kill_ne` ALU side effect; oracle-valid, pending console verification in `glslgallery` G26 |
+| **`for`/`while`** with a compile-time trip count, incl. **nested** | unrolled to branch-free SSA; induction variable constant-folded (see below) |
+| uniform-bound loop `sum += const` | real `LOOP_START/END` (G28 pending) |
+| `vec4 t = ...;` (function-local) | store-forwarding |
+| uniforms (block + bare), samplers | constant regs / fetch consts |
+| Vulkan uniform / push constant block members at any std140 offset | the member's register, swizzled from its first component |
+| block matrix (column-major, std140) `M * v` / `v * M` / `A * B` | `mul`+`mad` over columns / 4x `dp4` with columns / columns of A times each column of B |
+| block array at a run-time index, `rows[int(f) + k]`, `m[i]` | `movasf` (`int(f)`) or `movas` sets a0, then `c[a0 + base + k]` is copied into a temp; reads at one index share the `movas` (`tests/test_dynamic_index.py`) |
+| fragment `gl_FragCoord.xy` | the pixel parameters in the register past the interpolators, `\|r.xy\| + 0.5`; `.zw` refused |
+| float / vec literals in FS/VS | constant pool; 0/1 folds (see below) |
+| ternary `cond ? a : b` (OpSelect) | `f + (t−f)·cond` (sub + mad) |
+| vector relational `lessThan`/`greaterThan`/`equal`/`notEqual`/… → bvec | per-component `sgt`/`sge`/`seq`/`sne` (1.0/0.0) |
+| `any` / `all` / `not` (bvec) | horizontal `max` / horizontal `min` / `1−v` |
+| `&&` / `\|\|` | `min` / `max` of 0/1 bools |
+| `refract(I,N,eta)` | Snell vector + total-internal-reflection (`k<0`) mask |
+| runtime int `/` `%` (SDiv/SMod/U*) | `trunc(a·rcp(b)+ε)`; remainder `a−b·q` — **approximate, non-negative domain** |
+| `mat3` / `mat2` × vec | per-row `dp3` / `dp2add` (matrix uploaded as rows, same as mat4) |
+| `textureLod` / `texture(…,bias)` | constant LOD folded into the tfetch LOD-bias field (1/16 units) |
+| `textureProj` | perspective divide `uv·rcp(w)` then `tfetch2D` |
+| `texture()` with a computed coord | coord expression emitted, then tfetch (not just bare interpolators); a coord from another sample (a dependent read) has that sample fetched first; in a pixel shader the coords' work goes first and the fetches together (see Fetch layout) |
+| `CompositeInsert` (`v[i] = x`) | copy + masked component mov |
+| uniform-array loop `for(i<n) sum += w[i]` | real loop; body `add acc, acc, c[base+aL]` (aL-relative array read) |
+| `for(i<n){ …; if(acc.c CMP k) break; }` | body `setp_*` + a predicated LOOP_END (data-dependent break) |
+| if/else in a loop body with a **constant** condition (e.g. `if(i<k)`) | unroller picks the taken arm per iteration |
+| `transpose` (mat2/3/4) | per-row column gather (swizzled movs) |
+| `determinant` (mat2/3) | mat2 `ad−bc`; mat3 `row0·cross(row1,row2)` |
+| `inverse` (mat2/3) | mat2 closed form; mat3 adjugate (cofactor crosses) / det · `rcp` |
+| `dFdx` / `dFdy` / `fwidth` | `getTextureGradients` fetch; ddx=grad.xz, ddy=grad.yw |
+
+## Interface conventions (GLSL ↔ Xenos)
+
+- VS inputs → vfetch in Location order; vertex-element usage by location:
+  0=POSITION, 1=COLOR, 2=TEXCOORD, 3+=TEXCOORD(idx++). Host vertex format
+  must match. VS output BuiltIn Position → oPos; Location *N* → interpolator
+  o*N*. FS input Location *N* → register r*N*; output Location 0 → oC0.
+- Bare uniforms → constant registers by Location; scalars read the register's
+  `.x`.
+- Uniform and push constant blocks → the block's raw std140 bytes in
+  consecutive registers, for a host that copies them in as they are. Push
+  constants take the first registers (after any bare uniforms), then each
+  uniform block in (DescriptorSet, Binding) order. A member at byte offset *o*
+  of a block at register *b* sits in *b* + *o*/16 from component (*o*%16)/4.
+  Matrices keep their memory layout: column-major ones (glslang's default) hold
+  a column a register, so `M * v` lowers to multiply-adds over columns.
+- A block's array read at a run-time index takes `a0` from the index: one
+  index a chain, into an array on 16-byte lines, `int(f)` for `f >= 0` as
+  indices are (a0 is `floor(f)`), and the result within -256 to 255
+  (xenia:src/xenia/gpu/ucode.h:1138-1150).
+- gl_FragCoord → the pixel parameters, which the container turns on: its
+  record's SQ_PROGRAM_CNTL has PARAM_GEN, and its SQ_CONTEXT_MISC has
+  PARAM_GEN_POS, the register past the interpolators, where the GPU writes the
+  pixel's column and row (xenia:src/xenia/gpu/registers.h:140, 158-234), and
+  SC_OUTPUT_SCREEN_XY, without which x read 0 on the console
+  (vulkan4xenon:results/2026-10-12-milestone-11-step-3/). xsdk takes both
+  registers from the record as they are.
+- The execs keep addressing mode 0 when ALU instructions read at a0: a pixel
+  shader with its execs' mode 1 drew black on the console (the same results).
+- Samplers (UniformConstant) → with a DescriptorSet decoration (Vulkan), fetch
+  constants from 0 in (DescriptorSet, Binding) order; without (OpenGL), fetch
+  constant = Binding.
+- An ALU instruction reads one constant register; a second goes through a temp.
+
+## Literal constant pool (the host-upload contract)
+
+The Xenos has no ALU float immediates, so GLSL literals are allocated
+constant registers **after** the uniform-declared constants.
+`lower_ex()` returns a **manifest** `[(register, (f0,f1,f2,f3))]`; the host
+must upload those values to the matching shader stage before drawing:
+`Xe_SetPixelShaderConstantF` for fragment manifests and
+`Xe_SetVertexShaderConstantF` for vertex manifests, matching uniforms.
+Example: `mix(tex, color, 0.5)` →
+`add r3, color, -tex; mad oC0, r3, c0, tex` with manifest
+`[(0, (0.5,0.5,0.5,0.5))]` — upload 0.5 to c0.
+
+`0.0`/`1.0` are folded out of the manifest where there is an equivalent
+no-literal encoding: algebraic identity operands (`x+0`, `x*1`, `x/1`), unit
+axis `dot()` constants (a source swizzle/extract), and final export lanes
+(`oC0.z = 0.0`, `oC0.w = 1.0`) via Xenos export constant-result masks. General
+ALU sources do **not** have `k0/k1` source components, so uses such as
+`max(x, 0.0)` still need a pooled literal unless a separate algebraic lowering
+proves an equivalent form.
+
+## Scalar pipe (the transcendentals)
+
+Xenos `rsq`/`sqrt`/`exp2`/`log2`/`sin`/`cos` are **scalar-pipe** ops: the ALU
+instruction's vector half is a nop (`vector_write_mask=0`) and the scalar
+half reads one component of src3 and broadcasts its result. `normalize`,
+`length`, `pow`, etc. compose these with `dp3`/`dp4` and `mul`. No common-
+subexpression elimination yet, so `normalize(v)` + `length(v)` recomputes
+`dot(v,v)` twice — correct, slightly redundant.
+
+## Approximate builtins (documented accuracy / range)
+- **`sin`/`cos`/`tan`** — the bare hardware `kSin`/`kCos` are accurate only
+  near `[-π,π]`; arbitrary arguments need a `frac`-based range-reduction
+  prologue (math in `docs/builtin-lowering.md`). `tan = sin·rcp(cos)`.
+- **`asin`/`acos`** — Abramowitz-Stegun sqrt form, max error ~7e-5 over
+  `[-1,1]`. `acos = π/2 − asin`.
+- **`atan`** — odd polynomial, accurate on `[-1,1]` (no range reduction for
+  `|x|>1` yet; `atan2`/wide-range is a refinement).
+
+## Register budget
+
+A shader may use only its kind's share of the shader unit's register split,
+which the runtime sets in `SQ_GPR_MANAGEMENT`; past it the GPU silently
+**hangs** on hardware (oracle can't see this). libxenon's set-up leaves pixel
+shaders **16 GPRs** (r0..r15) and vertex shaders 112; xsdk's leaves each 64,
+the kernel's own split, and a pixel shader using 64 ran on the console there
+(xsdk:docs/HARDWARE.md, milestone 24). `xasm.program.RegisterBudget` names a
+split: `LIBXENON_REGISTERS` by default, `XSDK_REGISTERS` for xsdk's titles
+(`lower_ex(module, XSDK_REGISTERS)`, or `--pixel-registers 64
+--vertex-registers 64` on `xsc.lower` and `xasm.textasm`). A shader past its
+share raises `RegisterBudgetError`.
+
+`xasm/program.py` runs a **linear-scan register allocator** in `finish()` on
+every program xsc lowers, and on a hand-built one only when it needs >16
+registers (pixel) or >64 (vertex, the most an instruction names), so those
+compile byte-for-byte as before: it recycles dead temporaries (live range =
+first def → last use), pins the read-only interpolator inputs and pixel
+parameters and a vertex shader's vertex index in r0, keeps a temp live across a
+hardware loop's back edge for the whole loop, and packs everything into the
+minimum register count (e.g. `invtrig` 33→6, `mathfns` 20→6). Fewer registers a
+thread let the GPU keep more threads in flight: packed, a pixel shader taking
+four samples went from 12 registers to 6, and sampled 1.6-1.8 times as fast on
+the console. A self-check asserts no two
+simultaneously-live temps share a register. xsc numbers a temp for each value,
+so its programs hold whole registers in their instructions' fields, encoded
+once the allocator has packed them (`whole_sources`, `ABS_SOURCE`).
+`tests/test_register_alloc.py` checks a vertex shader of 145 temps on
+`xdis/simulate.py`, which runs a program's ALU, fetches and exports on the CPU.
+
+## Fetch layout
+
+Before allocation, `xasm/program.py`'s `_group_fetches` lays out each block of
+a pixel shader xsc lowers: the work its fetches' coordinates need as soon as
+it's ready, then every fetch that's ready, again for fetches reading what
+others fetched, then the rest in its own order. A block whose ALU work runs
+into two fetches or more starts an exec wherever ALU and fetch runs meet, and
+the allocator keeps what a run of fetches reads till the run ends, so no fetch
+in it writes another's coordinates. Before, xsc emitted each sample's
+coordinate work, then its fetch, and packing let the coordinates share one
+register: four samples a texel apart ran 10.2 texels a clock on the console
+that way, and 15.9 laid out (the texture units' 16; xsdk:docs/HARDWARE.md,
+milestone 36). Shaders whose fetches read only their interpolators or pixel
+parameters lower byte for byte as before, and so does a lone fetch after its
+coordinate's work. `tests/test_fetch_layout.py` checks the layout, the
+simulator's results and those shaders.
+
+## Loops (unrolling + mem2reg)
+
+glslang (`-G --target-env opengl`) lowers `for`/`while` to mutable-memory form:
+an `OpLoopMerge` header, loop-carried values held in Function-storage
+`OpVariable`s mutated by `OpStore`, and an integer induction variable. xsc's
+`unroll.py` runs as a pre-pass **whenever a module contains a loop** and rewrites
+the whole function body into flat, branch-free SSA by symbolically executing the
+structured CFG:
+
+- **Trip count** is recovered from the induction variable's constant
+  init / comparison / step and the body is replicated that many times. The
+  induction variable is **constant-folded**, so `float(i)`, `i*k`,
+  `float(i)*0.2`, etc. become literals (no integer ALU reaches the GPU).
+- **mem2reg**: every Function-local variable is threaded through an environment,
+  so loop-carried accumulation *and* post-loop read-modify-write (`c *= k;`)
+  resolve to SSA values — the lowering's single-store-per-variable model never
+  sees the multiple stores.
+- **Nested** loops expand innermost-first; **`while`** (increment in the body)
+  and **`for`** (increment in the continue block) are both handled.
+
+If unrolling fails on the minimal uniform-bound accumulator pattern
+`for(i=0;i<u_count;i++) sum += const;`, xsc routes to a tiny register-machine
+lowerer instead: initialize a persistent GPR, wrap the body in
+`begin_loop/end_loop`, and return a manifest entry `("loop", id, name)` so the
+host uploads `integer_constants[8+id]`. See `loop_uniform.frag`; gallery G28 is
+console-pending.
+
+Because the pass is a no-op when there is no loop, loop-free shaders still lower
+byte-for-byte as before. Unrolled shaders then go through the normal pipeline,
+including the 16-GPR register allocator (e.g. `loop_stair` 17→3 GPRs). See
+`loop_*` in `xsc/testdata/` and the `LOOP` gallery slot.
+
+Data-dependent loops use real `LOOP_START/END`: `sum += const` (G28) and now
+**`sum += w[i]`** — a uniform array indexed by the loop counter, lowering to the
+aL-relative `c[base+aL]` read (the ISA primitive hardware-proven as G29). The
+predicated `while`-break primitive is hardware-proven (G30); see below.
+
+A data-dependent `while`-break (`if(cond) break;`) now lowers from GLSL to a
+body `setp_*` + a predicated LOOP_END (the G30 primitive). An if/else **with a
+constant condition** inside a loop body unrolls (the arm is picked per pass).
+
+## Not yet / out of scope
+- **Data-dependent if/else inside a loop body** — a conditional *store* in the
+  body can't be modelled by the unroller's mem2reg env; raises `UnrollError`
+  (the constant-condition case above is handled). Constant-trip loops with a
+  data-dependent body conditional are the remaining loop edge.
+- **Bitwise (`& | ^ ~`) and dynamic shifts** — the Xenos ALU has no bit
+  operations; these raise a clear compile error rather than miscompiling.
+  Constant-amount shifts could be done as mul/div by powers of two (not wired).
+- **`matrixCompMult`, mat4 `inverse`** — `transpose`/`determinant`/`inverse`
+  cover mat2/mat3 (numerically gated by `tests/test_matrix.py`); per-element
+  multiply and 4×4 inverse (register-heavy) are not lowered.
+- **Runtime integer division** is float-emulated and **approximate** (a small
+  bias corrects exact multiples; non-negative domain).
+
+`dFdx`/`dFdy`/`fwidth` are **hardware-verified** (the `getTextureGradients`
+fetch is benign to the pipeline -- confirmed by the DSOLID isolation slot
+rendering a clean cube). A raw derivative visualization looks faceted because
+screen-space derivatives are constant per triangle and discontinuous at the
+shared edge; that is correct, not a geometry bug.
+
+## Validation
+Every test shader is checked by the XenosRecomp oracle (which does the
+inverse ucode→SPIR-V translation); `modulate.frag` is additionally
+byte-identical to the hardware-photographed combiner. See
+`tests/test_xsc_lower.py`, `tests/test_xsc_resolve.py`. The end-to-end proof
+app was `app/glslcube` (cube whose VS+PS compile from GLSL at build time), in
+xost's archived repo (github.com/xenosworks/xenos-toolchain, last commit 4a785c6); the SDK's titles and vulkan4xenon's run xsc's shaders on the
+console now.
+
+## Still to do
+
+Measured on the console through the SDK: two kinds of code xsc writes run
+slower than they need to. A scalar chain lowers as `.xxxx` vector ops rather
+than scalar ops co-issued beside vector ones, and a vec4 plus a float lowers
+as four adds, a component each.
