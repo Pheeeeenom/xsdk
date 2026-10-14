@@ -45,7 +45,7 @@ PACING_OBJECTS := $(patsubst tests/%,$(BUILD)/tests/%.o,$(basename $(PACING_SOUR
 # Bring-up probes: titles that each answer one question on the console.
 PROBES := probe_spin probe_print probe_cp probe_ring probe_interrupt probe_exports probe_engines probe_swap \
 	probe_display probe_guide probe_resolve probe_triangle probe_vblank probe_720p probe_constants probe_mip_tail \
-	probe_draw_after_resolve
+	probe_draw_after_resolve probe_pixel_rate
 
 .PHONY: all clean cmake_check
 # Keep the ELFs and objects that pattern rules build on the way to a .xex.

@@ -57,6 +57,9 @@ enum {
 	VTE_VIEWPORT_AND_W0 = 0x0000043F,
 	STENCIL_MASKS = 0x00FFFF00,
 	INTERPOLATE_ALL_AT_CENTERS = 0xFFFFFFFF,
+	// SQ_CONTEXT_MISC's sc_sample_cntl (xenia:src/xenia/gpu/registers.h:157; xenos.h:804-808).
+	SAMPLE_CNTL_MASK = 3 << 2,
+	SAMPLE_CNTL_CENTERS_ONLY = 1 << 2,
 	MAX_VERTEX_INDEX = 0x00FFFFFF,
 	// Stream 0's vertex fetch constant and libxenon's fetch word: type 3, k8in32, bit 28 (xe.c:1181-1185, 1965).
 	VERTEX_FETCH_CONSTANT = 95,
@@ -264,8 +267,11 @@ static void put_im_load(GpuPackets *packets, const XsdkShader *shader)
 void xsdk_gpu_set_shaders(const XsdkShader *vertex, const XsdkShader *pixel)
 {
 	assert(vertex->type == XSDK_SHADER_VERTEX && pixel->type == XSDK_SHADER_PIXEL);
-	const uint32_t program[] = { vertex->program_control | pixel->program_control,
-		vertex->context_misc | pixel->context_misc, INTERPOLATE_ALL_AT_CENTERS };
+	// Every interpolant is at its centre, and centroids and centres halve the pixel rate (docs/HARDWARE.md).
+	const uint32_t context_misc =
+		((vertex->context_misc | pixel->context_misc) & ~(uint32_t)SAMPLE_CNTL_MASK) | SAMPLE_CNTL_CENTERS_ONLY;
+	const uint32_t program[] = { vertex->program_control | pixel->program_control, context_misc,
+		INTERPOLATE_ALL_AT_CENTERS };
 	uint32_t dwords[DRAW_MAX_DWORDS];
 	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
 	put_im_load(&packets, pixel);
