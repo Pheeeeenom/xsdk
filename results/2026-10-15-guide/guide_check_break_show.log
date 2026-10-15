@@ -1,0 +1,23 @@
+log: game:\guide_check_break.log
+log: named after \Device\Harddisk0\Partition1\XSDK\main\guide_check_break.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+guide: open the Guide for about 5 s and close it, twice, within 60 s
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 21922 us
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 16413 us
+guide: GPU 0x00000000, display 1280x720, listener F8000004
+PASS: guide: GPU, scene and present open, and a listener
+guide: the Guide closed at 0 ms, frame 0: XAM drew 0 frames, its surface showed 0; 0 flips, 0 missed, longest wait 0 us
+guide: the Guide opened at 827 ms, frame 51: XAM drew 0 frames, its surface showed 0; 50 flips, 0 missed, longest wait 17989 us
+present: XAM's 852x480 surface can't show on the kernel's display mode, so the Guide doesn't
+guide: done at 60010 ms, frame 3603: XAM drew 3551 frames, its surface showed 0; 3601 flips, 0 missed, longest wait 17989 us
+PASS: guide: every frame queued in time
+FAIL: guide: the Guide opened and closed twice
+PASS: guide: XAM drew the Guide over frames
+FAIL: guide: XAM's surface showed in their place
+FAIL: guide: the title's own frames showed again after it closed
+PASS: guide: every frame resolved with its bar
+PASS: guide: GPU close
+guide: 5 passed, 3 failed
+exit: status 1

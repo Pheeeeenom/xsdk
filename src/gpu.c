@@ -10,6 +10,7 @@
 #include "gpu_private.h"
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
+#include "xsdk/texture.h"
 #include "xsdk/thread.h"
 
 enum {
@@ -59,9 +60,27 @@ enum {
 enum {
 	RPTR_OFFSET = 0x00,
 	FENCE_OFFSET = 0x20,
+	// Where the kernel's swap writes its fence, which XAM reads to know the GPU is done with its commands.
+	SYSTEM_FENCE_OFFSET = 0x30,
 	RECTANGLE_OFFSET = 0x40,
 	// The stream's own fences, apart from the title's.
 	BLOCK_FENCE_OFFSET = 0x200,
+};
+
+// The kernel's swap and the system command buffer it takes (docs/HARDWARE.md, "The Guide shows through VdSwap").
+enum {
+	// What D3D reserves in the ring for VdSwap (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:404-407).
+	SWAP_DWORDS = 64,
+	SYSTEM_BUFFER_DWORDS = 0x94 / 4,
+	// The address of XAM's commands and their length in dwords, 0 when it has none. Xenia gives an address and no
+	// length (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:252-256).
+	SYSTEM_COMMANDS = 0,
+	SYSTEM_COMMAND_DWORDS = 1,
+	// VdSwap's format and colour space for a k_8_8_8_8 front buffer in RGB (xboxkrnl_video.cc:395-400).
+	SWAP_FORMAT_8888 = 6,
+	SWAP_COLOR_SPACE_RGB = 0,
+	// XAM resolves its surface at its width rounded up to 32.
+	SURFACE_PITCH_ALIGNMENT = 32,
 };
 
 enum {
@@ -295,6 +314,7 @@ NTSTATUS xsdk_gpu_open(void)
 	writeback[RPTR_OFFSET / 4] = 0;
 	writeback[FENCE_OFFSET / 4] = 0;
 	writeback[BLOCK_FENCE_OFFSET / 4] = 0;
+	writeback[SYSTEM_FENCE_OFFSET / 4] = 0;
 	write_index = 0;
 	last_fence = 0;
 	stream_physical = MmGetPhysicalAddress((const void *)stream);
@@ -316,6 +336,7 @@ NTSTATUS xsdk_gpu_open(void)
 	}
 	VdInitializeRingBuffer(MmGetPhysicalAddress((const void *)ring), RING_SIZE_LOG2);
 	VdEnableRingBufferRPtrWriteBack(writeback_physical + RPTR_OFFSET, RPTR_BLOCK_SIZE_LOG2);
+	VdSetSystemCommandBufferGpuIdentifierAddress(&writeback[SYSTEM_FENCE_OFFSET / 4]);
 
 	// Without libxenon's set-up, only every third resolve writes (docs/HARDWARE.md).
 	direct = true;
@@ -341,6 +362,8 @@ NTSTATUS xsdk_gpu_close(void)
 		stream = NULL;
 		return status;
 	}
+	// So XAM's device, back with the GPU, never reads the page once it's freed.
+	VdSetSystemCommandBufferGpuIdentifierAddress(NULL);
 	VdShutdownEngines();
 	free_memory();
 	return STATUS_SUCCESS;
@@ -445,6 +468,56 @@ bool xsdk_gpu_fence_done(uint32_t fence)
 void xsdk_gpu_stats(XsdkGpuStats *stats)
 {
 	*stats = ring_stats;
+	stats->swap_fence_landed = writeback ? writeback[SYSTEM_FENCE_OFFSET / 4] : 0;
+}
+
+bool xsdk_gpu_swap(volatile const uint32_t *front_buffer, uint32_t width, uint32_t height, GpuSurface *shown)
+{
+	assert(!recording && !direct);
+	// XAM samples the frame through this: a front buffer holds what B8G8R8A8 textures are resolved as (src/gpu_resolve.c).
+	XsdkTexture front;
+	const NTSTATUS described = xsdk_texture_init(&front, XSDK_FORMAT_B8G8R8A8, width, height, 1, true);
+	assert(NT_SUCCESS(described));
+	(void)described;
+	// D3D's texture header holds the buffer's CPU address, which VdSwap turns into the GPU's.
+	front.fetch[1] |= (uint32_t)front_buffer;
+	uint32_t system[SYSTEM_BUFFER_DWORDS];
+	uint32_t value = 0;
+	VdGetSystemCommandBuffer(system, &value);
+	// The frame's packets run first. The swap goes in the ring itself, where D3D gives VdSwap its room
+	// (xboxkrnl_video.cc:353), so XAM's commands run from the ring rather than from inside a segment.
+	submit_segment();
+	volatile uint32_t *const space = ring_reserve(SWAP_DWORDS);
+	uint32_t address = (uint32_t)front_buffer;
+	uint32_t format = SWAP_FORMAT_8888;
+	uint32_t color_space = SWAP_COLOR_SPACE_RGB;
+	uint32_t shown_width = width;
+	uint32_t shown_height = height;
+	VdSwap(space, front.fetch, &writeback[SYSTEM_FENCE_OFFSET / 4], system, value, &address, &format, &color_space,
+		&shown_width, &shown_height);
+	ring_stats.swaps++;
+	ring_stats.swap_fence = value;
+	if (!system[SYSTEM_COMMANDS] || !system[SYSTEM_COMMAND_DWORDS])
+		return false;
+	// XAM's commands left the GPU's state and eDRAM as they please. The set-up goes straight into the ring, as it did
+	// at xsdk_gpu_open, all but the ME_INIT that starts the command processor.
+	ring_stats.system_draws++;
+	direct = true;
+	xsdk_gpu_set_up_again();
+	direct = false;
+	kick();
+	xsdk_gpu_undo_target();
+	xsdk_gpu_hiz_drop();
+	// The display shows only what xsdk_gpu_resolve writes; XAM gave the same in every run (docs/HARDWARE.md).
+	if (address == (uint32_t)front_buffer || format != SWAP_FORMAT_8888 || color_space != SWAP_COLOR_SPACE_RGB)
+		return false;
+	*shown = (GpuSurface){
+		.address = MmGetPhysicalAddress((const void *)address),
+		.width = shown_width,
+		.height = shown_height,
+		.pitch = (shown_width + SURFACE_PITCH_ALIGNMENT - 1) & ~(uint32_t)(SURFACE_PITCH_ALIGNMENT - 1),
+	};
+	return true;
 }
 
 void xsdk_gpu_set_wait_spin(uint32_t microseconds)

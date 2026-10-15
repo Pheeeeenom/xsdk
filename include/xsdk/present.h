@@ -29,6 +29,8 @@ typedef struct {
 	uint32_t last_flip_vblank;
 	// The longest xsdk_present_begin waited for a front buffer to come off screen.
 	uint32_t longest_wait_us;
+	// Frames that showed XAM's surface in place of the front buffer: the frame under the open Guide, which XAM draws.
+	uint32_t system_frames;
 } XsdkPresentStats;
 
 // Opens the display in this mode with buffer_count front buffers, 2 or 3; each frame shows for swap_interval vblanks.
@@ -41,7 +43,9 @@ NTSTATUS xsdk_present_begin(uint32_t *address, uint32_t timeout_ms);
 uint32_t xsdk_present_buffer_address(uint32_t index);
 // The CPU's view of the front buffer at an address xsdk_present_begin gave.
 volatile uint32_t *xsdk_present_pixels(uint32_t address);
-// Queues the frame resolved into that buffer; the vblank callback shows it once the GPU has finished it.
+// Queues the frame resolved into that buffer; the vblank callback shows it once the GPU has finished it. The frame goes
+// through the kernel's swap, so while the Guide is open XAM draws it under the Guide in a surface of XAM's, which shows
+// instead. XAM's drawing changes eDRAM: see XsdkGpuStats's system_draws.
 void xsdk_present_end(void);
 void xsdk_present_stats(XsdkPresentStats *stats);
 // Waits for the queued frames to show, stops flipping, closes the display and frees the buffers.

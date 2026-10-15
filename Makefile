@@ -55,6 +55,9 @@ AUDIO_CHECK_OBJECTS := $(patsubst tests/%,$(BUILD)/tests/%.o,$(basename $(AUDIO_
 # Milestone 9's 10-minute pacing run, too long for the test title.
 PACING_SOURCES := tests/pacing.c tests/bar_scene.c
 PACING_OBJECTS := $(patsubst tests/%,$(BUILD)/tests/%.o,$(basename $(PACING_SOURCES)))
+# Milestone 37's check, watched while the user opens the Guide.
+GUIDE_CHECK_SOURCES := tests/guide_check.c tests/bar_scene.c
+GUIDE_CHECK_OBJECTS := $(patsubst tests/%,$(BUILD)/tests/%.o,$(basename $(GUIDE_CHECK_SOURCES)))
 # Bring-up probes: titles that each answer one question on the console.
 PROBES := probe_spin probe_print probe_cp probe_ring probe_interrupt probe_exports probe_engines probe_swap \
 	probe_display probe_guide probe_resolve probe_triangle probe_vblank probe_720p probe_constants probe_mip_tail \
@@ -66,7 +69,8 @@ UNROLL_LOOPS_OBJECTS := $(BUILD)/tests/unroll_loops_o2.o $(BUILD)/tests/unroll_l
 .PHONY: all clean cmake_check
 # Keep the ELFs and objects that pattern rules build on the way to a .xex.
 .SECONDARY:
-all: $(BUILD)/xsdk_test.xex $(BUILD)/host/libxsc.so $(BUILD)/audio_check.xex $(BUILD)/pacing_test.xex $(PROBES:%=$(BUILD)/%.xex)
+all: $(BUILD)/xsdk_test.xex $(BUILD)/host/libxsc.so $(BUILD)/audio_check.xex $(BUILD)/pacing_test.xex \
+	$(BUILD)/guide_check.xex $(PROBES:%=$(BUILD)/%.xex)
 
 # A title built through cmake/xsdk.cmake, as CMake projects such as Dusklight build; needs CMake and Ninja.
 cmake_check: $(BUILD)/libxsdk.a
@@ -85,6 +89,9 @@ $(BUILD)/audio_check.elf: $(AUDIO_CHECK_OBJECTS) $(BUILD)/libxsdk.a src/xsdk.ld
 
 $(BUILD)/pacing_test.elf: $(PACING_OBJECTS) $(BUILD)/libxsdk.a src/xsdk.ld
 	$(CC) $(LDFLAGS) -o $@ $(PACING_OBJECTS) $(LIBS)
+
+$(BUILD)/guide_check.elf: $(GUIDE_CHECK_OBJECTS) $(BUILD)/libxsdk.a src/xsdk.ld
+	$(CC) $(LDFLAGS) -o $@ $(GUIDE_CHECK_OBJECTS) $(LIBS)
 
 $(BUILD)/probe_%.elf: $(BUILD)/tests/probe_%.o $(BUILD)/libxsdk.a src/xsdk.ld
 	$(CC) $(LDFLAGS) -o $@ $(BUILD)/tests/probe_$*.o $(LIBS)

@@ -90,9 +90,9 @@ static NTSTATUS allocate(FrontBuffer *buffer, uint32_t colour)
 
 static void swap_to(const FrontBuffer *buffer, volatile uint32_t *system_writeback)
 {
-	const uint32_t address = (uint32_t)buffer->pixels;
-	const uint32_t width = buffer->width;
-	const uint32_t height = buffer->height;
+	uint32_t address = (uint32_t)buffer->pixels;
+	uint32_t width = buffer->width;
+	uint32_t height = buffer->height;
 	// A linear k_8_8_8_8 2D texture; the pitch is in pixels >> 5 (xenia:src/xenia/gpu/xenos.h:1211-1222).
 	const uint32_t fetch_constant[6] = {
 		FETCH_TYPE_TEXTURE | (width >> 5) << 22,
@@ -102,8 +102,8 @@ static void swap_to(const FrontBuffer *buffer, volatile uint32_t *system_writeba
 		0,
 		DIMENSION_2D << 9,
 	};
-	const uint32_t texture_format = FORMAT_8_8_8_8;
-	const uint32_t color_space = 0;
+	uint32_t texture_format = FORMAT_8_8_8_8;
+	uint32_t color_space = 0;
 	xsdk_log_write("swap: %s: %ux%u at %08X (physical %08X), fetch constant %08X %08X %08X", buffer->name,
 		(unsigned)width, (unsigned)height, (unsigned)address, (unsigned)MmGetPhysicalAddress((const void *)address),
 		(unsigned)fetch_constant[0], (unsigned)fetch_constant[1], (unsigned)fetch_constant[2]);

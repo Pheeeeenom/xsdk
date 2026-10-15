@@ -64,6 +64,8 @@ static void run_mode(const Mode *mode)
 		bar_scene_close(&scene);
 		return;
 	}
+	XsdkGpuStats before;
+	xsdk_gpu_stats(&before);
 	uint32_t presented = 0;
 	uint32_t last_address = 0;
 	uint32_t wrong = 0;
@@ -88,7 +90,12 @@ static void run_mode(const Mode *mode)
 	if (presented == FRAMES && !drawn)
 		bar_scene_log_miss(&scene, xsdk_present_pixels(last_address), FRAMES - 1, mode->name);
 	xsdk_log_write("pacing: %s: %u reused buffers held the wrong frame", mode->name, (unsigned)wrong);
+	XsdkGpuStats after;
+	xsdk_gpu_stats(&after);
 	xsdk_present_close();
+	xsdk_log_write("pacing: %s: %u swaps, fence %08X, landed %08X; XAM drew %u, showed %u", mode->name,
+		(unsigned)(after.swaps - before.swaps), (unsigned)after.swap_fence, (unsigned)after.swap_fence_landed,
+		(unsigned)(after.system_draws - before.system_draws), (unsigned)stats.system_frames);
 	xsdk_log_write(
 		"pacing: %s: %u frames, %u flips over %u vblanks (first %u, last %u), %u missed, %u late; longest "
 		"wait %u us",
@@ -105,6 +112,13 @@ static void run_mode(const Mode *mode)
 			stats.last_flip_vblank - stats.first_flip_vblank == (FRAMES - 1) * mode->swap_interval);
 	check_mode(mode, "every flip inside vblank", stats.flips == FRAMES && stats.late == 0);
 	check_mode(mode, "every frame resolved with its bar", presented == FRAMES && wrong == 0 && drawn);
+	// The kernel's swap is how the Guide draws (docs/HARDWARE.md, "The Guide shows through VdSwap").
+	check_mode(mode, "every frame through the kernel's swap, its last fence landed",
+		presented == FRAMES && after.swaps - before.swaps == FRAMES && drawn &&
+			after.swap_fence_landed == after.swap_fence);
+	// So opening the Guide during the test fails it.
+	check_mode(mode, "every frame showed its own buffer, the Guide closed",
+		after.system_draws == before.system_draws && stats.system_frames == 0);
 	bar_scene_close(&scene);
 }
 

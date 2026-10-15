@@ -1,0 +1,173 @@
+log: game:\probe_swap_guide.log
+log: named after \Device\Harddisk0\Partition1\XSDK\main\probe_swap_guide.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+swap guide probe
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 17247 us
+guide: 1280x720, front buffer fetch 8A000002 00000086 0059E4FF, writeback BF0E0040 (physical 1F0E0040), listener F8000004
+guide: for 45 s, open the Guide for over 5 s, close it, and again
+guide: frame 0, 0 ms: VdGetSystemCommandBuffer gave 00005AFF and:
+guide: system buffer +00: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+guide: system buffer +08: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+guide: system buffer +10: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+guide: system buffer +18: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+guide: system buffer +20: 00000000 00000000 00000000 00000000 00000000 A5A5A5A5 A5A5A5A5 A5A5A5A5
+guide: frame 0, 0 ms: VdSwap wrote, 00005AFF marked 5A5A5A5A:
+guide:   +00: C0025800 type 3, opcode 58, 3 dwords: 00000003 1F0E0042 5A5A5A5A
+guide:   +04: C03A1000 type 3, opcode 10, 59 dwords:
+guide: frame 0, 0 ms: notification 00000009, param 00000000
+guide: frame 0, 0 ms: notification 0000000A, param 00000000
+guide: frame 0, 0 ms: notification 00060019, param 00000000
+guide: frame 0, 0 ms: notification 02000009, param 00000000
+guide: frame 0, 0 ms: notification 0A000001, param 00000000
+guide: frame 0, 0 ms: notification 0A000003, param 00000001
+guide: frame 161, 2839 ms: notification 00000009, param 00000001
+guide: frame 162, 2861 ms: VdGetSystemCommandBuffer gave 00005C43 and:
+guide: system buffer +00: 01E30000 00000A2A E1C18000 00000006 00000000 00000354 000001E0 00000001
+guide: system buffer +08: 00000000 00000000 00000354 000001E0 00000780 00000438 00000000 00000000
+guide: system buffer +10: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+guide: system buffer +18: 00000280 000001E0 00000780 00000438 00000000 00000000 00000000 00000000
+guide: system buffer +20: 00000000 00000000 00000000 00000000 00000001 A5A5A5A5 A5A5A5A5 A5A5A5A5
+guide: system buffer's address at 01E30000, read at C1E30000:
+guide: system buffer's address +00: 00022080 00000000 00000000 03D40354 00000A31 03000000 00010A2F 20000000
+guide: system buffer's address +08: 00000000 C0043C00 00000003 00000A31 00000000 80000000 00000008 00022080
+guide: system buffer's address +10: 00000000 00000000 03D40354 03FF4000 3E9A86AD 00000000 00000000 43B82CB7
+guide: system buffer's address +18: 00000000 3D56DAC7 00000000 436B6FB2 00000000 00000000 3F800000 00000000
+guide: system buffer's address +20: 00000000 00000000 3A83126F 3F800000 3B19D723 00000000 00000000 BF800000
+guide: system buffer's address +28: 00000000 BB05BF37 00000000 3F800000 00000000 00000000 3F800000 00000000
+guide: system buffer's address +30: 00000000 00000000 00000000 3F800000 00000000 00000000 00000000 00000000
+guide: system buffer's address +38: 00000000 00000000 00000000 00000000 3F800000 00000000 00000000 00000000
+guide: system buffer's address at E1C18000, read at E1C18000:
+guide: system buffer's address +00: 000000FF 000000FF 000000FF 000000FF 000000FF 000000FF 000000FF 000000FF
+guide: system buffer's address +08: 000000FF 000000FF 000000FF 000000FF 000000FF 000000FF 000000FF 000000FF
+guide: system buffer's address +10: 000000FF 000000FF 000000FF 000000FF 000000FF 000000FF 000000FF 000000FF
+guide: system buffer's address +18: 000000FF 000000FF 000000FF 000000FF 000000FF 000000FF 000000FF 000000FF
+guide: system buffer's address +20: 000000FF 000000FF 000000FF 000000FF 000000FF 000000FF 000000FF 000000FF
+guide: system buffer's address +28: 000000FF 000000FF 000000FF 000000FF 000000FF 000000FF 000000FF 000000FF
+guide: system buffer's address +30: 000000FF 000000FF 000000FF 000000FF 000000FF 000000FF 000000FF 000000FF
+guide: system buffer's address +38: 000000FF 000000FF 000000FF 000000FF 000000FF 000000FF 000000FF 000000FF
+guide: XAM's buffer at 01E30000, 2602 dwords, read at C1E30000
+guide: XAM's buffer +0000: register 2080 = 00000000
+guide: XAM's buffer +0000: register 2081 = 00000000
+guide: XAM's buffer +0000: register 2082 = 03D40354
+guide: XAM's buffer +000F: register 2080 = 00000000
+guide: XAM's buffer +000F: register 2081 = 00000000
+guide: XAM's buffer +000F: register 2082 = 03D40354
+guide: XAM's buffer +084B: register 2000 = 0D800370
+guide: XAM's buffer +084B: register 2001 = 00000000
+guide: XAM's buffer +084B: register 2002 = 00000000
+guide: XAM's buffer +0999: register 2318 = 00000000
+guide: XAM's buffer +0999: register 2319 = 01C19000
+guide: XAM's buffer +0999: register 231A = 01E00360
+guide: XAM's buffer +0999: register 231B = 00000000
+guide: XAM's buffer +09CC: register 2080 = 00000000
+guide: XAM's buffer +09CC: register 2081 = 00000000
+guide: XAM's buffer +09CC: register 2082 = 01E00358
+guide: XAM's buffer +09DD: register 2318 = 00100000
+guide: XAM's buffer +09DD: register 2319 = 01C19000
+guide: XAM's buffer +09DD: register 231A = 01E00360
+guide: XAM's buffer +09DD: register 231B = 01000300
+guide: XAM's buffer +0A1C: register 2080 = 00000000
+guide: XAM's buffer +0A1C: register 2081 = 00000000
+guide: XAM's buffer +0A1C: register 2082 = 03D40354
+guide: XAM's buffer +0A20: register 2318 = 00000000
+guide: XAM's buffer +0A22: register 231B = 00000000
+guide: XAM's buffer: 25 watched writes logged; type 3 opcodes: 22:1 27:1 2B:2 36:1 3B:2 3C:2 46:1
+guide: frame 162, 2861 ms: VdSwap wrote, 00005C43 marked 5A5A5A5A:
+guide:   +00: 0005485A type 0, register 485A, 6 dwords: 8A004802 1F490086 0059E4FF 00280C14 00000000 00000A00
+guide:   +07: C0013F00 type 3, opcode 3F, 2 dwords: 01E30000 00000A2A
+guide:   +0A: C0025800 type 3, opcode 58, 3 dwords: 00000003 1F0E0042 5A5A5A5A
+guide:   +0E: C0301000 type 3, opcode 10, 49 dwords:
+guide: frame 163, 3256 ms: VdGetSystemCommandBuffer gave 00005C45 and:
+guide: system buffer +00: 01DF0000 00000ABF E1C18000 00000006 00000000 00000354 000001E0 00000000
+guide: system buffer +08: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+guide: system buffer +10: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+guide: system buffer +18: 00000280 000001E0 00000780 00000438 00000000 00000000 00000000 00000000
+guide: system buffer +20: 00000000 00000000 00000000 00000000 00000001 A5A5A5A5 A5A5A5A5 A5A5A5A5
+guide: system buffer's address at 01DF0000, read at C1DF0000:
+guide: system buffer's address +00: 00022080 00000000 00000000 03D40354 00000A31 03000000 00010A2F 20000000
+guide: system buffer's address +08: 00000000 C0043C00 00000003 00000A31 00000000 80000000 00000008 00022080
+guide: system buffer's address +10: 00000000 00000000 03D40354 03FF4000 3E9A86AD 00000000 00000000 43B82CB7
+guide: system buffer's address +18: 00000000 3D56DAC7 00000000 436B6FB2 00000000 00000000 3F800000 00000000
+guide: system buffer's address +20: 00000000 00000000 3A83126F 3F800000 3B19D723 00000000 00000000 BF800000
+guide: system buffer's address +28: 00000000 BB05BF37 00000000 3F800000 00000000 00000000 3F800000 00000000
+guide: system buffer's address +30: 00000000 00000000 00000000 3F800000 00000000 00000000 00000000 00000000
+guide: system buffer's address +38: 00000000 00000000 00000000 00000000 3F800000 00000000 00000000 00000000
+guide: XAM's buffer at 01DF0000, 2751 dwords, read at C1DF0000
+guide: XAM's buffer +0000: register 2080 = 00000000
+guide: XAM's buffer +0000: register 2081 = 00000000
+guide: XAM's buffer +0000: register 2082 = 03D40354
+guide: XAM's buffer +000F: register 2080 = 00000000
+guide: XAM's buffer +000F: register 2081 = 00000000
+guide: XAM's buffer +000F: register 2082 = 03D40354
+guide: XAM's buffer +084B: register 2000 = 0D800370
+guide: XAM's buffer +084B: register 2001 = 00000000
+guide: XAM's buffer +084B: register 2002 = 00000000
+guide: XAM's buffer +0999: register 2318 = 00000000
+guide: XAM's buffer +0999: register 2319 = 01C19000
+guide: XAM's buffer +0999: register 231A = 01E00360
+guide: XAM's buffer +0999: register 231B = 00000000
+guide: XAM's buffer +0A6E: register 2080 = 00000000
+guide: XAM's buffer +0A6E: register 2081 = 00000000
+guide: XAM's buffer +0A6E: register 2082 = 01E00358
+guide: XAM's buffer +0A72: register 2318 = 00100000
+guide: XAM's buffer +0A72: register 2319 = 01C19000
+guide: XAM's buffer +0A72: register 231A = 01E00360
+guide: XAM's buffer +0A72: register 231B = 01000300
+guide: XAM's buffer +0AB1: register 2080 = 00000000
+guide: XAM's buffer +0AB1: register 2081 = 00000000
+guide: XAM's buffer +0AB1: register 2082 = 03D40354
+guide: XAM's buffer +0AB5: register 2318 = 00000000
+guide: XAM's buffer +0AB7: register 231B = 00000000
+guide: XAM's buffer: 25 watched writes logged; type 3 opcodes: 22:2 27:2 2B:3 36:1 3B:3 3C:2 46:1
+guide: frame 163, 3256 ms: VdSwap wrote, 00005C45 marked 5A5A5A5A:
+guide:   +00: 0005485A type 0, register 485A, 6 dwords: 8A004802 1F0F0086 0059E4FF 00280C14 00000000 00000A00
+guide:   +07: C0013F00 type 3, opcode 3F, 2 dwords: 01DF0000 00000ABF
+guide:   +0A: C0025800 type 3, opcode 58, 3 dwords: 00000003 1F0E0042 5A5A5A5A
+guide:   +0E: C0301000 type 3, opcode 10, 49 dwords:
+guide: frame 164, 3747 ms: VdGetSystemCommandBuffer gave 00005C47 and:
+guide: system buffer +00: 01DB0000 00000ABF E1C18000 00000006 00000000 00000354 000001E0 00000000
+guide: system buffer +08: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+guide: system buffer +10: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+guide: system buffer +18: 00000280 000001E0 00000780 00000438 00000000 00000000 00000000 00000000
+guide: system buffer +20: 00000000 00000000 00000000 00000000 00000001 A5A5A5A5 A5A5A5A5 A5A5A5A5
+guide: system buffer's address at 01DB0000, read at C1DB0000:
+guide: system buffer's address +00: 00022080 00000000 00000000 03D40354 00000A31 03000000 00010A2F 20000000
+guide: system buffer's address +08: 00000000 C0043C00 00000003 00000A31 00000000 80000000 00000008 00022080
+guide: system buffer's address +10: 00000000 00000000 03D40354 03FF4000 3F0AA5DC 00000000 00000000 43A131D5
+guide: system buffer's address +18: 00000000 3E041FBD 00000000 43626E54 00000000 00000000 3F800000 00000000
+guide: system buffer's address +20: 00000000 00000000 3A83126F 3F800000 3B19D723 00000000 00000000 BF800000
+guide: system buffer's address +28: 00000000 BB05BF37 00000000 3F800000 00000000 00000000 3F800000 00000000
+guide: system buffer's address +30: 00000000 00000000 00000000 3F800000 00000000 00000000 00000000 00000000
+guide: system buffer's address +38: 00000000 00000000 00000000 00000000 3F800000 00000000 00000000 00000000
+guide: XAM's buffer at 01DB0000, 2751 dwords, read at C1DB0000
+guide: XAM's buffer +0000: register 2080 = 00000000
+guide: XAM's buffer +0000: register 2081 = 00000000
+guide: XAM's buffer +0000: register 2082 = 03D40354
+guide: XAM's buffer +000F: register 2080 = 00000000
+guide: XAM's buffer +000F: register 2081 = 00000000
+guide: XAM's buffer +000F: register 2082 = 03D40354
+guide: XAM's buffer +084B: register 2000 = 0D800370
+guide: XAM's buffer +084B: register 2001 = 00000000
+guide: XAM's buffer +084B: register 2002 = 00000000
+guide: XAM's buffer +0999: register 2318 = 00000000
+guide: XAM's buffer +0999: register 2319 = 01C19000
+guide: XAM's buffer +0999: register 231A = 01E00360
+guide: XAM's buffer +0999: register 231B = 00000000
+guide: XAM's buffer +0A6E: register 2080 = 00000000
+guide: XAM's buffer +0A6E: register 2081 = 00000000
+guide: XAM's buffer +0A6E: register 2082 = 01E00358
+guide: XAM's buffer +0A72: register 2318 = 00100000
+guide: XAM's buffer +0A72: register 2319 = 01C19000
+guide: XAM's buffer +0A72: register 231A = 01E00360
+guide: XAM's buffer +0A72: register 231B = 01000300
+guide: XAM's buffer +0AB1: register 2080 = 00000000
+guide: XAM's buffer +0AB1: register 2081 = 00000000
+guide: XAM's buffer +0AB1: register 2082 = 03D40354
+guide: XAM's buffer +0AB5: register 2318 = 00000000
+guide: XAM's buffer +0AB7: register 231B = 00000000
+guide: XAM's buffer: 25 watched writes logged; type 3 opcodes: 22:2 27:2 2B:3 36:1 3B:3 3C:2 46:1
+guide: frame 164, 3747 ms: VdSwap wrote, 00005C47 marked 5A5A5A5A:
+guide:   +00: 0005485A type 0, register 485A, 6 dwords: 8A004802 1F490086 0059E4FF 00280C14 00000000 00000A00
+guide:   +07: C0013F00 type 3, opcode 3F, 2 dwords: 01DB0000 00000ABF
+guide:   +0A: C0025800 type 3, opcode 58, 3 dwords: 00000003 1F0E0042 5A5A5A5A

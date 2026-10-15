@@ -1,0 +1,34 @@
+log: game:\probe_swap_guide.log
+log: named after \Device\Harddisk0\Partition1\XSDK\main\probe_swap_guide.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+swap guide probe
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 18330 us
+guide: 1280x720, front buffer fetch 8A000002 00000086 0059E4FF, writeback BF0E0040 (physical 1F0E0040), listener F8000004
+guide: for 45 s, open the Guide for 5 s, close it, and again
+guide: frame 0, 0 ms: VdGetSystemCommandBuffer gave 00005EB5 and:
+guide: system buffer +00: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+guide: system buffer +08: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+guide: system buffer +10: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+guide: system buffer +18: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+guide: system buffer +20: 00000000 00000000 00000000 00000000 00000000 A5A5A5A5 A5A5A5A5 A5A5A5A5
+guide: frame 0, 0 ms: VdSwap wrote, 00005EB5 marked 5A5A5A5A:
+guide:   +00: C0025800 type 3, opcode 58, 3 dwords: 00000003 1F0E0042 5A5A5A5A
+guide:   +04: C03A1000 type 3, opcode 10, 59 dwords:
+guide: frame 0, 0 ms: notification 00000009, param 00000000
+guide: frame 0, 0 ms: notification 0000000A, param 00000000
+guide: frame 0, 0 ms: notification 00060019, param 00000000
+guide: frame 0, 0 ms: notification 02000009, param 00000000
+guide: frame 0, 0 ms: notification 0A000001, param 00000000
+guide: frame 0, 0 ms: notification 0A000003, param 00000001
+guide: 5013 ms: frame 291, flips 291, missed 6, writeback 000060F9, swap changes 1, system buffer changes 1
+guide: 10012 ms: frame 591, flips 591, missed 6, writeback 00006351, swap changes 1, system buffer changes 1
+guide: 15013 ms: frame 889, flips 889, missed 8, writeback 000065A5, swap changes 1, system buffer changes 1
+guide: 20012 ms: frame 1189, flips 1189, missed 8, writeback 000067FD, swap changes 1, system buffer changes 1
+guide: 25012 ms: frame 1489, flips 1489, missed 8, writeback 00006A55, swap changes 1, system buffer changes 1
+guide: 30013 ms: frame 1789, flips 1789, missed 8, writeback 00006CAD, swap changes 1, system buffer changes 1
+guide: 35013 ms: frame 2087, flips 2087, missed 10, writeback 00006F01, swap changes 1, system buffer changes 1
+guide: 40012 ms: frame 2387, flips 2387, missed 10, writeback 00007159, swap changes 1, system buffer changes 1
+guide: done after 2686 frames: flips 2685, missed 11, swap changes 1, system buffer changes 1, notifications 6
+guide: xsdk_gpu_close returned 0x00000000
+exit: status 0

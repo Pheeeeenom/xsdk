@@ -2953,3 +2953,103 @@ since, xsdk_test passed but for the controller's two checks, with no pad attache
 and with the pad, 305 of 305 (`xsdk_test_pad.log`).
 Broken on purpose, the replay test sleeping 40 ms halfway, "no vblank missed" and "a flip every swap interval" fail
 (`xsdk_test_break_replay.log`).
+
+## The Guide shows through VdSwap (2026-10-15)
+
+The Guide never opened in a title built on xsdk: the button sounded, and the Guide showed only once the title had
+exited. A probe drew frames through `xsdk_present` and called `VdSwap` on each, as D3D does (xenia:src/xenia/kernel/
+xboxkrnl/xboxkrnl_video.cc:352-360), while the user opened and closed the Guide (logs: `results/2026-10-15-guide/`,
+`probe_1.log` and `probe_2.log`; the probe isn't kept, as `xsdk_present_end` now does the same).
+
+- **XAM tells the title** with notification 9, `XN_SYS_UI` (xenia:src/xenia/kernel/xam/xam_ui.cc:72-75), from a
+  listener `XamNotifyCreateListener` made: parameter 1 as the Guide opened, 0 as it closed.
+- **While the Guide is open, `VdSwap` writes more than its fence.** First the frame's front buffer into texture fetch
+  constant 15 (register 0x485A), its address made physical, clamping and linear filtering added; then
+  `PM4_INDIRECT_BUFFER` to XAM's commands, from three buffers in turn (0x01DB0000, 0x01DF0000, 0x01E30000) of 0xA2A to
+  0x2720 dwords; then the fence. Closed, the fence alone (`probe_1.log`, frames 0 and 59).
+- **`VdGetSystemCommandBuffer`'s 0x94 bytes say so too:** XAM's commands' address and length; a surface of XAM's
+  (0xE1C18000), format 6, colour space 0, 852x480; on some frames, with word 7 set, words 8 to 0x15 giving 0, 0,
+  852x480 and 1920x1080; and with word 0x24 set, words 0x16 to 0x23 giving 0, 0, 640x480 and 1920x1080. Closed, zeros.
+- **XAM's commands draw into its own surface,** not the title's: a scissor 852 wide (`PA_SC_WINDOW_SCISSOR_BR`
+  0x03D40354), a target 880 wide (`RB_SURFACE_INFO` 0x0D800370), and a resolve to 0x01C19000, 864 wide and 480 high,
+  `RB_COPY_DEST_INFO` 0x01000300: `k_8_8_8_8` swapped and not byte-swapped, as `xsdk_gpu_resolve` writes front buffers.
+  They write no display register (`probe_2.log`, each buffer walked). Their type 3 packets are draws, shader loads,
+  constant loads, invalidates, waits and events: no `ME_INIT`.
+- **The first opening held a frame up 2.7 s,** and the next few took 120 to 290 ms each; later openings didn't slow the
+  frames.
+- **Nothing showed:** the title flipped its own buffers.
+- **Reading XAM's buffers from the title killed it,** twice, while the Guide first opened: the screen froze on the
+  title's last frame and the console agent kept answering, as the title had ended without giving the GPU back
+  (`probe_3_killed.log`, `probe_4_killed_live.log`, both ending inside a read of XAM's buffer through the 0xC0000000
+  window). The probe then read none of XAM's memory (`probe_5.log`, in which the Guide wasn't opened: the controller
+  had dropped off with a reboot, as `XamInputGetState`'s 0x48F says in xsdk_test).
+
+**What the title is to do, from the console's kernel and XAM.** Copied page by page from a title on the console
+(kernel 2.0.17559.0, base 1888) and disassembled, a local step kept out of this repository:
+
+- **The kernel's `VdSwap`** (0x800C8B90) writes the fetch constant and the indirect buffer when the system command
+  buffer's word 0 is set, the address made physical as the low 29 bits plus 0x1000 for the 0xE0000000 window; and when
+  word 2 is set it writes words 2 to 6 through the pointers it was given for the front buffer's address, format, colour
+  space, width and height (0x800C8C70 to 0x800C8C98). It ends by calling `VdCallGraphicsNotificationRoutines(8, 0)`.
+- **The kernel keeps three system command buffers** that XAM sets in turn with `VdSetSystemCommandBuffer`
+  (0x800C8AB8). `VdGetSystemCommandBuffer` (0x800C8B48) copies the newest, and gives a value counting up 2 a call,
+  kept with it; `VdQuerySystemCommandBuffer` (0x800C8A08) tells XAM whether the GPU has written a buffer's value at the
+  address `VdSetSystemCommandBufferGpuIdentifierAddress` gave (0x800C8940), that is, whether it's done with it.
+- **XAM's routine for the graphics notifications** (0x816CBFD8, set through `VdRegisterXamGraphicsNotification`)
+  times every swap at event 8. At event 1 it takes 64 bytes describing the title's display; their last 56 come back
+  in words 0x16 to 0x23 (0x816CD674).
+- **D3D sends event 1** (XAM's copy, 0x8184F578 and 0x8184F3D8): the front buffer's width and height and the output's,
+  four halfwords; then the scaler between them, the source's left, top, right and bottom (0, 0 and the front
+  buffer's size when all four are 0), the output's width and height (the display's when 0), and eight words of filter
+  settings, 0 for the defaults. The kernel's own calls are other events: `VdInitializeEngines` sends 4 and
+  `VdShutdownEngines` 5, with 12 bytes of the display's (0x800C7D68). xsdk sent no event 1, so the 640x480 was what
+  XAM held from before the title took the GPU.
+- **XAM's present** (0x81841AE4 to 0x81841E68), D3D's own: after `VdSwap`, when word 2 was set and the colour space
+  matches its own, it shows the surface `VdSwap` gave back, at the size it gave back, with the scaler of words 8 to
+  0x15, kept from the last frame word 7 was set; when word 2 is 0 again, its own buffer and scaler.
+
+So a title shows the Guide by swapping every frame and showing XAM's surface while `VdSwap` hands it back: milestone
+37 (docs/scope/37-guide.md).
+
+## The Guide, milestone 37 (2026-10-15)
+
+`xsdk_present_end` hands every frame to `VdSwap` in the ring itself, shows XAM's surface while `VdSwap` gives it back,
+and `xsdk_present_open` tells XAM the title's display through event 1 (docs/scope/37-guide.md). On the console
+(`results/2026-10-15-guide/`, and vulkan4xenon:results/2026-10-15-guide/):
+
+- **xsdk_test passed 313 of 313** (`xsdk_test.log`). In each pacing mode all 30 frames went through `VdSwap` and its
+  last fence landed (`30 swaps, fence 000265E7, landed 000265E7`), and with the Guide closed XAM drew none. With the
+  swap broken on purpose, NOPs in its room, those four checks failed and no other (`xsdk_test_break_swap.log`, 309 of
+  313). An earlier run, after a reboot had dropped the controller, failed only the controller's two checks
+  (`xsdk_test_no_pad.log`).
+- **guide_check passed 8 of 8** (`guide_check.log`): the user opened the Guide three times; XAM drew 269 frames, and its
+  surface showed in place of each; at every close the title's own frames came back, every frame held its bar, and 1
+  of 67,528 frames missed its vblank, the longest wait for a front buffer 20 ms. The user saw the Guide over the whole
+  frame, the bar moving under it. An earlier run failed the check on the title's frames after the close only because
+  it wanted a second of them, and the user pressed Back 0.6 s after closing (`guide_check_quick_back.log`); the check
+  now asks that no frame after the close showed XAM's surface and that the title's own came after it.
+- **Broken on purpose,** present never showing XAM's surface: the Guide stayed hidden, XAM drawing 3,551 frames and
+  none showing (`guide_check_break_show.log`). That build also left the set-up unqueued after XAM's commands, and
+  every frame still held its bar, so no check shows the set-up is needed; it stays, as XAM's commands set registers
+  xsdk sets only at open.
+- **Without event 1,** the frame under the Guide was its top left 640x480, stretched over the screen. Dusklight showed
+  it first: the HUD's "ITEMS" sat at about (185, 450) under the Guide and (90, 300) in the game, 2 times across and
+  1.5 down (`dusklight_zoomed.log`, the user's captures). Broken on purpose so present sends no event 1, guide_check's
+  bar under the Guide was zoomed the same way, as the user saw (`guide_check_break_describe.log`); no check catches
+  it, as the title can't read XAM's surface.
+- **Dusklight** with event 1 (`dusklight.log`): the user opened the Guide in game and saw it over the whole frame,
+  Link and the HUD where they belong; the game held 30 fps; leaving through the Guide's Xbox Home took the console back
+  to Aurora, with no reboot.
+- **vulkan4xenon_test passed 112 of 112 and vkbench 14 of 14,** this morning's vkbench and the new one twice each in
+  turn (vulkan4xenon:results/2026-10-15-guide/). Each build repeated its times to within 2 us. The new one's draw
+  scenes record 0.7 to 2.7% slower, vulkan4xenon's `draws_1000` 1,241 us against 1,263 and `draws_4000` 5,193 against
+  5,286, xsdk's `states_1000` 977 against 1,003, and vulkan4xenon's uniform scene 3.4% faster, 740 against 715. The
+  differences grow with the draws, `draws_4000`'s four times `draws_1000`'s, where the swap comes once a frame and
+  outside the times; the code the draws run didn't change, only where it lies.
+- **Ending with the Guide open hangs.** The break run's title ended on its own with the Guide open and never finished
+  ending: it logged its exit, and the console agent rebooted the console 15 s later. XAM's Guide thread, stopping,
+  spins until the GPU has written the fence of the system command buffer it last set, then sets an empty one and spins
+  again (xam 0x816C9A20, called at 0x816CE3AC), and no swap after the title's last can write it. Leaving through Xbox
+  Home ends the title while it's still swapping, and went cleanly. guide_check and Dusklight end only through the
+  controller or Xbox Home, and XAM keeps the controller from them while the Guide shows; a title that ends by itself,
+  as xsdk_test does, would hang if the Guide were open then.

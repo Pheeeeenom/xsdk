@@ -294,25 +294,38 @@ static void put_point_draws(GpuPackets *packets)
 	xsdk_gpu_put_window(packets, 1024, 720);
 }
 
+// Everything after the ME_INIT.
+static void put_state(GpuPackets *packets)
+{
+	put_shader_unit(packets);
+	put_render_backend(packets);
+	put_draw_state(packets);
+	put_register_split(packets);
+	put_point_draws(packets);
+	// Xe_Init invalidates the vertex cache over all memory last (xe.c:992).
+	xsdk_gpu_put_coherency(packets, COHER_VERTEX_CACHE, 0, ALL_MEMORY_BYTES);
+	// libxenon leaves this at its reset value; D3D keeps it whole (xenia:src/xenia/gpu/draw_util.cc:575-576).
+	const uint32_t screen[] = { 0, SCREEN_SCISSOR_8192 };
+	gpu_put_registers(packets, PA_SC_SCREEN_SCISSOR_TL, screen, 2);
+	// The split libxenon's constant setters assume, vertex shaders' 256 then pixel shaders' (xe.c:2013-2029).
+	const uint32_t constant_split[] = { VS_CONSTANTS_FROM_0, PS_CONSTANTS_FROM_256 };
+	gpu_put_registers(packets, SQ_VS_CONST, constant_split, 2);
+}
+
 void xsdk_gpu_set_up(void)
 {
 	for (uint32_t i = 0; i < sizeof saved_registers / sizeof saved_registers[0]; i++)
 		saved_values[i] = gpu_registers[saved_registers[i]];
 	GpuPackets packets = { .dwords = set_up_dwords, .count = 0, .capacity = SET_UP_MAX_DWORDS };
 	put_me_init(&packets);
-	put_shader_unit(&packets);
-	put_render_backend(&packets);
-	put_draw_state(&packets);
-	put_register_split(&packets);
-	put_point_draws(&packets);
-	// Xe_Init invalidates the vertex cache over all memory last (xe.c:992).
-	xsdk_gpu_put_coherency(&packets, COHER_VERTEX_CACHE, 0, ALL_MEMORY_BYTES);
-	// libxenon leaves this at its reset value; D3D keeps it whole (xenia:src/xenia/gpu/draw_util.cc:575-576).
-	const uint32_t screen[] = { 0, SCREEN_SCISSOR_8192 };
-	gpu_put_registers(&packets, PA_SC_SCREEN_SCISSOR_TL, screen, 2);
-	// The split libxenon's constant setters assume, vertex shaders' 256 then pixel shaders' (xe.c:2013-2029).
-	const uint32_t constant_split[] = { VS_CONSTANTS_FROM_0, PS_CONSTANTS_FROM_256 };
-	gpu_put_registers(&packets, SQ_VS_CONST, constant_split, 2);
+	put_state(&packets);
+	xsdk_gpu_write(&packets);
+}
+
+void xsdk_gpu_set_up_again(void)
+{
+	GpuPackets packets = { .dwords = set_up_dwords, .count = 0, .capacity = SET_UP_MAX_DWORDS };
+	put_state(&packets);
 	xsdk_gpu_write(&packets);
 }
 

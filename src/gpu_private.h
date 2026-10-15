@@ -156,6 +156,8 @@ void xsdk_gpu_write(const GpuPackets *packets);
 uint32_t xsdk_gpu_rectangle(uint32_t width, uint32_t height);
 // Reads the registers the SDK changes, then queues libxenon's set-up.
 void xsdk_gpu_set_up(void);
+// Queues the set-up again, all but the ME_INIT, after XAM's commands ran.
+void xsdk_gpu_set_up_again(void);
 // Queues writing back what xsdk_gpu_set_up read.
 void xsdk_gpu_put_back(void);
 // libxenon's Xe_pSetSurfaceClip with no offset, and its cache invalidation with a wait.
@@ -175,6 +177,41 @@ void xsdk_gpu_hiz_cleared(uint32_t width, uint32_t height, uint32_t depth_clear)
 void xsdk_gpu_hiz_drop(void);
 // Points the shown surface at another buffer of its size; for the vblank callback, so it never sleeps.
 void xsdk_display_flip(uint32_t address);
+
+enum {
+	DISPLAY_SCALER_REGISTERS = 10,
+};
+
+// A surface's size and the scaler that fills the output with it, planned outside the vblank callback.
+typedef struct {
+	uint32_t pitch;
+	uint32_t width;
+	uint32_t height;
+	uint32_t scaler[DISPLAY_SCALER_REGISTERS];
+} DisplaySize;
+
+// Plans a surface of this size filling the output, as the 720p mode's front buffer does; false where the display isn't
+// on that mode's scaling (the kernel's mode, an interlaced output).
+bool xsdk_display_plan(uint32_t width, uint32_t height, uint32_t pitch, DisplaySize *size);
+// The output the display's scaling fills; false where the display isn't on the 720p mode's scaling.
+bool xsdk_display_output(uint32_t *width, uint32_t *height);
+// As xsdk_display_flip, to a surface of a planned size: the scaler and the surface's size change first when they
+// differ from the shown surface's. For the vblank callback.
+void xsdk_display_flip_sized(uint32_t address, const DisplaySize *size);
+
+// XAM's surface, while it's to show instead of the title's front buffer.
+typedef struct {
+	uint32_t address;
+	uint32_t width;
+	uint32_t height;
+	uint32_t pitch;
+} GpuSurface;
+
+// Hands the frame ending with the front buffer at front_buffer, width by height as xsdk_gpu_resolve writes it, to the
+// kernel's swap, before the frame's fence. While the Guide is open, XAM's commands it runs draw the Guide over the
+// frame into a surface of XAM's, and the set-up is queued again after them; true, with that surface, while it's to show
+// instead of the front buffer (docs/HARDWARE.md, "The Guide shows through VdSwap").
+bool xsdk_gpu_swap(volatile const uint32_t *front_buffer, uint32_t width, uint32_t height, GpuSurface *shown);
 // For xsdk_present_open: whether the splash's display can be taken over, leaving the logo up, and its size.
 bool xsdk_splash_hand_over(uint32_t *width, uint32_t *height);
 // Frees a handed-over splash's buffers, once nothing shows them.

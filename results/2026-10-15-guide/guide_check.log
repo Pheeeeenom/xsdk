@@ -1,0 +1,27 @@
+log: game:\guide_check.log
+log: named after \Device\Harddisk0\Partition1\XSDK\main\guide_check.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+guide: open the Guide and close it, twice, then press Back
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 27629 us
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 27460 us
+guide: GPU 0x00000000, display 1280x720, listener F8000004
+PASS: guide: GPU, scene and present open, and a listener
+guide: the Guide closed at 0 ms, frame 0: XAM drew 0 frames, its surface showed 0; 0 flips, 0 missed, longest wait 0 us
+guide: the Guide opened at 1112690 ms, frame 66763: XAM drew 1 frames, its surface showed 1; 66762 flips, 0 missed, longest wait 17990 us
+guide: the Guide closed at 1114105 ms, frame 66848: XAM drew 86 frames, its surface showed 86; 66847 flips, 0 missed, longest wait 19967 us
+guide: the Guide opened at 1114724 ms, frame 66885: XAM drew 87 frames, its surface showed 87; 66884 flips, 0 missed, longest wait 19967 us
+guide: the Guide closed at 1116255 ms, frame 66977: XAM drew 179 frames, its surface showed 179; 66976 flips, 0 missed, longest wait 19967 us
+guide: the Guide opened at 1116956 ms, frame 67018: XAM drew 180 frames, its surface showed 180; 67017 flips, 1 missed, longest wait 19967 us
+guide: the Guide closed at 1118440 ms, frame 67107: XAM drew 269 frames, its surface showed 269; 67106 flips, 1 missed, longest wait 19967 us
+guide: done at 1125440 ms, frame 67528: XAM drew 269 frames, its surface showed 269; 67526 flips, 1 missed, longest wait 19967 us
+PASS: guide: every frame queued in time
+PASS: guide: the Guide opened and closed twice
+PASS: guide: XAM drew the Guide over frames
+PASS: guide: XAM's surface showed in their place
+PASS: guide: the title's own frames showed again after it closed
+PASS: guide: every frame resolved with its bar
+PASS: guide: GPU close
+guide: 8 passed, 0 failed
+exit: status 0

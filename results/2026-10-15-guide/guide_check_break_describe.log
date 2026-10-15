@@ -1,0 +1,23 @@
+log: game:\guide_check_nodescribe.log
+log: named after \Device\Harddisk0\Partition1\XSDK\main\guide_check_nodescribe.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+guide: open the Guide and close it, twice, then press Back
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 26650 us
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 24196 us
+guide: GPU 0x00000000, display 1280x720, listener F8000004
+PASS: guide: GPU, scene and present open, and a listener
+guide: the Guide closed at 0 ms, frame 0: XAM drew 0 frames, its surface showed 0; 0 flips, 0 missed, longest wait 0 us
+guide: the Guide opened at 12967 ms, frame 779: XAM drew 0 frames, its surface showed 0; 778 flips, 0 missed, longest wait 17989 us
+guide: the Guide closed at 14666 ms, frame 881: XAM drew 102 frames, its surface showed 102; 880 flips, 0 missed, longest wait 19966 us
+guide: done at 18467 ms, frame 1109: XAM drew 102 frames, its surface showed 102; 1107 flips, 1 missed, longest wait 19966 us
+PASS: guide: every frame queued in time
+FAIL: guide: the Guide opened and closed twice
+PASS: guide: XAM drew the Guide over frames
+PASS: guide: XAM's surface showed in their place
+PASS: guide: the title's own frames showed again after it closed
+PASS: guide: every frame resolved with its bar
+PASS: guide: GPU close
+guide: 7 passed, 1 failed
+exit: status 1

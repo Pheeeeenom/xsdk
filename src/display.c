@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 #include <time.h>
 
 #include "gpu_private.h"
@@ -83,6 +84,8 @@ enum {
 	SCALER_REGISTERS,
 };
 
+_Static_assert((int)SCALER_REGISTERS == (int)DISPLAY_SCALER_REGISTERS, "DisplaySize holds the scaler's registers");
+
 // The registers the scaling probes wrote and put back, which gave the display back to XAM (docs/HARDWARE.md).
 static const uint32_t scaler_registers[SCALER_REGISTERS] = { AVIVO_D1SCL_SCALER_ENABLE, AVIVO_D1SCL_SCALER_TAP_CONTROL,
 	AVIVO_D1MODE_VIEWPORT_SIZE, UNKNOWN_197A, UNKNOWN_196C, UNKNOWN_196D, UNKNOWN_196E, UNKNOWN_1970, UNKNOWN_1971,
@@ -96,6 +99,11 @@ static bool scaling;
 static bool scaler_applied;
 static uint32_t old_scaler[SCALER_REGISTERS];
 static uint32_t new_scaler[SCALER_REGISTERS];
+// The output the scaler fills, while scaling.
+static uint32_t output_width;
+static uint32_t output_height;
+// The size of the surface shown, while scaling: the front buffer's, or XAM's while the Guide shows.
+static DisplaySize shown_size;
 
 // libxenon's autofill of a linear ramp; the screen stays black without it (libxenon:drivers/xenos/xenos.c:419-424).
 static NTSTATUS fill_lut(void)
@@ -125,7 +133,25 @@ static uint32_t phase(uint32_t scale_8_24)
 	return ((TAPS + 1) << 15) + (scale_8_24 >> 9);
 }
 
-// Plans 1280x720 scaled to the output, or shown 1:1 with the scaler off as libxenon does (xenos.c:381-417).
+// The scaler filling the output with width by height, or showing it 1:1 with the scaler off as libxenon does
+// (xenos.c:381-417).
+static void plan_values(uint32_t width, uint32_t height, uint32_t *values)
+{
+	const uint32_t horizontal = scale(width, output_width);
+	const uint32_t vertical = scale(height, output_height);
+	values[SCALER_ENABLE] = horizontal != 1u << SCALE_ONE_LOG2 || vertical != 1u << SCALE_ONE_LOG2;
+	values[SCALER_TAP_CONTROL] = TWO_TAPS;
+	values[VIEWPORT_SIZE] = width << 16 | height;
+	values[VIEWPORT_WIDTH_QUARTER] = width / 4 - 1;
+	values[HORIZONTAL_FILTER] = old_scaler[HORIZONTAL_FILTER] | BUILT_IN_FILTER;
+	values[HORIZONTAL_SCALE] = horizontal;
+	values[HORIZONTAL_PHASE] = phase(horizontal);
+	values[VERTICAL_FILTER] = old_scaler[VERTICAL_FILTER] | BUILT_IN_FILTER;
+	values[VERTICAL_SCALE] = vertical;
+	values[VERTICAL_PHASE] = phase(vertical);
+}
+
+// Plans 1280x720 filling the output.
 static bool plan_scaler(void)
 {
 	VIDEO_MODE video;
@@ -137,21 +163,31 @@ static bool plan_scaler(void)
 	}
 	for (uint32_t i = 0; i < SCALER_REGISTERS; i++)
 		old_scaler[i] = gpu_registers[scaler_registers[i]];
-	const uint32_t horizontal = scale(WIDTH_720P, video.display_width);
-	const uint32_t vertical = scale(HEIGHT_720P, video.display_height);
-	const bool scaled = horizontal != 1u << SCALE_ONE_LOG2 || vertical != 1u << SCALE_ONE_LOG2;
-	new_scaler[SCALER_ENABLE] = scaled;
-	new_scaler[SCALER_TAP_CONTROL] = TWO_TAPS;
-	new_scaler[VIEWPORT_SIZE] = WIDTH_720P << 16 | HEIGHT_720P;
-	new_scaler[VIEWPORT_WIDTH_QUARTER] = WIDTH_720P / 4 - 1;
-	new_scaler[HORIZONTAL_FILTER] = old_scaler[HORIZONTAL_FILTER] | BUILT_IN_FILTER;
-	new_scaler[HORIZONTAL_SCALE] = horizontal;
-	new_scaler[HORIZONTAL_PHASE] = phase(horizontal);
-	new_scaler[VERTICAL_FILTER] = old_scaler[VERTICAL_FILTER] | BUILT_IN_FILTER;
-	new_scaler[VERTICAL_SCALE] = vertical;
-	new_scaler[VERTICAL_PHASE] = phase(vertical);
-	xsdk_log_write("display: 1280x720 %s to the %ux%u output", scaled ? "scaled" : "shown 1:1",
+	output_width = video.display_width;
+	output_height = video.display_height;
+	plan_values(WIDTH_720P, HEIGHT_720P, new_scaler);
+	xsdk_log_write("display: 1280x720 %s to the %ux%u output", new_scaler[SCALER_ENABLE] ? "scaled" : "shown 1:1",
 		(unsigned)video.display_width, (unsigned)video.display_height);
+	return true;
+}
+
+bool xsdk_display_output(uint32_t *width, uint32_t *height)
+{
+	assert(is_open);
+	*width = output_width;
+	*height = output_height;
+	return scaling;
+}
+
+bool xsdk_display_plan(uint32_t width, uint32_t height, uint32_t pitch, DisplaySize *size)
+{
+	assert(is_open);
+	if (!scaling)
+		return false;
+	size->pitch = pitch;
+	size->width = width;
+	size->height = height;
+	plan_values(width, height, size->scaler);
 	return true;
 }
 
@@ -247,7 +283,15 @@ NTSTATUS xsdk_display_show(uint32_t address, uint32_t pitch_pixels)
 {
 	assert(is_open);
 	const Surface surface = { .address = address, .pitch = pitch_pixels, .x_end = pitch_pixels, .y_end = mode_height };
-	if (!scaling || scaler_applied)
+	if (!scaling)
+		return apply(&surface);
+	DisplaySize size = { .pitch = pitch_pixels, .width = WIDTH_720P, .height = mode_height };
+	memcpy(size.scaler, new_scaler, sizeof size.scaler);
+	// After XAM's surface, the mode's scaling comes back with the buffer.
+	if (scaler_applied && memcmp(&shown_size, &size, sizeof size))
+		write_scaler(new_scaler);
+	shown_size = size;
+	if (scaler_applied)
 		return apply(&surface);
 	// Not at open, while XAM's 640x480 surface still shows: the scaler changes with the first 1280x720 surface.
 	write_scaler(new_scaler);
@@ -256,6 +300,19 @@ NTSTATUS xsdk_display_show(uint32_t address, uint32_t pitch_pixels)
 	// So a vblank callback set next doesn't read the line counter on the old scale (docs/HARDWARE.md).
 	wait_for_scaler();
 	return status;
+}
+
+void xsdk_display_flip_sized(uint32_t address, const DisplaySize *size)
+{
+	if (memcmp(&shown_size, size, sizeof *size)) {
+		write_scaler(size->scaler);
+		gpu_registers[UNKNOWN_0A11] = size->pitch;
+		gpu_registers[D1GRPH_PITCH] = size->pitch;
+		gpu_registers[D1GRPH_X_END] = size->pitch;
+		gpu_registers[D1GRPH_Y_END] = size->height;
+		shown_size = *size;
+	}
+	xsdk_display_flip(address);
 }
 
 uint32_t xsdk_display_shown_address(void)

@@ -41,6 +41,7 @@ xboxkrnl.exe  0x18A  XeCryptRandom
 xboxkrnl.exe  0x195  XexGetModuleHandle
 xboxkrnl.exe  0x197  XexGetProcedureAddress
 xboxkrnl.exe  0x1AF  ExLoadedImageName                   variable
+xboxkrnl.exe  0x1B1  VdCallGraphicsNotificationRoutines
 xboxkrnl.exe  0x1B6  VdEnableRingBufferRPtrWriteBack
 xboxkrnl.exe  0x1BA  VdGetCurrentDisplayInformation
 xboxkrnl.exe  0x1BD  VdGetSystemCommandBuffer
@@ -82,3 +83,5 @@ xam.xex       0x044  NetDll_XNetDnsRelease
 xam.xex       0x191  XamInputGetState
 xam.xex       0x192  XamInputSetState
 xam.xex       0x1A9  XamLoaderTerminateTitle
+xam.xex       0x28A  XamNotifyCreateListener
+xam.xex       0x28B  XNotifyGetNext

@@ -60,6 +60,14 @@ typedef struct {
 	// Times the CPU found the ring or the stream's next block still in use, and how long it waited.
 	uint32_t waits;
 	uint64_t waited_us;
+	// Frames handed to the kernel's swap by xsdk_present_end, the value its last fence is to write, and the value
+	// there now.
+	uint32_t swaps;
+	uint32_t swap_fence;
+	uint32_t swap_fence_landed;
+	// Of those frames, the ones XAM drew the Guide in. XAM's commands run between the title's frames and draw in
+	// eDRAM, so what a title keeps in eDRAM across xsdk_present_end is lost whenever this count goes up.
+	uint32_t system_draws;
 } XsdkGpuStats;
 
 void xsdk_gpu_stats(XsdkGpuStats *stats);

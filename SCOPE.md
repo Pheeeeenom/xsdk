@@ -947,6 +947,8 @@ gap that something running on xsdk meets becomes a milestone; the rest wait (aft
 36. **The texel rate.** Agreed and done on 2026-10-14: docs/scope/36-texel-rate.md (HARDWARE.md, "The texel rate,
     milestone 36").
 
+37. **The Guide.** Agreed and done on 2026-10-15: docs/scope/37-guide.md (HARDWARE.md, "The Guide, milestone 37").
+
 **Networking**, a scope of its own rather than a numbered milestone: sockets, and TLS 1.2 in the title's own code.
 Agreed and done on 2026-10-14: docs/scope/networking.md.
 

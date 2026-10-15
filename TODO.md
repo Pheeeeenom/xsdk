@@ -30,6 +30,15 @@ work begins.
 - **Small GPU allocations other than shaders.** `xsdk_gpu_alloc` rounds each one up to a 64 KiB large page (src/gpu.c,
   `allocate`). Shaders' microcode shares pages since milestone 25; the rest, three small ones in Dusklight's title
   scene (results/2026-10-12-gpu-allocations/), still take a page each.
+- **The Guide, beyond milestone 37** (docs/scope/37-guide.md):
+  - **Pausing while it's open.** `XN_SYS_UI` says when the Guide opens and closes (tests/guide_check.c reads it); a title
+    that should pause, as consoles' games do, would want it from xsdk.
+  - **A title ending by itself with the Guide open hangs** as it ends: XAM's Guide thread waits for a fence only the
+    title's next swap would write (docs/HARDWARE.md, "The Guide, milestone 37"). Leaving through Xbox Home is fine. A
+    fix would have `xsdk_present_close` keep swapping its last frame until XAM's system command buffer is empty and
+    done, which XAM may not allow before the Guide closes; unexplored.
+  - **On the kernel's display mode and interlaced outputs,** where xsdk doesn't scale the display, XAM's surface isn't
+    shown, so the Guide still isn't; the log says so once.
 - **A sharper scaler filter at 1080p.** 1280x720 is scaled with the built-in 2-tap filter, the only setting that came
   out whole. Every variant on the kernel's coefficient table scrambled the image, and 2 taps on the table wasn't tried.
   More taps would mean loading our own coefficients through 0x6578 and 0x657C, in the layout AMD's

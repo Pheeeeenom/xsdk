@@ -9,6 +9,7 @@
 #include "xsdk/display.h"
 #include "xsdk/gpu.h"
 #include "xsdk/kernel.h"
+#include "xsdk/log.h"
 #include "xsdk/thread.h"
 
 enum {
@@ -26,12 +27,26 @@ enum {
 	MICROSECONDS_PER_SECOND = 1000000,
 };
 
+// What a queued frame shows: its front buffer, or XAM's surface while the Guide is open (docs/HARDWARE.md, "The Guide
+// shows through VdSwap").
+typedef struct {
+	uint32_t address;
+	// Its size and the scaler for it, where the display can change them.
+	DisplaySize size;
+	bool system;
+} Shown;
+
 typedef struct {
 	volatile uint32_t *buffers[XSDK_PRESENT_MAX_BUFFERS];
 	uint32_t addresses[XSDK_PRESENT_MAX_BUFFERS];
 	uint32_t buffer_count;
 	uint32_t swap_interval;
+	uint32_t width;
 	uint32_t height;
+	// The front buffers' own size, where the display can also show XAM's surface in their place.
+	DisplaySize own_size;
+	bool sized;
+	bool unshown_logged;
 	uint32_t longest_wait_us;
 	bool open;
 	// The splash's logo shows until the first flip, and its buffers wait for one more vblank after that.
@@ -39,6 +54,8 @@ typedef struct {
 	// Written by the title.
 	volatile uint32_t queued;
 	volatile uint32_t fences[QUEUE_SLOTS];
+	Shown shown[QUEUE_SLOTS];
+	volatile uint32_t system_frames;
 	volatile bool stopping;
 	// Written by the callback.
 	volatile uint32_t flipped;
@@ -49,9 +66,55 @@ typedef struct {
 	volatile uint32_t first_late_line;
 	volatile uint32_t first_flip_vblank;
 	volatile uint32_t last_flip_vblank;
+	bool showed_system;
 } Present;
 
 static Present present;
+
+// What D3D tells XAM about the title's display, 64 bytes, which XAM draws the frame under the Guide by: the front
+// buffer's size and the output's, then the scaler between them, the front buffer's corners, the output's size and the
+// filters, 0 for the defaults (docs/HARDWARE.md, "The Guide shows through VdSwap").
+typedef struct {
+	uint16_t front_width;
+	uint16_t front_height;
+	uint16_t output_width;
+	uint16_t output_height;
+	uint32_t left;
+	uint32_t top;
+	uint32_t right;
+	uint32_t bottom;
+	uint32_t scaled_width;
+	uint32_t scaled_height;
+	uint32_t filters[8];
+} DisplayDescription;
+
+_Static_assert(sizeof(DisplayDescription) == 64, "XAM copies 64 bytes");
+
+enum {
+	// VdCallGraphicsNotificationRoutines's event for a DisplayDescription.
+	EVENT_DISPLAY = 1,
+};
+
+// Without it XAM keeps whatever display it was told of before, and draws that much of the frame: 640x480 of 1280x720
+// on the console.
+static void describe_display(uint32_t width, uint32_t height)
+{
+	uint32_t output_width = 0;
+	uint32_t output_height = 0;
+	if (!xsdk_display_output(&output_width, &output_height))
+		return;
+	const DisplayDescription description = {
+		.front_width = (uint16_t)width,
+		.front_height = (uint16_t)height,
+		.output_width = (uint16_t)output_width,
+		.output_height = (uint16_t)output_height,
+		.right = width,
+		.bottom = height,
+		.scaled_width = output_width,
+		.scaled_height = output_height,
+	};
+	VdCallGraphicsNotificationRoutines(EVENT_DISPLAY, &description);
+}
 
 // Runs in the kernel's interrupt handling, twice a frame; it only reads registers, flips and counts.
 static void on_interrupt(uint32_t source, void *context)
@@ -72,10 +135,16 @@ static void on_interrupt(uint32_t source, void *context)
 			present.missed = present.missed + 1;
 		return;
 	}
-	xsdk_display_flip(present.addresses[next % present.buffer_count]);
-	// From the mode's last line on, the display is in vblank.
+	const Shown *const shown = &present.shown[next % QUEUE_SLOTS];
+	if (present.sized)
+		xsdk_display_flip_sized(shown->address, &shown->size);
+	else
+		xsdk_display_flip(shown->address);
+	// From the mode's last line on, the display is in vblank; XAM's surface counts lines of its own.
 	const uint32_t line = gpu_registers[R500_D1MODE_V_COUNTER];
-	if (line < present.height) {
+	const bool own = !shown->system && !present.showed_system;
+	present.showed_system = shown->system;
+	if (own && line < present.height) {
 		if (!present.late) {
 			present.first_late_vblank = vblank;
 			present.first_late_line = line;
@@ -105,9 +174,13 @@ NTSTATUS xsdk_present_open(
 	const NTSTATUS status = splash_held ? STATUS_SUCCESS : xsdk_display_open(mode, width, height);
 	if (!NT_SUCCESS(status))
 		return status;
-	present = (Present){
-		.buffer_count = buffer_count, .swap_interval = swap_interval, .height = *height, .splash_held = splash_held
-	};
+	present = (Present){ .buffer_count = buffer_count,
+		.swap_interval = swap_interval,
+		.width = *width,
+		.height = *height,
+		.splash_held = splash_held };
+	present.sized = xsdk_display_plan(*width, *height, *width, &present.own_size);
+	describe_display(*width, *height);
 	const uint32_t pixels = xsdk_gpu_resolve_bytes(*width, *height) / 4;
 	for (uint32_t i = 0; i < buffer_count; i++) {
 		present.buffers[i] = xsdk_gpu_alloc(pixels * 4);
@@ -184,6 +257,22 @@ void xsdk_present_end(void)
 {
 	assert(present.open);
 	const uint32_t frame = present.queued;
+	const uint32_t index = frame % present.buffer_count;
+	Shown *const shown = &present.shown[frame % QUEUE_SLOTS];
+	*shown = (Shown){ .address = present.addresses[index], .size = present.own_size };
+	GpuSurface system;
+	if (xsdk_gpu_swap(present.buffers[index], present.width, present.height, &system)) {
+		if (present.sized) {
+			shown->address = system.address;
+			shown->system = true;
+			(void)xsdk_display_plan(system.width, system.height, system.pitch, &shown->size);
+			present.system_frames = present.system_frames + 1;
+		} else if (!present.unshown_logged) {
+			present.unshown_logged = true;
+			xsdk_log_write("present: XAM's %ux%u surface can't show on the kernel's display mode, so the Guide doesn't",
+				(unsigned)system.width, (unsigned)system.height);
+		}
+	}
 	present.fences[frame % QUEUE_SLOTS] = xsdk_gpu_fence();
 	// Publish the fence before the count the callback reads.
 	__asm__ volatile("lwsync" ::: "memory");
@@ -200,7 +289,8 @@ void xsdk_present_stats(XsdkPresentStats *stats)
 		.first_late_line = present.first_late_line,
 		.first_flip_vblank = present.first_flip_vblank,
 		.last_flip_vblank = present.last_flip_vblank,
-		.longest_wait_us = present.longest_wait_us };
+		.longest_wait_us = present.longest_wait_us,
+		.system_frames = present.system_frames };
 }
 
 void xsdk_present_close(void)

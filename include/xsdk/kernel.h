@@ -338,10 +338,14 @@ uint32_t RtlTryEnterCriticalSection(RTL_CRITICAL_SECTION *section);
 uint32_t XAudioRegisterRenderDriverClient(const XAUDIO_RENDER_DRIVER_CLIENT *client, uint32_t *driver);
 uint32_t XAudioSubmitRenderDriverFrame(uint32_t driver, const float *samples);
 uint32_t XAudioUnregisterRenderDriverClient(uint32_t driver);
+// Hands an event and its data to XAM's graphics notification routine, then to any registered: event 1 describes the
+// title's display, 64 bytes (docs/HARDWARE.md, "The Guide shows through VdSwap").
+void VdCallGraphicsNotificationRoutines(uint32_t event, const void *data);
 // The GPU writes its read pointer, in dwords, to this address (xenia:src/xenia/gpu/command_processor.cc:243-246).
 void VdEnableRingBufferRPtrWriteBack(uint32_t physical_address, uint32_t block_size_log2);
 void VdGetCurrentDisplayInformation(DISPLAY_INFO *info);
-// Xenia fills 0x94 bytes of buffer and one dword of value (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:252-256).
+// Copies the system command buffer XAM last set, 0x94 bytes, and gives the value VdSwap's fence is to write: a count
+// up 2 a call (docs/HARDWARE.md, "The Guide shows through VdSwap").
 void VdGetSystemCommandBuffer(void *buffer, uint32_t *value);
 // Each points to a kernel variable holding a D3D device (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:442-457).
 extern uint32_t *const VdGlobalDevice;
@@ -357,13 +361,17 @@ uint32_t VdSetDisplayMode(uint32_t flags);
 // The kernel keeps one callback and calls it with source 0 at vblank (xenia:src/xenia/gpu/graphics_system.cc:234-272).
 typedef void (*VdGraphicsInterruptCallback)(uint32_t source, void *context);
 void VdSetGraphicsInterruptCallback(VdGraphicsInterruptCallback callback, void *context);
-// D3D passes an address in its device (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_video.cc:259-261).
+// Where VdSwap's fences land, which XAM reads to know the GPU is done with a system command buffer; NULL for none
+// (docs/HARDWARE.md, "The Guide shows through VdSwap").
 void VdSetSystemCommandBufferGpuIdentifierAddress(volatile uint32_t *address);
 void VdShutdownEngines(void);
-// Writes only a fence, of system_value to system_writeback, into 64 dwords reserved in the ring (docs/HARDWARE.md).
+// Fills 64 dwords reserved in the ring: while XAM draws the Guide, the front buffer as texture fetch constant 15 and a
+// call to the system command buffer, then always a fence writing system_value to system_writeback. While XAM's surface
+// is to show instead of the front buffer, it replaces the front buffer's address, format, colour space and size with
+// that surface's (docs/HARDWARE.md, "The Guide shows through VdSwap").
 void VdSwap(volatile uint32_t *ring_space, const uint32_t *fetch_constant, volatile uint32_t *system_writeback,
-	void *system_buffer, uint32_t system_value, const uint32_t *front_buffer, const uint32_t *texture_format,
-	const uint32_t *color_space, const uint32_t *width, const uint32_t *height);
+	void *system_buffer, uint32_t system_value, uint32_t *front_buffer, uint32_t *texture_format, uint32_t *color_space,
+	uint32_t *width, uint32_t *height);
 void XeCryptRandom(void *buffer, uint32_t length_bytes);
 // Returns 0 if a module like "xboxkrnl.exe" is loaded (xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_modules.cc:42-62).
 uint32_t XexGetModuleHandle(const char *module_name, HANDLE *module);
@@ -428,6 +436,12 @@ int32_t NetDll_XNetStartup(uint32_t caller, const uint8_t *params);
 uint32_t XamInputGetState(uint32_t user_index, uint32_t flags, INPUT_STATE *state);
 uint32_t XamInputSetState(uint32_t user_index, uint32_t flags, const INPUT_VIBRATION *vibration);
 void XamLoaderTerminateTitle(void);
+// A listener for the notification areas whose bits mask sets, an area being bits 25-30 of a notification's id; its
+// handle, or 0 (xenia:src/xenia/kernel/xam/xam_notify.cc:21-41, xnotifylistener.h:25-32).
+HANDLE XamNotifyCreateListener(uint64_t mask, uint32_t max_version);
+// Takes the listener's next notification, or its next match_id one if that's nonzero; nonzero if there was one
+// (xenia:src/xenia/kernel/xam/xam_notify.cc:53-91).
+uint32_t XNotifyGetNext(HANDLE listener, uint32_t match_id, uint32_t *id, uint32_t *param);
 
 #ifdef __cplusplus
 }

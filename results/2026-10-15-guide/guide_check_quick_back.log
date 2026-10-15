@@ -1,0 +1,29 @@
+log: game:\guide_check.log
+log: named after \Device\Harddisk0\Partition1\XSDK\main\guide_check.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+guide: open the Guide and close it, twice, then press Back
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 27616 us
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 29169 us
+guide: GPU 0x00000000, display 1280x720, listener F8000004
+PASS: guide: GPU, scene and present open, and a listener
+guide: the Guide closed at 0 ms, frame 0: XAM drew 0 frames, its surface showed 0; 0 flips, 0 missed, longest wait 0 us
+guide: the Guide opened at 503599 ms, frame 30218: XAM drew 0 frames, its surface showed 0; 30217 flips, 0 missed, longest wait 17990 us
+guide: the Guide closed at 510299 ms, frame 30620: XAM drew 402 frames, its surface showed 402; 30619 flips, 0 missed, longest wait 19964 us
+guide: the Guide opened at 513933 ms, frame 30838: XAM drew 403 frames, its surface showed 403; 30837 flips, 0 missed, longest wait 19964 us
+guide: the Guide closed at 517899 ms, frame 31076: XAM drew 641 frames, its surface showed 641; 31075 flips, 0 missed, longest wait 19964 us
+guide: the Guide opened at 518716 ms, frame 31123: XAM drew 642 frames, its surface showed 642; 31122 flips, 2 missed, longest wait 19964 us
+guide: the Guide closed at 521132 ms, frame 31268: XAM drew 787 frames, its surface showed 787; 31267 flips, 2 missed, longest wait 19964 us
+guide: the Guide opened at 522232 ms, frame 31334: XAM drew 788 frames, its surface showed 788; 31333 flips, 2 missed, longest wait 19964 us
+guide: the Guide closed at 529966 ms, frame 31798: XAM drew 1252 frames, its surface showed 1252; 31797 flips, 2 missed, longest wait 19964 us
+guide: done at 530565 ms, frame 31834: XAM drew 1252 frames, its surface showed 1252; 31832 flips, 3 missed, longest wait 19964 us
+PASS: guide: every frame queued in time
+PASS: guide: the Guide opened and closed twice
+PASS: guide: XAM drew the Guide over frames
+PASS: guide: XAM's surface showed in their place
+FAIL: guide: the title's own frames showed again after it closed
+PASS: guide: every frame resolved with its bar
+PASS: guide: GPU close
+guide: 7 passed, 1 failed
+exit: status 1
