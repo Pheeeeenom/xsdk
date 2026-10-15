@@ -655,8 +655,10 @@ void xsdk_gpu_record_begin(XsdkCommandBuffer *buffer)
 	recording = buffer;
 	recording_overflowed = false;
 	open_window();
-	// Recorded draws may run when the hierarchical buffer holds another target's depth, so they leave it off.
+	// Recorded draws may run when the hierarchical buffer holds another target's depth, so they leave it off; and with
+	// other shaders loaded, so the recording loads its own.
 	xsdk_gpu_hiz_drop();
+	xsdk_gpu_forget_shaders();
 }
 
 NTSTATUS xsdk_gpu_record_end(void)
@@ -668,6 +670,8 @@ NTSTATUS xsdk_gpu_record_end(void)
 	close_window();
 	recording = NULL;
 	open_window();
+	// What the recording loaded isn't what the GPU holds now.
+	xsdk_gpu_forget_shaders();
 	if (!recording_overflowed)
 		return STATUS_SUCCESS;
 	xsdk_log_write("gpu: the recording outgrew its %u-dword command buffer", (unsigned)buffer->capacity_dwords);
@@ -681,8 +685,9 @@ void xsdk_gpu_execute(const XsdkCommandBuffer *buffer)
 	assert(!recording);
 	if (!buffer->count)
 		return;
-	// The hierarchical buffer doesn't follow what it draws.
+	// The hierarchical buffer doesn't follow what it draws, nor what shaders it loads.
 	xsdk_gpu_hiz_drop();
+	xsdk_gpu_forget_shaders();
 	// From the ring, after what the stream holds: the console hasn't run a buffer from inside another
 	// (docs/HARDWARE.md).
 	close_window();

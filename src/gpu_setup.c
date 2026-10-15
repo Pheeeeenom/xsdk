@@ -320,6 +320,7 @@ void xsdk_gpu_set_up(void)
 	put_me_init(&packets);
 	put_state(&packets);
 	xsdk_gpu_write(&packets);
+	xsdk_gpu_forget_shaders();
 }
 
 void xsdk_gpu_set_up_again(void)
@@ -327,6 +328,7 @@ void xsdk_gpu_set_up_again(void)
 	GpuPackets packets = { .dwords = set_up_dwords, .count = 0, .capacity = SET_UP_MAX_DWORDS };
 	put_state(&packets);
 	xsdk_gpu_write(&packets);
+	xsdk_gpu_forget_shaders();
 }
 
 void xsdk_gpu_put_back(void)

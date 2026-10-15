@@ -35,6 +35,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "gpu_private.h"
 #include "microcode_private.h"
 #include "xsdk/gpu.h"
 #include "xsdk/kernel.h"
@@ -236,11 +237,15 @@ NTSTATUS xsdk_shader_set_vertex_layout(
 			element->offset_bytes / 4 << FETCH_OFFSET_SHIFT | stride_bytes / 4;
 	}
 	__asm__ volatile("sync" ::: "memory");
+	// The GPU may hold the shader as it was.
+	xsdk_gpu_forget_shaders();
 	return STATUS_SUCCESS;
 }
 
 void xsdk_shader_free(XsdkShader *shader)
 {
+	// Another shader may come to sit where this one was.
+	xsdk_gpu_forget_shaders();
 	xsdk_microcode_free(shader->microcode, shader->dword_count * 4);
 	*shader = (XsdkShader){ .microcode = NULL };
 }

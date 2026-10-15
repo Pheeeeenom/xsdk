@@ -1,0 +1,57 @@
+log: game:\probe_gpu_draw_cost.log
+log: named after \Device\Harddisk0\Partition1\xsdk\probe_gpu_draw_cost\probe_gpu_draw_cost.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+gpu draw cost probe: 25 variants, batches of 500 and 2500 cubes, best of 5 rounds
+gpu draw cost probe: of the first 100 cells, 100 show their cube; 100 the texture each cube set, with the fetch constant flush; 100 without it
+gpu draw cost probe: timing a cube as the layer draws it: both constant groups and the draw
+gpu draw cost probe: a cube as the layer draws it: both constant groups and the draw: 0.285 us a cube; 145.6 us for 500, 716.1 for 2500
+gpu draw cost probe: timing the draw alone
+gpu draw cost probe: the draw alone: 0.118 us a cube; 57.7 us for 500, 293.5 for 2500
+gpu draw cost probe: timing the vertex constants and the draw
+gpu draw cost probe: the vertex constants and the draw: 0.290 us a cube; 147.6 us for 500, 726.9 for 2500
+gpu draw cost probe: timing the pixel constants and the draw
+gpu draw cost probe: the pixel constants and the draw: 0.294 us a cube; 149.2 us for 500, 736.2 for 2500
+gpu draw cost probe: timing both constant groups, no draw
+gpu draw cost probe: both constant groups, no draw: 0.112 us a cube; 58.8 us for 500, 283.5 for 2500
+gpu draw cost probe: timing both constant groups loaded from memory, and the draw
+gpu draw cost probe: both constant groups loaded from memory, and the draw: 0.299 us a cube; 152.8 us for 500, 750.3 for 2500
+gpu draw cost probe: timing a cube and a texture change
+gpu draw cost probe: a cube and a texture change: 0.295 us a cube; 150.5 us for 500, 739.9 for 2500
+gpu draw cost probe: timing a cube and a shader change
+gpu draw cost probe: a cube and a shader change: 0.608 us a cube; 308.0 us for 500, 1525.0 for 2500
+gpu draw cost probe: timing vkbench's states: a texture change every draw, a shader change every second, blending every fourth
+gpu draw cost probe: vkbench's states: a texture change every draw, a shader change every second, blending every fourth: 0.484 us a cube; 245.6 us for 500, 1213.0 for 2500
+gpu draw cost probe: timing the draw alone, its 36 corners without indices
+gpu draw cost probe: the draw alone, its 36 corners without indices: 0.118 us a cube; 57.5 us for 500, 293.5 for 2500
+gpu draw cost probe: timing the draw alone, one triangle
+gpu draw cost probe: the draw alone, one triangle: 0.048 us a cube; 27.0 us for 500, 123.4 for 2500
+gpu draw cost probe: timing the draw alone, the cube's indices twice over
+gpu draw cost probe: the draw alone, the cube's indices twice over: 0.236 us a cube; 116.6 us for 500, 588.9 for 2500
+gpu draw cost probe: timing a cube and its program set again, unchanged
+gpu draw cost probe: a cube and its program set again, unchanged: 0.315 us a cube; 161.3 us for 500, 790.9 for 2500
+gpu draw cost probe: timing a cube and its shaders set again, unchanged, not their literals
+gpu draw cost probe: a cube and its shaders set again, unchanged, not their literals: 0.285 us a cube; 145.9 us for 500, 716.7 for 2500
+gpu draw cost probe: timing the draw alone, the pixel shader without its texture
+gpu draw cost probe: the draw alone, the pixel shader without its texture: 0.118 us a cube; 57.9 us for 500, 293.9 for 2500
+gpu draw cost probe: timing the draw alone, both shaders without texture coordinates
+gpu draw cost probe: the draw alone, both shaders without texture coordinates: 0.118 us a cube; 57.8 us for 500, 293.9 for 2500
+gpu draw cost probe: timing one triangle, both shaders without texture coordinates
+gpu draw cost probe: one triangle, both shaders without texture coordinates: 0.048 us a cube; 27.5 us for 500, 123.8 for 2500
+gpu draw cost probe: timing a cube and its pixel shader loaded again, the vertex shader left
+gpu draw cost probe: a cube and its pixel shader loaded again, the vertex shader left: 0.303 us a cube; 155.0 us for 500, 760.4 for 2500
+gpu draw cost probe: timing a cube and a pixel shader change, the vertex shader left
+gpu draw cost probe: a cube and a pixel shader change, the vertex shader left: 0.552 us a cube; 279.7 us for 500, 1384.4 for 2500
+gpu draw cost probe: timing a cube and a texture change without the fetch constant flush
+gpu draw cost probe: a cube and a texture change without the fetch constant flush: 0.295 us a cube; 150.6 us for 500, 740.0 for 2500
+gpu draw cost probe: timing one triangle with no area
+gpu draw cost probe: one triangle with no area: 0.048 us a cube; 27.0 us for 500, 123.4 for 2500
+gpu draw cost probe: timing one point
+gpu draw cost probe: one point: 0.052 us a cube; 29.1 us for 500, 133.4 for 2500
+gpu draw cost probe: timing the draw alone, no depth test
+gpu draw cost probe: the draw alone, no depth test: 0.118 us a cube; 57.7 us for 500, 293.8 for 2500
+gpu draw cost probe: timing the draw alone, no colour written
+gpu draw cost probe: the draw alone, no colour written: 0.118 us a cube; 57.4 us for 500, 293.9 for 2500
+gpu draw cost probe: timing a cube, the draw packet without its two register writes
+gpu draw cost probe: a cube, the draw packet without its two register writes: 0.285 us a cube; 145.3 us for 500, 716.2 for 2500
+gpu draw cost probe: done, the cubes drew; xsdk_gpu_close returned 0x00000000
+exit: status 0

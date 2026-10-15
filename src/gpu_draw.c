@@ -41,11 +41,12 @@
 enum {
 	DRAW_MAX_DWORDS = 96,
 	// What each call that runs per draw writes, in place: a type-0 packet is its header and a dword a register.
-	SHADERS_DWORDS = 2 * 3 + 1 + 3,
+	IM_LOAD_DWORDS = 3,
+	PROGRAM_DWORDS = 1 + 3,
 	VERTICES_DWORDS = 1 + 6 + 1 + 3,
-	TEXTURE_DWORDS = 1 + 6 + 1 + 3,
-	DRAW_DWORDS = 2 + 2 + 2,
-	DRAW_INDEXED_DWORDS = 2 + 2 + 5,
+	TEXTURE_DWORDS = 1 + 6,
+	DRAW_DWORDS = 2,
+	DRAW_INDEXED_DWORDS = 5,
 	DEPTH_STENCIL_DWORDS = 3 * 2,
 	BLEND_DWORDS = 2 * 2,
 	RASTER_DWORDS = 2 + 1 + 4,
@@ -252,7 +253,9 @@ static void put_target(uint32_t width, uint32_t height)
 {
 	const uint32_t control[] = { 0, BLEND_ONE_ZERO, COLOR_CONTROL, 0, CLIP_D3D_SPACE,
 		SC_MODE_WINDOW_OFFSET_NO_CULL | msaa_enable(), VTE_VIEWPORT_AND_W0, 0, EDRAM_MODE_COLOR_DEPTH };
-	const uint32_t indices[] = { MAX_VERTEX_INDEX, 0 };
+	// The index range, and the offset added to each index: 0, set here rather than before every draw as libxenon
+	// does (xe.c:191-200), as every draw has a target set after anything that could change it.
+	const uint32_t indices[] = { MAX_VERTEX_INDEX, 0, 0 };
 	// The stencil masks, alpha reference 0, then a viewport over the target with z from 0 to 1.
 	const uint32_t viewport[] = { STENCIL_MASKS, STENCIL_MASKS, 0, float_bits(width / 2.0f), float_bits(width / 2.0f),
 		float_bits(-(float)height / 2.0f), float_bits(height / 2.0f), float_bits(1.0f), 0 };
@@ -267,8 +270,9 @@ static void put_target(uint32_t width, uint32_t height)
 	gpu_put_registers(&packets, RB_DEPTHCONTROL, control, 9);
 	xsdk_gpu_put_window(&packets, width, height);
 	xsdk_gpu_put_surface(&packets, width, height);
+	gpu_put_register(&packets, COHER_DEST_BASE_1, 0);
 	gpu_put_register(&packets, COHER_DEST_BASE_7, 0);
-	gpu_put_registers(&packets, VGT_MAX_VTX_INDX, indices, 2);
+	gpu_put_registers(&packets, VGT_MAX_VTX_INDX, indices, 3);
 	gpu_put_register(&packets, RB_COLOR_MASK, 0xF);
 	gpu_put_registers(&packets, RB_STENCILREFMASK_BF, viewport, 9);
 	xsdk_gpu_write(&packets);
@@ -320,20 +324,42 @@ static void put_im_load(GpuPackets *packets, const XsdkShader *shader)
 	gpu_put(packets, shader->dword_count);
 }
 
-// Xe_pUploadShader: the pixel shader first, then the vertex shader and the program registers (xe.c:1378-1401).
+// The microcode the GPU holds, by address, so a shader loaded isn't loaded again; 0 when it isn't known. Setting the
+// same program again cost the GPU 0.11 us a draw, and loading both shaders where only the pixel shader changed 0.07
+// us more than loading it alone (docs/HARDWARE.md, "The GPU's cost of a draw").
+static uint32_t loaded_vertex;
+static uint32_t loaded_pixel;
+
+void xsdk_gpu_forget_shaders(void)
+{
+	loaded_vertex = 0;
+	loaded_pixel = 0;
+}
+
+// Xe_pUploadShader: the pixel shader first, then the vertex shader and the program registers (xe.c:1378-1401), each
+// shader only if it isn't the one loaded, and nothing if neither changed.
 void xsdk_gpu_set_shaders(const XsdkShader *vertex, const XsdkShader *pixel)
 {
 	assert(vertex->type == XSDK_SHADER_VERTEX && pixel->type == XSDK_SHADER_PIXEL);
+	const bool load_vertex = vertex->address != loaded_vertex;
+	const bool load_pixel = pixel->address != loaded_pixel;
+	if (!load_vertex && !load_pixel)
+		return;
 	// Every interpolant is at its centre, and centroids and centres halve the pixel rate (docs/HARDWARE.md).
 	const uint32_t context_misc =
 		((vertex->context_misc | pixel->context_misc) & ~(uint32_t)SAMPLE_CNTL_MASK) | SAMPLE_CNTL_CENTERS_ONLY;
 	const uint32_t program[] = { vertex->program_control | pixel->program_control, context_misc,
 		INTERPOLATE_ALL_AT_CENTERS };
-	GpuPackets packets = gpu_reserve_packets(SHADERS_DWORDS);
-	put_im_load(&packets, pixel);
-	put_im_load(&packets, vertex);
+	GpuPackets packets =
+		gpu_reserve_packets((load_pixel ? IM_LOAD_DWORDS : 0) + (load_vertex ? IM_LOAD_DWORDS : 0) + PROGRAM_DWORDS);
+	if (load_pixel)
+		put_im_load(&packets, pixel);
+	if (load_vertex)
+		put_im_load(&packets, vertex);
 	gpu_put_registers(&packets, SQ_PROGRAM_CNTL, program, 3);
 	gpu_packets_done(&packets);
+	loaded_vertex = vertex->address;
+	loaded_pixel = pixel->address;
 }
 
 // The streams' vertex fetch constants, 95 down, kept so each write can send its whole group.
@@ -371,16 +397,16 @@ void xsdk_gpu_invalidate(uint32_t address, uint32_t size_bytes)
 	gpu_packets_done(&packets);
 }
 
-// Xe_SetTexture's fetch constant, as a whole group (xe.c:1748).
+// Xe_SetTexture's fetch constant, as a whole group (xe.c:1748), without the fetch constant flush libxenon writes after
+// it: textures changed every draw came out right without it, and it cost the GPU 0.03 us a change (docs/HARDWARE.md,
+// "The GPU's cost of a draw").
 void xsdk_gpu_set_texture(uint32_t slot, const XsdkTexture *texture, const XsdkSamplerState *sampler)
 {
 	assert(slot < TEXTURE_SLOTS);
-	const uint32_t flush_fetch[] = { 0, 0, 0 };
 	GpuPackets packets = gpu_reserve_packets(TEXTURE_DWORDS);
 	gpu_put_type0(&packets, SHADER_CONSTANT_FETCH_00_0 + slot * FETCH_GROUP_DWORDS, FETCH_GROUP_DWORDS);
 	for (uint32_t i = 0; i < FETCH_GROUP_DWORDS; i++)
 		gpu_put(&packets, texture->fetch[i] | sampler->fetch[i]);
-	gpu_put_registers(&packets, SHADER_CONSTANT_FLUSH_FETCH_0, flush_fetch, 3);
 	gpu_packets_done(&packets);
 }
 
@@ -389,8 +415,6 @@ void xsdk_gpu_draw(uint32_t primitive_type, uint32_t vertex_count)
 {
 	assert(!target_undone || xsdk_gpu_recording());
 	GpuPackets packets = gpu_reserve_packets(DRAW_DWORDS);
-	gpu_put_register(&packets, COHER_DEST_BASE_1, 0);
-	gpu_put_register(&packets, VGT_INDX_OFFSET, 0);
 	gpu_put_type3(&packets, PM4_DRAW_INDX_2, 1);
 	gpu_put(&packets, primitive_type | AUTO_INDEX | vertex_count << VERTEX_COUNT_SHIFT);
 	gpu_packets_done(&packets);
@@ -498,8 +522,6 @@ void xsdk_gpu_draw_indexed(uint32_t primitive_type, uint32_t index_address, uint
 	assert(index_count && index_count <= MAX_INDICES && (index_address & (indices_32_bit ? 3u : 1u)) == 0);
 	assert(!target_undone || xsdk_gpu_recording());
 	GpuPackets packets = gpu_reserve_packets(DRAW_INDEXED_DWORDS);
-	gpu_put_register(&packets, COHER_DEST_BASE_1, 0);
-	gpu_put_register(&packets, VGT_INDX_OFFSET, 0);
 	gpu_put_type3(&packets, PM4_DRAW_INDX, 4);
 	gpu_put(&packets, 0);
 	gpu_put(

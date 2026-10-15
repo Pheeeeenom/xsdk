@@ -1,0 +1,35 @@
+log: game:\probe_gpu_draw_cost.log
+log: named after \Device\Harddisk0\Partition1\xsdk\probe_gpu_draw_cost\probe_gpu_draw_cost.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+gpu draw cost probe: 14 variants, batches of 500 and 2500 cubes, best of 5 rounds
+gpu draw cost probe: 100 of the first 100 cells show their cube
+gpu draw cost probe: timing a cube as the layer draws it: both constant groups and the draw
+gpu draw cost probe: a cube as the layer draws it: both constant groups and the draw: 0.317 us a cube; 161.7 us for 500, 796.4 for 2500
+gpu draw cost probe: timing the draw alone
+gpu draw cost probe: the draw alone: 0.294 us a cube; 149.0 us for 500, 736.3 for 2500
+gpu draw cost probe: timing the vertex constants and the draw
+gpu draw cost probe: the vertex constants and the draw: 0.285 us a cube; 145.5 us for 500, 716.1 for 2500
+gpu draw cost probe: timing the pixel constants and the draw
+gpu draw cost probe: the pixel constants and the draw: 0.293 us a cube; 149.3 us for 500, 736.1 for 2500
+gpu draw cost probe: timing both constant groups, no draw
+gpu draw cost probe: both constant groups, no draw: 0.112 us a cube; 58.9 us for 500, 283.3 for 2500
+gpu draw cost probe: timing both constant groups loaded from memory, and the draw
+gpu draw cost probe: both constant groups loaded from memory, and the draw: 0.355 us a cube; 181.0 us for 500, 890.8 for 2500
+gpu draw cost probe: timing a cube and a texture change
+gpu draw cost probe: a cube and a texture change: 0.381 us a cube; 193.6 us for 500, 955.5 for 2500
+gpu draw cost probe: timing a cube and a shader change
+gpu draw cost probe: a cube and a shader change: 0.677 us a cube; 342.1 us for 500, 1695.5 for 2500
+gpu draw cost probe: timing vkbench's states: a texture change every draw, a shader change every second, blending every fourth
+gpu draw cost probe: vkbench's states: a texture change every draw, a shader change every second, blending every fourth: 0.702 us a cube; 354.5 us for 500, 1759.1 for 2500
+gpu draw cost probe: timing the draw alone, its 36 corners without indices
+gpu draw cost probe: the draw alone, its 36 corners without indices: 0.293 us a cube; 149.3 us for 500, 736.1 for 2500
+gpu draw cost probe: timing the draw alone, one triangle
+gpu draw cost probe: the draw alone, one triangle: 0.202 us a cube; 103.9 us for 500, 508.8 for 2500
+gpu draw cost probe: timing the draw alone, the cube's indices twice over
+gpu draw cost probe: the draw alone, the cube's indices twice over: 0.411 us a cube; 207.5 us for 500, 1028.9 for 2500
+gpu draw cost probe: timing a cube and its program set again, unchanged
+gpu draw cost probe: a cube and its program set again, unchanged: 0.427 us a cube; 217.3 us for 500, 1071.5 for 2500
+gpu draw cost probe: timing a cube, the draw packet without its two register writes
+gpu draw cost probe: a cube, the draw packet without its two register writes: 0.285 us a cube; 145.6 us for 500, 715.8 for 2500
+gpu draw cost probe: done, the cubes drew; xsdk_gpu_close returned 0x00000000
+exit: status 0

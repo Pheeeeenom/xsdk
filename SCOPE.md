@@ -952,6 +952,9 @@ gap that something running on xsdk meets becomes a milestone; the rest wait (aft
 38. **The cost of a draw.** Agreed and done on 2026-10-15: docs/scope/38-draw-cost.md (HARDWARE.md, "The cost of a
     draw, milestone 38").
 
+39. **The GPU's cost of a draw.** Agreed and done on 2026-10-15: docs/scope/39-gpu-draw-cost.md (HARDWARE.md, "The
+    GPU's cost of a draw, milestone 39").
+
 **Networking**, a scope of its own rather than a numbered milestone: sockets, and TLS 1.2 in the title's own code.
 Agreed and done on 2026-10-14: docs/scope/networking.md.
 

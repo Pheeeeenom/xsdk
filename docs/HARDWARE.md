@@ -3151,3 +3151,86 @@ On the console, with xsdk at this milestone and vulkan4xenon `c1e3aaa` rebuilt o
   (constants, indexed, depth, hierarchical depth, raster and microcode), and no other.
 - **vulkan4xenon_test passed 112 of 112** (`vulkan4xenon_test.log`).
 - **Dusklight wasn't run:** the user didn't need it played, today's goal being xsdk's own improvements.
+
+## The GPU's cost of a draw (2026-10-15)
+
+`build/probe_gpu_draw_cost.xex` (`tests/probe_gpu_draw_cost.c`), for milestone 39 (logs:
+`results/2026-10-15-milestone-39/`). It times only the GPU.
+- **The shaders** are vkbench's pair, built by `tools/gen_draw_cost_shaders.py` through xost's glslang and compiler at
+  xsdk's register split: a matrix from push constants placing the cube, and the texture times a tint.
+- **The batches.** Each variant's draws are recorded once, 500 cubes and 2,500. Each batch runs after a resolve has
+  cleared eDRAM and the frame's state is set, and is timed from its kick to its fence, the best of 5. The difference
+  over the 2,000 cubes between is a cube's cost.
+- **The cubes** are 4 pixels across, one to each of a grid's cells, so pixel work stays small. After the cubes' large
+  batch, 100 of the first 100 cells showed their cube in every run.
+
+Before the milestone, at xsdk `f360ee3` (`probe_gpu_draw_cost_first.log`, `_indices.log`, `_shaders.log`,
+`_front_end.log` and `_before.log` add variants in turn, each repeating the last's to within 0.001 us):
+
+| Variant | us a cube |
+|---|---|
+| A cube as the layer draws it: both constant groups and the indexed draw | 0.317 |
+| The draw alone | 0.293 |
+| The draw alone: one triangle; one with no area; one point | 0.202; 0.203; 0.210 |
+| The draw alone: its 36 corners without indices; the indices twice over | 0.293; 0.411 |
+| The draw alone: no texture in the pixel shader; no texture coordinates either | 0.293; 0.293 |
+| The draw alone: no depth test; no colour written | 0.293; 0.293 |
+| Both constant groups, no draw | 0.112 |
+| Both constant groups loaded from memory, and the draw | 0.355 |
+| A cube, without the two register writes before its draw | 0.285 |
+| A cube and a texture change; without the fetch constant flush | 0.381; 0.351 |
+| A cube and its program set again, unchanged; and a program change | 0.427; 0.677 |
+| A cube, only the pixel shader loaded again; a pixel shader change so | 0.359; 0.609 |
+| vkbench's states: a texture change every draw, a program change every second, blending every fourth | 0.702 |
+
+- **Every draw cost about 0.2 us before anything was drawn.** A point and a triangle with no area cost what a triangle
+  did; the shaders' work, the indices, depth and colour cost nothing a draw. Each index added about 1.6 GPU clocks.
+- **`xsdk_gpu_set_shaders` loaded both shaders every time.** Setting the program again cost 0.11 us a draw; loading
+  only the pixel shader 0.07 us less than loading both.
+- **The fetch constant flush after a texture isn't needed here.** Without it, cubes alternating between two textures
+  every draw each showed its own (100 of the first 100 cells, `probe_gpu_draw_cost_before.log`), and a change cost
+  0.03 us less.
+
+## The GPU's cost of a draw, milestone 39 (2026-10-15)
+
+docs/scope/39-gpu-draw-cost.md. What changed, from the probe:
+- **`COHER_DEST_BASE_1` and `VGT_INDX_OFFSET` are written once, with the target,** not 0 before every draw.
+- **`xsdk_gpu_set_shaders` loads only a shader that isn't loaded,** and writes nothing when neither changed. What's
+  loaded is forgotten after the set-up, a resolve, a recording and a recorded buffer's execution, XAM's commands (the
+  set-up again), and a shader freed or patched.
+- **`xsdk_gpu_set_texture` writes no fetch constant flush.** `xsdk_gpu_set_vertices` still writes its own, untried.
+
+The probe after (`probe_gpu_draw_cost.log`):
+
+| Variant | Before | After |
+|---|---|---|
+| A cube as the layer draws it | 0.317 | 0.285 |
+| The draw alone | 0.293 | 0.118 |
+| The draw alone, one triangle | 0.202 | 0.048 |
+| A cube and a texture change | 0.381 | 0.295 |
+| A cube and its shaders set again, not their literals | | 0.285 |
+| A cube and a program change | 0.677 | 0.608 |
+| vkbench's states | 0.702 | 0.484 |
+
+- **The 0.2 us a draw was the two register writes before it.** Without them the draw alone costs 0.118 us and a
+  triangle 0.048: writing either register between draws held each draw until the one before had finished.
+- **Constant groups between draws do the same.** A cube costs 0.285 us, where its draw alone costs 0.118 and its
+  two constant groups alone 0.112. With the probe's 4-pixel cubes the wait is short; with bigger ones each draw waits
+  out the last one's pixels.
+- **A program change through the layer now loads only the pixel shader.** It costs 0.608 us against the raw pixel-only
+  load's 0.552; the 0.056 between is the vertex shader's literal group, which vkbench's pattern, and the probe's,
+  writes again at every program change.
+
+On the console, with vulkan4xenon `c1e3aaa` rebuilt on it:
+- **vkbench passed 14 of 14** (`vkbench.log`), both backends drawing the same pictures. From the frame's start to its
+  fence, xsdk's `states_1000` takes 1,630 us, from milestone 38's 1,691, 3.6% less. The milestone asked for 4%; the
+  user accepted 3.6% as within noise of what the target was set from. The cube scenes held at their milestone 38
+  times: `draws_250` 708 us, `draws_1000` 995, `draws_4000` 1,988, `uniforms_1000` 996. Their GPU time is the
+  constant groups' wait above, as their cubes cover the screen between them.
+- **Broken on purpose,** `xsdk_gpu_set_shaders` looking only at the vertex shader so a new pixel shader isn't loaded
+  under the same vertex shader: the microcode test, which draws each pixel shader's tile under one vertex shader,
+  failed (`xsdk_test_break_vertex_only.log`). xsdk_test's other tests with more than one program change the vertex
+  shader too, and passed.
+- **vulkan4xenon_test passed 112 of 112** (`vulkan4xenon_test.log`).
+- **xsdk_test passed 313 of 313** (`xsdk_test.log`), once the user had woken the controller; the run before failed
+  only the controller's two checks, the controller asleep (`xsdk_test_controller_asleep.log`).

@@ -113,16 +113,16 @@ work begins.
     and pushes 16 bytes a draw (vulkan4xenon:docs/ROADMAP.md, section 5); its uniform path costs 1.17 times xsdk's.
   - **When to take it up:** if a push-heavy app, or Dusklight, shows the replay's CPU time crowding the frame. Then a
     vkbench build that times each part of the replay with the time base, run on the console, says where it goes.
-- **The GPU's own cost a draw.** After milestone 38 the CPU writes a cube in 0.29 us, and the GPU, about 0.38 us a
-  cube in vkbench's `draws` scenes, is the slower: from the frame's start to its fence, `draws_1000` takes 994 us
-  whether or not the CPU is faster, and `states_1000`, a texture change every draw and a shader change every second,
-  1,691 us against the CPU's 463 (docs/HARDWARE.md, "The cost of a draw, milestone 38").
-  - **What a draw puts in the GPU's way,** unmeasured: each cube's two constant groups, 32 dwords with up to 6 of
-    padding; `COHER_DEST_BASE_1` and `VGT_INDX_OFFSET`, written before every draw as libxenon does
-    (libxenon:drivers/xenos/xe.c:191-200); a fetch constant flush with every texture or vertex change; an `IM_LOAD` of
-    both shaders at every shader change; and a coherency wait at every segment's start.
-  - **When to take it up:** next, if the user agrees; a probe that times the GPU over a batch of draws, leaving one of
-    those out at a time, says which costs it.
+- **Constants written between draws hold the GPU.** After milestone 39 a draw costs the GPU 0.118 us alone, its two
+  constant groups 0.112 alone, and the two together 0.285: each constant write waits for the draw before it to finish
+  (docs/HARDWARE.md, "The GPU's cost of a draw, milestone 39"). With vkbench's cubes, which cover the screen between
+  them, each draw waits out the last one's pixels, and the cube scenes' time to their fence didn't move.
+  - **What might let the next draw's constants in while one is drawing,** untried: alternating constant ranges
+    between draws through `SQ_VS_CONST` and `SQ_PS_CONST`'s bases, or constants loaded from memory in some other
+    pattern (loaded as they are now, they cost 0.07 us more).
+  - **`xsdk_gpu_set_vertices`' fetch constant flush,** kept untried where the texture's went.
+  - **When to take it up:** next for the GPU, if the user agrees; the probe (`tests/probe_gpu_draw_cost.c`) takes
+    the variants.
 
 ## Tried and reverted
 

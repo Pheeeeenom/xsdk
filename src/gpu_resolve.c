@@ -178,6 +178,7 @@ static void resolve(uint32_t source, uint32_t address, uint32_t width, uint32_t 
 	gpu_put(&packets, INVALIDATE_VERTEX_SHADER);
 	put_shader(&packets);
 	gpu_put_registers(&packets, SQ_PROGRAM_CNTL, program, 2);
+	xsdk_gpu_forget_shaders();
 	// Writing the buffer clears it to RB_HIZ_CLEAR with depth; testing it would reject the copy (docs/HARDWARE.md).
 	gpu_put_register(&packets, RB_HIZCONTROL, clears_depth ? HIZ_WRITE_ENABLE : 0);
 	gpu_put_registers(&packets, VGT_MAX_VTX_INDX, indices, 3);
