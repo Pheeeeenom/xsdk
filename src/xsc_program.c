@@ -335,17 +335,53 @@ static bool add_cf(Xsc *x, CfEntry **cf, size_t *count, size_t *capacity, CfEntr
 	return true;
 }
 
+// The temps the GPU has, and who wrote one since the last serialized instruction: the ALU or a fetch.
+enum { XSC_TEMPS = 128, XSC_WRITTEN_ALU = 1, XSC_WRITTEN_FETCH = 2 };
+
+static void defs_uses(
+	const XscProgram *p, const XscOp *op, int64_t *defs, size_t *def_count, int64_t *uses, size_t *use_count);
+
+static bool any_written(const uint8_t written[XSC_TEMPS], const int64_t *temps, size_t count, uint8_t by)
+{
+	for (size_t i = 0; i < count; i++) {
+		if (temps[i] >= 0 && temps[i] < XSC_TEMPS && (written[temps[i]] & by))
+			return true;
+	}
+	return false;
+}
+
+// Within an exec the ALU and the fetches run apart, and an instruction waits for the other's results only when
+// serialized: an ALU instruction that reads, or writes, a temp a fetch in the exec wrote since its last serialized
+// instruction, and a fetch that reads one the ALU wrote. Unserialized, the console's ALU read a fetched index before
+// the fetch had written it; the next exec found it written (docs/HARDWARE.md, "Serialized fetches"). A serialized
+// instruction waits for everything before it, so it clears what's tracked.
 static CfEntry exec_entry(const XscProgram *p, const Chunk *chunk, bool last)
 {
+	uint8_t written[XSC_TEMPS] = { 0 };
 	int64_t seq = 0;
 	int fetches = 0;
 	bool pred_clean = true;
 	for (size_t k = 0; k < chunk->count; k++) {
-		if (chunk->ops[k]->is_fetch) {
+		const XscOp *const op = chunk->ops[k];
+		int64_t defs[2], uses[3];
+		size_t def_count, use_count;
+		defs_uses(p, op, defs, &def_count, uses, &use_count);
+		const bool waits = op->is_fetch ? any_written(written, uses, use_count, XSC_WRITTEN_ALU)
+						: any_written(written, uses, use_count, XSC_WRITTEN_FETCH) ||
+							  any_written(written, defs, def_count, XSC_WRITTEN_FETCH);
+		if (waits) {
+			seq |= (int64_t)2 << (2 * k);
+			memset(written, 0, XSC_TEMPS);
+		}
+		if (op->is_fetch) {
 			seq |= (int64_t)1 << (2 * k);
 			fetches++;
 		}
-		if (xsdk_xsc_modifies_predicate(chunk->ops[k]))
+		for (size_t i = 0; i < def_count; i++) {
+			if (defs[i] >= 0 && defs[i] < XSC_TEMPS)
+				written[defs[i]] |= op->is_fetch ? XSC_WRITTEN_FETCH : XSC_WRITTEN_ALU;
+		}
+		if (xsdk_xsc_modifies_predicate(op))
 			pred_clean = false;
 	}
 	// A vertex shader's fetch-bearing exec carries a mask of its fetches (program.py _build_ucode).

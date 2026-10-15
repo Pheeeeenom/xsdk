@@ -209,6 +209,14 @@ parameters lower byte for byte as before, and so does a lone fetch after its
 coordinate's work. `tests/test_fetch_layout.py` checks the layout, the
 simulator's results and those shaders.
 
+Within an exec the ALU and the fetches run apart on the console, so the
+builder sets an instruction's serialize bit where it reads across them: an
+ALU instruction reading or writing a temp a fetch in its exec wrote since the
+exec's last serialized instruction, and a fetch reading one the ALU wrote
+there (`xsdk:src/xsc_program.c`, exec_entry; xsdk:docs/HARDWARE.md,
+"Serialized fetches"). Unserialized, the ALU read a fetched index before the
+fetch had written it. `tests/test_dependent_fetch.py` checks it.
+
 ## Loops (unrolling + mem2reg)
 
 glslang (`-G --target-env opengl`) lowers `for`/`while` to mutable-memory form:

@@ -1,0 +1,20 @@
+The palette conversion's variants (vulkan4xenon's milestone 14), each drawn into the conversion's target and that
+target dumped from memory, a new variant each 20 s, the four in a row in variants_*.png. The copy is the minimap's
+EFB copy of 8-bit indices; the palette its 204 entries.
+
+Set a, before any serialize bit, and with fetches alone serialized when they read a temp the ALU wrote in the exec:
+  V0  vec4 index = floor(texture(source, in_uv) * 255.0 + 0.5);
+      o_color = texture(palette, index.xx * upush.palette_scale.xy + upush.palette_scale.zw);   (the conversion)
+  V1  o_color = texture(palette, in_uv);
+  V2  vec4 index = floor(texture(source, in_uv) * 255.0 + 0.5);
+      o_color = vec4(index.x / 255.0, index.x / 255.0, index.x / 255.0, 1.0);
+  V3  vec4 index = floor(texture(source, in_uv) * 255.0 + 0.5);
+      o_color = texture(source, index.xx * upush.palette_scale.xy + upush.palette_scale.zw);
+
+Set b, with fetches alone serialized, then with the rule xsc keeps (src/xsc_program.c, exec_entry):
+  V0  o_color = vec4(upush.palette_scale.x * 102.0, upush.palette_scale.w, upush.palette_scale.z * 204.0, 1.0);
+      (the fragment's push constants as a colour, 0.5 grey when right)
+  V1  vec4 index = floor(texture(source, in_uv) * 255.0 + 0.5);
+      o_color = texture(palette, index.xx * vec2(1.0 / 204.0, 0.0) + vec2(0.5 / 204.0, 0.5));
+  V2  o_color = texture(palette, vec2(in_uv.x, upush.palette_scale.w));
+  V3  the conversion, as set a's V0

@@ -1,0 +1,14 @@
+  cf     exec
+  alu    max r1, c1.zwzw, c1.zwzw
+  tfetch tfetch2D r2, r0.xy, tf0
+S alu    mul r3, r2, c2.xxxx
+  alu    add r2, r3, c3
+  alu    floor r3, r2
+  alu    max r2, r3.xxzw, r3.xxzw
+  cf     exec
+  alu    mul r3, r2, c1
+  alu    add r2, r3, r1
+S tfetch tfetch2D r1, r2.xy, tf1
+  cf     alloc colors
+  cf     exece
+  alu    max oC0, r1, r1

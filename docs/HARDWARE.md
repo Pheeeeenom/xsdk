@@ -2896,3 +2896,32 @@ its name and renamed into place ("Files renamed on the console"). vulkan4xenon's
   before, its end frame the same byte for byte.
 - **xsdk_test** passed 300 of 300, the controller's two among them; **vulkan4xenon_test** 94 of 94; **vkbench** 14 of
   14, its draw and submit times within 2.5% of the run before.
+
+## Serialized fetches (2026-10-15)
+
+Within an exec, a pixel shader's ALU instructions and its fetches run apart on the console, and an instruction waits
+for the other's results only when its serialize bit is set, the second of its two bits in the exec's sequence
+(xenia:src/xenia/gpu/ucode.h:231). xost set none. Aurora's palette conversion for Ordon's minimap (vulkan4xenon's
+milestone 14) fetches an index, works out the palette's coordinate from it and fetches there; laid out
+(`palette_unserialized.txt`), the ALU instruction reading the index came right after its fetch, in the same exec. The
+console drew noise, and Xenia, which runs each instruction to its end in turn, drew the map, from the same containers:
+the 41 shaders the console compiled were Xenia's byte for byte. Logs and dumps: `results/2026-10-15-serialized-fetches/`,
+the variants in `variants.txt`, each the conversion's target dumped from memory.
+- **Before** (`variants_a_unserialized.png`): the palette at the interpolated uv and the index as grey came out right;
+  the conversion, and a fetch from the copy at coordinates worked out from its own index, came out as noise.
+- **Fetches serialized** where they read a temp the ALU wrote in the exec (`variants_a_fetches_serialized.png`,
+  `variants_b_fetches_serialized.png`): no change. The fragment's push constants read right (set b's V0, grey), and so
+  did a fetch at coordinates the ALU worked out from them (V2); the conversion with its scale as literals didn't (V1).
+- **So the ALU read the index too soon.** In each program that drew right, an ALU instruction read a fetch's result in
+  a later exec, as the grey variant's does and as a vertex shader reads its vertex fetches.
+- **xost now** (src/xsc_program.c, exec_entry) serializes an ALU instruction that reads or writes a temp a fetch in its
+  exec wrote since the exec's last serialized instruction, and a fetch that reads a temp the ALU wrote there
+  (`palette_serialized.txt`). All four of set b drew right (`variants_b_serialized.png`), the conversion among them, and
+  Ordon's minimap draws as on the PC (vulkan4xenon's `results/2026-10-15-milestone-14/`). The fetch's half is a
+  precaution, not tried without: V2's fetch was serialized and drew right.
+- **What it changes:** 2 of the 145 programs in Dusklight's pack (`820f98f280587ea8.frag`, `ca44599827bbdb23.frag`),
+  besides the conversion's two. The logo shot took 17.6 ms of GPU time a frame as before, its end frame the same byte
+  for byte (`dusklight_logo.log`). xsdk_test passed 300 of 300, vulkan4xenon_test 100 of 100 and vkbench 14 of 14, its
+  draw and submit times within 0.6% of the run before.
+- **Broken on purpose,** the bit never set, xost's test (`tests/test_dependent_fetch.py`) fails, and on the console the
+  conversion drew noise, as set a did.
