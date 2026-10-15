@@ -997,11 +997,21 @@ static int64_t dot(XscLower *l, uint32_t a, uint32_t b, int64_t dst, bool export
 	const XscOperand ob = xsdk_xsc_lower_operand(l, b);
 	if (xsc_failed(l))
 		return XSC_NONE;
-	const int64_t opcode = xsdk_xsc_vec_size(l, a) == 3 ? XSC_VECTOR_DP3 : XSC_VECTOR_DP4;
+	const int64_t size = xsdk_xsc_vec_size(l, a);
+	const int64_t opcode = size == 2 ? XSC_VECTOR_DP2_ADD : size == 3 ? XSC_VECTOR_DP3 : XSC_VECTOR_DP4;
 	if (dst == XSC_NONE)
 		dst = xsdk_xsc_fresh(l);
-	const XscSrc ops[2] = { xsc_src(oa, false, 0), xsc_src(ob, false, 0) };
-	return xsdk_xsc_emit(l, opcode, ops, 2, dst, export_, 0xF, false) ? dst : XSC_NONE;
+	XscSrc ops[3] = { xsc_src(oa, false, 0), xsc_src(ob, false, 0) };
+	size_t count = 2;
+	// dp2add adds src3: zero, as a mat2's rows do (xsc_lower_matrix.c). A dp4 would add what z and w hold.
+	if (size == 2) {
+		static const double zero[4] = { 0, 0, 0, 0 };
+		const int64_t z = xsdk_xsc_literal_reg(l, zero);
+		if (z == XSC_NONE)
+			return XSC_NONE;
+		ops[count++] = xsc_src(xsc_const(z), false, 0);
+	}
+	return xsdk_xsc_emit(l, opcode, ops, count, dst, export_, 0xF, false) ? dst : XSC_NONE;
 }
 
 // Whether b is a construct of one non-constant scalar (lower.py fdiv's scalar_b).

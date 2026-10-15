@@ -43,7 +43,7 @@ came from; that test and its test vectors stay in xost's archived repo (github.c
 | `mod()` (OpFMod) | `a − b·floor(a/b)` |
 | `vec * float` (VectorTimesScalar) | mul, scalar `.xxxx` broadcast |
 | scalar int -> float | folded literals or float-backed `trunc` + add/mul |
-| `dot()` / `cross()` | `dp3`/`dp4` broadcast / yzx·zxy mad |
+| `dot()` / `cross()` | `dp2add` with a zero third source (vec2), `dp3`, `dp4`, broadcast / yzx·zxy mad |
 | `mix` / `max` / `min` / `clamp(x,0,1)` (GLSL.std.450) | sub+mad / max / min / `_sat` modifier (free) |
 | `step` / `smoothstep` | `kSge` / `t·t·(3−2t)`, `t=sat((x−e0)/(e1−e0))` |
 | `normalize` / `length` / `distance` | dp3·rsq·mul / dp+sqrt / sub+dp+sqrt (scalar pipe) |
