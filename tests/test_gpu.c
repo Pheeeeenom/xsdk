@@ -34,10 +34,12 @@ enum {
 	WAIT_SPIN_US = 2000,
 	// Each fence gives the ring a segment of 14 dwords, so the 8192-dword ring wraps a few times.
 	WRAP_ROUNDS = 4000,
-	// 25600 dwords with no fence, which the ring runs in segments of 1024 or a little more.
+	// 25600 dwords with no fence, which the ring runs in segments: the first after a fence 1024 dwords, each next twice
+	// the last, up to 8192 (src/gpu.c).
 	LONG_WRITE_NOPS = 400,
 	NOP_DWORDS = 64,
-	SEGMENT_DWORDS = 1024,
+	SEGMENT_FIRST_DWORDS = 1024,
+	SEGMENT_MAX_DWORDS = 8192,
 	// 5 MB, so the 4 MB stream wraps, with a fence every 64 KB.
 	STREAM_WRAP_NOPS = 20480,
 	NOPS_A_FENCE = 256,
@@ -49,6 +51,18 @@ static void put_nop(uint32_t payload_dwords)
 	packet[0] = xsdk_gpu_type3(PM4_NOP, payload_dwords);
 	for (uint32_t i = 1; i <= payload_dwords; i++)
 		packet[i] = 0;
+}
+
+// The segments a write of this many dwords right after a fence fills, so the ring runs them before the next fence.
+static uint32_t whole_segments(uint32_t dwords)
+{
+	uint32_t segments = 0;
+	uint32_t size = SEGMENT_FIRST_DWORDS;
+	for (uint32_t end = size; end <= dwords; end += size) {
+		segments++;
+		size = size * 2 < SEGMENT_MAX_DWORDS ? size * 2 : SEGMENT_MAX_DWORDS;
+	}
+	return segments;
 }
 
 // A NOP of 4 dwords, then a fence that kicks once; then a long write with no fence, which still runs.
@@ -73,7 +87,7 @@ static void test_stats(void)
 		"gpu: %u dwords with no fence: %u segments", (unsigned)(after.dwords - before.dwords), (unsigned)kicks);
 	check("gpu: a long write runs in segments, before its fence",
 		after.dwords - before.dwords >= LONG_WRITE_NOPS * NOP_DWORDS &&
-			kicks >= LONG_WRITE_NOPS * NOP_DWORDS / (2 * SEGMENT_DWORDS) && ran);
+			kicks >= whole_segments(LONG_WRITE_NOPS * NOP_DWORDS) / 2 && ran);
 }
 
 // More than the stream holds, so it wraps and reuses its blocks behind the GPU.

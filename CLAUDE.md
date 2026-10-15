@@ -42,7 +42,9 @@ layer that drives Xenos directly. Scope, sources and milestones are in SCOPE.md.
   toolchain turns off tail calls and hot/cold splitting, and `src/xsdk.ld` puts import stubs first; keep it that way.
 - Write memory the GPU reads (write-combined or uncached) through `volatile` 32-bit stores. GCC merges plain stores
   into 64-bit `std`, and on the console one that isn't 8-byte aligned raises an alignment exception there
-  (docs/HARDWARE.md, "A ring without VdInitializeEngines").
+  (docs/HARDWARE.md, "A ring without VdInitializeEngines"). The one exception is VMX `vec_st` to an address checked
+  16-byte aligned, as the float constants are written (src/gpu_constants.c; docs/HARDWARE.md, "Copies into
+  write-combined and cached memory").
 - The console keeps only LR's low word across an interrupt, so the toolchain's GCC keeps LR to 32-bit values
   (gcc-xsdk.patch), and assembly mustn't hold data in LR either (docs/HARDWARE.md, "The console keeps only LR's low
   word across an interrupt").

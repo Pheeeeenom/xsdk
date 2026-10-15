@@ -113,6 +113,16 @@ work begins.
     and pushes 16 bytes a draw (vulkan4xenon:docs/ROADMAP.md, section 5); its uniform path costs 1.17 times xsdk's.
   - **When to take it up:** if a push-heavy app, or Dusklight, shows the replay's CPU time crowding the frame. Then a
     vkbench build that times each part of the replay with the time base, run on the console, says where it goes.
+- **The GPU's own cost a draw.** After milestone 38 the CPU writes a cube in 0.29 us, and the GPU, about 0.38 us a
+  cube in vkbench's `draws` scenes, is the slower: from the frame's start to its fence, `draws_1000` takes 994 us
+  whether or not the CPU is faster, and `states_1000`, a texture change every draw and a shader change every second,
+  1,691 us against the CPU's 463 (docs/HARDWARE.md, "The cost of a draw, milestone 38").
+  - **What a draw puts in the GPU's way,** unmeasured: each cube's two constant groups, 32 dwords with up to 6 of
+    padding; `COHER_DEST_BASE_1` and `VGT_INDX_OFFSET`, written before every draw as libxenon does
+    (libxenon:drivers/xenos/xe.c:191-200); a fetch constant flush with every texture or vertex change; an `IM_LOAD` of
+    both shaders at every shader change; and a coherency wait at every segment's start.
+  - **When to take it up:** next, if the user agrees; a probe that times the GPU over a batch of draws, leaving one of
+    those out at a time, says which costs it.
 
 ## Tried and reverted
 

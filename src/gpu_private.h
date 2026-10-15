@@ -2,6 +2,7 @@
 #define XSDK_GPU_PRIVATE_H
 
 #include <assert.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include "xsdk/gpu.h"
@@ -109,9 +110,10 @@ enum {
 	HIZ_GREATER = 1 << 4,
 };
 
-// Packets built in memory, then copied into the ring with xsdk_gpu_write.
+// Packets built in memory, then copied into the ring with xsdk_gpu_write; or, from gpu_reserve_packets, built straight
+// in the space reserved for them. Volatile, so the stores into the stream stay 32 bits.
 typedef struct {
-	uint32_t *dwords;
+	volatile uint32_t *dwords;
 	uint32_t count;
 	uint32_t capacity;
 } GpuPackets;
@@ -125,9 +127,15 @@ static inline void gpu_put(GpuPackets *packets, uint32_t value)
 	packets->dwords[packets->count++] = value;
 }
 
-static inline void gpu_put_registers(GpuPackets *packets, uint32_t index, const uint32_t *values, uint32_t count)
+// A type-0 packet's header: count registers from index, their values to follow.
+static inline void gpu_put_type0(GpuPackets *packets, uint32_t index, uint32_t count)
 {
 	gpu_put(packets, (count - 1) << 16 | index);
+}
+
+static inline void gpu_put_registers(GpuPackets *packets, uint32_t index, const uint32_t *values, uint32_t count)
+{
+	gpu_put_type0(packets, index, count);
 	for (uint32_t i = 0; i < count; i++)
 		gpu_put(packets, values[i]);
 }
@@ -152,6 +160,45 @@ static inline void gpu_put_type3(GpuPackets *packets, uint32_t opcode, uint32_t 
 
 // Copies the packets into the ring; xsdk_gpu_fence submits them.
 void xsdk_gpu_write(const GpuPackets *packets);
+
+// Where packets go next and where the room there ends: the stream, up to its segment's or block's end, or the
+// recording, up to its capacity; empty while packets go straight into the ring (src/gpu.c).
+typedef struct {
+	volatile uint32_t *next;
+	volatile uint32_t *end;
+} GpuWindow;
+
+extern GpuWindow xsdk_gpu_window;
+
+// Reserves inline while the window has room, else through xsdk_gpu_reserve, which moves it on. A call for each cost
+// the console's core 86 clocks a reservation recording, about 110 through the stream (docs/HARDWARE.md, "The cost of
+// a draw").
+static inline volatile uint32_t *gpu_reserve(uint32_t dword_count)
+{
+	volatile uint32_t *const next = xsdk_gpu_window.next;
+	if (xsdk_gpu_window.end - next < (ptrdiff_t)dword_count)
+		return xsdk_gpu_reserve(dword_count);
+	xsdk_gpu_window.next = next + dword_count;
+	return next;
+}
+
+// What xsdk_gpu_put_coherency writes: two type-0 packets, of 1 and 2 registers, and a 5-dword WAIT_REG_MEM.
+enum { GPU_COHERENCY_DWORDS = 2 + 3 + 6 };
+
+// Space for exactly dword_count dwords of packets, written in place. Building them on the stack to copy in reads back
+// every dword just stored, which costs the console's in-order core 5 clocks a dword (docs/HARDWARE.md, "The cost of a
+// draw").
+static inline GpuPackets gpu_reserve_packets(uint32_t dword_count)
+{
+	return (GpuPackets){ .dwords = gpu_reserve(dword_count), .count = 0, .capacity = dword_count };
+}
+
+// Every dword reserved was written.
+static inline void gpu_packets_done(const GpuPackets *packets)
+{
+	assert(packets->count == packets->capacity);
+	(void)packets;
+}
 // The GPU address of a resolve's rectangle for this size; waits only to replace one a queued resolve may read.
 uint32_t xsdk_gpu_rectangle(uint32_t width, uint32_t height);
 // Reads the registers the SDK changes, then queues libxenon's set-up.

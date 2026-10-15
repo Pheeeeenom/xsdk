@@ -1,0 +1,21 @@
+log: game:\probe_draw_cost.log
+log: named after \Device\Harddisk0\Partition1\xsdk\probe_draw_cost\probe_draw_cost.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+draw cost probe: 4000 cubes a round, 9 rounds of 13 variants
+draw cost probe: vertex constants, 4 vectors: 339 clocks a cube at best (0.106 us), 340 the median
+draw cost probe: pixel constants, 1 vector: 271 clocks a cube at best (0.085 us), 272 the median
+draw cost probe: indexed draw: 154 clocks a cube at best (0.048 us), 155 the median
+draw cost probe: both constants: 553 clocks a cube at best (0.173 us), 554 the median
+draw cost probe: a cube: both constants and the draw: 757 clocks a cube at best (0.237 us), 766 the median
+draw cost probe: 49 dwords stored straight: 370 clocks a cube at best (0.116 us), 370 the median
+draw cost probe: 49 dwords built on the stack, then copied: 613 clocks a cube at best (0.192 us), 614 the median
+draw cost probe: both constants, through the stream: 570 clocks a cube at best (0.179 us), 573 the median
+draw cost probe: both constants, through the stream: 21 kicks a round
+draw cost probe: 49 dwords stored straight, three reservations: 547 clocks a cube at best (0.171 us), 549 the median
+draw cost probe: 49 dwords stored straight, three reservations, through the stream: 559 clocks a cube at best (0.175 us), 565 the median
+draw cost probe: 49 dwords stored straight, three reservations, through the stream: 26 kicks a round
+draw cost probe: both constants, 32-bit stores, nothing kept: 511 clocks a cube at best (0.160 us), 513 the median
+draw cost probe: both constants, 32-bit stores, the new values kept: 733 clocks a cube at best (0.230 us), 734 the median
+draw cost probe: both constants, 16-byte stores, the new values kept: 495 clocks a cube at best (0.155 us), 495 the median
+draw cost probe: done; xsdk_gpu_close returned 0x00000000
+exit: status 0

@@ -2979,7 +2979,7 @@ xboxkrnl/xboxkrnl_video.cc:352-360), while the user opened and closed the Guide 
   frames.
 - **Nothing showed:** the title flipped its own buffers.
 - **Reading XAM's buffers from the title killed it,** twice, while the Guide first opened: the screen froze on the
-  title's last frame and the console agent kept answering, as the title had ended without giving the GPU back
+  title's last frame and the console kept answering over the network, as the title had ended without giving the GPU back
   (`probe_3_killed.log`, `probe_4_killed_live.log`, both ending inside a read of XAM's buffer through the 0xC0000000
   window). The probe then read none of XAM's memory (`probe_5.log`, in which the Guide wasn't opened: the controller
   had dropped off with a reboot, as `XamInputGetState`'s 0x48F says in xsdk_test).
@@ -3047,9 +3047,107 @@ and `xsdk_present_open` tells XAM the title's display through event 1 (docs/scop
   differences grow with the draws, `draws_4000`'s four times `draws_1000`'s, where the swap comes once a frame and
   outside the times; the code the draws run didn't change, only where it lies.
 - **Ending with the Guide open hangs.** The break run's title ended on its own with the Guide open and never finished
-  ending: it logged its exit, and the console agent rebooted the console 15 s later. XAM's Guide thread, stopping,
+  ending: it logged its exit, and the console was rebooted 15 s later. XAM's Guide thread, stopping,
   spins until the GPU has written the fence of the system command buffer it last set, then sets an empty one and spins
   again (xam 0x816C9A20, called at 0x816CE3AC), and no swap after the title's last can write it. Leaving through Xbox
   Home ends the title while it's still swapping, and went cleanly. guide_check and Dusklight end only through the
   controller or Xbox Home, and XAM keeps the controller from them while the Guide shows; a title that ends by itself,
   as xsdk_test does, would hang if the Guide were open then.
+
+## The cost of a draw (2026-10-15)
+
+`build/probe_draw_cost.xex` (`tests/probe_draw_cost.c`) times vkbench's cube a call at a time, for milestone 38 (logs:
+`results/2026-10-15-milestone-38/`): the matrix, 4 vertex constants; the tint, 1 pixel constant; the indexed draw.
+Each variant runs 4,000 cubes a round for 9 rounds, and the best round is reported in CPU clocks a cube (the time base
+ticks every 64). Variants are recorded into a command buffer the GPU never runs, so only the CPU's work counts and any
+layout is safe to time; those marked "through the stream" run with the GPU open, writing only constants and NOP
+packets.
+
+At xsdk `608c29f` (`probe_draw_cost_before.log`):
+
+| Variant | Clocks a cube | us |
+|---|---|---|
+| The vertex constants (20 dwords with the alignment) | 594 | 0.186 |
+| The pixel constants (20 dwords) | 466 | 0.146 |
+| The indexed draw (9 dwords) | 384 | 0.120 |
+| A cube: all three | 1,587 | 0.497 |
+| 49 dwords stored straight into one reservation | 369 | 0.115 |
+| The same, built on the stack and copied in | 618 | 0.194 |
+| The two constants' sets through the stream | 1,200 | 0.376 |
+
+- **Reading back what was just stored costs about 5 clocks a dword:** 249 clocks over the 49 a cube built on the
+  stack and copied in, as every draw and state call did. Each constant set copied its values into the stage's kept
+  copy, then read the group back out of it to write the packet.
+- **A kick costs the CPU 1.1 to 1.3 us,** 3,500 to 4,100 clocks: the stream's constants cost 145 clocks a cube more
+  than recording them, over 154 kicks a round, with segments of 1,024 dwords (`probe_draw_cost_in_place.log` and
+  `probe_draw_cost_candidates.log` came out at 3,500 and 4,100).
+- **Writing constants** (`probe_draw_cost_candidates.log`), the two sets a cube with the packets as the layer lays
+  them: 32-bit stores keeping nothing 525 clocks, keeping the new values 759, and 16-byte VMX stores keeping them 511.
+  The layer's own took 828 then. Each group's values start on 16 bytes, so VMX stores fit them, and they land in
+  write-combined memory (see "Copies into write-combined and cached memory").
+- **Each reservation through `xsdk_gpu_reserve` costs 86 clocks recording,** about 110 through the stream: the same 49
+  dwords in three reservations, as a cube's three calls make them, took 544 clocks against 372 in one, and 650
+  through the stream (`probe_draw_cost_reservations.log`).
+- **A mistake of mine hung the console.** The three-reservation variant's first run through the stream stored
+  arbitrary dwords there, which the GPU ran as packets; the console stopped answering over the network and the user
+  restarted it, with no log. Every variant now writes one NOP packet, its payload after it.
+
+## The cost of a draw, milestone 38 (2026-10-15)
+
+docs/scope/38-draw-cost.md. What changed, from the probe's findings above:
+- **Packets written in place.** The calls that run per draw reserve their exact size and write their packets into it
+  (`gpu_reserve_packets`), not built on the stack and copied in: the draws, shaders, vertices, texture, blend, depth,
+  raster, scissor, viewport, the cache invalidation and the stream's segments.
+- **Float constants as 16-byte VMX stores,** each from the caller's values or the stage's kept copy, which takes the
+  new values by the same stores and is never read back for them. The alignment assert stands guard, as `stvx` drops an
+  address's low 4 bits.
+- **Reservations inline.** While there's room before the segment's or block's end, or the recording's, a call takes it
+  with a pointer and a compare (`gpu_reserve`); the rest go through `xsdk_gpu_reserve`. The ring's dword count is
+  taken as segments go to the ring.
+- **Fewer kicks.** The first segment after a fence is 1,024 dwords, as before, so the GPU starts on a frame early; each
+  next is twice the last, up to 8,192.
+
+The probe across the steps, clocks a cube (`probe_draw_cost_before.log`, `_in_place.log`, `_vmx.log`, and
+`probe_draw_cost.log` at the end):
+
+| Variant | Before | In place | VMX constants, 8,192-dword segments | Inline reservations |
+|---|---|---|---|---|
+| The vertex constants | 594 | 442 | 376 | 339 |
+| The pixel constants | 466 | 391 | 317 | 271 |
+| The indexed draw | 384 | 160 | 160 | 154 |
+| A cube | 1,587 | 1,066 | 852 | 757 |
+| The constants through the stream | 1,200 | 959 | 724 | 570 |
+| Kicks a round, through the stream | 154 | 154 | 19 | 21 |
+
+On the console, with xsdk at this milestone and vulkan4xenon `c1e3aaa` rebuilt on it:
+- **vkbench passed 14 of 14** (`vkbench.log`), both backends drawing the same pictures. Draw and submit, us, against
+  milestone 37's run (vulkan4xenon:results/2026-10-15-guide/vkbench_after_1.log):
+
+  | Scene | xsdk before | xsdk now | vulkan4xenon before | vulkan4xenon now |
+  |---|---|---|---|---|
+  | draws_250 | 159 | 79 | 324 | 225 |
+  | draws_1000 | 615 | 296 | 1,263 | 858 |
+  | draws_4000 | 2,440 | 1,162 | 5,285 | 3,628 |
+  | states_250 | 255 | 121 | 518 | 325 |
+  | states_1000 | 1,003 | 463 | 2,048 | 1,271 |
+  | uniforms_1000 | 613 | 295 | 715 | 570 |
+  | stream_8000 | 521 | 528 | 541 | 545 |
+
+  A cube costs the layer 0.29 us, from 0.61, still 49.1 dwords; `draws_4000` kicks 29 times a frame, from 193. The
+  fill scenes' times didn't move.
+- **The GPU is now behind the CPU** in the cube scenes, so more of a frame's GPU work comes after the submit:
+  `draws_1000`'s 698 us from 380, `draws_4000`'s 821 from 329, `states_1000`'s 1,228 from 653. From the frame's start
+  to its fence, `draws_250` takes 709 us against 714, `draws_1000` 994 against 995, `uniforms_1000` 995 against 996,
+  `draws_4000` 1,983 against 2,769, and `states_1000` 1,691 against 1,656. With every segment 8,192 dwords
+  (`vkbench_segments_8192.log`) the GPU started each frame later and those times ran 35 to 45 us longer; a first
+  segment of 1,024 dwords took that back. The GPU's own work for a cube, `draws_1000`'s time to the fence less
+  `draws_250`'s over the 750 cubes between, is about 0.38 us, more than the CPU's now (TODO.md).
+- **xsdk_test passed 313 of 313** (`xsdk_test.log`). Its check that a long write runs in segments before its fence now
+  follows the new sizes: 25,604 dwords ran as 5 segments. The run before failed that check, still counting on 1,024
+  dwords a segment, and the controller's two, the controller not yet reconnected after the restart above
+  (`xsdk_test_first.log`).
+- **Broken on purpose,** each new constant written from the kept copy before it takes the new one, so every set sends
+  the last one's: 303 of 313 (`xsdk_test_break_stale.log`). The 10 that failed are the tests that draw with constants
+  (constants, indexed, depth, hierarchical depth, raster and microcode), and no other.
+- **vulkan4xenon_test passed 112 of 112** (`vulkan4xenon_test.log`).
+- **Dusklight wasn't run:** the user didn't need it played, today's goal being xsdk's own improvements.

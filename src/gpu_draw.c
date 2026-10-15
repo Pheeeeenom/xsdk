@@ -40,6 +40,17 @@
 
 enum {
 	DRAW_MAX_DWORDS = 96,
+	// What each call that runs per draw writes, in place: a type-0 packet is its header and a dword a register.
+	SHADERS_DWORDS = 2 * 3 + 1 + 3,
+	VERTICES_DWORDS = 1 + 6 + 1 + 3,
+	TEXTURE_DWORDS = 1 + 6 + 1 + 3,
+	DRAW_DWORDS = 2 + 2 + 2,
+	DRAW_INDEXED_DWORDS = 2 + 2 + 5,
+	DEPTH_STENCIL_DWORDS = 3 * 2,
+	BLEND_DWORDS = 2 * 2,
+	RASTER_DWORDS = 2 + 1 + 4,
+	SCISSOR_DWORDS = 1 + 2,
+	VIEWPORT_DWORDS = 1 + 6,
 	// eDRAM tiles of samples (xenia:src/xenia/gpu/xenos.h:414-416).
 	TILE_WIDTH = 80,
 	TILE_HEIGHT = 16,
@@ -318,12 +329,11 @@ void xsdk_gpu_set_shaders(const XsdkShader *vertex, const XsdkShader *pixel)
 		((vertex->context_misc | pixel->context_misc) & ~(uint32_t)SAMPLE_CNTL_MASK) | SAMPLE_CNTL_CENTERS_ONLY;
 	const uint32_t program[] = { vertex->program_control | pixel->program_control, context_misc,
 		INTERPOLATE_ALL_AT_CENTERS };
-	uint32_t dwords[DRAW_MAX_DWORDS];
-	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
+	GpuPackets packets = gpu_reserve_packets(SHADERS_DWORDS);
 	put_im_load(&packets, pixel);
 	put_im_load(&packets, vertex);
 	gpu_put_registers(&packets, SQ_PROGRAM_CNTL, program, 3);
-	xsdk_gpu_write(&packets);
+	gpu_packets_done(&packets);
 }
 
 // The streams' vertex fetch constants, 95 down, kept so each write can send its whole group.
@@ -335,56 +345,55 @@ void xsdk_gpu_set_vertices(uint32_t stream, uint32_t address, uint32_t size_byte
 	const uint32_t constant = VERTEX_FETCH_CONSTANT - stream;
 	const uint32_t group_index = constant / FETCHES_PER_GROUP;
 	uint32_t *const group = vertex_groups[LAST_GROUP - group_index];
-	group[constant % FETCHES_PER_GROUP * VERTEX_FETCH_DWORDS] = address | VERTEX_FETCH_TYPE;
-	group[constant % FETCHES_PER_GROUP * VERTEX_FETCH_DWORDS + 1] =
-		VERTEX_FETCH_8IN32 | size_bytes / 4 << VERTEX_FETCH_SIZE_SHIFT;
+	const uint32_t slot = constant % FETCHES_PER_GROUP * VERTEX_FETCH_DWORDS;
+	const uint32_t base = address | VERTEX_FETCH_TYPE;
+	const uint32_t size = VERTEX_FETCH_8IN32 | size_bytes / 4 << VERTEX_FETCH_SIZE_SHIFT;
 	const uint32_t flush_fetch[] = { 0, 0, 0 };
-	uint32_t dwords[DRAW_MAX_DWORDS];
-	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
+	GpuPackets packets = gpu_reserve_packets(VERTICES_DWORDS);
 	// libxenon flushes the fetch constants it set (xe.c:1146).
-	// Written alone, a fetch constant breaks drawing (docs/HARDWARE.md, "Fetch constants go in whole groups").
-	gpu_put_registers(
-		&packets, SHADER_CONSTANT_FETCH_00_0 + group_index * FETCH_GROUP_DWORDS, group, FETCH_GROUP_DWORDS);
+	// Written alone, a fetch constant breaks drawing (docs/HARDWARE.md, "Fetch constants go in whole groups"). The
+	// group's others are as kept; this one is kept after it's written, so nothing just stored is read back.
+	gpu_put_type0(&packets, SHADER_CONSTANT_FETCH_00_0 + group_index * FETCH_GROUP_DWORDS, FETCH_GROUP_DWORDS);
+	for (uint32_t i = 0; i < FETCH_GROUP_DWORDS; i++)
+		gpu_put(&packets, i == slot ? base : i == slot + 1 ? size : group[i]);
 	gpu_put_registers(&packets, SHADER_CONSTANT_FLUSH_FETCH_0, flush_fetch, 3);
-	xsdk_gpu_write(&packets);
+	gpu_packets_done(&packets);
+	group[slot] = base;
+	group[slot + 1] = size;
 }
 
 // Both caches, as Xe_SetTexture invalidates them (xe.c:1748); once per write, not every draw, as libxenon's unlock
 // invalidates (xe.c:750-761).
 void xsdk_gpu_invalidate(uint32_t address, uint32_t size_bytes)
 {
-	uint32_t dwords[DRAW_MAX_DWORDS];
-	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
+	GpuPackets packets = gpu_reserve_packets(GPU_COHERENCY_DWORDS);
 	xsdk_gpu_put_coherency(&packets, COHER_VERTEX_CACHE | COHER_TEXTURE_CACHE, address, size_bytes);
-	xsdk_gpu_write(&packets);
+	gpu_packets_done(&packets);
 }
 
 // Xe_SetTexture's fetch constant, as a whole group (xe.c:1748).
 void xsdk_gpu_set_texture(uint32_t slot, const XsdkTexture *texture, const XsdkSamplerState *sampler)
 {
 	assert(slot < TEXTURE_SLOTS);
-	uint32_t fetch[FETCH_GROUP_DWORDS];
-	for (uint32_t i = 0; i < FETCH_GROUP_DWORDS; i++)
-		fetch[i] = texture->fetch[i] | sampler->fetch[i];
 	const uint32_t flush_fetch[] = { 0, 0, 0 };
-	uint32_t dwords[DRAW_MAX_DWORDS];
-	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
-	gpu_put_registers(&packets, SHADER_CONSTANT_FETCH_00_0 + slot * FETCH_GROUP_DWORDS, fetch, FETCH_GROUP_DWORDS);
+	GpuPackets packets = gpu_reserve_packets(TEXTURE_DWORDS);
+	gpu_put_type0(&packets, SHADER_CONSTANT_FETCH_00_0 + slot * FETCH_GROUP_DWORDS, FETCH_GROUP_DWORDS);
+	for (uint32_t i = 0; i < FETCH_GROUP_DWORDS; i++)
+		gpu_put(&packets, texture->fetch[i] | sampler->fetch[i]);
 	gpu_put_registers(&packets, SHADER_CONSTANT_FLUSH_FETCH_0, flush_fetch, 3);
-	xsdk_gpu_write(&packets);
+	gpu_packets_done(&packets);
 }
 
 // Xe_DrawPrimitive, with DRAW_INDX_2 as the resolve uses it (xe.c:1943-1957).
 void xsdk_gpu_draw(uint32_t primitive_type, uint32_t vertex_count)
 {
 	assert(!target_undone || xsdk_gpu_recording());
-	uint32_t dwords[DRAW_MAX_DWORDS];
-	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
+	GpuPackets packets = gpu_reserve_packets(DRAW_DWORDS);
 	gpu_put_register(&packets, COHER_DEST_BASE_1, 0);
 	gpu_put_register(&packets, VGT_INDX_OFFSET, 0);
 	gpu_put_type3(&packets, PM4_DRAW_INDX_2, 1);
 	gpu_put(&packets, primitive_type | AUTO_INDEX | vertex_count << VERTEX_COUNT_SHIFT);
-	xsdk_gpu_write(&packets);
+	gpu_packets_done(&packets);
 }
 
 void xsdk_gpu_depth_stencil_state(XsdkDepthStencilState *state, const XsdkDepthStencil *setting)
@@ -418,12 +427,11 @@ static uint32_t hiz_control(uint32_t depth_control)
 // With backface_enable clear, the front face's stencil setting serves both faces, as D3D's one-sided stencil does.
 void xsdk_gpu_set_depth_stencil(const XsdkDepthStencilState *state)
 {
-	uint32_t dwords[DRAW_MAX_DWORDS];
-	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
+	GpuPackets packets = gpu_reserve_packets(DEPTH_STENCIL_DWORDS);
 	gpu_put_register(&packets, RB_DEPTHCONTROL, state->depth_control);
 	gpu_put_register(&packets, RB_HIZCONTROL, hiz_control(state->depth_control));
 	gpu_put_register(&packets, RB_STENCILREFMASK, state->stencil_ref_mask);
-	xsdk_gpu_write(&packets);
+	gpu_packets_done(&packets);
 }
 
 void xsdk_gpu_blend_state(XsdkBlendState *state, const XsdkBlend *setting)
@@ -437,11 +445,10 @@ void xsdk_gpu_blend_state(XsdkBlendState *state, const XsdkBlend *setting)
 
 void xsdk_gpu_set_blend(const XsdkBlendState *state)
 {
-	uint32_t dwords[DRAW_MAX_DWORDS];
-	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
+	GpuPackets packets = gpu_reserve_packets(BLEND_DWORDS);
 	gpu_put_register(&packets, RB_BLENDCONTROL0, state->blend_control);
 	gpu_put_register(&packets, RB_COLOR_MASK, state->color_mask);
-	xsdk_gpu_write(&packets);
+	gpu_packets_done(&packets);
 }
 
 void xsdk_gpu_raster_state(XsdkRasterState *state, const XsdkRaster *setting)
@@ -460,21 +467,19 @@ void xsdk_gpu_raster_state(XsdkRasterState *state, const XsdkRaster *setting)
 
 void xsdk_gpu_set_raster(const XsdkRasterState *state)
 {
-	uint32_t dwords[DRAW_MAX_DWORDS];
-	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
+	GpuPackets packets = gpu_reserve_packets(RASTER_DWORDS);
 	gpu_put_register(&packets, PA_SU_SC_MODE_CNTL, state->mode_control | msaa_enable());
 	gpu_put_registers(&packets, PA_SU_POLY_OFFSET_FRONT_SCALE, state->polygon_offset, 4);
-	xsdk_gpu_write(&packets);
+	gpu_packets_done(&packets);
 }
 
 // The window offset stays 0: target pixels, bottom right exclusive (xenia:src/xenia/gpu/draw_util.cc:559-607).
 void xsdk_gpu_set_scissor(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 {
 	const uint32_t scissor[] = { x | y << SCISSOR_Y_SHIFT, (x + width) | (y + height) << SCISSOR_Y_SHIFT };
-	uint32_t dwords[DRAW_MAX_DWORDS];
-	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
+	GpuPackets packets = gpu_reserve_packets(SCISSOR_DWORDS);
 	gpu_put_registers(&packets, PA_SC_WINDOW_SCISSOR_TL, scissor, 2);
-	xsdk_gpu_write(&packets);
+	gpu_packets_done(&packets);
 }
 
 // The scale and offset xsdk_gpu_set_target writes for the whole target, moved to the rectangle.
@@ -482,19 +487,17 @@ void xsdk_gpu_set_viewport(float x, float y, float width, float height, float mi
 {
 	const uint32_t viewport[] = { float_bits(width / 2.0f), float_bits(x + width / 2.0f), float_bits(-height / 2.0f),
 		float_bits(y + height / 2.0f), float_bits(max_depth - min_depth), float_bits(min_depth) };
-	uint32_t dwords[DRAW_MAX_DWORDS];
-	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
+	GpuPackets packets = gpu_reserve_packets(VIEWPORT_DWORDS);
 	gpu_put_registers(&packets, PA_CL_VPORT_XSCALE, viewport, 6);
-	xsdk_gpu_write(&packets);
+	gpu_packets_done(&packets);
 }
 
 // Xe_pDrawIndexedPrimitive (xe.c:191-200).
 void xsdk_gpu_draw_indexed(uint32_t primitive_type, uint32_t index_address, uint32_t index_count, bool indices_32_bit)
 {
-	assert(index_count && index_count <= MAX_INDICES && index_address % (indices_32_bit ? 4 : 2) == 0);
+	assert(index_count && index_count <= MAX_INDICES && (index_address & (indices_32_bit ? 3u : 1u)) == 0);
 	assert(!target_undone || xsdk_gpu_recording());
-	uint32_t dwords[DRAW_MAX_DWORDS];
-	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
+	GpuPackets packets = gpu_reserve_packets(DRAW_INDEXED_DWORDS);
 	gpu_put_register(&packets, COHER_DEST_BASE_1, 0);
 	gpu_put_register(&packets, VGT_INDX_OFFSET, 0);
 	gpu_put_type3(&packets, PM4_DRAW_INDX, 4);
@@ -503,5 +506,5 @@ void xsdk_gpu_draw_indexed(uint32_t primitive_type, uint32_t index_address, uint
 		&packets, primitive_type | index_count << VERTEX_COUNT_SHIFT | (uint32_t)indices_32_bit << INDEX_32_BIT_SHIFT);
 	gpu_put(&packets, index_address);
 	gpu_put(&packets, (index_count | DMA_SWAP_8IN16) << indices_32_bit);
-	xsdk_gpu_write(&packets);
+	gpu_packets_done(&packets);
 }

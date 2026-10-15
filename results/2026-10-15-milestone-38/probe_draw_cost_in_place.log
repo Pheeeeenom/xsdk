@@ -1,0 +1,15 @@
+log: game:\probe_draw_cost.log
+log: named after \Device\Harddisk0\Partition1\xsdk\probe_draw_cost\probe_draw_cost.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+draw cost probe: 4000 cubes a round, 9 rounds of 8 variants
+draw cost probe: vertex constants, 4 vectors: 442 clocks a cube at best (0.139 us), 444 the median
+draw cost probe: pixel constants, 1 vector: 391 clocks a cube at best (0.122 us), 397 the median
+draw cost probe: indexed draw: 160 clocks a cube at best (0.050 us), 161 the median
+draw cost probe: both constants: 824 clocks a cube at best (0.258 us), 825 the median
+draw cost probe: a cube: both constants and the draw: 1066 clocks a cube at best (0.334 us), 1069 the median
+draw cost probe: 49 dwords stored straight: 370 clocks a cube at best (0.116 us), 370 the median
+draw cost probe: 49 dwords built on the stack, then copied: 617 clocks a cube at best (0.193 us), 617 the median
+draw cost probe: both constants, through the stream: 959 clocks a cube at best (0.300 us), 967 the median
+draw cost probe: both constants, through the stream: 154 kicks a round
+draw cost probe: done; xsdk_gpu_close returned 0x00000000
+exit: status 0
