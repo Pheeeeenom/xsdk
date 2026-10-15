@@ -9,7 +9,7 @@ an RGH console, and its GPU layer drives Xenos directly, writing the command pro
 in it comes from public reverse engineering, mainly Xenia, libxenon and xost, and from results on the console: no
 Microsoft tooling and no leaked SDK material.
 
-**Status:** milestones 1 to 20 (SCOPE.md, section 4) passed on the console as of 2026-10-11. docs/HARDWARE.md records
+**Status:** milestones 1 to 39 (SCOPE.md, section 4) passed on the console as of 2026-10-15. docs/HARDWARE.md records
 each fact the console settled, and TODO.md what's still open.
 
 ## What's in it
@@ -65,6 +65,12 @@ checks, but the console decides; CLAUDE.md lists where Xenia differs.
   way to running Dusklight.
 - [xost](https://github.com/xenosworks/xenos-toolchain), the shader toolchain, checked out in `xenos-toolchain/`.
 - [SDL-xenon](https://github.com/xenosworks/SDL-xenon), SDL 3 with an Xbox 360 platform built on xsdk.
+
+## Licence
+
+xsdk is under the MIT licence (LICENSE), copyright Mena. A few files carry code from libxenon and Xenia under the
+3-clause BSD licence; THIRD_PARTY_NOTICES.md has their notices and what a game built with xsdk ships to meet them. The
+toolchain's patches are under the licences of GCC, binutils and newlib.
 
 ## Trademarks
 

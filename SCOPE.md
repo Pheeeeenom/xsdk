@@ -35,7 +35,7 @@ translation layer comes later and is out of this scope. So are games.
 - **Still open:**
   - Some ISA features are unproven on hardware: boolean constants, scalar co-issue, predication, ubyte4 vertex formats,
     depth export and multiple render targets (xost:README.md:89-91).
-  - The licence isn't chosen yet (xost:docs/license-audit.md:59-87).
+  - Its licence is xsdk's, MIT (LICENSE), chosen by the user on 2026-10-15.
   - The test corpus is XDK compiler output of disputed provenance; the toolchain only reads it, as test vectors
     (xost:docs/license-audit.md:89-133).
 - **What changes for a dashboard `.xex`:** nothing in the shader path; Xenos runs the same microcode however the
@@ -962,11 +962,12 @@ Agreed and done on 2026-10-14: docs/scope/networking.md.
 asks for them, through glslang and xost's compiler in C, both on the console. Agreed in outline on 2026-10-14:
 docs/scope/shader-compiling.md.
 
-**Waiting for a use** (CODE_GUIDELINES.md 1.2), each a milestone when something running on xsdk needs it: render targets
-of 64 bits a pixel and resolves into other formats (Xenia's ColorRenderTargetFormat); 128-bit textures
-(`k_32_32_32_32_FLOAT`); clearing eDRAM without a copy; memory export from shaders, which xost doesn't emit. The CPU's
-atomic increments cost what GCC's sequentially consistent default asks, a full barrier each side; xsdk's own locks are
-the kernel's critical sections and its atomics ask only the ordering they need, so there's nothing to change in xsdk.
+**Waiting for a use** (CODE_GUIDELINES.md 1.2), each a milestone when something running on xsdk needs it, or, since
+2026-10-15, as XDK parity with a test that exercises all of it on the console: render targets of 64 bits a pixel and
+resolves into other formats (Xenia's ColorRenderTargetFormat); 128-bit textures (`k_32_32_32_32_FLOAT`); clearing eDRAM
+without a copy; memory export from shaders, which xost doesn't emit. The CPU's atomic increments cost what GCC's
+sequentially consistent default asks, a full barrier each side; xsdk's own locks are the kernel's critical sections and
+its atomics ask only the ordering they need, so there's nothing to change in xsdk.
 
 ## 5. Questions for the user first
 
@@ -976,7 +977,8 @@ the kernel's critical sections and its atomics ask only the ordering they need, 
 2. **The console:** RGH or JTAG, its kernel and dashboard version, and which XEX checks it is known to skip.
 3. **Deploying and logging:** how they get a `.xex` onto the console, launch it, and read a log today.
 4. **The microcode:** their preference among the three options in section 3.2.
-5. **xost's licence,** and whether the SDK should share it (xost:docs/license-audit.md:59-87).
+5. **xost's licence,** and whether the SDK should share it: MIT for both, the user's choice on 2026-10-15 (LICENSE,
+   THIRD_PARTY_NOTICES.md).
 
 ## 6. Risks
 

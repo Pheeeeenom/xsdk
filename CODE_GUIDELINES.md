@@ -10,7 +10,10 @@ If a rule gets in the way of correct code, change the rule in this file first, i
 1. **Keep it simple.** Write the most direct code that is correct. Don't add an abstraction, helper layer or generic
    mechanism until at least three real call sites need it.
 2. **Build only what is used.** Implement a kernel import, runtime piece or GPU feature when a milestone in SCOPE.md or
-   a test needs it, not before. No speculative options, flags or extension points.
+   a test needs it, not before. No speculative options, flags or extension points. The exception is parity: xsdk is
+   meant to let others make homebrew and port games without the XDK, so a feature that gives a title something the
+   XDK does may come before any title needs it, as long as it comes with a test that exercises all of it on the
+   console (agreed with the user, 2026-10-15). The hypervisor stays out: no HV or HVX calls.
 3. **Cite the source.** Every fact about the kernel, the XEX format or Xenos comes from Xenia, libxenon, xost, other
    public reverse engineering, or a hardware result, and the code or commit says which. Anything else is marked
    unverified until hardware settles it.
