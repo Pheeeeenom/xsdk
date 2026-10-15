@@ -106,13 +106,16 @@ work begins.
   the same 17.3 dwords and 18 kicks a frame, yet the pushed one's submit costs 0.97 us and the uniform one's 0.50
   (vulkan4xenon:docs/ROADMAP.md, milestone 8). That's 0.47 ms a frame for every 1,000 pushed draws, 2.8% of a 60 fps
   frame. It isn't the command stream: milestone 8 cut those dwords by three quarters and the submit didn't move.
-  - **What the push path does beyond the uniform one:** the replay copies each `vkCmdPushConstants` into its push
-    array, then copies each block back out into constants (vulkan4xenon:src/queue.c). Which part costs the time is
-    unmeasured.
+  - **Where it goes, measured on 2026-10-15** (a vkbench build timing each part of the replay with the time base,
+    after xsdk's milestone 39, local only): writing the push blocks into constants through xsdk, 347 clocks a cube
+    for the vertex shader's 4 registers and 461 for the pixel shader's 5, as its tint sits 64 bytes in. Reading the
+    push array just after the copy into it costs nothing measurable.
+  - **Tried and not taken:** writing only the registers each stage's pushes since the last draw reached, from the
+    recording. Finding them cost about 110 clocks a stage and reading the recording about 115 more, more than the
+    register group saved: `draws_1000` drew and submitted in 905 us, from 852. vulkan4xenon stays as it was.
   - **Left because** encounter's Aurora, which Dusklight draws through, passes per-draw data in dynamic uniform buffers
-    and pushes 16 bytes a draw (vulkan4xenon:docs/ROADMAP.md, section 5); its uniform path costs 1.17 times xsdk's.
-  - **When to take it up:** if a push-heavy app, or Dusklight, shows the replay's CPU time crowding the frame. Then a
-    vkbench build that times each part of the replay with the time base, run on the console, says where it goes.
+    and pushes 16 bytes a draw (vulkan4xenon:docs/ROADMAP.md, section 5), so its push blocks have no registers to
+    skip; what's left is xsdk's constant setter itself, about 340 clocks a group of 4.
 - **Constants written between draws hold the GPU.** After milestone 39 a draw costs the GPU 0.118 us alone, its two
   constant groups 0.112 alone, and the two together 0.285: each constant write waits for the draw before it to finish
   (docs/HARDWARE.md, "The GPU's cost of a draw, milestone 39"). With vkbench's cubes, which cover the screen between
