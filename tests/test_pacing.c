@@ -8,11 +8,13 @@
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
 #include "xsdk/present.h"
+#include "xsdk/thread.h"
 
 enum {
 	FRAMES = 30,
 	BEGIN_TIMEOUT_MS = 1000,
 	FENCE_TIMEOUT_MS = 1000,
+	LAST_FLIP_TIMEOUT_MS = 1000,
 	MAX_WRONG_LOGGED = 2,
 };
 
@@ -30,6 +32,16 @@ static const Mode modes[] = {
 	{ .name = "3 buffers, every second vblank", .buffers = 3, .swap_interval = 2, .argb = 0xFF00FFFF },
 	{ .name = "2 buffers, every second vblank", .buffers = 2, .swap_interval = 2, .argb = 0xFFFF00FF },
 };
+
+void test_present_stats_at_last_flip(uint32_t frames, XsdkPresentStats *stats)
+{
+	for (uint32_t waited_ms = 0;; waited_ms++) {
+		xsdk_present_stats(stats);
+		if (stats->flips >= frames || waited_ms == LAST_FLIP_TIMEOUT_MS)
+			return;
+		(void)xsdk_thread_sleep(1);
+	}
+}
 
 static void check_mode(const Mode *mode, const char *what, bool passed)
 {
@@ -68,15 +80,15 @@ static void run_mode(const Mode *mode)
 		bar_scene_draw(&scene, presented, last_address);
 		xsdk_present_end();
 	}
-	// The last frame's buffer is on screen or about to be, and still allocated until the present closes.
+	XsdkPresentStats stats;
+	test_present_stats_at_last_flip(FRAMES, &stats);
+	// The last frame's buffer is on screen, and still allocated until the present closes.
 	const bool drawn = presented == FRAMES && NT_SUCCESS(xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS)) &&
 		bar_scene_holds(&scene, xsdk_present_pixels(last_address), FRAMES - 1);
 	if (presented == FRAMES && !drawn)
 		bar_scene_log_miss(&scene, xsdk_present_pixels(last_address), FRAMES - 1, mode->name);
 	xsdk_log_write("pacing: %s: %u reused buffers held the wrong frame", mode->name, (unsigned)wrong);
 	xsdk_present_close();
-	XsdkPresentStats stats;
-	xsdk_present_stats(&stats);
 	xsdk_log_write(
 		"pacing: %s: %u frames, %u flips over %u vblanks (first %u, last %u), %u missed, %u late; longest "
 		"wait %u us",

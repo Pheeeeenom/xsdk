@@ -4,11 +4,16 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "xsdk/present.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 void check(const char *name, bool passed);
+// The present's stats once its frames have all flipped, or after a second: a test reads them then, before what it
+// checks after its run, as each vblank meanwhile finds no frame queued and counts as missed (test_pacing.c).
+void test_present_stats_at_last_flip(uint32_t frames, XsdkPresentStats *stats);
 
 enum {
 	// How long a test leaves its last frame on screen. Each check takes a second at most, so a run is quick; a build

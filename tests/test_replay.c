@@ -228,12 +228,12 @@ static void present_frames(const Recorded *recorded)
 		draw_frame(recorded, presented, address);
 		xsdk_present_end();
 	}
+	XsdkPresentStats stats;
+	test_present_stats_at_last_flip(FRAMES, &stats);
 	const bool drawn = presented == FRAMES && NT_SUCCESS(xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS)) &&
 		frame_holds(xsdk_present_pixels(address), FRAMES - 1, true);
 	xsdk_log_write("replay: %u reused buffers held the wrong frame", (unsigned)wrong);
 	xsdk_present_close();
-	XsdkPresentStats stats;
-	xsdk_present_stats(&stats);
 	xsdk_log_write(
 		"replay: %u frames, %u flips over %u vblanks (first %u, last %u), %u missed, %u late; longest wait %u us",
 		(unsigned)presented, (unsigned)stats.flips, (unsigned)stats.vblanks, (unsigned)stats.first_flip_vblank,
