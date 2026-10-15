@@ -91,6 +91,9 @@ void xsdk_gpu_resolve(uint32_t address, uint32_t width, uint32_t height, uint32_
 uint32_t xsdk_gpu_resolve_bytes(uint32_t width, uint32_t height);
 // Queues the same into a tiled 32-bit RGBA texture drawn at its size, its whole pitch, leaving its upload's layout.
 void xsdk_gpu_resolve_texture(const XsdkTexture *texture, uint32_t clear_argb);
+// The same for eDRAM's depth and stencil, into a tiled XSDK_FORMAT_D24S8 texture; it clears depth and stencil as the
+// resolves above do, and colour never.
+void xsdk_gpu_resolve_depth_texture(const XsdkTexture *texture);
 // Which of colour, and depth with stencil, the later resolves clear after copying; both until set.
 void xsdk_gpu_set_resolve_clears(bool color, bool depth_stencil);
 

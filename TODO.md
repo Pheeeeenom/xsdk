@@ -58,10 +58,9 @@ work begins.
 - **Predicated tiling,** for targets larger than eDRAM.
 - **Cube and 3D textures.** The fetch constant's dimension field (xenia:src/xenia/gpu/xenos.h:97-102, 1280) and the
   layout's slices (xenia:src/xenia/gpu/texture_util.cc:209-449).
-- **Anisotropic filtering,** put off by milestone 15. The fetch constant's `aniso_filter` (xenos.h:1259); the SDK's
-  texture shader already takes it from the fetch constant.
 - **Occlusion queries.**
-- **Depth resolves, and resolving part of a target.**
+- **Resolving part of a target.** Depth resolves came with vulkan4xenon's milestone 14 (docs/HARDWARE.md, "Depth
+  resolves").
 
 ## GPU gaps the milestones left
 

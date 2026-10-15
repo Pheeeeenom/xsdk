@@ -57,6 +57,9 @@ enum {
 	// Copy colour into k_8_8_8_8, then clear colour or depth (xe.c:1104-1108).
 	COPY_CONTROL_CONVERT = 1 << 20,
 	COPY_SAMPLE_SELECT_SHIFT = 4,
+	// RB_COPY_CONTROL's source: colour target 0, or depth (xenia:src/xenia/gpu/registers.h:856).
+	COPY_SOURCE_COLOR_0 = 0,
+	COPY_SOURCE_DEPTH = 4,
 	COPY_DEST_INFO_8888 = 6 << 7,
 	// RB_COPY_CONTROL's clears (xenia:src/xenia/gpu/registers.h:860-861).
 	COPY_CONTROL_COLOR_CLEAR = 1 << 8,
@@ -138,13 +141,16 @@ static void put_hiz_test(GpuPackets *packets, uint32_t hiz_clear)
 }
 
 // Xe_ResolveInto, less its scratch write, with the layout Xe_SetRenderTarget gives the target (xe.c:998-1165).
-static void resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t pitch, uint32_t dest_info,
-	uint32_t dest_bytes, uint32_t clear_argb)
+static void resolve(uint32_t source, uint32_t address, uint32_t width, uint32_t height, uint32_t pitch,
+	uint32_t dest_info, uint32_t dest_bytes, uint32_t clear_argb)
 {
 	assert(width % 32 == 0);
 	const uint32_t vertices = xsdk_gpu_rectangle(width, height);
 	const uint32_t viewport[] = { 0x44000000, 0x44000000, 0xC3B40000, 0x43B40000, 0x3F800000, 0 };
-	const uint32_t copy[] = { COPY_CONTROL_CONVERT | xsdk_gpu_copy_sample_select() << COPY_SAMPLE_SELECT_SHIFT | clears,
+	// A depth resolve can't clear colour (xenia:src/xenia/gpu/xenos.h:925-931).
+	const uint32_t copy_clears = source == COPY_SOURCE_DEPTH ? clears & COPY_CONTROL_DEPTH_CLEAR : clears;
+	const uint32_t copy[] = { COPY_CONTROL_CONVERT | xsdk_gpu_copy_sample_select() << COPY_SAMPLE_SELECT_SHIFT |
+			copy_clears | source,
 		address, pitch | height << 16, dest_info };
 	const uint32_t program[] = { PROGRAM_CNTL_RESOLVE, 0 };
 	const uint32_t indices[] = { 0xFFFF, 0, 0 };
@@ -152,7 +158,7 @@ static void resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t 
 	const uint32_t fetch[] = { vertices | VERTEX_FETCH_TYPE, VERTEX_FETCH_SIZE_6_8IN32, 0, 0, 0, 0 };
 	const uint32_t flush_fetch[] = { 0, 0, 0 };
 	const uint32_t depth_clears[] = { depth_clear >> HIZ_CLEAR_SHIFT, depth_clear };
-	const bool clears_depth = clears & COPY_CONTROL_DEPTH_CLEAR;
+	const bool clears_depth = copy_clears & COPY_CONTROL_DEPTH_CLEAR;
 	uint32_t dwords[RESOLVE_MAX_DWORDS];
 	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = RESOLVE_MAX_DWORDS };
 	xsdk_gpu_put_window(&packets, width, height);
@@ -211,7 +217,8 @@ void xsdk_gpu_set_depth_clear(float depth, uint8_t stencil)
 
 void xsdk_gpu_resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t clear_argb)
 {
-	resolve(address, width, height, width, COPY_DEST_INFO_8888_SWAP, xsdk_gpu_resolve_bytes(width, height), clear_argb);
+	resolve(COPY_SOURCE_COLOR_0, address, width, height, width, COPY_DEST_INFO_8888_SWAP,
+		xsdk_gpu_resolve_bytes(width, height), clear_argb);
 }
 
 void xsdk_gpu_set_resolve_clears(bool color, bool depth_stencil)
@@ -240,6 +247,16 @@ void xsdk_gpu_resolve_texture(const XsdkTexture *texture, uint32_t clear_argb)
 	// A resolve writes from the corner, so the base can't sit inside the packed tail.
 	assert(xsdk_texture_packed_level(texture->width, texture->height) > 0);
 	// The pitch is whole tiles of 32 texels, as a resolve's width must be.
-	resolve(texture->address, texture->pitch, texture->height, texture->pitch, texture_dest_info(texture->format),
-		texture->size_bytes, clear_argb);
+	resolve(COPY_SOURCE_COLOR_0, texture->address, texture->pitch, texture->height, texture->pitch,
+		texture_dest_info(texture->format), texture->size_bytes, clear_argb);
+}
+
+// Direct3D 9 copies depth as k_8_8_8_8 (xenia:src/xenia/gpu/draw_util.cc:968-972): the eDRAM sample's word, depth
+// above stencil, swapped into the CPU's order as XSDK_FORMAT_D24S8 reads it.
+void xsdk_gpu_resolve_depth_texture(const XsdkTexture *texture)
+{
+	assert(texture->tiled && texture->format == XSDK_FORMAT_D24S8);
+	assert(xsdk_texture_packed_level(texture->width, texture->height) > 0);
+	resolve(COPY_SOURCE_DEPTH, texture->address, texture->pitch, texture->height, texture->pitch,
+		COPY_DEST_INFO_8888 | COPY_DEST_ENDIAN_8IN32, texture->size_bytes, 0);
 }

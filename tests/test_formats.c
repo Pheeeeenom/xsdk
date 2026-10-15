@@ -37,8 +37,8 @@ enum {
 	MIP_LEVELS = 6,
 	// Two pixels a texel.
 	CELL_SIZE = 64,
-	// Sixteen formats across a 1280-pixel row.
-	CELL_STEP = 76,
+	// Seventeen formats across a 1280-pixel row.
+	CELL_STEP = 72,
 	LEVEL_GAP = 12,
 	MIP_ROW_STEP = 48,
 	// Fixed-point channels convert to float and round once more on the way to the 8-bit target.
@@ -108,6 +108,8 @@ static const FormatSpec specs[XSDK_FORMATS] = {
 	[XSDK_FORMAT_R8G8B8A8] = { "R8G8B8A8", KIND_BYTES, 4, { 8, 8, 8, 8 }, { 0, 1, 2, 3 } },
 	[XSDK_FORMAT_B8G8R8A8] = { "B8G8R8A8", KIND_BYTES, 4, { 8, 8, 8, 8 }, { 2, 1, 0, 3 } },
 	[XSDK_FORMAT_R32F] = { "R32F", KIND_FLOATS, 4, { 32, 0, 0, 0 }, { 0 } },
+	// Its depth as red, stencil 0.
+	[XSDK_FORMAT_D24S8] = { "D24S8", KIND_PACKED, 4, { 24, 0, 0, 0 }, { 8, 0, 0, 0 } },
 };
 
 // One format per kind of block: 1, 2, 4 and 8 bytes a texel, and 8 and 16 bytes a 4 by 4 block.

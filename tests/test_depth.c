@@ -4,6 +4,7 @@
 
 #include "constant_shaders.h"
 #include "tests.h"
+#include "texture_shaders.h"
 #include "tiled_index.h"
 #include "triangle_shaders.h"
 #include "xsdk/display.h"
@@ -11,6 +12,7 @@
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
 #include "xsdk/shader.h"
+#include "xsdk/texture.h"
 #include "xsdk/thread.h"
 
 // Overlaps drawn both ways, a stencil mask and the cleared depth; with the depth test off, the depth checks must fail.
@@ -33,6 +35,13 @@ enum {
 	OVERLAP_SIZE = 180,
 	OVERLAP_STEP = 100,
 	STENCIL_MARK = 1,
+	// The resolved depth's checks: a 24-bit depth's tolerance, the sampled quad's vertices, and its texture's slot.
+	DEPTH_24_MAX = 0xFFFFFF,
+	DEPTH_24_TOLERANCE = 2,
+	TEXTURED_FLOATS = 6,
+	TEXTURED_STRIDE_BYTES = TEXTURED_FLOATS * 4,
+	TEXCOORD_OFFSET_BYTES = 16,
+	DEPTH_TEXTURE_SLOT = 0,
 };
 
 // The depth the resolves clear to: the near (0.25) and far (0.375) rectangles in front of it, one at 0.75 behind.
@@ -96,6 +105,27 @@ static const Point points[] = {
 	{ "in front of the clear: shown", 1220, PANEL_Y + 140, 0xFF40E0E0, false },
 };
 
+// The depth and stencil each point's word holds once the overlaps' depth is resolved: the depth-tested rectangles'
+// depth, the cleared depth where the stencil passes drew, as they don't write depth, and the mask's stencil.
+typedef struct {
+	const char *what;
+	uint32_t x;
+	uint32_t y;
+	float depth;
+	uint32_t stencil;
+} DepthPoint;
+
+static const DepthPoint depth_points[] = {
+	{ "far alone", 40 + 40, PANEL_Y + 40, 0.375f, 0 },
+	{ "near over far", 40 + 140, PANEL_Y + 140, 0.25f, 0 },
+	{ "near before far", 360 + 140, PANEL_Y + 140, 0.25f, 0 },
+	{ "far after near", 360 + 240, PANEL_Y + 240, 0.375f, 0 },
+	{ "inside the stencil mask", 820, PANEL_Y + 140, 0.5f, STENCIL_MARK },
+	{ "outside the stencil mask", 700, PANEL_Y + 20, 0.5f, 0 },
+	{ "behind the clear", 1060, PANEL_Y + 140, 0.5f, 0 },
+	{ "in front of the clear", 1220, PANEL_Y + 140, 0.25f, 0 },
+};
+
 static const float square[QUAD_VERTICES][VERTEX_FLOATS] = {
 	{ 0.0f, 0.0f, 0.0f, 1.0f },
 	{ 1.0f, 0.0f, 0.0f, 1.0f },
@@ -107,6 +137,24 @@ static const float square[QUAD_VERTICES][VERTEX_FLOATS] = {
 
 static const XsdkVertexElement layout[] = {
 	{ .usage = XSDK_USAGE_POSITION, .usage_index = 0, .format = XSDK_VERTEX_FLOAT4, .offset_bytes = 0 },
+};
+
+// The whole screen, the depth texture over it texel for texel, edges half a pixel early.
+static const float screen[QUAD_VERTICES][TEXTURED_FLOATS] = {
+	{ -1.0f - 1.0f / WIDTH, 1.0f + 1.0f / HEIGHT, 0.0f, 1.0f, 0.0f, 0.0f },
+	{ 1.0f - 1.0f / WIDTH, 1.0f + 1.0f / HEIGHT, 0.0f, 1.0f, 1.0f, 0.0f },
+	{ -1.0f - 1.0f / WIDTH, -1.0f + 1.0f / HEIGHT, 0.0f, 1.0f, 0.0f, 1.0f },
+	{ -1.0f - 1.0f / WIDTH, -1.0f + 1.0f / HEIGHT, 0.0f, 1.0f, 0.0f, 1.0f },
+	{ 1.0f - 1.0f / WIDTH, 1.0f + 1.0f / HEIGHT, 0.0f, 1.0f, 1.0f, 0.0f },
+	{ 1.0f - 1.0f / WIDTH, -1.0f + 1.0f / HEIGHT, 0.0f, 1.0f, 1.0f, 1.0f },
+};
+
+static const XsdkVertexElement textured_layout[] = {
+	{ .usage = XSDK_USAGE_POSITION, .usage_index = 0, .format = XSDK_VERTEX_FLOAT4, .offset_bytes = 0 },
+	{ .usage = XSDK_USAGE_TEXCOORD,
+		.usage_index = 0,
+		.format = XSDK_VERTEX_FLOAT2,
+		.offset_bytes = TEXCOORD_OFFSET_BYTES },
 };
 
 typedef struct {
@@ -225,6 +273,89 @@ static void draw_rectangles(const States *states, bool depth_on)
 	}
 }
 
+// The shaders and buffers the checks draw with.
+typedef struct {
+	const XsdkShader *vertex;
+	const XsdkShader *pixel;
+	const XsdkShader *textured_vertex;
+	const XsdkShader *textured_pixel;
+	uint32_t vertices;
+	uint32_t screen;
+	volatile uint32_t *const *buffers;
+} Drawing;
+
+static uint32_t difference(uint32_t a, uint32_t b)
+{
+	return a > b ? a - b : b - a;
+}
+
+// Draws the overlaps once more, eDRAM's depth and stencil cleared by the frame before, and resolves their depth into a
+// D24S8 texture: each point's word as the CPU reads it, then the texture drawn over the screen, texel for texel,
+// through the texture shaders, and what the fetch returned as the resolved colour. The frame's colour resolve clears
+// eDRAM for what comes after.
+static void check_depth_texture(const Drawing *d)
+{
+	XsdkTexture texture;
+	const bool made = NT_SUCCESS(xsdk_texture_create(&texture, XSDK_FORMAT_D24S8, WIDTH, HEIGHT, 1, true));
+	check("depth: a tiled D24S8 texture made", made);
+	if (!made)
+		return;
+	States states;
+	make_states(&states);
+	xsdk_gpu_set_target(WIDTH, HEIGHT);
+	xsdk_gpu_set_shaders(d->vertex, d->pixel);
+	xsdk_gpu_set_vertices(0, d->vertices, sizeof square);
+	draw_rectangles(&states, true);
+	xsdk_gpu_set_resolve_clears(false, false);
+	xsdk_gpu_resolve_depth_texture(&texture);
+	xsdk_gpu_set_resolve_clears(true, true);
+	xsdk_gpu_resolve(xsdk_gpu_address(d->buffers[0]), WIDTH, HEIGHT, CLEAR_ARGB);
+	bool landed = NT_SUCCESS(xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS));
+	bool words_right = landed;
+	for (uint32_t i = 0; landed && i < sizeof depth_points / sizeof depth_points[0]; i++) {
+		const DepthPoint *const p = &depth_points[i];
+		const uint32_t word = texture.texels[tiled_index(p->x, p->y, texture.pitch)];
+		const uint32_t depth = (uint32_t)(p->depth * (double)DEPTH_24_MAX + 0.5);
+		const bool right = difference(word >> 8, depth) <= DEPTH_24_TOLERANCE && (word & 0xFF) == p->stencil;
+		xsdk_log_write("depth: resolved, %s at (%u, %u): %08X, for depth %06X and stencil %u", p->what, (unsigned)p->x,
+			(unsigned)p->y, (unsigned)word, (unsigned)depth, (unsigned)p->stencil);
+		words_right &= right;
+	}
+	check(
+		"depth: the overlaps' depth resolved into a D24S8 texture, each word its depth above its stencil", words_right);
+
+	const XsdkSampler point_clamped = { .mag_filter = XSDK_FILTER_POINT,
+		.min_filter = XSDK_FILTER_POINT,
+		.mip_filter = XSDK_FILTER_POINT,
+		.address_u = XSDK_ADDRESS_CLAMP,
+		.address_v = XSDK_ADDRESS_CLAMP };
+	XsdkSamplerState sampler;
+	xsdk_texture_sampler_state(&sampler, &point_clamped);
+	xsdk_gpu_set_target(WIDTH, HEIGHT);
+	xsdk_gpu_set_shaders(d->textured_vertex, d->textured_pixel);
+	xsdk_gpu_set_vertices(0, d->screen, sizeof screen);
+	xsdk_gpu_set_texture(DEPTH_TEXTURE_SLOT, &texture, &sampler);
+	xsdk_gpu_draw(XSDK_PRIMITIVE_TRIANGLE_LIST, QUAD_VERTICES);
+	xsdk_gpu_resolve(xsdk_gpu_address(d->buffers[1]), WIDTH, HEIGHT, CLEAR_ARGB);
+	landed = landed && NT_SUCCESS(xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS));
+	bool sampled_right = landed;
+	for (uint32_t i = 0; landed && i < sizeof depth_points / sizeof depth_points[0]; i++) {
+		const DepthPoint *const p = &depth_points[i];
+		// A resolve stores the colour's bytes B, G, R, A (docs/HARDWARE.md).
+		const uint32_t stored = d->buffers[1][tiled_index(p->x, p->y, WIDTH)];
+		const uint32_t red = stored >> 8 & 0xFF;
+		const uint32_t depth = (uint32_t)(p->depth * 255.0f + 0.5f);
+		const bool right = difference(red, depth) <= CHANNEL_TOLERANCE && (stored >> 16 & 0xFF) == 0 &&
+			stored >> 24 == 0 && (stored & 0xFF) == 0xFF;
+		xsdk_log_write("depth: sampled, %s at (%u, %u): stored %08X, for red %u", p->what, (unsigned)p->x,
+			(unsigned)p->y, (unsigned)stored, (unsigned)depth);
+		sampled_right &= right;
+	}
+	check("depth: a fetch of the D24S8 texture returns its depth in red, green and blue 0, alpha 1", sampled_right);
+	check("depth: the resolved depth's fences landed", landed);
+	xsdk_texture_free(&texture);
+}
+
 // Each frame draws into eDRAM, resolves into the buffer not on screen, clearing colour, depth and stencil, and shows
 // it.
 static bool draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint32_t vertices,
@@ -255,17 +386,19 @@ static bool draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint3
 	return true;
 }
 
-static void run(const XsdkShader *vertex, const XsdkShader *pixel, uint32_t vertices, volatile uint32_t *const *buffers,
-	bool has_display)
+static void run(const Drawing *d, bool has_display)
 {
 	Tally on = { 0 };
 	Tally off = { 0 };
 	bool shown = true;
 	xsdk_gpu_set_depth_clear(clear_depth, 0);
 	// Depth off first and unshown, so the frame left on screen for a capture is a depth-tested one.
-	const bool landed_off = draw_frames(vertex, pixel, vertices, buffers, false, false, DEPTH_OFF_FRAMES, &off, &shown);
+	const bool landed_off =
+		draw_frames(d->vertex, d->pixel, d->vertices, d->buffers, false, false, DEPTH_OFF_FRAMES, &off, &shown);
 	const bool landed_on =
-		landed_off && draw_frames(vertex, pixel, vertices, buffers, has_display, true, FRAMES, &on, &shown);
+		landed_off && draw_frames(d->vertex, d->pixel, d->vertices, d->buffers, has_display, true, FRAMES, &on, &shown);
+	if (landed_on)
+		check_depth_texture(d);
 	xsdk_gpu_set_depth_clear(1.0f, 0);
 	xsdk_log_write("depth: depth test on: %u of %u frames checked held a wrong point", (unsigned)on.frames_wrong,
 		(unsigned)on.frames);
@@ -285,17 +418,18 @@ static void run(const XsdkShader *vertex, const XsdkShader *pixel, uint32_t vert
 	}
 }
 
-static volatile uint32_t *upload_square(void)
+static volatile uint32_t *upload(const void *data, uint32_t bytes)
 {
-	volatile uint32_t *const vertices = xsdk_gpu_alloc(sizeof square);
+	volatile uint32_t *const vertices = xsdk_gpu_alloc(bytes);
 	if (!vertices)
 		return NULL;
-	uint32_t words[sizeof square / 4];
-	memcpy(words, square, sizeof square);
-	for (uint32_t i = 0; i < sizeof square / 4; i++)
-		vertices[i] = words[i];
+	for (uint32_t i = 0; i < bytes / 4; i++) {
+		uint32_t word;
+		memcpy(&word, (const uint8_t *)data + i * 4, sizeof word);
+		vertices[i] = word;
+	}
 	__asm__ volatile("sync" ::: "memory");
-	xsdk_gpu_invalidate(xsdk_gpu_address(vertices), sizeof square);
+	xsdk_gpu_invalidate(xsdk_gpu_address(vertices), bytes);
 	return vertices;
 }
 
@@ -319,17 +453,37 @@ void test_depth(void)
 		NT_SUCCESS(xsdk_shader_set_vertex_layout(
 			&vertex, layout, sizeof layout / sizeof layout[0], (const uint32_t[]){ STRIDE_BYTES }));
 	check("depth: vertex fetch patched for a float4 position", patched);
-	volatile uint32_t *const vertices = upload_square();
+	XsdkShader textured_vertex = { .microcode = NULL };
+	XsdkShader textured_pixel = { .microcode = NULL };
+	const bool textured =
+		NT_SUCCESS(xsdk_shader_load(&textured_vertex, texture_vertex_shader, sizeof texture_vertex_shader)) &&
+		NT_SUCCESS(xsdk_shader_load(&textured_pixel, texture_pixel_shader, sizeof texture_pixel_shader)) &&
+		NT_SUCCESS(xsdk_shader_set_vertex_layout(&textured_vertex, textured_layout,
+			sizeof textured_layout / sizeof textured_layout[0], (const uint32_t[]){ TEXTURED_STRIDE_BYTES }));
+	check("depth: texture shaders load, patched for a float4 position and float2 coordinates", textured);
+	volatile uint32_t *const vertices = upload(square, sizeof square);
+	volatile uint32_t *const screen_vertices = upload(screen, sizeof screen);
 	const uint32_t buffer_bytes = xsdk_gpu_resolve_bytes(WIDTH, HEIGHT);
 	volatile uint32_t *const buffers[BUFFERS] = { xsdk_gpu_alloc(buffer_bytes), xsdk_gpu_alloc(buffer_bytes) };
-	check("depth: vertex and front buffers", vertices && buffers[0] && buffers[1]);
+	check("depth: vertex and front buffers", vertices && screen_vertices && buffers[0] && buffers[1]);
 	// Without a display, as in Xenia, the frames still draw and are checked.
-	if (patched && vertices && buffers[0] && buffers[1])
-		run(&vertex, &pixel, xsdk_gpu_address(vertices), buffers, has_display);
+	if (patched && textured && vertices && screen_vertices && buffers[0] && buffers[1]) {
+		const Drawing drawing = { .vertex = &vertex,
+			.pixel = &pixel,
+			.textured_vertex = &textured_vertex,
+			.textured_pixel = &textured_pixel,
+			.vertices = xsdk_gpu_address(vertices),
+			.screen = xsdk_gpu_address(screen_vertices),
+			.buffers = buffers };
+		run(&drawing, has_display);
+	}
 	xsdk_display_close();
 	for (uint32_t i = 0; i < BUFFERS; i++)
 		xsdk_gpu_free(buffers[i]);
+	xsdk_gpu_free(screen_vertices);
 	xsdk_gpu_free(vertices);
+	xsdk_shader_free(&textured_pixel);
+	xsdk_shader_free(&textured_vertex);
 	xsdk_shader_free(&pixel);
 	xsdk_shader_free(&vertex);
 	check("depth: GPU close", NT_SUCCESS(xsdk_gpu_close()));

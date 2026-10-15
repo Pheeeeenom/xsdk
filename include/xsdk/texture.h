@@ -44,6 +44,9 @@ enum {
 	XSDK_FORMAT_B8G8R8A8,
 	// 32-bit floats: red (Vulkan's R32_SFLOAT).
 	XSDK_FORMAT_R32F,
+	// 32-bit units, depth's 24 bits above stencil's 8, as xsdk_gpu_resolve_depth_texture writes them; sampled, the
+	// depth from 0 to 1 in red (Vulkan's D24_UNORM_S8_UINT, its depth).
+	XSDK_FORMAT_D24S8,
 	XSDK_FORMATS,
 };
 

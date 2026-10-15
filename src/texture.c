@@ -127,6 +127,8 @@ static const FormatInfo formats[XSDK_FORMATS] = {
 	[XSDK_FORMAT_B8G8R8A8] = { 6, 0, 2, ENDIAN_NONE, SWIZZLE(Z, Y, X, W) },
 	// k_32_FLOAT (xenia:src/xenia/gpu/xenos.h:512).
 	[XSDK_FORMAT_R32F] = { 36, 0, 2, ENDIAN_8IN32, SWIZZLE(X, ZERO, ZERO, ONE) },
+	// k_24_8, which Xenia samples as its depth (xenos.h:498; vulkan/vulkan_texture_cache.cc:209-212).
+	[XSDK_FORMAT_D24S8] = { 22, 0, 2, ENDIAN_8IN32, SWIZZLE(X, ZERO, ZERO, ONE) },
 };
 
 static NTSTATUS reject(const char *why)

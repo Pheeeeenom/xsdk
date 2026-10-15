@@ -2925,3 +2925,31 @@ the variants in `variants.txt`, each the conversion's target dumped from memory.
   draw and submit times within 0.6% of the run before.
 - **Broken on purpose,** the bit never set, xost's test (`tests/test_dependent_fetch.py`) fails, and on the console the
   conversion drew noise, as set a did.
+
+## Depth resolves (2026-10-15)
+
+`xsdk_gpu_resolve_depth_texture` copies eDRAM's depth and stencil into a tiled `XSDK_FORMAT_D24S8` texture: a resolve
+with `RB_COPY_CONTROL`'s source 4, depth (xenia:src/xenia/gpu/registers.h:856), into `k_8_8_8_8` swapped 8-in-32, as
+Direct3D 9 copies depth (xenia:src/xenia/gpu/draw_util.cc:968-972). A depth resolve can't clear colour
+(xenia:src/xenia/gpu/xenos.h:925-931), so its colour clear is masked out. xsdk_test's depth check draws the overlaps
+again and resolves their depth with no clears (tests/test_depth.c, check_depth_texture). On the console
+(`results/2026-10-15-depth-resolves/`):
+- **Each word the CPU reads** is the sample's depth in its top 24 bits above stencil in its low 8, exactly:
+  `60000000` for depth 0.375 (`600000`), `40000000` for 0.25, `80000001` for 0.5 inside the stencil mask.
+- **Sampled as `k_24_8`,** format 22 with the swizzle depth, 0, 0, 1, a fetch returns the depth from 0 to 1 in red:
+  written to an 8-bit target, 0.375 came out 96, 0.25 64 and 0.5 128, as rounding gives. Xenia gives 127 for 0.5.
+- **Broken on purpose,** the resolve copying colour target 0, the words hold the overlaps' colours (`FF4040E0`), and
+  both checks fail.
+- vulkan4xenon resolves a sampled depth attachment with it when a render pass leaves the attachment to be read, and
+  Aurora answers GXPeekZ and makes Twilight Princess's depth copies from it (vulkan4xenon's milestone 14, step 5).
+
+**The replay and pacing checks read their stats too late.** "replay: no vblank missed" failed in 2 of 3 console runs
+with the depth checks in and passed in the run from HEAD before them. Each miss came after the last frame: a test
+waited for the GPU, checked the frame and wrote the log before closing the present, and a vblank in that time found no
+frame queued and counted as missed ("30 flips over 31 vblanks (first 1, last 30), 1 missed";
+`xsdk_test_replay_missed.log`, `xsdk_test_replay_missed_earlier.log`, `xsdk_test_head.log`). Both tests now read the
+present's stats as soon as the last frame has flipped (tests/test_pacing.c, test_present_stats_at_last_flip). Twice
+since, xsdk_test passed but for the controller's two checks, with no pad attached (`xsdk_test.log`, `xsdk_test_2.log`),
+and with the pad, 305 of 305 (`xsdk_test_pad.log`).
+Broken on purpose, the replay test sleeping 40 ms halfway, "no vblank missed" and "a flip every swap interval" fail
+(`xsdk_test_break_replay.log`).
