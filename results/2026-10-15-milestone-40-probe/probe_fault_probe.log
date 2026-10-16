@@ -1,0 +1,183 @@
+log: game:\probe_fault.log
+log: named after \Device\Harddisk0\Partition1\XSDK\fault\probe_fault.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+probe_fault: run 1 of main, mode probe; sites: patterned 82031D5C, store 82031E9C, load 82031EA4
+fault: RtlSetVectoredExceptionHandler(82030E48, 82030E48) returned 00000000
+fault: handler call 1 on hardware thread 0, arguments 7010DC80 00000000 00009030 FFFFFFFF
+fault: the first argument points to { record 7010F4D0, context 7010E930 }
+fault: code C0000005, flags 00000000, nested record 00000000, address 82031D5C, 2 parameters: 00000001 00000000 00000001
+fault: the context at 7010E930, 4096 bytes searched
+fault: context +0x000: 00000017 0000B030 82031D5C 82030C10 C0DE00C7 FACE00C7 C0DE0000 FACE0000
+fault: context +0x020: 00000000 7010FA80 00000000 00000000 00000000 00000000 00000000 7010FC50
+fault: context +0x040: C0DE0005 FACE0005 C0DE0006 FACE0006 C0DE0007 FACE0007 C0DE0008 FACE0008
+fault: context +0x060: C0DE0009 FACE0009 C0DE000A FACE000A C0DE000B FACE000B C0DE000C FACE000C
+fault: context +0x080: 00000000 801B0000 C0DE000E FACE000E C0DE000F FACE000F C0DE0010 FACE0010
+fault: context +0x0A0: C0DE0011 FACE0011 C0DE0012 FACE0012 C0DE0013 FACE0013 C0DE0014 FACE0014
+fault: context +0x0C0: C0DE0015 FACE0015 C0DE0016 FACE0016 C0DE0017 FACE0017 C0DE0018 FACE0018
+fault: context +0x0E0: C0DE0019 FACE0019 C0DE001A FACE001A C0DE001B FACE001B C0DE001C FACE001C
+fault: context +0x100: C0DE001D FACE001D C0DE001E FACE001E C0DE001F FACE001F 13579BDF A0000035
+fault: context +0x120: FFF80000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+fault: context +0x140: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+fault: context +0x160: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+fault: context +0x180: 00000000 00000000 00000000 00000000 00000000 00000000 3FF0DE0E BEEF000E
+fault: context +0x1A0: 3FF0DE0F BEEF000F 3FF0DE10 BEEF0010 3FF0DE11 BEEF0011 3FF0DE12 BEEF0012
+fault: context +0x1C0: 3FF0DE13 BEEF0013 3FF0DE14 BEEF0014 3FF0DE15 BEEF0015 3FF0DE16 BEEF0016
+fault: context +0x1E0: 3FF0DE17 BEEF0017 3FF0DE18 BEEF0018 3FF0DE19 BEEF0019 3FF0DE1A BEEF001A
+fault: context +0x200: 3FF0DE1B BEEF001B 3FF0DE1C BEEF001C 3FF0DE1D BEEF001D 3FF0DE1E BEEF001E
+fault: context +0x220: 3FF0DE1F BEEF001F 80085EE4 00000000 00000000 00000000 00000000 00010000
+fault: context +0x240: 00000000 00000000 00000000 00000000 80E07010 FB708204 3D1C0000 00000000
+fault: context +0x260: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+fault: context +0x280: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+fault: context +0x2A0: 7010FB70 82043D1C 00000000 00000000 7010FB70 82043D1C 00000000 00000000
+fault: context +0x2C0: 00007010 FB100000 00000000 00000000 00000007 00600000 00000000 00000000
+fault: context +0x2E0: 00010000 00000000 003B8008 40008207 00007010 FBF00000 0003FFFF FFFF8207
+fault: r0 at +0x018, 64 bits
+fault: r5 at +0x040, 64 bits
+fault: r6 at +0x048, 64 bits
+fault: r7 at +0x050, 64 bits
+fault: r8 at +0x058, 64 bits
+fault: r9 at +0x060, 64 bits
+fault: r10 at +0x068, 64 bits
+fault: r11 at +0x070, 64 bits
+fault: r12 at +0x078, 64 bits
+fault: r14 at +0x088, 64 bits
+fault: r15 at +0x090, 64 bits
+fault: r16 at +0x098, 64 bits
+fault: r17 at +0x0A0, 64 bits
+fault: r18 at +0x0A8, 64 bits
+fault: r19 at +0x0B0, 64 bits
+fault: r20 at +0x0B8, 64 bits
+fault: r21 at +0x0C0, 64 bits
+fault: r22 at +0x0C8, 64 bits
+fault: r23 at +0x0D0, 64 bits
+fault: r24 at +0x0D8, 64 bits
+fault: r25 at +0x0E0, 64 bits
+fault: r26 at +0x0E8, 64 bits
+fault: r27 at +0x0F0, 64 bits
+fault: r28 at +0x0F8, 64 bits
+fault: r29 at +0x100, 64 bits
+fault: r30 at +0x108, 64 bits
+fault: r31 at +0x110, 64 bits
+fault: f14 at +0x198, 64 bits
+fault: f15 at +0x1A0, 64 bits
+fault: f16 at +0x1A8, 64 bits
+fault: f17 at +0x1B0, 64 bits
+fault: f18 at +0x1B8, 64 bits
+fault: f19 at +0x1C0, 64 bits
+fault: f20 at +0x1C8, 64 bits
+fault: f21 at +0x1D0, 64 bits
+fault: f22 at +0x1D8, 64 bits
+fault: f23 at +0x1E0, 64 bits
+fault: f24 at +0x1E8, 64 bits
+fault: f25 at +0x1F0, 64 bits
+fault: f26 at +0x1F8, 64 bits
+fault: f27 at +0x200, 64 bits
+fault: f28 at +0x208, 64 bits
+fault: f29 at +0x210, 64 bits
+fault: f30 at +0x218, 64 bits
+fault: f31 at +0x220, 64 bits
+fault: CTR at +0x010, 64 bits
+fault: CR (13579BDF) at +0x118
+fault: CR (13579BDF) at +0xC00
+fault: XER (A0000035) at +0x11C
+fault: XER (A0000035) at +0xC08
+fault: LR (82030C10) at +0x00C
+fault: LR (82030C10) at +0xBF8
+fault: r13 (801B0000) at +0x084
+fault: r13 (801B0000) at +0xB0C
+fault: r13 (801B0000) at +0xCE4
+fault: r1 (7010FA80) at +0x024
+fault: r1 (7010FA80) at +0xA50
+fault: r1 (7010FA80) at +0xA5C
+fault: r1 (7010FA80) at +0xA94
+fault: r1 found 5 times
+fault: IAR (82031D5C) at +0x008
+fault: IAR (82031D5C) at +0xBFC
+fault: frame 0 at 7010FA80, next 7010FC00, +4 holds 82030C10, -8 holds 00000000
+fault: frame 1 at 7010FC00, next 7010FD80, +4 holds 820317A4, -8 holds FFFFFFFF
+fault: frame 2 at 7010FD80, next 7010FED0, +4 holds 8203265C, -8 holds 00000000
+fault: frame 3 at 7010FED0, next 7010FF50, +4 holds 8007B0B4, -8 holds 00000000
+fault: frame 4 at 7010FF50, next 7010FFB0, +4 holds 00000000, -8 holds 80075E5C
+fault: frame 5 at 7010FFB0, next 00000000, +4 holds 00000000, -8 holds 00000000
+fault: handler returns -1
+fault: patterned store: handled, code C0000005 (Windows says C0000005), address 82031D5C (the site 82031D5C)
+PASS: fault: the patterned store resumed past its site
+PASS: fault: r14-r31 and f14-f31 came back whole after the resume
+fault: the walk's return addresses 82030C10 820317A4, expected 82030C10 820317A4
+PASS: fault: the back chain's SysV slots hold the two return addresses
+fault: a load from 0, from 82031EA4
+fault: handler call 2 on hardware thread 0, arguments 7010DF10 00000000 00009030 FFFFFFFF
+fault: the first argument points to { record 7010F760, context 7010EBC0 }
+fault: code C0000005, flags 00000000, nested record 00000000, address 82031EA4, 2 parameters: 00000000 00000000 7010F8D0
+fault: handler returns -1
+fault: a load from 0: handled, code C0000005 (Windows says C0000005), address 82031EA4 (the site 82031EA4)
+PASS: a load from 0
+fault: a store to 0, from 82031E9C
+fault: handler call 3 on hardware thread 0, arguments 7010DF10 00000000 00009030 FFFFFFFF
+fault: the first argument points to { record 7010F760, context 7010EBC0 }
+fault: code C0000005, flags 00000000, nested record 00000000, address 82031E9C, 2 parameters: 00000001 00000000 7010F8D0
+fault: handler returns -1
+fault: a store to 0: handled, code C0000005 (Windows says C0000005), address 82031E9C (the site 82031E9C)
+PASS: a store to 0
+fault: a misaligned 64-bit store into write-combined memory, from 82031EB0
+fault: handler call 4 on hardware thread 0, arguments 7010DF10 00000000 00009030 FFFFFFFF
+fault: the first argument points to { record 7010F760, context 7010EBC0 }
+fault: code 80000002, flags 00000000, nested record 00000000, address 82031EB0, 1 parameters: BFC40004 82060000 7010F8D0
+fault: handler returns -1
+fault: a misaligned 64-bit store into write-combined memory: handled, code 80000002 (Windows says 80000002), address 82031EB0 (the site 82031EB0)
+PASS: a misaligned 64-bit store into write-combined memory
+fault: an illegal instruction, from 82031EB8
+fault: handler call 5 on hardware thread 0, arguments 7010DF10 00000000 00009030 FFFFFFFF
+fault: the first argument points to { record 7010F760, context 7010EBC0 }
+fault: code C000001D, flags 00000000, nested record 00000000, address 82031EB8, 1 parameters: 00000000 82060000 7010F8D0
+fault: handler returns -1
+fault: an illegal instruction: handled, code C000001D (Windows says C000001D), address 82031EB8 (the site 82031EB8)
+PASS: an illegal instruction
+fault: a trap, from 82031EC0
+fault: a trap: not handled, code C000001D (Windows says 80000003), address 82031EB8 (the site 82031EC0)
+FAIL: a trap
+fault: handler call 6 on hardware thread 0, arguments 7021E100 00000000 00009030 FFFFFFFF
+fault: the first argument points to { record 7021F950, context 7021EDB0 }
+fault: code C0000005, flags 00000000, nested record 00000000, address 82031E9C, 2 parameters: 00000001 00000000 00000000
+fault: handler returns -1
+PASS: fault: a store to 0 on hardware thread 0, handled there
+fault: handler call 7 on hardware thread 1, arguments 7021E100 00000000 00009030 FFFFFFFF
+fault: the first argument points to { record 7021F950, context 7021EDB0 }
+fault: code C0000005, flags 00000000, nested record 00000000, address 82031E9C, 2 parameters: 00000001 00000000 00000000
+fault: handler returns -1
+PASS: fault: a store to 0 on hardware thread 1, handled there
+fault: handler call 8 on hardware thread 2, arguments 7021E100 00000000 00009030 FFFFFFFF
+fault: the first argument points to { record 7021F950, context 7021EDB0 }
+fault: code C0000005, flags 00000000, nested record 00000000, address 82031E9C, 2 parameters: 00000001 00000000 35383535
+fault: handler returns -1
+PASS: fault: a store to 0 on hardware thread 2, handled there
+fault: handler call 9 on hardware thread 3, arguments 7021E100 00000000 00009030 FFFFFFFF
+fault: the first argument points to { record 7021F950, context 7021EDB0 }
+fault: code C0000005, flags 00000000, nested record 00000000, address 82031E9C, 2 parameters: 00000001 00000000 7021FB20
+fault: handler returns -1
+PASS: fault: a store to 0 on hardware thread 3, handled there
+fault: handler call 10 on hardware thread 4, arguments 7021E100 00000000 00009030 FFFFFFFF
+fault: the first argument points to { record 7021F950, context 7021EDB0 }
+fault: code C0000005, flags 00000000, nested record 00000000, address 82031E9C, 2 parameters: 00000001 00000000 7021FB20
+fault: handler returns -1
+PASS: fault: a store to 0 on hardware thread 4, handled there
+fault: handler call 11 on hardware thread 5, arguments 7021E100 00000000 00009030 FFFFFFFF
+fault: the first argument points to { record 7021F950, context 7021EDB0 }
+fault: code C0000005, flags 00000000, nested record 00000000, address 82031E9C, 2 parameters: 00000001 00000000 7021FB20
+fault: handler returns -1
+PASS: fault: a store to 0 on hardware thread 5, handled there
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 20134 us
+fault: a store to 0 at frame 30, presenting
+fault: handler call 12 on hardware thread 0, arguments 7010DF00 00000000 00009030 FFFFFFFF
+fault: the first argument points to { record 7010F750, context 7010EBB0 }
+fault: code C0000005, flags 00000000, nested record 00000000, address 82031E9C, 2 parameters: 00000001 00000000 7010F8C0
+fault: handler returns -1
+fault: presenting: 60 flips, 1 handler calls
+PASS: fault: a store to 0 while presenting, handled, every frame shown and the GPU closed
+probe: 14 passed, 1 failed
+fault: RtlClearVectoredExceptionHandler(00000000) returned 00000000
+probe: a store to 0 after clearing the handler
+probe: carried on past the store, the handler called 0 more times
+probe: still running, 0 ms
+probe: still running, 1000 ms

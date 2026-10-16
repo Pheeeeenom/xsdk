@@ -1,0 +1,12 @@
+log: game:\probe_fault.log
+log: named after \Device\Harddisk0\Partition1\XSDK\fault\probe_fault.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+probe_fault: run 1 of main, mode plain_overflow; sites: patterned 82031DCC, store 82031F0C, load 82031F14
+overflow: stack 70120000 to 70130000
+overflow: depth 0, r1 7012FA50
+overflow: depth 8, r1 7012D7D0
+overflow: depth 16, r1 7012B550
+overflow: depth 24, r1 701292D0
+overflow: depth 32, r1 70127050
+overflow: depth 40, r1 70124DD0
+overflow: depth 48, r1 70122B50

@@ -955,6 +955,15 @@ gap that something running on xsdk meets becomes a milestone; the rest wait (aft
 39. **The GPU's cost of a draw.** Agreed and done on 2026-10-15: docs/scope/39-gpu-draw-cost.md (HARDWARE.md, "The
     GPU's cost of a draw, milestone 39").
 
+40. **Catching faults.** Agreed on 2026-10-15: docs/scope/40-fault-handler.md, the first of the gaps docs/PARITY.md
+    ranks. Paused the same day after its probe (HARDWARE.md, "How the kernel hands a title its faults, milestone
+    40's probe").
+
+41. **Docs and samples.** Proposed on 2026-10-15, not yet agreed: docs/scope/41-docs-and-samples.md, the second.
+
+42. **Render target formats.** Proposed on 2026-10-15, not yet agreed: docs/scope/42-target-formats.md, the first
+    of three toward HDR and deferred rendering, before multiple render targets (43) and predicated tiling (44).
+
 **Networking**, a scope of its own rather than a numbered milestone: sockets, and TLS 1.2 in the title's own code.
 Agreed and done on 2026-10-14: docs/scope/networking.md.
 

@@ -62,7 +62,9 @@ GUIDE_CHECK_OBJECTS := $(patsubst tests/%,$(BUILD)/tests/%.o,$(basename $(GUIDE_
 PROBES := probe_spin probe_print probe_cp probe_ring probe_interrupt probe_exports probe_engines probe_swap \
 	probe_display probe_guide probe_resolve probe_triangle probe_vblank probe_720p probe_constants probe_mip_tail \
 	probe_draw_after_resolve probe_pixel_rate probe_unroll probe_hiz probe_net probe_texel_rate probe_draw_cost \
-	probe_gpu_draw_cost
+	probe_gpu_draw_cost probe_fault
+# Milestone 40's probe, with its faulting instructions and the bar scene it presents while one faults.
+PROBE_FAULT_OBJECTS := $(BUILD)/tests/probe_fault.o $(BUILD)/tests/probe_fault_sites.o $(BUILD)/tests/bar_scene.o
 # GCC's -O2 for PowerPC, which unrolls small loops only (gcc:common/config/rs6000/rs6000-common.cc:39-46).
 UNROLL_O2_FLAGS := -munroll-only-small-loops -fno-rename-registers
 UNROLL_LOOPS_OBJECTS := $(BUILD)/tests/unroll_loops_o2.o $(BUILD)/tests/unroll_loops_unrolled.o
@@ -99,6 +101,9 @@ $(BUILD)/probe_%.elf: $(BUILD)/tests/probe_%.o $(BUILD)/libxsdk.a src/xsdk.ld
 
 $(BUILD)/probe_unroll.elf: $(BUILD)/tests/probe_unroll.o $(UNROLL_LOOPS_OBJECTS) $(BUILD)/libxsdk.a src/xsdk.ld
 	$(CC) $(LDFLAGS) -o $@ $(BUILD)/tests/probe_unroll.o $(UNROLL_LOOPS_OBJECTS) $(LIBS)
+
+$(BUILD)/probe_fault.elf: $(PROBE_FAULT_OBJECTS) $(BUILD)/libxsdk.a src/xsdk.ld
+	$(CC) $(LDFLAGS) -o $@ $(PROBE_FAULT_OBJECTS) $(LIBS)
 
 # probe_unroll's loops built both ways, its copy loop kept a loop rather than a call to memcpy.
 $(BUILD)/tests/unroll_loops_o2.o: tests/unroll_loops.c

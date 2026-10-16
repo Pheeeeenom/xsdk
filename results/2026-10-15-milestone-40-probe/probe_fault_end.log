@@ -1,0 +1,12 @@
+log: game:\probe_fault.log
+log: named after \Device\Harddisk0\Partition1\XSDK\fault\probe_fault.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+probe_fault: run 1 of main, mode end; sites: patterned 82031D5C, store 82031E9C, load 82031EA4
+fault: RtlSetVectoredExceptionHandler(82030E48, 82030E48) returned 00000000
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 23278 us
+fault: a store to 0 at frame 30, presenting
+fault: handler call 1 on hardware thread 0, arguments 7010DF00 00000000 00009030 FFFFFFFF
+fault: the first argument points to { record 7010F750, context 7010EBB0 }
+fault: code C0000005, flags 00000000, nested record 00000000, address 82031E9C, 2 parameters: 00000001 00000000 7010F8C0
+end: XamLoaderTerminateTitle from the handler, the GPU and the display still open

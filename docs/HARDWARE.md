@@ -3234,3 +3234,69 @@ On the console, with vulkan4xenon `c1e3aaa` rebuilt on it:
 - **vulkan4xenon_test passed 112 of 112** (`vulkan4xenon_test.log`).
 - **xsdk_test passed 313 of 313** (`xsdk_test.log`), once the user had woken the controller; the run before failed
   only the controller's two checks, the controller asleep (`xsdk_test_controller_asleep.log`).
+
+## How the kernel hands a title its faults, milestone 40's probe (2026-10-15)
+
+`tests/probe_fault.c`, with its faulting instructions at known labels in `tests/probe_fault_sites.S`, ran once per mode,
+the mode read from `probe_fault.txt` beside it (docs/scope/40-fault-handler.md; logs:
+`results/2026-10-15-milestone-40-probe/`, one per mode). Nothing public gives `RtlSetVectoredExceptionHandler`'s
+arguments or the console's register context (Xenia lists the export with no code:
+xenia:src/xenia/kernel/xboxkrnl/xboxkrnl_table.inc:891-892), so the probe found them. The console runs the debug monitor
+`Xbdm.xex` ("XEX checks the kernel enforces"), which may account for what happens with no handler, and for the trap.
+- **With no handler,** a store to address 0 didn't stop the title (`probe_fault_plain.log`). Its next line was logged,
+  then the title ended within 1 to 2 s, and the console was back at the dashboard. A run after the handler was cleared
+  did the same (`probe_fault_probe.log`). A side check on 2026-10-13 had seen `main` run again after such a store; it
+  didn't happen here.
+- **The hook.**
+  - `RtlSetVectoredExceptionHandler` (0x36D), passed the handler as both arguments, returned 0.
+  - The kernel then called the handler for every fault below, on the faulting thread, including threads placed on each
+    of hardware threads 0 to 5.
+  - r3 points to two words, the exception record and the register context, all three on the faulting thread's own
+    stack, as Windows' `EXCEPTION_POINTERS` holds them. r4 to r6 held 0, 0x9030 and -1.
+  - `RtlClearVectoredExceptionHandler` (0x36E), passed 0, returned 0, and the next fault didn't reach the handler.
+- **The record** is laid out as Xenia's `X_EXCEPTION_RECORD` (xenia:src/xenia/xbox.h:314-323): the code, flags 0, no
+  nested record, the faulting instruction's address, then the parameters.
+  - A load or store at address 0: 0xC0000005, with 2 parameters: 0 for a read or 1 for a write, then the address
+    accessed.
+  - A 64-bit store 4 bytes into write-combined memory: 0x80000002, with 1 parameter, the address (0xBFC40004).
+  - Primary opcode 0: 0xC000001D.
+- **The context** (`probe_fault_probe.log`). Before faulting, the probe set every register it could to a pattern; this
+  is where each turned up:
+
+  | Offset | Holds |
+  |---|---|
+  | 0x000 | 0x17, the context's flags as Windows keeps them first (unverified) |
+  | 0x004 | 0xB030, likely MSR (unverified) |
+  | 0x008 | IAR |
+  | 0x00C | LR |
+  | 0x010 | CTR, 64 bits |
+  | 0x018 | r0 to r31, 64 bits each, to 0x117 |
+  | 0x118 | CR |
+  | 0x11C | XER |
+  | 0x120 | 0xFFF80000_00000000, likely FPSCR held as a double (unverified) |
+  | 0x128 | f0 to f31, 64 bits each, to 0x227 |
+
+  The vector registers weren't probed.
+- **Resuming.** The handler returned -1, Windows' "continue execution", with IAR moved 4 past the faulting instruction.
+  Each fault then resumed at the next instruction, with r14-r31 and f14-f31 whole. 13 faults resumed in one run,
+  one of them while presenting: 60 frames of 60 shown, and the GPU closed after.
+- **The stack.** Walking the back chain from the context's r1, the slot 4 bytes into each caller's frame held xsdk's
+  return addresses, both of the two checked. Above them, the kernel's frames that started the title held one at 8
+  bytes below the next frame, 0x80075E5C.
+- **A trap** (`tw 31,0,0`, which `__builtin_trap` emits) never reached the handler, and the title carried on past it.
+  The debug monitor may take it as a breakpoint; a console without one may differ. Xenia treats `twi 31,r0,N` as special
+  traps, 20 a debug print and 22 a break (xenia:src/xenia/cpu/backend/x64/x64_emitter.cc:371-380).
+- **A stack overflow hangs the console, with a handler or without.** A thread with a 64 KB stack, 0x70120000 to
+  0x70130000, recursed a kilobyte a call. It logged depth 48 at r1 = 0x70122B50, then nothing. The handler never logged,
+  and the console stopped answering until the user restarted it, in both runs (`probe_fault_overflow.log`,
+  `probe_fault_plain_overflow.log`, each fetched after the restart). The record and context go on the faulting thread's
+  own stack, so an overflowed stack leaves the kernel nowhere to put them.
+- **Ending from the handler.** `XamLoaderTerminateTitle`, called in the handler with the GPU and display open and frames
+  presenting, took the console back to the dashboard within about 2 s (`probe_fault_end.log`).
+
+So milestone 40's handler:
+- sets itself with `RtlSetVectoredExceptionHandler`;
+- reads the record and context through the pointers in r3, at the offsets above;
+- ends the title with `XamLoaderTerminateTitle`.
+
+It can't catch a stack overflow, and on this console it doesn't see traps.

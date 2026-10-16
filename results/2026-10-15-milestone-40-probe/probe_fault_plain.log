@@ -1,0 +1,7 @@
+log: game:\probe_fault.log
+log: named after \Device\Harddisk0\Partition1\XSDK\fault\probe_fault.xex
+sbrk: the heap may grow to 474 MB, the title's free memory
+probe_fault: run 1 of main, mode plain; sites: patterned 82031D5C, store 82031E9C, load 82031EA4
+plain: a store to 0, no handler
+plain: carried on past the store
+plain: still running, 0 ms

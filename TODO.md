@@ -5,6 +5,13 @@ work begins.
 
 ## Runtime and display
 
+- **A stack overflow hangs the console,** with a fault handler or without, until it's restarted (docs/HARDWARE.md, "How
+  the kernel hands a title its faults, milestone 40's probe"). The kernel puts the exception record and context on the
+  faulting thread's own stack, so an overflowed one leaves it nowhere to. What could stop it, such as room kept at
+  each stack's end, isn't known.
+- **Traps never reach the fault handler on the user's console,** which runs a debug monitor; the title carries on past
+  them (the same section). What a console without one does, and so whether `-fsanitize-trap` could report, isn't
+  known.
 - **Symbol names in `std::stacktrace`.** A trace gives addresses only, as a XEX carries no symbols. `elf2xex` would
   write a symbol map beside the `.xex`, and the runtime would name frames from it (SCOPE.md section 2.5).
 - **A native TLS model.** `thread_local` uses GCC's emulated TLS over `KeTlsGetValue`. A GCC change that loads
