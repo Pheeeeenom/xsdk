@@ -73,10 +73,11 @@ static uint32_t or_zero(int64_t value)
 }
 
 // Where each block's registers, each sampler's fetch constant and each comparison's register landed: blocks first, then
-// samplers, then comparisons.
+// samplers, then comparisons, then the instance index.
 static XsdkXscResource *resources(const XscInterface *si, size_t *count)
 {
-	*count = si->block_count + si->sampler_count + si->comparison_count;
+	const int64_t instance = xsdk_xsc_instance_index_reg(si);
+	*count = si->block_count + si->sampler_count + si->comparison_count + (instance != XSC_NONE);
 	XsdkXscResource *const out = calloc(*count ? *count : 1, sizeof *out);
 	if (!out)
 		return NULL;
@@ -95,6 +96,8 @@ static XsdkXscResource *resources(const XscInterface *si, size_t *count)
 		out[si->block_count + si->sampler_count + i] = (XsdkXscResource){ XSDK_XSC_COMPARISON,
 			or_zero(c->var->descriptor_set), or_zero(c->var->binding), c->a, 1 };
 	}
+	if (instance != XSC_NONE)
+		out[*count - 1] = (XsdkXscResource){ XSDK_XSC_INSTANCE_INDEX, 0, 0, (uint32_t)instance, 1 };
 	return out;
 }
 

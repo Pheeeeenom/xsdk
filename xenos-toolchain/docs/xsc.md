@@ -77,6 +77,7 @@ came from; that test and its test vectors stay in xost's archived repo (github.c
 | fragment `gl_FragDepth`, stored once outside any `if/else` | `oDepth.x___` after the colour, the record's ps_export_mode 3 (`tests/test_frag_depth.py`) |
 | fragment `gl_FragDepth` stored in both arms of an `if/else`, or before one and again in an arm | merged by a select as a vertex shader's outputs are, exported once; stored on one path alone, refused (see Control flow) |
 | a store into one component of a local or an output, `v.x = …` | an insert into the vector it held (`tests/test_local_stores.py`) |
+| vertex `gl_InstanceIndex`, firstInstance included | a float constant the runtime writes each instance's index into (see Interface conventions); `float()` of it, integer arithmetic on it and a block array's index at it lower as integers do (`tests/test_instance_index.py`). `gl_VertexIndex` is refused |
 | float / vec literals in FS/VS | constant pool; 0/1 folds (see below) |
 | ternary `cond ? a : b` (OpSelect) | `f + (t−f)·cond` (sub + mad) |
 | vector relational `lessThan`/`greaterThan`/`equal`/`notEqual`/… → bvec | per-component `sgt`/`sge`/`seq`/`sne` (1.0/0.0) |
@@ -117,6 +118,15 @@ came from; that test and its test vectors stay in xost's archived repo (github.c
   index a chain, into an array on 16-byte lines, `int(f)` for `f >= 0` as
   indices are (a0 is `floor(f)`), and the result within -256 to 255
   (xenia:src/xenia/gpu/ucode.h:1138-1150).
+- gl_InstanceIndex (Vulkan's InstanceIndex) → the float constant register
+  past the blocks, before the literals, so no uniform block the GPU may load
+  shares its group of 4. The runtime writes the instance's index, a float, into
+  every component of it before each instance's draw, as vulkan4xenon draws an
+  instance at a time (vulkan4xenon:docs/ROADMAP.md, milestone 24). The
+  compiler lists it among the resources, kind `XSDK_XSC_INSTANCE_INDEX`
+  (`include/xsdk/xsc.h`), "instance" in `xsc/native.py`, and the container's
+  constant table names it. A vertex shader's other built-in inputs, as
+  gl_VertexIndex, aren't streams, and loading one is refused.
 - gl_FragCoord → the pixel parameters, which the container turns on: its
   record's SQ_PROGRAM_CNTL has PARAM_GEN, and its SQ_CONTEXT_MISC has
   PARAM_GEN_POS, the register past the interpolators, where the GPU writes the

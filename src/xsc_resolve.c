@@ -543,6 +543,33 @@ static bool assign_comparisons(
 	return true;
 }
 
+enum {
+	// Vulkan's gl_InstanceIndex, firstInstance included.
+	BUILTIN_INSTANCE_INDEX = 43,
+};
+
+// gl_InstanceIndex in a vertex shader takes the register past the blocks, so it shares no group of 4 with a uniform
+// block the GPU may load, as a group loaded mustn't also be set (include/xsdk/gpu.h, xsdk_gpu_load_vertex_constants).
+static bool assign_instance_index(Xsc *x, XscInterface *si, const XscVar *vars, size_t var_count, int64_t *end)
+{
+	for (size_t i = 0; i < var_count && !si->pixel; i++) {
+		if (vars[i].storage_class != SC_INPUT || vars[i].builtin != BUILTIN_INSTANCE_INDEX)
+			continue;
+		if (!set_role(x, si, vars[i].vid, (XscRole){ XSC_ROLE_INSTANCE_INDEX, *end, 0, 0 }))
+			return false;
+		(*end)++;
+	}
+	return true;
+}
+
+int64_t xsdk_xsc_instance_index_reg(const XscInterface *si)
+{
+	for (uint32_t id = 0; id < si->role_limit; id++) {
+		if (si->roles[id].kind == XSC_ROLE_INSTANCE_INDEX)
+			return si->roles[id].a;
+	}
+	return XSC_NONE;
+}
 bool xsdk_xsc_resolve_interface(Xsc *x, const XscModule *m, XscInterface *si)
 {
 	memset(si, 0, sizeof *si);
@@ -569,7 +596,9 @@ bool xsdk_xsc_resolve_interface(Xsc *x, const XscModule *m, XscInterface *si)
 	for (size_t i = 0; i < var_count; i++) {
 		const XscVar *const v = &vars[i];
 		bool ok = true;
-		if (v->storage_class == SC_INPUT) {
+		// A vertex shader's built-in isn't a stream: gl_InstanceIndex takes a register past the blocks, and loading any
+		// other is refused.
+		if (v->storage_class == SC_INPUT && (si->pixel || v->builtin == XSC_NONE)) {
 			ok = resolve_input(x, m, types, si, v, &capacity);
 		} else if (v->storage_class == SC_OUTPUT) {
 			ok = resolve_output(x, m, types, si, v, &capacity);
@@ -587,7 +616,8 @@ bool xsdk_xsc_resolve_interface(Xsc *x, const XscModule *m, XscInterface *si)
 			return false;
 	}
 	int64_t end;
-	if (!assign_blocks(x, m, types, si, pending, pending_count, next_const, &capacity, &end))
+	if (!assign_blocks(x, m, types, si, pending, pending_count, next_const, &capacity, &end) ||
+		!assign_instance_index(x, si, vars, var_count, &end))
 		return false;
 	si->constant_end = (uint32_t)end;
 	if (!add_vulkan_samplers(x, m, types, si, vulkan_samplers, vulkan_count, &capacity) ||

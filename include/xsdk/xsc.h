@@ -58,6 +58,9 @@ typedef enum {
 	// A sampler2DShadow's compare op, which the runtime writes to the register as the weights of the reference below,
 	// equal to and above the depth, 1 or 0 each, then 0.
 	XSDK_XSC_COMPARISON,
+	// The float constant a vertex shader reads gl_InstanceIndex from, which the runtime writes each instance's index
+	// into, in every component; set and binding 0.
+	XSDK_XSC_INSTANCE_INDEX,
 } XsdkXscResourceKind;
 
 typedef struct {
@@ -73,7 +76,7 @@ typedef struct {
 	uint32_t offset_bytes;
 } XsdkXscNeed;
 
-// Where a block's registers, a sampler's fetch constant or a comparison's register landed.
+// Where a block's registers, a sampler's fetch constant, a comparison's register or the instance index landed.
 typedef struct {
 	XsdkXscResourceKind kind;
 	uint32_t set;

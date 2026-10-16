@@ -115,6 +115,10 @@ static bool add_constants(XscLower *l, const XscInterface *si, const bool used[F
 		if (!xsdk_xsc_add_constant(l->x, constants, c))
 			return false;
 	}
+	const int64_t instance = xsdk_xsc_instance_index_reg(si);
+	if (instance != XSC_NONE &&
+		!xsdk_xsc_add_constant(l->x, constants, xsdk_xsc_vector_constant("gl_InstanceIndex", instance, 1)))
+		return false;
 	return xsdk_xsc_literal_constants(l, constants);
 }
 

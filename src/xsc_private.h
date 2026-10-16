@@ -319,10 +319,13 @@ typedef enum {
 	XSC_ROLE_SAMPLER,
 	XSC_ROLE_CONSTANT,
 	XSC_ROLE_ARRAY,
+	// A vertex shader's gl_InstanceIndex, a float constant the runtime writes each instance's index into.
+	XSC_ROLE_INSTANCE_INDEX,
 } XscRoleKind;
 
 // A sampler's a and b are its slot and dim, and c the register its comparison's weights take, or XSC_NONE; a constant's
-// its register and count; an array's its register, count and registers an element; a block's its index.
+// its register and count; an array's its register, count and registers an element; a block's its index; the instance
+// index's its register.
 typedef struct {
 	XscRoleKind kind;
 	int64_t a;
@@ -389,6 +392,8 @@ const XscType *xsdk_xsc_type(const XscModule *m, const XscType *types, uint64_t 
 const char *xsdk_xsc_type_kind_name(XscTypeKind kind);
 bool xsdk_xsc_resolve_interface(Xsc *x, const XscModule *m, XscInterface *si);
 const XscRole *xsdk_xsc_role(const XscInterface *si, uint32_t id);
+// The register gl_InstanceIndex reads, or XSC_NONE in a shader without it.
+int64_t xsdk_xsc_instance_index_reg(const XscInterface *si);
 // The dim a slot's sampler has: false where Python's sampler_dims.get gives None for a missing slot.
 bool xsdk_xsc_sampler_dim(const XscInterface *si, uint32_t slot, int64_t *dim);
 
