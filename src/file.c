@@ -197,8 +197,9 @@ int openat(int dir_fd, const char *path, int flags, ...)
 	const bool directory = (flags & O_DIRECTORY) != 0;
 	IO_STATUS_BLOCK io_status;
 	HANDLE handle;
+	// POSIX lets a file be open more than once; with no share access a second open fails, 0xC0000043.
 	const NTSTATUS status = NtCreateFile(&handle, access_from_flags(flags) | SYNCHRONIZE, &attributes, &io_status, NULL,
-		FILE_ATTRIBUTE_NORMAL, 0, disposition_from_flags(flags),
+		FILE_ATTRIBUTE_NORMAL, FILE_SHARE_READ | FILE_SHARE_WRITE, disposition_from_flags(flags),
 		FILE_SYNCHRONOUS_IO_NONALERT | (directory ? FILE_DIRECTORY_FILE : FILE_NON_DIRECTORY_FILE));
 	if (!NT_SUCCESS(status)) {
 		release_slot(file);

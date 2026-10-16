@@ -46,7 +46,8 @@ static NTSTATUS reserve_heap(void)
 			(unsigned)status);
 		return status;
 	}
-	xsdk_log_write("sbrk: the heap may grow to %u MB, the title's free memory", (unsigned)(size_bytes >> 20));
+	xsdk_log_write("sbrk: the heap may grow to %u MB from 0x%08X, the title's free memory",
+		(unsigned)(size_bytes >> 20), (unsigned)(uintptr_t)base);
 	heap_base = (uintptr_t)base;
 	heap_end = heap_base + size_bytes;
 	heap_break = heap_base;

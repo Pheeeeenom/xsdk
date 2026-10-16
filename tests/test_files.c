@@ -128,6 +128,20 @@ static void check_log_readable(void)
 	check("log read while it's open", NT_SUCCESS(status) && strcmp(start, "log: ") == 0);
 }
 
+// POSIX lets a file be open more than once at a time, to write and to read.
+static void check_open_twice(const char *path)
+{
+	const int writer = open(path, O_RDWR);
+	const int reader = open(path, O_RDONLY);
+	char bytes[8] = "";
+	const bool both = writer >= 0 && reader >= 0 && pread(reader, bytes, 6, 9) == 6 && memcmp(bytes, "line 2", 6) == 0;
+	if (reader >= 0)
+		close(reader);
+	if (writer >= 0)
+		close(writer);
+	check("open: a file opens twice, to write and to read", both);
+}
+
 // The test file, renamed over another, takes its place, and its own name is gone.
 static void check_rename(const char *path)
 {
@@ -171,6 +185,7 @@ void test_files(void)
 	const bool appended = file && fputs("line three\n", file) >= 0 && fclose(file) == 0;
 	check("file append", appended && file_size(path) == 27);
 	check_pread(path);
+	check_open_twice(path);
 	check_flockfile();
 	check_rename(path);
 }
