@@ -50,6 +50,7 @@ enum {
 	DRAW_INDEXED_DWORDS = 5,
 	DEPTH_STENCIL_DWORDS = 3 * 2,
 	BLEND_DWORDS = 2 * 2,
+	BLEND_CONSTANT_DWORDS = 1 + 4,
 	RASTER_DWORDS = 2 + 1 + 4,
 	SCISSOR_DWORDS = 1 + 2,
 	VIEWPORT_DWORDS = 1 + 6,
@@ -491,6 +492,14 @@ void xsdk_gpu_set_blend(const XsdkBlendState *state)
 	GpuPackets packets = gpu_reserve_packets(BLEND_DWORDS);
 	gpu_put_register(&packets, RB_BLENDCONTROL0, state->blend_control);
 	gpu_put_register(&packets, RB_COLOR_MASK, state->color_mask);
+	gpu_packets_done(&packets);
+}
+
+void xsdk_gpu_set_blend_constants(const float rgba[4])
+{
+	const uint32_t constants[] = { float_bits(rgba[0]), float_bits(rgba[1]), float_bits(rgba[2]), float_bits(rgba[3]) };
+	GpuPackets packets = gpu_reserve_packets(BLEND_CONSTANT_DWORDS);
+	gpu_put_registers(&packets, RB_BLEND_RED, constants, 4);
 	gpu_packets_done(&packets);
 }
 

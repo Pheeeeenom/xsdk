@@ -83,15 +83,13 @@ work begins.
 - **Two-sided stencil.** The SDK leaves `backface_enable` clear, so the front face's stencil serves both
   (src/gpu_draw.c). Vulkan sets front and back apart: `backface_enable` and the `_bf` fields of `RB_DEPTHCONTROL`, and
   `RB_STENCILREFMASK_BF` (xenia:src/xenia/gpu/registers.h:799-834).
-- **A constant blend colour.** The blend factors stop short of `kConstantColor` to `kOneMinusConstantAlpha`
-  (xenos.h:719-722), which read `RB_BLEND_RED` to `RB_BLEND_ALPHA` (xenia:src/xenia/gpu/register_table.inc:506-509).
-  Vulkan's blend constants need them.
 - **Destination alpha,** vulkan4xenon milestone 18's step 4, put off (vulkan4xenon:docs/ROADMAP.md). Aurora's backend
   refuses a pipeline with `GXSetDstAlpha` on and skips its draws, logging `vulkan4xenon can't draw destination alpha`
   (aurora-melee:lib/vulkan4xenon/pipeline.cpp, `unsupported`). Dawn's backend writes the constant as alpha through a
   blend constant; where the colour blend reads source alpha, it needs dual-source blending, which Xenos lacks, or an
-  alpha-only pass before the colour (aurora-melee:lib/gx/pipeline.cpp, `create_pipeline`). So it needs the constant
-  blend colour above, Vulkan's blend constants in the layer, and that pass in the backend. Melee sets it through its
+  alpha-only pass before the colour (aurora-melee:lib/gx/pipeline.cpp, `create_pipeline`). The constant blend colour
+  (`xsdk_gpu_set_blend_constants`) and Vulkan's blend constants in the layer came with vulkan4xenon milestone 19's
+  step 3, so it needs that pass in the backend. Melee sets it through its
   HSD state (melee-pc:src/sysdolphin/baselib/state.c:376); no Melee session or Dusklight title scene has logged the
   refusal yet.
 - **Primitive restart.** `VGT_MULTI_PRIM_IB_RESET_INDX` (registers.h:343-360) and `PA_SU_SC_MODE_CNTL`'s

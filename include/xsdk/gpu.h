@@ -192,7 +192,8 @@ void xsdk_gpu_set_depth_stencil(const XsdkDepthStencilState *state);
 // compares, else less-than ones; equal suits both.
 void xsdk_gpu_set_depth_clear(float depth, uint8_t stencil);
 
-// Blend factors (xenia:src/xenia/gpu/xenos.h:708-723), less the constant-colour ones, and operations (727-733).
+// Blend factors (xenia:src/xenia/gpu/xenos.h:708-723), the constant ones taking xsdk_gpu_set_blend_constants's colour,
+// and operations (727-733).
 enum {
 	XSDK_BLEND_ZERO = 0,
 	XSDK_BLEND_ONE = 1,
@@ -204,6 +205,10 @@ enum {
 	XSDK_BLEND_ONE_MINUS_DST_COLOR = 9,
 	XSDK_BLEND_DST_ALPHA = 10,
 	XSDK_BLEND_ONE_MINUS_DST_ALPHA = 11,
+	XSDK_BLEND_CONSTANT_COLOR = 12,
+	XSDK_BLEND_ONE_MINUS_CONSTANT_COLOR = 13,
+	XSDK_BLEND_CONSTANT_ALPHA = 14,
+	XSDK_BLEND_ONE_MINUS_CONSTANT_ALPHA = 15,
 	XSDK_BLEND_SRC_ALPHA_SATURATE = 16,
 };
 
@@ -243,6 +248,9 @@ typedef struct {
 void xsdk_gpu_blend_state(XsdkBlendState *state, const XsdkBlend *setting);
 // Applies to the draws after; xsdk_gpu_set_target turns blending off and writes every channel.
 void xsdk_gpu_set_blend(const XsdkBlendState *state);
+// The colour the constant factors take, red to alpha, for the draws after; nothing else sets it, so a draw blending by
+// it sets it first (docs/HARDWARE.md, "Blend constants").
+void xsdk_gpu_set_blend_constants(const float rgba[4]);
 
 enum {
 	XSDK_CULL_NONE,

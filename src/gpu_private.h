@@ -38,6 +38,8 @@ enum {
 	VGT_MIN_VTX_INDX = 0x2101,
 	VGT_INDX_OFFSET = 0x2102,
 	RB_COLOR_MASK = 0x2104,
+	// Then GREEN, BLUE and ALPHA, floats (xenia:src/xenia/gpu/register_table.inc:506-509).
+	RB_BLEND_RED = 0x2105,
 	RB_STENCILREFMASK_BF = 0x210C,
 	RB_STENCILREFMASK = 0x210D,
 	PA_CL_VPORT_XSCALE = 0x210F,

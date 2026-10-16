@@ -40,8 +40,15 @@ enum {
 	BLEND_SUBTRACT,
 	BLEND_MAX,
 	BLEND_MASK_RED_BLUE,
+	// The source and destination mixed by a constant colour's channels, then by a constant's alpha.
+	BLEND_CONSTANT_COLOR,
+	BLEND_CONSTANT_ALPHA,
 	BLENDS,
 };
+
+// Each constant blend's own colour, set before its draw, red to alpha.
+static const float constant_color[4] = { 0.25f, 0.5f, 0.75f, 1.0f };
+static const float constant_alpha[4] = { 0.0f, 0.0f, 0.0f, 0.6f };
 
 enum {
 	RASTER_PLAIN,
@@ -102,6 +109,11 @@ static const Draw draws[] = {
 	{ 1040, 420, 200, 180, 0xFF808080, BLEND_NONE, RASTER_PLAIN, false, true, false, false },
 	{ 1040, 420, 100, 180, 0xFFFF8000, BLEND_NONE, RASTER_PLAIN, false, true, false, false },
 	{ 1140, 420, 100, 180, 0xFFFF8000, BLEND_NONE, RASTER_BIAS, false, true, false, false },
+	// Constant blends, cells 80 high at y 620: by a colour's channels, then by an alpha.
+	{ 40, 620, 200, 80, 0xFF2040E0, BLEND_NONE, RASTER_PLAIN, false, false, false, false },
+	{ 140, 620, 100, 80, 0xFFE0C020, BLEND_CONSTANT_COLOR, RASTER_PLAIN, false, false, false, false },
+	{ 290, 620, 200, 80, 0xFF40E080, BLEND_NONE, RASTER_PLAIN, false, false, false, false },
+	{ 390, 620, 100, 80, 0xFFC02060, BLEND_CONSTANT_ALPHA, RASTER_PLAIN, false, false, false, false },
 };
 
 static const uint32_t scissor_x = 580;
@@ -151,6 +163,10 @@ static void make_states(States *states)
 			XSDK_BLEND_OP_ADD, XSDK_WRITE_ALL },
 		[BLEND_MASK_RED_BLUE] = { XSDK_BLEND_ONE, XSDK_BLEND_ZERO, XSDK_BLEND_OP_ADD, XSDK_BLEND_ONE, XSDK_BLEND_ZERO,
 			XSDK_BLEND_OP_ADD, XSDK_WRITE_RED | XSDK_WRITE_BLUE },
+		[BLEND_CONSTANT_COLOR] = { XSDK_BLEND_CONSTANT_COLOR, XSDK_BLEND_ONE_MINUS_CONSTANT_COLOR, XSDK_BLEND_OP_ADD,
+			XSDK_BLEND_ONE, XSDK_BLEND_ZERO, XSDK_BLEND_OP_ADD, XSDK_WRITE_ALL },
+		[BLEND_CONSTANT_ALPHA] = { XSDK_BLEND_CONSTANT_ALPHA, XSDK_BLEND_ONE_MINUS_CONSTANT_ALPHA, XSDK_BLEND_OP_ADD,
+			XSDK_BLEND_ONE, XSDK_BLEND_ZERO, XSDK_BLEND_OP_ADD, XSDK_WRITE_ALL },
 	};
 	const XsdkRaster rasters[RASTERS] = {
 		[RASTER_PLAIN] = { XSDK_CULL_NONE, true, 0.0f, 0.0f },
@@ -198,6 +214,10 @@ static uint32_t blended(uint32_t blend, uint32_t src, uint32_t dst)
 			out = s > d ? s : d;
 		else if (blend == BLEND_MASK_RED_BLUE && shift == 8)
 			out = d;
+		else if (blend == BLEND_CONSTANT_COLOR)
+			out = s * constant_color[2 - shift / 8] + d * (1.0f - constant_color[2 - shift / 8]);
+		else if (blend == BLEND_CONSTANT_ALPHA)
+			out = s * constant_alpha[3] + d * (1.0f - constant_alpha[3]);
 		argb |= to_byte(out) << shift;
 	}
 	return argb;
@@ -254,6 +274,13 @@ static uint32_t points_expected(Point *points)
 	points[n++] = (Point){ "viewport: below it", v->x + 70, v->y + v->height + 2, CLEAR_ARGB, 0 };
 	points[n++] = (Point){ "depth bias: unbiased, hidden", 1040 + 50, 420 + 90, draws[16].argb, 0 };
 	points[n++] = (Point){ "depth bias: biased, shown", 1140 + 50, 420 + 90, draws[18].argb, 0 };
+	for (uint32_t i = 19; i < 23; i += 2) {
+		const Draw *const base = &draws[i];
+		const Draw *const top = &draws[i + 1];
+		points[n++] = (Point){ "constant blend's base alone", base->x + 50, base->y + 40, base->argb, 0 };
+		points[n++] = (Point){ "constant blend", top->x + 50, top->y + 40, blended(top->blend, top->argb, base->argb),
+			BLEND_TOLERANCE };
+	}
 	return n;
 }
 
@@ -288,6 +315,8 @@ static void draw_all(const States *states)
 	for (uint32_t i = 0; i < sizeof draws / sizeof draws[0]; i++) {
 		const Draw *const d = &draws[i];
 		xsdk_gpu_set_blend(&states->blends[d->blend]);
+		if (d->blend == BLEND_CONSTANT_COLOR || d->blend == BLEND_CONSTANT_ALPHA)
+			xsdk_gpu_set_blend_constants(d->blend == BLEND_CONSTANT_COLOR ? constant_color : constant_alpha);
 		xsdk_gpu_set_raster(&states->rasters[d->raster]);
 		xsdk_gpu_set_depth_stencil(d->depth_test ? &states->depth_less : &states->depth_off);
 		if (d->scissor)
@@ -359,7 +388,7 @@ static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint3
 	xsdk_log_write("raster: %u points a frame; %u of %u frames checked held a wrong one, %u points wrong",
 		(unsigned)point_count, (unsigned)frames_wrong, (unsigned)(FRAMES - 1), (unsigned)misses);
 	check("raster: every frame's fence landed", fences_landed);
-	check("raster: blends, write mask, culling, scissor, viewport and depth bias as worked out",
+	check("raster: blends, constant blends, write mask, culling, scissor, viewport and depth bias as worked out",
 		fences_landed && frames_wrong == 0);
 	if (has_display) {
 		check("raster: every frame shown", shown);

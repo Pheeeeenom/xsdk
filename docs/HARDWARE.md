@@ -3353,3 +3353,18 @@ five attributes in one exec: 96 of the 99 that drew, against none of the 68 with
   stops its scissor at the viewport (vulkan4xenon:docs/SUPPORT.md, Pipelines), and the draw covered exactly the 840960
   pixels its triangles clipped to the viewport do (`replay_dump1_layer_after.log`).
 - **xsdk_test passed 316 of 316** with the mask over all six bits (`xsdk_test.log`).
+
+## Blend constants, vulkan4xenon milestone 19's step 3 (2026-10-16)
+
+Vulkan's blend constants take Xenos's constant blend factors, `kConstantColor` to `kOneMinusConstantAlpha`
+(xenia:src/xenia/gpu/xenos.h:719-722), and the colour they read, `RB_BLEND_RED` to `RB_BLEND_ALPHA`, four floats from
+0x2105 (xenia:src/xenia/gpu/register_table.inc:506-509), which Xenia hands D3D12 as its blend factor
+(xenia:src/xenia/gpu/d3d12/d3d12_command_processor.cc:2937-2948). xsdk_test's raster test draws two cells by them
+(`results/2026-10-16-blend-constants/`):
+- **By a colour's channels:** source times (0.25, 0.5, 0.75) plus destination times one less them came out within a
+  step of the CPU's sums, red to blue as the registers run.
+- **By its alpha:** source times 0.6 plus destination times 0.4, the colour channels 0, so a draw reading the colour in
+  place of the alpha would have shown the destination alone.
+- **Each draw's own:** the constants were set before each of the two draws, and each blended by its own.
+- **Written alpha first,** the four registers reversed, both cells missed and every other point held
+  (`xsdk_test_s3_broken.log`). xsdk_test passed 318 of 318 with the user at the pad (`xsdk_test.log`).
