@@ -2,6 +2,8 @@
 builds.sh made.
 
 - 2a (the layer's step 2): the vertex element's picks ignored, the vertex test's picked-components check.
+- 3a (the layer's step 3): DXN fetched as DXT5A, the new formats' check; channels to be read signed read unsigned, the
+  signed check; gamma read as Xenos's biased sign, 2c - 1, the gamma check.
 """
 import pathlib
 import sys
@@ -9,6 +11,11 @@ import sys
 SETS = {
     "2a": [
         ("src/shader.c", "\t\tif (element->components[source])\n", "\t\tif (element->components[source] && false)\n"),
+    ],
+    "3a": [
+        ("src/texture.c", "[XSDK_FORMAT_DXN] = { 49,", "[XSDK_FORMAT_DXN] = { 59,"),
+        ("src/texture.c", "\tTEXTURE_SIGN_SIGNED = 1,\n", "\tTEXTURE_SIGN_SIGNED = 0,\n"),
+        ("src/texture.c", "\tTEXTURE_SIGN_GAMMA = 3,\n", "\tTEXTURE_SIGN_GAMMA = 2,\n"),
     ],
 }
 

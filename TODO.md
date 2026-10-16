@@ -79,6 +79,10 @@ work begins.
   and memory hub busy (docs/HARDWARE.md, "Queries and events"). Left to try: `RB_SAMPLE_COUNT_CTL`'s RESET bit, a
   resolve between the event and the next draw, and the state the console leaves before xsdk's set-up, a register group
   at a time. vulkan4xenon refuses occlusion query pools till then.
+- **Filtering 10-10-10-2 and 16-bit float textures.** The console filtered them wrong halfway between two texels,
+  nearest sampling right (docs/HARDWARE.md, "Texture and vertex formats, vulkan4xenon milestone 20"); vulkan4xenon
+  samples them nearest. To try: `k_2_10_10_10_AS_16_16_16_16` and the `_EXPAND` formats
+  (xenia:src/xenia/gpu/xenos.h:503-505, 530).
 - **Resolving part of a target.** Depth resolves came with vulkan4xenon's milestone 14 (docs/HARDWARE.md, "Depth
   resolves").
 
@@ -106,9 +110,11 @@ work begins.
 - **Image views of some of a texture's levels.** vulkan4xenon refuses a view that doesn't cover every level
   (vulkan4xenon:src/image.c). The sampler's lowest level and count of levels (include/xsdk/texture.h), which took
   Vulkan's `minLod` and `maxLod` in vulkan4xenon milestone 18's step 2, could take a view's range too.
-- **More texture formats.** Milestone 16 covers 13. A Vulkan layer will also want DXN (BC5), 16-bit fixed point,
-  32-bit float, 10-11-11, and the signed and gamma (sRGB) variants: `TextureFormat` (xenos.h:450-532) and
-  `TextureSign` (xenos.h:121-129).
+- **More texture formats.** Milestone 16 covers 13, milestone 28 R32F, and vulkan4xenon's milestone 20 DXN, DXT5A,
+  16-bit fixed point and 10-11-11, and signed and gamma reads (`xsdk_texture_signs`). Left: 32-bit floats in two and
+  four channels (`k_32_32_FLOAT`, `k_32_32_32_32_FLOAT`); DXN and DXT5A read signed, which Xenia doesn't read
+  (vulkan/vulkan_texture_cache.cc:333-337, 384-388), and so the layer's BC4 and BC5 `SNORM`; and the formats no
+  Vulkan format or port has asked for, such as CTX1 and DXT3A (`TextureFormat`, xenos.h:450-532).
 - **Render areas smaller than the framebuffer.** vulkan4xenon refuses them with `VK_ERROR_FEATURE_NOT_PRESENT`
   (vulkan4xenon:docs/ROADMAP.md, milestone 4): a render pass may change only its area, but the SDK's resolves copy and
   clear the whole target from its corner. It needs a resolve of a rectangle at an offset, which Xenos takes from the
@@ -166,8 +172,6 @@ it removes.
 - **The depth-bias slope.** `XsdkRaster` takes it, but milestone 14 tested only the constant term.
 - **Point mip filtering exactly halfway between two levels:** the nearer level, or the one below. Milestone 15
   avoided it.
-- **DXT3 and DXT5 colour blocks whose first endpoint isn't above the second:** four colours, as BC2 and BC3 say, or
-  DXT1's three and transparent black. Milestone 16 kept them four-colour.
 - **Linear filtering's precision.** Milestone 15 bounds it only by its tolerance of 3 per channel.
 - **Which partial constant write hangs the GPU:** the floats, or the lone boolean or loop word. It matters only for
   writing just the changed constants, to save ring space (docs/HARDWARE.md, "Shader constants: partial writes hang the

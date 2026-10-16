@@ -47,6 +47,17 @@ enum {
 	// 32-bit units, depth's 24 bits above stencil's 8, as xsdk_gpu_resolve_depth_texture writes them; sampled, the
 	// depth from 0 to 1 in red (Vulkan's D24_UNORM_S8_UINT, its depth).
 	XSDK_FORMAT_D24S8,
+	// 4 by 4 blocks as 16-bit words, as the DXT formats: red and green, each a DXT5 alpha block (Vulkan's BC5), or red
+	// alone (Vulkan's BC4).
+	XSDK_FORMAT_DXN,
+	XSDK_FORMAT_DXT5A,
+	// 16-bit units, 0 to 1: red; red then green; or red, green, blue then alpha.
+	XSDK_FORMAT_R16,
+	XSDK_FORMAT_R16G16,
+	XSDK_FORMAT_R16G16B16A16,
+	// 32-bit units, 0 to 1, red in the low bits: 11, 11 and 10 bits of red, green and blue; or 10, 11 and 11.
+	XSDK_FORMAT_B10G11R11,
+	XSDK_FORMAT_B11G11R10,
 	XSDK_FORMATS,
 };
 
@@ -58,6 +69,15 @@ enum {
 	XSDK_CHANNEL_ALPHA,
 	XSDK_CHANNEL_ZERO,
 	XSDK_CHANNEL_ONE,
+};
+
+// How xsdk_texture_signs has the GPU read a channel: from 0 to 1; signed, two's complement from -1 to 1, the most
+// negative and the next both -1; or gamma, from 0 to 1 through Xenos's piecewise-linear curve, near sRGB's
+// (xenia:src/xenia/gpu/xenos.h:121-129, xenos.cc:27).
+enum {
+	XSDK_SIGN_UNSIGNED,
+	XSDK_SIGN_SIGNED,
+	XSDK_SIGN_GAMMA,
 };
 
 // The fetch constant's TextureFilter values (xenia:src/xenia/gpu/xenos.h:131-138).
@@ -134,6 +154,9 @@ void xsdk_texture_download_rows(
 // Has the texture return, as red, green, blue and alpha, the XSDK_CHANNEL_* each names; xsdk_texture_init returns
 // the format's own channels.
 void xsdk_texture_swizzle(XsdkTexture *texture, const uint32_t channels[4]);
+// Has the GPU read the format's red, green, blue and alpha, as the format list reads them, as the XSDK_SIGN_* each
+// names; xsdk_texture_init reads them unsigned. Swizzles pick among the channels as read.
+void xsdk_texture_signs(XsdkTexture *texture, const uint32_t signs[4]);
 // Frees what xsdk_texture_create allocated.
 void xsdk_texture_free(XsdkTexture *texture);
 // Works out the sampler's fetch constant bits once, for xsdk_gpu_set_texture.

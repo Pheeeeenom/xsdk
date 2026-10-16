@@ -3408,3 +3408,25 @@ runs (`results/2026-10-16-queries-probe/`, a log a run):
   finishes. Left untried: the RESET bit, a resolve between the event and the next draw, and the rest of the state the
   console leaves before xsdk's set-up. vulkan4xenon refuses occlusion queries until a sequence that writes the counts
   is found (TODO.md).
+
+## Texture and vertex formats, vulkan4xenon milestone 20 (2026-10-16)
+
+The formats vulkan4xenon milestone 20 added, on the zero-fuse console (`results/2026-10-16-vulkan4xenon-milestone-20/`;
+vulkan4xenon:results/2026-10-16-milestone-20/):
+- **Every format's channels as written:** xsdk_test's formats test drew all 24 formats, DXN, DXT5A, the 16-bit fixed
+  point and 10-11-11 ones new, with no wrong point in 59 frames; the largest error in a channel was 4, DXT5's, DXN's
+  and DXT5A's, against the CPU's decoding. Each of vulkan4xenon_test's 47 Vulkan formats, sampled nearest, held every
+  texel's channels, BC's blocks swapped 8 in 16 on their way in as the layer copies them.
+- **Signed and gamma reads:** TextureSign 1 read 8-, 10- and 16-bit channels as two's complement from -1 to 1, the most
+  negative as -1, and 3 read colours through Xenos's piecewise-linear curve (xenia:src/xenia/gpu/xenos.cc:27), each
+  as the CPU worked it out. Filtered, an sRGB image blended its texels after the curve, which is Vulkan's order.
+- **BC2 and BC3 colour blocks** whose first endpoint isn't above the second still took four colours, as Vulkan's do.
+- **A vertex attribute's components picked** in the fetch's destination swizzle (`XsdkVertexElement`'s `components`)
+  came out in place, in xsdk_test's four cells and vulkan4xenon_test's 19 vertex formats.
+- **Linear filtering of 10-10-10-2 and 16-bit floats is wrong.** Halfway between two texels, every 8-bit, 16-bit fixed
+  point and BC format gave their mean within the test's tolerance, but `A2B10G10R10` and `A2R10G10B10`, unsigned and
+  signed, missed all 360 of their probes over 30 frames and the 16-bit floats 270 to 360: one point that should have
+  held 66 33 88 held 06 B3 0A (`vulkan4xenon_test_filtering_counts.log`). Sampled nearest, every one of them held its
+  texels. The cause isn't known. Untried: the formats Xenos has for filtering at more precision,
+  `k_2_10_10_10_AS_16_16_16_16` and `k_16_EXPAND` to `k_16_16_16_16_EXPAND` (xenia:src/xenia/gpu/xenos.h:503-505, 530).
+  vulkan4xenon samples them nearest (TODO.md).

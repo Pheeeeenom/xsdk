@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -16,7 +17,8 @@
 #include "xsdk/texture.h"
 #include "xsdk/thread.h"
 
-// One quad per format, linear and tiled, and every level of six formats, each checked against a decode on the CPU.
+// One quad per format, linear and tiled, every level of six formats, and some formats with their channels picked or
+// read signed or through gamma, each checked against a decode on the CPU.
 
 enum {
 	WIDTH = 1280,
@@ -35,10 +37,13 @@ enum {
 	TEXTURE_SLOT = 0,
 	TEXTURE_SIZE = 32,
 	MIP_LEVELS = 6,
-	// Two pixels a texel.
+	// Two pixels a texel; a pixel a texel in the formats' rows, so every format fits across a 1280-pixel row.
 	CELL_SIZE = 64,
-	// Seventeen formats across a 1280-pixel row.
 	CELL_STEP = 72,
+	FORMAT_CELL_SIZE = 32,
+	FORMAT_CELL_STEP = 40,
+	LINEAR_ROW_Y = 60,
+	TILED_ROW_Y = 110,
 	LEVEL_GAP = 12,
 	MIP_ROW_STEP = 48,
 	// Fixed-point channels convert to float and round once more on the way to the 8-bit target.
@@ -46,7 +51,7 @@ enum {
 	// Decoders round DXT's blends their own way: Xenia's host gave 0xAF for two thirds of full green, not 0xAA. Still
 	// well under the 85 between neighbouring blends of these blocks, so a wrong index or block fails.
 	DXT_BLEND_TOLERANCE = 12,
-	MAX_CELLS = 72,
+	MAX_CELLS = 100,
 	SWIZZLE_ROW_Y = 600,
 	// The upload timed: an R8 tiled texture this many texels on a side, in under this long.
 	TIMED_SIZE = 512,
@@ -61,8 +66,12 @@ enum {
 
 enum {
 	GROUP_FORMATS,
+	// The formats from DXN on, which vulkan4xenon's milestone 20 added.
+	GROUP_NEW_FORMATS,
 	GROUP_MIPS,
 	GROUP_SWIZZLES,
+	GROUP_SIGNED,
+	GROUP_GAMMA,
 	GROUPS,
 };
 
@@ -75,9 +84,15 @@ enum {
 	KIND_HALVES,
 	// One float a channel, red first.
 	KIND_FLOATS,
+	// One 16-bit unit a channel, red first, 0 to 1.
+	KIND_SHORTS,
+	// From here on, blocks of 4 by 4 texels.
 	KIND_DXT1,
 	KIND_DXT3,
 	KIND_DXT5,
+	// Red and green each in a block as DXT5's alpha; or red alone.
+	KIND_DXN,
+	KIND_DXT5A,
 };
 
 typedef struct {
@@ -110,6 +125,13 @@ static const FormatSpec specs[XSDK_FORMATS] = {
 	[XSDK_FORMAT_R32F] = { "R32F", KIND_FLOATS, 4, { 32, 0, 0, 0 }, { 0 } },
 	// Its depth as red, stencil 0.
 	[XSDK_FORMAT_D24S8] = { "D24S8", KIND_PACKED, 4, { 24, 0, 0, 0 }, { 8, 0, 0, 0 } },
+	[XSDK_FORMAT_DXN] = { "DXN", KIND_DXN, 16, { 0 }, { 0 } },
+	[XSDK_FORMAT_DXT5A] = { "DXT5A", KIND_DXT5A, 8, { 0 }, { 0 } },
+	[XSDK_FORMAT_R16] = { "R16", KIND_SHORTS, 2, { 16, 0, 0, 0 }, { 0 } },
+	[XSDK_FORMAT_R16G16] = { "R16G16", KIND_SHORTS, 4, { 16, 16, 0, 0 }, { 0 } },
+	[XSDK_FORMAT_R16G16B16A16] = { "R16G16B16A16", KIND_SHORTS, 8, { 16, 16, 16, 16 }, { 0 } },
+	[XSDK_FORMAT_B10G11R11] = { "B10G11R11", KIND_PACKED, 4, { 11, 11, 10, 0 }, { 0, 11, 22, 0 } },
+	[XSDK_FORMAT_B11G11R10] = { "B11G11R10", KIND_PACKED, 4, { 10, 11, 11, 0 }, { 0, 10, 21, 0 } },
 };
 
 // One format per kind of block: 1, 2, 4 and 8 bytes a texel, and 8 and 16 bytes a 4 by 4 block.
@@ -128,13 +150,42 @@ static const Swizzled swizzled[] = {
 	{ "R8G8 as RRRG", XSDK_FORMAT_R8G8, { XSDK_CHANNEL_RED, XSDK_CHANNEL_RED, XSDK_CHANNEL_RED, XSDK_CHANNEL_GREEN } },
 };
 
+// Textures drawn with their channels read signed, or through gamma (xsdk_texture_signs).
+typedef struct {
+	const char *name;
+	uint32_t format;
+	uint32_t signs[4];
+} Signed;
+
+enum {
+	U = XSDK_SIGN_UNSIGNED,
+	S = XSDK_SIGN_SIGNED,
+	G = XSDK_SIGN_GAMMA,
+};
+
+static const Signed signed_textures[] = {
+	{ "R8 signed", XSDK_FORMAT_R8, { S, U, U, U } },
+	{ "R8G8 signed", XSDK_FORMAT_R8G8, { S, S, U, U } },
+	{ "R8G8B8A8 signed", XSDK_FORMAT_R8G8B8A8, { S, S, S, S } },
+	{ "A2B10G10R10 signed", XSDK_FORMAT_A2B10G10R10, { S, S, S, S } },
+	{ "R16 signed", XSDK_FORMAT_R16, { S, U, U, U } },
+	{ "R16G16B16A16 signed", XSDK_FORMAT_R16G16B16A16, { S, S, S, S } },
+	{ "R8 gamma", XSDK_FORMAT_R8, { G, U, U, U } },
+	{ "R8G8B8A8 gamma", XSDK_FORMAT_R8G8B8A8, { G, G, G, U } },
+	{ "B8G8R8A8 gamma", XSDK_FORMAT_B8G8R8A8, { G, G, G, U } },
+	{ "DXT1 gamma", XSDK_FORMAT_DXT1, { G, G, G, U } },
+	{ "DXT5 gamma", XSDK_FORMAT_DXT5, { G, G, G, U } },
+};
+
 enum {
 	MIPPED = sizeof mipped_formats / sizeof mipped_formats[0],
 	SWIZZLED = sizeof swizzled / sizeof swizzled[0],
-	// Each format linear, then tiled, then the mipped ones, then the swizzled ones.
+	SIGNED = sizeof signed_textures / sizeof signed_textures[0],
+	// Each format linear, then tiled, then the mipped ones, the swizzled ones and the signed ones.
 	FIRST_MIPPED = XSDK_FORMATS * 2,
 	FIRST_SWIZZLED = FIRST_MIPPED + MIPPED,
-	TEXTURES = FIRST_SWIZZLED + SWIZZLED,
+	FIRST_SIGNED = FIRST_SWIZZLED + SWIZZLED,
+	TEXTURES = FIRST_SIGNED + SIGNED,
 };
 
 // Exact half floats, as bits and as values; above 1 and below 0 clamp in the 8-bit target.
@@ -159,8 +210,9 @@ typedef struct {
 	uint32_t y;
 	uint32_t width;
 	uint32_t height;
-	// Its entry in swizzled, for a cell of GROUP_SWIZZLES.
+	// Its entry in swizzled, for a cell of GROUP_SWIZZLES, or in signed_textures, for GROUP_SIGNED and GROUP_GAMMA.
 	const Swizzled *swizzle;
+	const Signed *signs;
 } Cell;
 
 typedef struct {
@@ -186,9 +238,14 @@ static uint32_t level_size(uint32_t size, uint32_t level)
 	return size >> level ? size >> level : 1;
 }
 
+static bool is_dxt_kind(uint32_t kind)
+{
+	return kind >= KIND_DXT1;
+}
+
 static bool is_dxt(uint32_t format)
 {
-	return specs[format].kind >= KIND_DXT1;
+	return is_dxt_kind(specs[format].kind);
 }
 
 static uint32_t blocks(uint32_t texels, uint32_t format)
@@ -330,6 +387,14 @@ static void encode_block(uint32_t format, uint32_t level, uint32_t bx, uint32_t 
 	} else if (spec->kind == KIND_HALVES) {
 		for (uint32_t channel = 0; channel < spec->block_bytes / 2; channel++)
 			put_u16(out + 2 * channel, half_for(format, level, channel, bx, by));
+	} else if (spec->kind == KIND_SHORTS) {
+		for (uint32_t channel = 0; channel < spec->block_bytes / 2; channel++)
+			put_u16(out + 2 * channel, (uint16_t)quantise(pattern(format, level, channel, bx, by), 16));
+	} else if (spec->kind == KIND_DXN) {
+		dxt5_alpha(level, bx, by, out);
+		dxt5_alpha(level + 1, bx + 2, by + 1, out + 8);
+	} else if (spec->kind == KIND_DXT5A) {
+		dxt5_alpha(level, bx, by, out);
 	} else if (spec->kind == KIND_FLOATS) {
 		// The halves' values, past 0 and 1 included.
 		for (uint32_t channel = 0; channel < spec->block_bytes / 4; channel++)
@@ -400,42 +465,103 @@ static float dxt5_alpha_value(const uint8_t *block, uint32_t texel, bool *blende
 	return ((float)(6 - index) * first + (float)(index - 1) * second) / 5.0f;
 }
 
-// What the GPU should draw for a texel: the format's channels as 8-bit ARGB, missing ones 0 and alpha 255.
-static uint32_t decode_texel(uint32_t format, uint32_t level, uint32_t x, uint32_t y, uint32_t *tolerance)
+// A texel's channels as stored, for a format of fixed-point channels: each one's bits, and how many; 0 for none.
+typedef struct {
+	uint32_t fields[CHANNELS];
+	uint32_t bits[CHANNELS];
+} Fields;
+
+static void fields_of(const FormatSpec *spec, const uint8_t *block, Fields *out)
 {
-	const FormatSpec *const spec = &specs[format];
-	uint8_t block[MAX_BLOCK_BYTES];
-	encode_block(format, level, is_dxt(format) ? x / 4 : x, is_dxt(format) ? y / 4 : y, block);
-	float channels[CHANNELS] = { 0.0f, 0.0f, 0.0f, 255.0f };
-	bool blended = false;
-	if (spec->kind == KIND_PACKED) {
-		uint32_t unit = 0;
-		for (uint32_t i = 0; i < spec->block_bytes; i++)
-			unit = unit << 8 | block[i];
-		for (uint32_t channel = 0; channel < CHANNELS; channel++) {
-			const uint32_t max = (1u << spec->bits[channel]) - 1;
-			if (spec->bits[channel])
-				channels[channel] = (float)(unit >> spec->shifts[channel] & max) * 255.0f / (float)max;
-		}
-	} else if (spec->kind == KIND_BYTES) {
-		for (uint32_t channel = 0; channel < CHANNELS; channel++)
-			if (spec->bits[channel])
-				channels[channel] = (float)block[spec->shifts[channel]];
-	} else if (spec->kind == KIND_HALVES) {
+	*out = (Fields){ { 0 }, { 0 } };
+	uint32_t unit = 0;
+	for (uint32_t i = 0; i < spec->block_bytes && spec->kind == KIND_PACKED; i++)
+		unit = unit << 8 | block[i];
+	for (uint32_t channel = 0; channel < CHANNELS; channel++) {
+		const uint32_t bits = spec->bits[channel];
+		if (spec->kind == KIND_PACKED && bits)
+			out->fields[channel] = unit >> spec->shifts[channel] & ((1u << bits) - 1);
+		else if (spec->kind == KIND_BYTES && bits)
+			out->fields[channel] = block[spec->shifts[channel]];
+		else if (spec->kind == KIND_SHORTS && bits)
+			out->fields[channel] = get_u16(block + 2 * channel);
+		else
+			continue;
+		out->bits[channel] = bits;
+	}
+}
+
+// A channel read signed: its bits two's complement, from -1 to 1, the most negative read as -1.
+static float signed_value(uint32_t field, uint32_t bits)
+{
+	const int32_t number = field >> (bits - 1) ? (int32_t)field - (int32_t)(1u << bits) : (int32_t)field;
+	const float value = (float)number / (float)((1u << (bits - 1)) - 1);
+	return value < -1.0f ? -1.0f : value;
+}
+
+// Xenos's gamma curve, 255ths to 1023ths in four straight pieces of slopes 1, 2, 4 and 8, from 0, 64, 96 and 192
+// (xenia:src/xenia/gpu/xenos.cc:27-65).
+static float gamma_linear(float gamma)
+{
+	const float g = gamma * 255.0f;
+	const float slope = g >= 192.0f ? 8.0f : g >= 96.0f ? 4.0f : g >= 64.0f ? 2.0f : 1.0f;
+	const float offset = g >= 192.0f ? -1024.0f : g >= 96.0f ? -256.0f : g >= 64.0f ? -64.0f : 0.0f;
+	const float base = g * slope + offset;
+	return (base + truncf(base * slope / 1024.0f)) / 1023.0f;
+}
+
+// The texel's channels from 0 to 255, read unsigned; returns whether a decoder may round a blend its own way.
+static bool decode_channels(const FormatSpec *spec, const uint8_t *block, uint32_t x, uint32_t y, float *channels)
+{
+	Fields fields;
+	fields_of(spec, block, &fields);
+	for (uint32_t channel = 0; channel < CHANNELS; channel++) {
+		if (fields.bits[channel])
+			channels[channel] = (float)fields.fields[channel] * 255.0f / (float)((1u << fields.bits[channel]) - 1);
+	}
+	if (spec->kind == KIND_HALVES) {
 		for (uint32_t channel = 0; channel < spec->block_bytes / 2; channel++)
 			channels[channel] = half_value(get_u16(block + 2 * channel)) * 255.0f;
 	} else if (spec->kind == KIND_FLOATS) {
 		for (uint32_t channel = 0; channel < spec->block_bytes / 4; channel++)
 			channels[channel] = get_float(block + 4 * channel) * 255.0f;
-	} else {
-		const uint32_t texel = y % 4 * 4 + x % 4;
-		blended = decode_colour(spec->kind == KIND_DXT1 ? block : block + 8, texel, spec->kind == KIND_DXT1, channels);
-		bool alpha_blended = false;
-		if (spec->kind == KIND_DXT3)
-			channels[ALPHA] = (float)(get_u16(block + texel / 4 * 2) >> (texel % 4 * 4) & 15) * 17.0f;
-		else if (spec->kind == KIND_DXT5)
-			channels[ALPHA] = dxt5_alpha_value(block, texel, &alpha_blended);
-		blended = blended || alpha_blended;
+	}
+	if (!is_dxt_kind(spec->kind))
+		return false;
+	const uint32_t texel = y % 4 * 4 + x % 4;
+	bool blended = false;
+	bool second = false;
+	if (spec->kind == KIND_DXN || spec->kind == KIND_DXT5A) {
+		channels[0] = dxt5_alpha_value(block, texel, &blended);
+		if (spec->kind == KIND_DXN)
+			channels[1] = dxt5_alpha_value(block + 8, texel, &second);
+		return blended || second;
+	}
+	blended = decode_colour(spec->kind == KIND_DXT1 ? block : block + 8, texel, spec->kind == KIND_DXT1, channels);
+	if (spec->kind == KIND_DXT3)
+		channels[ALPHA] = (float)(get_u16(block + texel / 4 * 2) >> (texel % 4 * 4) & 15) * 17.0f;
+	else if (spec->kind == KIND_DXT5)
+		channels[ALPHA] = dxt5_alpha_value(block, texel, &second);
+	return blended || second;
+}
+
+// What the GPU should draw for a texel: the format's channels as 8-bit ARGB, missing ones 0 and alpha 255, each read
+// as signs has it, or unsigned for NULL.
+static uint32_t decode_texel(
+	uint32_t format, uint32_t level, uint32_t x, uint32_t y, const uint32_t *signs, uint32_t *tolerance)
+{
+	const FormatSpec *const spec = &specs[format];
+	uint8_t block[MAX_BLOCK_BYTES];
+	encode_block(format, level, is_dxt(format) ? x / 4 : x, is_dxt(format) ? y / 4 : y, block);
+	float channels[CHANNELS] = { 0.0f, 0.0f, 0.0f, 255.0f };
+	const bool blended = decode_channels(spec, block, x, y, channels);
+	Fields fields;
+	fields_of(spec, block, &fields);
+	for (uint32_t channel = 0; channel < CHANNELS && signs; channel++) {
+		if (signs[channel] == XSDK_SIGN_SIGNED && fields.bits[channel])
+			channels[channel] = signed_value(fields.fields[channel], fields.bits[channel]) * 255.0f;
+		else if (signs[channel] == XSDK_SIGN_GAMMA)
+			channels[channel] = gamma_linear(channels[channel] / 255.0f) * 255.0f;
 	}
 	*tolerance = blended ? DXT_BLEND_TOLERANCE : UNORM_TOLERANCE;
 	return to_byte(channels[ALPHA]) << 24 | to_byte(channels[0]) << 16 | to_byte(channels[1]) << 8 |
@@ -456,8 +582,10 @@ static uint32_t texture_format(uint32_t texture)
 {
 	if (texture < FIRST_MIPPED)
 		return texture % XSDK_FORMATS;
-	return texture < FIRST_SWIZZLED ? mipped_formats[texture - FIRST_MIPPED]
-									: swizzled[texture - FIRST_SWIZZLED].format;
+	if (texture < FIRST_SWIZZLED)
+		return mipped_formats[texture - FIRST_MIPPED];
+	return texture < FIRST_SIGNED ? swizzled[texture - FIRST_SWIZZLED].format
+								  : signed_textures[texture - FIRST_SIGNED].format;
 }
 
 static bool make_texture(XsdkTexture *texture, uint32_t which)
@@ -480,32 +608,50 @@ static bool make_texture(XsdkTexture *texture, uint32_t which)
 		xsdk_texture_upload(texture, level, level_data, columns * block_bytes);
 		xsdk_gpu_invalidate(texture->address, texture->size_bytes);
 	}
-	if (which >= FIRST_SWIZZLED)
+	if (which >= FIRST_SWIZZLED && which < FIRST_SIGNED)
 		xsdk_texture_swizzle(texture, swizzled[which - FIRST_SWIZZLED].channels);
+	if (which >= FIRST_SIGNED)
+		xsdk_texture_signs(texture, signed_textures[which - FIRST_SIGNED].signs);
 	return true;
 }
 
-// Columns of formats, linear above tiled, then a row of levels for each mipped format, then the swizzled ones.
+// The signed cells read some channels signed; the others, through gamma.
+static uint32_t signed_group(const Signed *signs)
+{
+	for (uint32_t i = 0; i < CHANNELS; i++) {
+		if (signs->signs[i] == XSDK_SIGN_SIGNED)
+			return GROUP_SIGNED;
+	}
+	return GROUP_GAMMA;
+}
+
+// Columns of formats, linear above tiled, then a row of levels for each mipped format, then the swizzled and the signed
+// ones.
 static uint32_t make_cells(Cell *cells)
 {
 	uint32_t count = 0;
 	for (uint32_t texture = 0; texture < XSDK_FORMATS * 2; texture++) {
 		const bool tiled = texture >= XSDK_FORMATS;
-		cells[count++] = (Cell){ texture, texture % XSDK_FORMATS, GROUP_FORMATS, 0, tiled,
-			40 + texture % XSDK_FORMATS * CELL_STEP, tiled ? 160 : 60, CELL_SIZE, CELL_SIZE, NULL };
+		const uint32_t format = texture % XSDK_FORMATS;
+		cells[count++] = (Cell){ texture, format, format < XSDK_FORMAT_DXN ? GROUP_FORMATS : GROUP_NEW_FORMATS, 0,
+			tiled, 40 + format * FORMAT_CELL_STEP, tiled ? TILED_ROW_Y : LINEAR_ROW_Y, FORMAT_CELL_SIZE,
+			FORMAT_CELL_SIZE, NULL, NULL };
 	}
 	for (uint32_t i = 0; i < MIPPED; i++) {
 		uint32_t x = 40;
 		for (uint32_t level = 0; level < MIP_LEVELS; level++) {
 			const uint32_t size = level_size(TEXTURE_SIZE, level);
 			cells[count++] = (Cell){ XSDK_FORMATS * 2 + i, mipped_formats[i], GROUP_MIPS, level, true, x,
-				280 + i * MIP_ROW_STEP, size, size, NULL };
+				280 + i * MIP_ROW_STEP, size, size, NULL, NULL };
 			x += size + LEVEL_GAP;
 		}
 	}
 	for (uint32_t i = 0; i < SWIZZLED; i++)
 		cells[count++] = (Cell){ FIRST_SWIZZLED + i, swizzled[i].format, GROUP_SWIZZLES, 0, true, 40 + i * CELL_STEP,
-			SWIZZLE_ROW_Y, CELL_SIZE, CELL_SIZE, &swizzled[i] };
+			SWIZZLE_ROW_Y, CELL_SIZE, CELL_SIZE, &swizzled[i], NULL };
+	for (uint32_t i = 0; i < SIGNED; i++)
+		cells[count++] = (Cell){ FIRST_SIGNED + i, signed_textures[i].format, signed_group(&signed_textures[i]), 0,
+			true, 40 + (SWIZZLED + i) * CELL_STEP, SWIZZLE_ROW_Y, CELL_SIZE, CELL_SIZE, NULL, &signed_textures[i] };
 	return count;
 }
 
@@ -513,13 +659,15 @@ static uint32_t make_cells(Cell *cells)
 static uint32_t expected_argb(const Cell *cell, uint32_t x, uint32_t y, uint32_t *tolerance)
 {
 	const uint32_t size = level_size(TEXTURE_SIZE, cell->level);
-	const uint32_t argb = decode_texel(
-		cell->format, cell->level, (x - cell->x) * size / cell->width, (y - cell->y) * size / cell->height, tolerance);
+	const uint32_t argb = decode_texel(cell->format, cell->level, (x - cell->x) * size / cell->width,
+		(y - cell->y) * size / cell->height, cell->signs ? cell->signs->signs : NULL, tolerance);
 	return cell->swizzle ? swizzle_argb(argb, cell->swizzle->channels) : argb;
 }
 
 static const char *cell_name(const Cell *cell)
 {
+	if (cell->signs)
+		return cell->signs->name;
 	return cell->swizzle ? cell->swizzle->name : specs[cell->format].name;
 }
 
@@ -590,7 +738,7 @@ static uint32_t cell_wrong(
 // Each format's largest error in any channel, on one line.
 static void log_largest(const uint32_t largest[XSDK_FORMATS])
 {
-	char line[256];
+	char line[512];
 	uint32_t length = 0;
 	for (uint32_t format = 0; format < XSDK_FORMATS && length < sizeof line; format++)
 		length += (uint32_t)snprintf(line + length, sizeof line - length, "%s%s %u", format ? ", " : "",
@@ -675,8 +823,11 @@ static void draw_cells(const Scene *scene)
 
 static const char *const group_checks[GROUPS] = {
 	"formats: every format, linear and tiled, as decoded on the CPU",
+	"formats: DXN, DXT5A, 16-bit fixed point and 10-11-11, linear and tiled, as decoded on the CPU",
 	"formats: every level of six formats' mipped textures, as decoded on the CPU",
 	"formats: R8 and R8G8 with their channels picked, as decoded on the CPU",
+	"formats: 8-, 10- and 16-bit channels read signed, two's complement from -1 to 1, as decoded on the CPU",
+	"formats: 8-bit and DXT colours read through gamma, Xenos's piecewise-linear curve, as decoded on the CPU",
 };
 
 // Each frame draws every cell into eDRAM, resolves into the buffer not on screen, and shows it.

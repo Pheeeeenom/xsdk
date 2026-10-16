@@ -59,6 +59,12 @@ enum {
 	SWIZZLE_SHIFT = 1,
 	SWIZZLE_BITS = 3,
 	SWIZZLE_MASK = 0xFFF,
+	// TextureSign, two bits a component from x (xenia:src/xenia/gpu/xenos.h:121-129, 1202-1205).
+	SIGN_SHIFT = 2,
+	SIGN_BITS = 2,
+	SIGN_MASK = 0xFF,
+	TEXTURE_SIGN_SIGNED = 1,
+	TEXTURE_SIGN_GAMMA = 3,
 	MAG_FILTER_SHIFT = 19,
 	MIN_FILTER_SHIFT = 21,
 	MIP_FILTER_SHIFT = 23,
@@ -131,6 +137,17 @@ static const FormatInfo formats[XSDK_FORMATS] = {
 	[XSDK_FORMAT_R32F] = { 36, 0, 2, ENDIAN_8IN32, SWIZZLE(X, ZERO, ZERO, ONE) },
 	// k_24_8, which Xenia samples as its depth (xenos.h:498; vulkan/vulkan_texture_cache.cc:209-212).
 	[XSDK_FORMAT_D24S8] = { 22, 0, 2, ENDIAN_8IN32, SWIZZLE(X, ZERO, ZERO, ONE) },
+	// k_DXN and k_DXT5A, which Xenia reads as Vulkan's BC5 and BC4 (xenos.h:525, 535;
+	// vulkan/vulkan_texture_cache.cc:333-337, 384-388).
+	[XSDK_FORMAT_DXN] = { 49, 2, 4, ENDIAN_8IN16, SWIZZLE(X, Y, ZERO, ONE) },
+	[XSDK_FORMAT_DXT5A] = { 59, 2, 3, ENDIAN_8IN16, SWIZZLE(X, ZERO, ZERO, ONE) },
+	// k_16, k_16_16 and k_16_16_16_16, read from 0 to 1 (xenos.h:500-502; vulkan/vulkan_texture_cache.cc:217-234).
+	[XSDK_FORMAT_R16] = { 24, 0, 1, ENDIAN_8IN16, SWIZZLE(X, ZERO, ZERO, ONE) },
+	[XSDK_FORMAT_R16G16] = { 25, 0, 2, ENDIAN_8IN16, SWIZZLE(X, Y, ZERO, ONE) },
+	[XSDK_FORMAT_R16G16B16A16] = { 26, 0, 3, ENDIAN_8IN16, SWIZZLE(X, Y, Z, W) },
+	// k_10_11_11 and k_11_11_10, fixed point, red lowest (xenos.h:492-493; shaders/pixel_formats.xesli:450-484).
+	[XSDK_FORMAT_B10G11R11] = { 16, 0, 2, ENDIAN_8IN32, SWIZZLE(X, Y, Z, ONE) },
+	[XSDK_FORMAT_B11G11R10] = { 17, 0, 2, ENDIAN_8IN32, SWIZZLE(X, Y, Z, ONE) },
 };
 
 static NTSTATUS reject(const char *why)
@@ -413,6 +430,28 @@ void xsdk_texture_swizzle(XsdkTexture *texture, const uint32_t channels[4])
 		swizzle |= channel_source(own, channels[i]) << i * SWIZZLE_BITS;
 	}
 	texture->fetch[3] = (texture->fetch[3] & ~((uint32_t)SWIZZLE_MASK << SWIZZLE_SHIFT)) | swizzle << SWIZZLE_SHIFT;
+}
+
+// Xenos's TextureSign for each XSDK_SIGN_*.
+static const uint8_t texture_signs[] = {
+	[XSDK_SIGN_UNSIGNED] = 0,
+	[XSDK_SIGN_SIGNED] = TEXTURE_SIGN_SIGNED,
+	[XSDK_SIGN_GAMMA] = TEXTURE_SIGN_GAMMA,
+};
+
+// The signedness applies to the data's components, before the swizzle (xenia:src/xenia/gpu/xenos.h:1195-1196), so each
+// channel's goes to the component the format reads it from.
+void xsdk_texture_signs(XsdkTexture *texture, const uint32_t signs[4])
+{
+	const uint32_t own = formats[texture->format].swizzle;
+	uint32_t fields = 0;
+	for (uint32_t i = 0; i < 4; i++) {
+		assert(signs[i] <= XSDK_SIGN_GAMMA);
+		const uint32_t component = own >> i * SWIZZLE_BITS & 7;
+		if (component <= W)
+			fields |= (uint32_t)texture_signs[signs[i]] << component * SIGN_BITS;
+	}
+	texture->fetch[0] = (texture->fetch[0] & ~((uint32_t)SIGN_MASK << SIGN_SHIFT)) | fields << SIGN_SHIFT;
 }
 
 void xsdk_texture_free(XsdkTexture *texture)
