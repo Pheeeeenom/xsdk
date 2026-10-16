@@ -236,6 +236,8 @@ void xsdk_gpu_put_window(GpuPackets *packets, uint32_t width, uint32_t height);
 void xsdk_gpu_put_coherency(GpuPackets *packets, uint32_t actions, uint32_t base, uint32_t size_bytes);
 // The eDRAM layout for a colour and depth target of this size, with the last target's samples, where it was placed.
 void xsdk_gpu_put_surface(GpuPackets *packets, uint32_t width, uint32_t height);
+// The XSDK_TARGET_* the last target's colour is.
+uint32_t xsdk_gpu_color_target_format(void);
 // RB_COPY_CONTROL's sample select that averages the last target's samples.
 uint32_t xsdk_gpu_copy_sample_select(void);
 // For a resolve: draws need the target set again.

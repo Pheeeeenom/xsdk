@@ -71,6 +71,7 @@ int main(int argc, char **argv)
 	test_anisotropy();
 	test_formats();
 	test_multisample();
+	test_targets();
 	test_vertex();
 	test_replay();
 	test_microcode();

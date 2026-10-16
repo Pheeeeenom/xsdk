@@ -62,6 +62,8 @@ enum {
 	// RB_SURFACE_INFO's fields (xenia:src/xenia/gpu/registers.h:670-679).
 	SURFACE_SAMPLES_SHIFT = 16,
 	SURFACE_HIZ_PITCH_SHIFT = 18,
+	// RB_COLOR_INFO's color_format (xenia:src/xenia/gpu/registers.h:736-750).
+	COLOR_FORMAT_SHIFT = 16,
 	EDRAM_MODE_COLOR_DEPTH = 4,
 	// libxenon's control state from RB_DEPTHCONTROL on, less depth and culling (xe.c:1403-1416).
 	BLEND_ONE_ZERO = 0x00010001,
@@ -149,8 +151,9 @@ static const uint32_t copy_sample_selects[] = { 0, 4, 6 };
 // The last target's samples a pixel, and where xsdk_gpu_set_target_samples_at put its colour and depth, in eDRAM tiles.
 static uint32_t target_samples = 1;
 static bool target_placed;
-static uint32_t placed_color_tile;
 static uint32_t placed_depth_tile;
+// Its colour target, the tile kept only when placed.
+static XsdkColorTarget color_target = { .format = XSDK_TARGET_8_8_8_8 };
 // A resolve leaves eDRAM copying with the viewport transform off, where a draw hung the GPU (docs/HARDWARE.md).
 static bool target_undone;
 
@@ -228,6 +231,22 @@ uint32_t xsdk_gpu_target_tiles(uint32_t width, uint32_t height)
 	return xsdk_gpu_target_sample_tiles(width, height, 1);
 }
 
+// A 64-bit target's rows take twice the tiles (xenia:src/xenia/gpu/xenos.h:321-326, 427-437).
+static bool is_64_bit(uint32_t format)
+{
+	return format == XSDK_TARGET_16_16_16_16 || format == XSDK_TARGET_16_16_16_16_FLOAT;
+}
+
+uint32_t xsdk_gpu_color_target_tiles(uint32_t width, uint32_t height, uint32_t format)
+{
+	return xsdk_gpu_target_tiles(width, height) << is_64_bit(format);
+}
+
+uint32_t xsdk_gpu_color_target_format(void)
+{
+	return color_target.format;
+}
+
 uint32_t xsdk_gpu_copy_sample_select(void)
 {
 	return copy_sample_selects[samples_log2(target_samples)];
@@ -243,14 +262,15 @@ static uint32_t msaa_enable(void)
 void xsdk_gpu_put_surface(GpuPackets *packets, uint32_t width, uint32_t height)
 {
 	const uint32_t target_tiles = xsdk_gpu_target_sample_tiles(width, height, target_samples);
-	const uint32_t color_tile = target_placed ? placed_color_tile : target_tiles;
+	const uint32_t color_tile = target_placed ? color_target.tile : target_tiles;
 	const uint32_t depth_tile = target_placed ? placed_depth_tile : 0;
-	assert(color_tile + target_tiles <= XSDK_EDRAM_TILES && depth_tile + target_tiles <= XSDK_EDRAM_TILES);
+	assert(color_tile + (target_tiles << is_64_bit(color_target.format)) <= XSDK_EDRAM_TILES &&
+		depth_tile + target_tiles <= XSDK_EDRAM_TILES);
 	// The pitch counts pixels (xenia:src/xenia/gpu/xenos.h:426-437).
 	const uint32_t edram_pitch = tiles_across(width, target_samples) * TILE_WIDTH / samples_across(target_samples);
 	const uint32_t surface[] = { edram_pitch | samples_log2(target_samples) << SURFACE_SAMPLES_SHIFT |
 			edram_pitch << SURFACE_HIZ_PITCH_SHIFT,
-		color_tile, depth_tile };
+		color_tile | color_target.format << COLOR_FORMAT_SHIFT, depth_tile };
 	gpu_put_registers(packets, RB_SURFACE_INFO, surface, 3);
 	// Resolves too take the target's samples here, else they miss pixels or copy zeros (docs/HARDWARE.md).
 	gpu_put_register(packets, PA_SC_AA_CONFIG, aa_configs[samples_log2(target_samples)]);
@@ -300,6 +320,7 @@ void xsdk_gpu_set_target_samples(uint32_t width, uint32_t height, uint32_t sampl
 	assert(samples == 1 || samples == 2 || samples == 4);
 	target_samples = samples;
 	target_placed = false;
+	color_target = (XsdkColorTarget){ .format = XSDK_TARGET_8_8_8_8 };
 	put_target(width, height);
 }
 
@@ -315,7 +336,7 @@ void xsdk_gpu_set_target_samples_at(
 	assert(samples == 1 || samples == 2 || samples == 4);
 	target_samples = samples;
 	target_placed = true;
-	placed_color_tile = color_tile;
+	color_target = (XsdkColorTarget){ .format = XSDK_TARGET_8_8_8_8, .tile = color_tile };
 	placed_depth_tile = depth_tile;
 	put_target(width, height);
 }
@@ -323,6 +344,17 @@ void xsdk_gpu_set_target_samples_at(
 void xsdk_gpu_set_target_at(uint32_t width, uint32_t height, uint32_t color_tile, uint32_t depth_tile)
 {
 	xsdk_gpu_set_target_samples_at(width, height, 1, color_tile, depth_tile);
+}
+
+void xsdk_gpu_set_targets(
+	uint32_t width, uint32_t height, const XsdkColorTarget *targets, uint32_t count, uint32_t depth_tile)
+{
+	assert(count == 1);
+	target_samples = 1;
+	target_placed = true;
+	color_target = targets[0];
+	placed_depth_tile = depth_tile;
+	put_target(width, height);
 }
 
 // IM_LOAD takes address | type, then the size in dwords (xenia:src/xenia/gpu/command_processor.cc:1535-1539).

@@ -142,6 +142,38 @@ void xsdk_gpu_set_target_samples(uint32_t width, uint32_t height, uint32_t sampl
 void xsdk_gpu_set_target_samples_at(
 	uint32_t width, uint32_t height, uint32_t samples, uint32_t color_tile, uint32_t depth_tile);
 uint32_t xsdk_gpu_target_sample_tiles(uint32_t width, uint32_t height, uint32_t samples);
+
+// Colour target formats (xenia:src/xenia/gpu/xenos.h:299-313); a 64-bit one takes twice the tiles (xenos.h:321-326,
+// 427-437). The set above draws 8_8_8_8.
+enum {
+	XSDK_TARGET_8_8_8_8 = 0,
+	XSDK_TARGET_2_10_10_10 = 2,
+	// 7e3 floats from 0 to 31.875 in red, green and blue, and alpha in 2 bits.
+	XSDK_TARGET_2_10_10_10_FLOAT = 3,
+	// Fixed point from -32 to 32.
+	XSDK_TARGET_16_16_16_16 = 5,
+	XSDK_TARGET_16_16_FLOAT = 6,
+	XSDK_TARGET_16_16_16_16_FLOAT = 7,
+	XSDK_TARGET_32_FLOAT = 14,
+};
+
+// A colour target: its format and the eDRAM tile it starts at.
+typedef struct {
+	uint32_t format;
+	uint32_t tile;
+} XsdkColorTarget;
+
+// The eDRAM tiles a colour target this size and format takes.
+uint32_t xsdk_gpu_color_target_tiles(uint32_t width, uint32_t height, uint32_t format);
+// As xsdk_gpu_set_target_at, with count colour targets, each of its own format and tile; count is 1.
+void xsdk_gpu_set_targets(
+	uint32_t width, uint32_t height, const XsdkColorTarget *targets, uint32_t count, uint32_t depth_tile);
+// Queues copying colour target `target` of the last xsdk_gpu_set_targets into a tiled texture drawn at its size, its
+// whole pitch, converted to the texture's format, then clearing the target to clear_rgba as xsdk_gpu_set_resolve_clears
+// says. 8_8_8_8 goes into A8R8G8B8, R8G8B8A8 or B8G8R8A8; 2_10_10_10 into A2B10G10R10; 16_16_FLOAT into R16G16F;
+// 32_FLOAT into R32F; the 7e3 one and the 16-bit fixed and float ones of four channels into R16G16B16A16F.
+void xsdk_gpu_resolve_target(uint32_t target, const XsdkTexture *texture, const float clear_rgba[4]);
+
 // Loads both shaders with IM_LOAD and sets the program registers; a resolve replaces the vertex shader.
 void xsdk_gpu_set_shaders(const XsdkShader *vertex, const XsdkShader *pixel);
 // After the CPU writes vertices, indices or texels, xsdk_texture_upload's included, and before the draws that read

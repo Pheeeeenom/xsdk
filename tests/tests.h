@@ -133,6 +133,9 @@ void test_formats(void);
 // Multisampled targets (milestone 32).
 void test_multisample(void);
 
+// Render target formats (vulkan4xenon milestone 25).
+void test_targets(void);
+
 // Vertex input (milestone 17).
 void test_vertex(void);
 
