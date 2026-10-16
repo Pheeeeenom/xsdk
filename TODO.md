@@ -54,6 +54,11 @@ work begins.
 
 ## Toolchain
 
+- **xost's hardware loops, past vulkan4xenon milestone 21** (xenos-toolchain/docs/xsc.md, "Loops a block counts"). A
+  break on data needs each vertex or pixel that broke to stop changing what the loop carries, as LOOP_END breaks only
+  when all 64 agree (xenia:src/xenia/gpu/ucode.h:372-373): a flag each pass's values are selected by would do. Also
+  unbuilt: `continue`, a loop a block counts inside another loop or an if/else on data, and a sample at coordinates
+  a pass works out.
 - **Vulkan command recording 10-12% slower since the calling-convention switch** (milestone 22, docs/HARDWARE.md,
   "The switch to the console's calling convention"). vkbench on the console (vulkan4xenon
   results/2026-10-12-mcall-xsdk/, against 2026-10-11-milestone-8-reverted, scaled for the clock fix): the layer's

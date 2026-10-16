@@ -46,7 +46,17 @@ typedef enum {
 	XSDK_XSC_ARRAY,
 	// The loop count for loop constant reg, from the uniform name.
 	XSDK_XSC_LOOP,
+	// The loop count for loop constant reg, from the 32-bit int offset_bytes into the block block, set and binding
+	// name;
+	// the loop runs from aL 0 by 1, as many passes as the int, none below 1.
+	XSDK_XSC_BLOCK_LOOP,
 } XsdkXscNeedKind;
+
+typedef enum {
+	XSDK_XSC_PUSH_CONSTANTS,
+	XSDK_XSC_UNIFORM_BUFFER,
+	XSDK_XSC_SAMPLER,
+} XsdkXscResourceKind;
 
 typedef struct {
 	XsdkXscNeedKind kind;
@@ -54,13 +64,12 @@ typedef struct {
 	uint32_t regs;
 	double value[4];
 	const char *name;
+	// A block loop's count: the block, and where in it.
+	XsdkXscResourceKind block;
+	uint32_t set;
+	uint32_t binding;
+	uint32_t offset_bytes;
 } XsdkXscNeed;
-
-typedef enum {
-	XSDK_XSC_PUSH_CONSTANTS,
-	XSDK_XSC_UNIFORM_BUFFER,
-	XSDK_XSC_SAMPLER,
-} XsdkXscResourceKind;
 
 // Where a block's registers or a sampler's fetch constant landed.
 typedef struct {

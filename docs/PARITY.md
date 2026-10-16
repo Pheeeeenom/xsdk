@@ -139,7 +139,7 @@ which implements what the games it runs need:
 
 | Capability | Status | How | Verified by | Missing |
 |---|---|---|---|---|
-| GLSL to Xenos microcode, offline | Partial | glslang to SPIR-V, then xost (`xenos-toolchain/`) | xost's tests | A subset of GLSL (`xenos-toolchain/docs/xsc.md`): no bitwise operations; `if` on data as selects of both arms, a vertex shader's and one inside a loop too; loops unrolled unless their count comes from a uniform; no `switch` |
+| GLSL to Xenos microcode, offline | Partial | glslang to SPIR-V, then xost (`xenos-toolchain/`) | xost's tests | A subset of GLSL (`xenos-toolchain/docs/xsc.md`): no bitwise operations; `if` on data as selects of both arms, a vertex shader's and one inside a loop too, and on a uniform in execs on the predicate; loops unrolled, or hardware loops where an int in a block counts them, with a break ending a pass on a uniform; no `switch` or `continue` |
 | SPIR-V to microcode on the console | Yes | `xsdk_xsc_compile` (`xsc.h`) | `tests/test_xsc.c` | Compiling GLSL on the console (docs/scope/shader-compiling.md) |
 | HLSL | No | | | |
 

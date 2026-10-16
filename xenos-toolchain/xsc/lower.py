@@ -34,7 +34,9 @@ def lower_ex(m: spirv.Module, registers: RegisterBudget = LIBXENON_REGISTERS, op
              group_fetches: bool = True):
     """Returns (container_bytes, literal_manifest). The manifest is [(constant_register, (f0,f1,f2,f3))] for GLSL
     literals, with ("array", reg, regs, uniform_name) and ("loop", loop_id, uniform_name) for a hardware loop's array
-    and trip count, which the host uploads to integer_constants[8+loop_id]. registers is the runtime's register split;
+    and trip count, which the host uploads to integer_constants[8+loop_id], and ("block_loop", loop_id, kind, set,
+    binding, offset_bytes) for a loop an int in a block counts, which the host reads from the block for loop constant
+    loop_id. registers is the runtime's register split;
     a shader past its kind's share raises RegisterBudgetError. optimize has the compiler rewrite the instructions
     before they're allocated; group_fetches off lays a pixel shader's fetches out as before milestone 36."""
     try:

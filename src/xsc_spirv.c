@@ -56,6 +56,8 @@ static bool listed(const uint16_t *list, size_t count, uint32_t opcode)
 
 static uint32_t skipped_words(uint32_t opcode)
 {
+	if (opcode >= XSC_OP_LOOP_PHI)
+		return 2;
 	if (listed(type_and_result, sizeof type_and_result / sizeof type_and_result[0], opcode))
 		return 2;
 	if (listed(result_only, sizeof result_only / sizeof result_only[0], opcode))

@@ -127,5 +127,5 @@ bool xsdk_xsc_lower_vertex(Xsc *x, const XscModule *m, const XsdkXscOptions *opt
 	XscConstants constants = { 0 };
 	return lower_body(&l, si, &stores) && add_constants(&l, si, &constants) &&
 		xsdk_xsc_program_finish(x, &p, constants.items, constants.count, &out->container, &out->container_bytes) &&
-		xsdk_xsc_literal_needs(&l, out);
+		xsdk_xsc_literal_needs(&l, out) && xsdk_xsc_loop_needs(&l, out);
 }

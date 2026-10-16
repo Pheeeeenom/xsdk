@@ -165,6 +165,36 @@ typedef struct {
 	uint32_t branch;
 } XscMerge;
 
+// A local or output a hardware loop carries: its value on entry, at the top of each pass, at a pass's end, and after.
+typedef struct {
+	uint32_t init;
+	uint32_t phi;
+	uint32_t next;
+	uint32_t result;
+} XscCarried;
+
+// A loop whose count a block holds, kept for a hardware loop: the access chain to that int, the induction variable at
+// the top of each pass and after, from 0 by 1, what it carries, a break ending a pass where the condition is
+// break_when (0 for none), and the ids made in its body, first to end.
+typedef struct {
+	uint32_t count;
+	uint32_t counter;
+	uint32_t counter_result;
+	size_t carried_first;
+	size_t carried_count;
+	uint32_t break_condition;
+	bool break_when;
+	uint32_t first;
+	uint32_t end;
+} XscHardwareLoop;
+
+enum {
+	// What the unroller makes for a hardware loop's values, no SPIR-V opcode: a carried value at the top of a pass, and
+	// after the loop. Each has a result type and id alone.
+	XSC_OP_LOOP_PHI = 0x10000,
+	XSC_OP_LOOP_RESULT = 0x10001,
+};
+
 typedef struct {
 	uint32_t version;
 	uint32_t generator;
@@ -189,6 +219,10 @@ typedef struct {
 	size_t branch_count;
 	XscMerge *merges;
 	size_t merge_count;
+	XscHardwareLoop *loops;
+	size_t loop_count;
+	XscCarried *carried;
+	size_t carried_count;
 } XscModule;
 
 bool xsdk_xsc_spirv_parse(Xsc *x, const uint32_t *words, size_t word_count, XscModule *m);

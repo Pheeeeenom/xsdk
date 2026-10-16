@@ -21,7 +21,8 @@ static bool same_needs(const XscTestShader *want, const XsdkXscShader *got)
 	for (size_t i = 0; i < got->need_count; i++) {
 		const XsdkXscNeed *const a = &got->needs[i];
 		const XsdkXscNeed *const b = &want->needs[i];
-		if (a->kind != b->kind || a->reg != b->reg || a->regs != b->regs || a->name != NULL)
+		if (a->kind != b->kind || a->reg != b->reg || a->regs != b->regs || a->name != NULL || a->block != b->block ||
+			a->set != b->set || a->binding != b->binding || a->offset_bytes != b->offset_bytes)
 			return false;
 		for (int c = 0; c < 4; c++) {
 			if (a->value[c] != b->value[c])

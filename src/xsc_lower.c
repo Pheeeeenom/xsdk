@@ -72,6 +72,28 @@ bool xsdk_xsc_lower_init(Xsc *x, XscLower *l, const XscModule *m, const XscInter
 		if (m->merges[i].select < n)
 			l->merge_branch[m->merges[i].select] = (int32_t)m->merges[i].branch;
 	}
+	l->loop_of = xsdk_xsc_alloc(x, (size_t)n * sizeof *l->loop_of);
+	l->carried_of = xsdk_xsc_alloc(x, (size_t)n * sizeof *l->carried_of);
+	l->loop_done = xsdk_xsc_alloc(x, m->loop_count + 1);
+	for (uint32_t id = 0; l->loop_of && l->carried_of && id < n; id++)
+		l->loop_of[id] = l->carried_of[id] = -1;
+	for (size_t i = 0; l->loop_of && l->carried_of && i < m->loop_count; i++) {
+		const XscHardwareLoop *const loop = &m->loops[i];
+		const uint32_t counter[2] = { loop->counter, loop->counter_result };
+		for (int k = 0; k < 2; k++) {
+			if (counter[k] < n)
+				l->loop_of[counter[k]] = (int32_t)i;
+		}
+		for (size_t c = loop->carried_first; c < loop->carried_first + loop->carried_count; c++) {
+			const uint32_t ids[2] = { m->carried[c].phi, m->carried[c].result };
+			for (int k = 0; k < 2; k++) {
+				if (ids[k] < n) {
+					l->loop_of[ids[k]] = (int32_t)i;
+					l->carried_of[ids[k]] = (int32_t)c;
+				}
+			}
+		}
+	}
 	const uint32_t branches = (uint32_t)m->branch_count + 1;
 	l->branch_cnd = xsdk_xsc_alloc(x, branches * sizeof *l->branch_cnd);
 	l->branch_swap = xsdk_xsc_alloc(x, branches);
@@ -79,7 +101,8 @@ bool xsdk_xsc_lower_init(Xsc *x, XscLower *l, const XscModule *m, const XscInter
 	return fill_operands(x, &l->op_cache, n) && fill_operands(x, &l->local_values, n) && fill_regs(x, &l->inputs, n) &&
 		fill_regs(x, &l->sample_reg, n) && fill_regs(x, &l->deriv_reg, n) && l->matrix_cache && l->col_major &&
 		l->local_store && l->seen && l->merge_branch && fill_operands(x, &l->branch_test, branches) && l->branch_cnd &&
-		l->branch_swap && l->branch_done && (!m->branch_count || xsdk_xsc_find_varying(l));
+		l->branch_swap && l->branch_done && l->loop_of && l->carried_of && l->loop_done &&
+		(!(m->branch_count || m->loop_count) || xsdk_xsc_find_varying(l));
 }
 
 // An SSA id's instruction, refused as Python's by_result[ssa] would fail.
@@ -684,7 +707,7 @@ static XscOperand int_operand_of(XscLower *l, uint32_t ssa)
 			return (XscOperand){ 0 };
 		return xsc_reg(r);
 	}
-	if (op == SPV_SELECT && xsdk_xsc_is_merge(l, ssa))
+	if ((op == SPV_SELECT && xsdk_xsc_is_merge(l, ssa)) || op == XSC_OP_LOOP_PHI || op == XSC_OP_LOOP_RESULT)
 		return xsdk_xsc_lower_operand(l, ssa);
 	if (op == SPV_I_ADD || op == SPV_I_SUB || op == SPV_I_MUL)
 		return int_arith(l, ins);
@@ -1364,6 +1387,14 @@ static XscOperand operand_of(XscLower *l, uint32_t ssa, const XscInstr *ins)
 	const uint32_t op = ins->opcode;
 	if (op == SPV_SELECT && xsdk_xsc_is_merge(l, ssa))
 		return xsdk_xsc_merge_operand(l, ssa);
+	if (op == XSC_OP_LOOP_RESULT)
+		return xsdk_xsc_loop_operand(l, ssa);
+	if (op == XSC_OP_LOOP_PHI) {
+		// Within the loop's body the value is its register, cached; only a sample or a derivative, worked out before
+		// the colours, comes to it here.
+		xsdk_xsc_lower_refuse(l, "a sample or derivative reads what a loop counted by a block works out (v1)");
+		return (XscOperand){ 0 };
+	}
 	if (op == SPV_CONSTANT_TRUE || op == SPV_CONSTANT_FALSE) {
 		const int64_t reg = xsdk_xsc_literal_splat(l, op == SPV_CONSTANT_TRUE ? 1.0 : 0.0);
 		return reg == XSC_NONE ? (XscOperand){ 0 } : xsc_const(reg);

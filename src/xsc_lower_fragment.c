@@ -258,6 +258,17 @@ static bool gather_sample(Fragment *f, uint32_t ssa, const XscInstr *ins)
 	return use_slot(f, slot);
 }
 
+// A hardware loop's samples: those its values on entry read, and those its passes read; one at coordinates a pass works
+// out is refused as it's lowered.
+static bool gather_loop(Fragment *f, const XscHardwareLoop *loop)
+{
+	const XscModule *const m = f->l.m;
+	bool ok = !loop->break_condition || gather(f, loop->break_condition);
+	for (size_t c = loop->carried_first; ok && c < loop->carried_first + loop->carried_count; c++)
+		ok = gather(f, m->carried[c].init) && gather(f, m->carried[c].next);
+	return ok;
+}
+
 static bool gather_value(Fragment *f, uint32_t ssa)
 {
 	const XscModule *const m = f->l.m;
@@ -265,6 +276,8 @@ static bool gather_value(Fragment *f, uint32_t ssa)
 	if (!ins)
 		return true;
 	const uint32_t op = ins->opcode;
+	if (op == XSC_OP_LOOP_RESULT && f->l.loop_of[ssa] >= 0)
+		return gather_loop(f, &m->loops[f->l.loop_of[ssa]]);
 	if (op == SPV_DPDX || op == SPV_DPDY || op == SPV_FWIDTH)
 		return gather_derivative(f, ssa, ins);
 	if (op == SPV_IMAGE_SAMPLE_IMPLICIT_LOD || op == SPV_IMAGE_SAMPLE_EXPLICIT_LOD ||
@@ -685,7 +698,7 @@ static bool lower_body(Fragment *f, int64_t param_reg, XscConstants *constants, 
 		add_constants(f, constants) &&
 		xsdk_xsc_program_finish(
 			l->x, l->p, constants->items, constants->count, &out->container, &out->container_bytes) &&
-		xsdk_xsc_literal_needs(l, out);
+		xsdk_xsc_literal_needs(l, out) && xsdk_xsc_loop_needs(l, out);
 }
 
 bool xsdk_xsc_lower_fragment(

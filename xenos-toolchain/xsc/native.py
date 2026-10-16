@@ -11,7 +11,7 @@ LIBRARY = Path(__file__).resolve().parents[2] / "build" / "host" / "libxsc.so"
 
 OK, REFUSED, REGISTERS, BAD_VALUE, MALFORMED, OUT_OF_MEMORY = range(6)
 STATUS_NAMES = ("ok", "refused", "registers", "bad value", "malformed", "out of memory")
-LITERAL, ARRAY, LOOP = range(3)
+LITERAL, ARRAY, LOOP, BLOCK_LOOP = range(4)
 RESOURCE_KINDS = ("push", "uniform", "sampler")
 MESSAGE_BYTES = 512
 
@@ -23,7 +23,8 @@ class Options(ctypes.Structure):
 
 class Need(ctypes.Structure):
     _fields_ = [("kind", ctypes.c_int), ("reg", ctypes.c_uint32), ("regs", ctypes.c_uint32),
-                ("value", ctypes.c_double * 4), ("name", ctypes.c_char_p)]
+                ("value", ctypes.c_double * 4), ("name", ctypes.c_char_p), ("block", ctypes.c_int),
+                ("set", ctypes.c_uint32), ("binding", ctypes.c_uint32), ("offset_bytes", ctypes.c_uint32)]
 
 
 class Resource(ctypes.Structure):
@@ -175,6 +176,8 @@ def _need(n: Need):
         return n.reg, tuple(n.value)
     if n.kind == ARRAY:
         return "array", n.reg, n.regs, n.name.decode()
+    if n.kind == BLOCK_LOOP:
+        return "block_loop", n.reg, RESOURCE_KINDS[n.block], n.set, n.binding, n.offset_bytes
     return "loop", n.reg, n.name.decode()
 
 
@@ -182,7 +185,8 @@ def compile_spirv(spirv: bytes, pixel_registers: int, vertex_registers: int, opt
                   group_fetches: bool = True):
     """(container, manifest, resources) as lower.py's lower_ex gives the first two and build_shaders.py the last:
     the manifest [(register, (f0, f1, f2, f3))], with ("array", reg, regs, name) and ("loop", id, name) for a
-    hardware loop; the resources [(kind, set, binding, register, registers)], blocks then samplers."""
+    hardware loop a bare uniform counts, and ("block_loop", id, kind, set, binding, offset_bytes) for one an int in a
+    block counts; the resources [(kind, set, binding, register, registers)], blocks then samplers."""
     library = _load()
     words = (ctypes.c_uint32 * (len(spirv) // 4)).from_buffer_copy(spirv[:len(spirv) // 4 * 4])
     options = Options(pixel_registers, vertex_registers, optimize, group_fetches)

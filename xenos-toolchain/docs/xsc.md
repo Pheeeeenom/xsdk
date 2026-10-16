@@ -64,6 +64,7 @@ came from; that test and its test vectors stay in xost's archived repo (github.c
 | **`discard` / `OpKill` inside `if(cond)`** | `kill_gt`/`kill_ge`/`kill_eq`/`kill_ne` ALU side effect; oracle-valid, pending console verification in `glslgallery` G26 |
 | **`for`/`while`** with a compile-time trip count, incl. **nested** | unrolled to branch-free SSA; induction variable constant-folded (see below) |
 | uniform-bound loop `sum += const` | real `LOOP_START/END` (G28 pending) |
+| `for (int i = 0; i < b.n; i++)`, `n` an int in a push constant or uniform block, in a vertex or pixel shader | a hardware loop the runtime counts from the block: what the loop carries in registers, `i` a float counter, an if/else in the pass, a break ending it (see "Loops a block counts"; `tests/test_hardware_loops.py`) |
 | `vec4 t = ...;` (function-local) | store-forwarding |
 | uniforms (block + bare), samplers | constant regs / fetch consts |
 | Vulkan uniform / push constant block members at any std140 offset | the member's register, swizzled from its first component |
@@ -268,6 +269,40 @@ A data-dependent `while`-break (`if(cond) break;`) now lowers from GLSL to a
 body `setp_*` + a predicated LOOP_END (the G30 primitive). An if/else **with a
 constant condition** inside a loop body unrolls (the arm is picked per pass); one
 on data runs both arms each pass and merges them (Control flow).
+
+### Loops a block counts
+
+A Vulkan shader has no bare uniforms, so the shape above never comes from one;
+its loops count to an int in a push constant or uniform block. The unroller
+(`xsdk:src/xsc_unroll.c`) keeps such a loop, `for (int i = 0; i < b.n; i++)`
+(or `b.n > i`), stepping `i++` in its continue block, for a hardware loop: it
+walks the pass once, each local and whole output the loop stores and held a
+value of before it carried as a value at the top of the pass, and a value after
+the loop. The lowering (`xsdk:src/xsc_lower_flow.c`) lays it out:
+
+- each carried value's register from its value on entry, then LOOP_START;
+- the pass worked out from the registers, what it reads from before the loop
+  lowered once before LOOP_START; then each carried value's register takes its
+  value at the pass's end, after all are worked out;
+- `i` a float counting from 0, as xost holds integers, so `float(i)` and a
+  block's array at `i` (`movas` and `c[a0 + base]`) work; the loop constant's
+  aL goes unread;
+- `if (c) break;` ending a pass a `setp_*` and a predicated LOOP_END, the break
+  on a value every vertex or pixel shares, as LOOP_END breaks only when all 64
+  agree (xenia:src/xenia/gpu/ucode.h:372-373); an if/else on data inside the
+  pass is selects.
+
+The manifest gives `("block_loop", loop_id, kind, set, binding, offset_bytes)`:
+the runtime reads the int there for each draw and sets loop constant `loop_id`
+to that many passes, from aL 0 by 1, none for 0 or less; the constant counts to
+255 (xenia:src/xenia/gpu/xenos.h:1086-1097). A vertex shader's loops take loop
+constants from 0 and a pixel shader's from 16, 16 each: both stages read all 32
+(ucode.h:352), and libxenon gives each stage half of the boolean constants
+the same way (libxenon:drivers/xenos/xe.c:2038-2064). The optimiser leaves a
+program with a loop alone, as before. Refused: a loop counted by a block inside
+another loop or an if/else on data, a `continue`, a break anywhere but ending a
+pass or on data, a store into part of an output in the loop, and a sample or
+derivative at coordinates a pass works out.
 
 ## Control flow
 

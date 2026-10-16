@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -39,7 +40,8 @@ static bool has_loop(const XscModule *m)
 	return false;
 }
 
-// Loops unrolled, or a pixel shader's loop that won't unroll as a hardware loop.
+// Loops unrolled, or kept for hardware loops where a block counts them; a pixel shader's loop that won't unroll as the
+// one shape of hardware loop a bare uniform counts (xsc_lower_loop.c). Refused both ways, it gives both reasons.
 static bool lower(Xsc *x, XscModule *m, const XsdkXscOptions *options, XscInterface *si, XscLowered *out)
 {
 	if (!m->entry_point_count)
@@ -49,9 +51,16 @@ static bool lower(Xsc *x, XscModule *m, const XsdkXscOptions *options, XscInterf
 	if (!xsdk_xsc_unroll(x, m, &refused)) {
 		if (!refused || !pixel || !has_loop(m))
 			return false;
+		char unrolling[XSDK_XSC_MESSAGE_BYTES];
+		memcpy(unrolling, x->message, sizeof unrolling);
 		x->status = XSDK_XSC_OK;
 		x->message[0] = '\0';
-		return xsdk_xsc_lower_real_loop(x, m, options->pixel_registers, si, out);
+		if (xsdk_xsc_lower_real_loop(x, m, options->pixel_registers, si, out) || x->status != XSDK_XSC_REFUSED)
+			return x->status == XSDK_XSC_OK;
+		char real_loop[XSDK_XSC_MESSAGE_BYTES];
+		memcpy(real_loop, x->message, sizeof real_loop);
+		(void)snprintf(x->message, sizeof x->message, "%.250s; %.250s", unrolling, real_loop);
+		return false;
 	}
 	if (pixel)
 		return xsdk_xsc_lower_fragment(x, m, options, si, out);

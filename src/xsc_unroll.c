@@ -5,7 +5,8 @@
 #include "xsc_private.h"
 
 // Loops unrolled and locals turned into SSA values, as xenos-toolchain/xsc/unroll.py does it. An if/else on data runs
-// both arms, and each local, output and Phi they leave apart is merged by a select where they meet.
+// both arms, and each local, output and Phi they leave apart is merged by a select where they meet. A loop a block's
+// int counts is walked once, for a hardware loop, what it carries a value at the top of each pass.
 
 enum {
 	MAX_TRIP = 4096,
@@ -14,9 +15,12 @@ enum {
 	OP_I_MUL = 132,
 	OP_S_DIV = 135,
 	OP_I_EQUAL = 170,
+	OP_S_GREATER_THAN = 173,
 	OP_S_LESS_THAN_EQUAL = 179,
 	OP_IN_BOUNDS_ACCESS_CHAIN = 66,
+	SC_UNIFORM = 2,
 	SC_OUTPUT = 3,
+	SC_PUSH_CONSTANT = 9,
 	BUILTIN_POSITION = 0,
 	BUILTIN_FRAG_DEPTH = 22,
 	MODEL_VERTEX = 0,
@@ -81,6 +85,22 @@ typedef struct {
 	uint32_t branch;
 } Meeting;
 
+// The hardware loop a walk is in: its merge and continue blocks, how deep in arms it is, and its break.
+typedef struct {
+	uint32_t merge;
+	uint32_t cont;
+	size_t arms;
+	bool has_break;
+	uint32_t break_condition;
+	bool break_when;
+} Hardware;
+
+// What a hardware loop carries a value of: a local, or an output's slot.
+typedef struct {
+	bool local;
+	uint32_t target;
+} Carry;
+
 typedef struct {
 	Xsc *x;
 	XscModule *m;
@@ -124,6 +144,16 @@ typedef struct {
 	XscMerge *merges;
 	size_t merge_count;
 	size_t merge_capacity;
+	// How deep the walk is in arms of an if/else on data and in loops it unrolls, and the hardware loop it's in.
+	size_t arms;
+	size_t unrolling;
+	Hardware *hardware;
+	XscHardwareLoop *loops;
+	size_t loop_count;
+	size_t loop_capacity;
+	XscCarried *carried;
+	size_t carried_count;
+	size_t carried_capacity;
 	bool refused;
 } Unroller;
 
@@ -246,7 +276,8 @@ static bool emit_value(
 	*id = fresh(u);
 	words[0] = type;
 	words[1] = *id;
-	memcpy(words + 2, operands, count * sizeof *operands);
+	if (count)
+		memcpy(words + 2, operands, count * sizeof *operands);
 	return add_instr(
 		u, &u->emitted, &u->emitted_count, &u->emitted_capacity, (XscInstr){ opcode, type, *id, words, count + 2 });
 }
@@ -850,7 +881,10 @@ static bool data_branch(Unroller *u, const Block *b, LocalMap *lm, uint32_t merg
 		restore(u, &before);
 		bool ended = false;
 		exits[arm] = b->label;
-		if (label != merge && !walk(u, label, merge, true, &exits[arm], &ended))
+		u->arms++;
+		const bool walked = label == merge || walk(u, label, merge, true, &exits[arm], &ended);
+		u->arms--;
+		if (!walked)
 			return false;
 		if (ended)
 			return refuse(u, "a discard or return inside an if/else on data");
@@ -868,6 +902,29 @@ static bool data_branch(Unroller *u, const Block *b, LocalMap *lm, uint32_t merg
 	return merge_states(u, after);
 }
 
+// Whether a block does nothing but leave the hardware loop the walk is in.
+static bool breaks_out(const Unroller *u, uint32_t label)
+{
+	const Block *const b = block_of(u, label);
+	return u->hardware && b && !b->count && b->term && b->term->opcode == SPV_BRANCH &&
+		xsdk_xsc_operand(b->term, 0) == u->hardware->merge;
+}
+
+// if (c) break; ending a pass, the one break a hardware loop takes, as a predicated LOOP_END: nothing between it and
+// the continue block, and not inside an if/else of the pass's own.
+static bool hardware_break(Unroller *u, const Block *b, LocalMap *lm, uint32_t merge, bool when)
+{
+	Hardware *const hw = u->hardware;
+	const Block *const after = block_of(u, merge);
+	const uint32_t other = xsdk_xsc_operand(b->term, when ? 2 : 1);
+	if (hw->has_break || u->arms != hw->arms || other != merge || !after || after->count || !after->term ||
+		after->term->opcode != SPV_BRANCH || xsdk_xsc_operand(after->term, 0) != hw->cont)
+		return refuse(u, "a break other than an if (c) break; ending a pass of a loop counted by a block (v1)");
+	hw->has_break = true;
+	hw->break_when = when;
+	return condition_id(u, b, lm, &hw->break_condition);
+}
+
 // A structured if/else: on a constant condition, the taken arm alone, then the merge; on data, both arms.
 static bool branch(Unroller *u, const Block *b, LocalMap *lm, uint32_t *next)
 {
@@ -876,6 +933,8 @@ static bool branch(Unroller *u, const Block *b, LocalMap *lm, uint32_t *next)
 		return refuse(u, "a branch outside a structured if/else or loop");
 	const uint32_t merge = xsdk_xsc_operand(sel, 0);
 	*next = merge;
+	if (breaks_out(u, xsdk_xsc_operand(b->term, 1)) || breaks_out(u, xsdk_xsc_operand(b->term, 2)))
+		return hardware_break(u, b, lm, merge, breaks_out(u, xsdk_xsc_operand(b->term, 1)));
 	bool known;
 	const bool value = const_bool(u, xsdk_xsc_operand(b->term, 0), &known);
 	if (!known)
@@ -1004,6 +1063,195 @@ static bool loop_test(Unroller *u, const XscInstr *cterm, uint32_t merge, LoopTe
 	return true;
 }
 
+// ---- loops a block counts, kept for hardware loops ----
+
+static bool is_block(const Unroller *u, uint32_t var)
+{
+	const XscInstr *const v = xsdk_xsc_by_result(u->m, var);
+	const uint32_t storage = v && v->opcode == SPV_VARIABLE ? xsdk_xsc_operand(v, 0) : 0;
+	return storage == SC_UNIFORM || storage == SC_PUSH_CONSTANT;
+}
+
+// i < a block's int, i a local holding 0 as the loop starts, the loop's false arm its exit; the chain to the int.
+static bool counted_by_block(
+	const Unroller *u, const XscInstr *cterm, uint32_t merge, uint32_t *iv, const XscInstr **chain)
+{
+	const XscInstr *const cmp = xsdk_xsc_by_result(u->m, xsdk_xsc_operand(cterm, 0));
+	if (!cmp || xsdk_xsc_operand(cterm, 2) != merge ||
+		(cmp->opcode != SPV_S_LESS_THAN && cmp->opcode != OP_S_GREATER_THAN))
+		return false;
+	const bool left = cmp->opcode == SPV_S_LESS_THAN;
+	const XscInstr *const counter = xsdk_xsc_by_result(u->m, xsdk_xsc_operand(cmp, left ? 0 : 1));
+	const XscInstr *const bound = xsdk_xsc_by_result(u->m, xsdk_xsc_operand(cmp, left ? 1 : 0));
+	if (!counter || counter->opcode != SPV_LOAD || !is_func_var(u, xsdk_xsc_operand(counter, 0)) || !bound ||
+		bound->opcode != SPV_LOAD)
+		return false;
+	*iv = xsdk_xsc_operand(counter, 0);
+	*chain = xsdk_xsc_by_result(u->m, xsdk_xsc_operand(bound, 0));
+	int64_t start;
+	return *chain && is_chain((*chain)->opcode) && is_block(u, xsdk_xsc_operand(*chain, 0)) &&
+		find_int(u, env_get(u, *iv), &start) && start == 0;
+}
+
+static size_t block_index(const Unroller *u, uint32_t label)
+{
+	const Block *const b = block_of(u, label);
+	return b ? (size_t)(b - u->blocks) : u->block_count;
+}
+
+// What the loop's blocks store, header to merge: each local, and each output stored whole, in stored; parts says an
+// output's member or component is.
+static bool stored_in_loop(const Unroller *u, uint32_t header, uint32_t merge, bool *stored, bool *parts)
+{
+	const size_t last = block_index(u, merge);
+	*parts = false;
+	for (size_t bi = block_index(u, header); bi < last && bi < u->block_count; bi++) {
+		const Block *const b = &u->blocks[bi];
+		for (size_t i = b->first; i < b->first + b->count; i++) {
+			const XscInstr *const ins = &u->m->instrs[i];
+			const uint32_t target = xsdk_xsc_operand(ins, 0);
+			if (ins->opcode != SPV_STORE || target >= u->env_limit)
+				continue;
+			const XscInstr *const chain = xsdk_xsc_by_result(u->m, target);
+			const uint32_t base = chain && is_chain(chain->opcode) ? xsdk_xsc_operand(chain, 0) : target;
+			if (base < u->env_limit && (is_func_var(u, base) || (base == target && is_output(u, base))))
+				stored[base] = true;
+			else if (is_output(u, base))
+				*parts = true;
+		}
+	}
+	return true;
+}
+
+// The continue block's i = i + 1, and nothing else stored there.
+static bool steps_by_one(const Unroller *u, uint32_t cont, uint32_t iv)
+{
+	const Block *const b = block_of(u, cont);
+	size_t stores = 0;
+	bool stepped = false;
+	for (size_t i = 0; b && i < b->count; i++) {
+		const XscInstr *const ins = &u->m->instrs[b->first + i];
+		if (ins->opcode != SPV_STORE)
+			continue;
+		stores++;
+		const XscInstr *const add = xsdk_xsc_by_result(u->m, xsdk_xsc_operand(ins, 1));
+		if (xsdk_xsc_operand(ins, 0) != iv || !add || add->opcode != OP_I_ADD)
+			return false;
+		for (uint32_t k = 0; k < 2; k++) {
+			const XscInstr *const ld = xsdk_xsc_by_result(u->m, xsdk_xsc_operand(add, k));
+			int64_t one;
+			if (ld && ld->opcode == SPV_LOAD && xsdk_xsc_operand(ld, 0) == iv &&
+				find_int(u, xsdk_xsc_operand(add, 1 - k), &one) && one == 1)
+				stepped = true;
+		}
+	}
+	return stores == 1 && stepped;
+}
+
+static bool add_carried(Unroller *u, uint32_t type, uint32_t init, uint32_t *phi)
+{
+	if (!xsdk_xsc_room(u->x, &u->carried, u->carried_count, &u->carried_capacity, sizeof *u->carried) ||
+		!emit_value(u, XSC_OP_LOOP_PHI, type, NULL, 0, phi))
+		return false;
+	u->carried[u->carried_count++] = (XscCarried){ .init = init, .phi = *phi };
+	return true;
+}
+
+// Each local but the induction variable and each whole output the loop stores, and holds a value of before it, a value
+// at the top of each pass; one it holds none of before is the pass's own, in own, and holds none after.
+static bool carry_in(Unroller *u, uint32_t iv, const bool *stored, Carry *carries, size_t *count, bool *own)
+{
+	for (size_t i = 0; i < u->local_count; i++) {
+		const uint32_t v = u->locals[i];
+		if (v == iv)
+			continue;
+		own[v] = stored[v] && !u->env[v];
+		if (!stored[v] || !u->env[v])
+			continue;
+		carries[(*count)++] = (Carry){ true, v };
+		if (!add_carried(u, pointee(u, v), u->env[v], &u->env[v]))
+			return false;
+	}
+	for (uint32_t v = 0; v < u->env_limit; v++) {
+		size_t slot;
+		if (!stored[v] || is_func_var(u, v))
+			continue;
+		if (!slot_of(u, v, XSC_NONE, 0, 0, &slot))
+			return false;
+		own[v] = !u->slot_value[slot];
+		if (own[v])
+			continue;
+		carries[(*count)++] = (Carry){ false, (uint32_t)slot };
+		if (!add_carried(u, u->slots[slot].type, u->slot_value[slot], &u->slot_value[slot]))
+			return false;
+	}
+	return true;
+}
+
+// The loop's pass walked once from the values at its top; then what it carries holds the loop's results.
+static bool expand_hardware_loop(
+	Unroller *u, const Block *header, uint32_t merge, uint32_t cont, uint32_t body, uint32_t iv, const XscInstr *chain)
+{
+	if (u->hardware || u->arms || u->unrolling)
+		return refuse(u, "a loop counted by a block inside an if/else on data or another loop (v1)");
+	bool *const stored = xsdk_xsc_alloc(u->x, u->env_limit);
+	bool *const own = xsdk_xsc_alloc(u->x, u->env_limit);
+	Carry *const carries = xsdk_xsc_alloc(u->x, (u->local_count + MAX_SLOTS + 1) * sizeof *carries);
+	bool parts;
+	if (!stored || !own || !carries || !stored_in_loop(u, header->label, merge, stored, &parts))
+		return false;
+	if (parts)
+		return refuse(u, "a store into part of an output inside a loop counted by a block (v1)");
+	XscHardwareLoop loop = { .carried_first = u->carried_count, .first = u->counter };
+	LocalMap lm = { 0 };
+	size_t carry_count = 0;
+	if (!clone_generic(u, chain, &lm) || !carry_in(u, iv, stored, carries, &carry_count, own) ||
+		!emit_value(u, XSC_OP_LOOP_PHI, pointee(u, iv), NULL, 0, &loop.counter))
+		return false;
+	loop.count = local_or_self(&lm, chain->result_id);
+	u->env[iv] = loop.counter;
+	Hardware hw = { .merge = merge, .cont = cont, .arms = u->arms };
+	uint32_t exit;
+	bool ended = false;
+	u->hardware = &hw;
+	const bool walked = walk(u, body, cont, true, &exit, &ended);
+	u->hardware = NULL;
+	if (!walked)
+		return false;
+	if (ended)
+		return refuse(u, "a discard or return inside a loop counted by a block (v1)");
+	if (u->env[iv] != loop.counter || !steps_by_one(u, cont, iv))
+		return refuse(u, "a loop counted by a block stepping other than i++ in its continue block (v1)");
+	for (size_t i = 0; i < carry_count; i++) {
+		XscCarried *const c = &u->carried[loop.carried_first + i];
+		uint32_t *const value = carries[i].local ? &u->env[carries[i].target] : &u->slot_value[carries[i].target];
+		c->next = *value;
+		if (!emit_value(u, XSC_OP_LOOP_RESULT,
+				carries[i].local ? pointee(u, carries[i].target) : u->slots[carries[i].target].type, NULL, 0,
+				&c->result))
+			return false;
+		*value = c->result;
+	}
+	for (uint32_t v = 0; v < u->env_limit; v++) {
+		size_t slot;
+		if (own[v] && is_func_var(u, v))
+			u->env[v] = 0;
+		else if (own[v] && slot_of(u, v, XSC_NONE, 0, 0, &slot))
+			u->slot_value[slot] = 0;
+	}
+	if (!emit_value(u, XSC_OP_LOOP_RESULT, pointee(u, iv), NULL, 0, &loop.counter_result))
+		return false;
+	u->env[iv] = loop.counter_result;
+	loop.carried_count = carry_count;
+	loop.break_condition = hw.has_break ? hw.break_condition : 0;
+	loop.break_when = hw.break_when;
+	loop.end = u->counter;
+	if (!xsdk_xsc_room(u->x, &u->loops, u->loop_count, &u->loop_capacity, sizeof *u->loops))
+		return false;
+	u->loops[u->loop_count++] = loop;
+	return true;
+}
+
 // Unrolls the loop whose header is header_lbl; its merge label through merge (unroll.py expand_loop).
 static bool expand_loop(Unroller *u, const Block *header, uint32_t *merge)
 {
@@ -1018,6 +1266,10 @@ static bool expand_loop(Unroller *u, const Block *header, uint32_t *merge)
 		return xsdk_xsc_fail(u->x, XSDK_XSC_MALFORMED, "no loop condition block");
 	if (!cond_block->term || cond_block->term->opcode != SPV_BRANCH_CONDITIONAL)
 		return refuse(u, "loop condition is not a BranchConditional");
+	uint32_t iv;
+	const XscInstr *chain;
+	if (counted_by_block(u, cond_block->term, *merge, &iv, &chain))
+		return expand_hardware_loop(u, header, *merge, continue_lbl, xsdk_xsc_operand(cond_block->term, 1), iv, chain);
 	LoopTest test = { 0 };
 	uint32_t body = 0;
 	if (!loop_test(u, cond_block->term, *merge, &test, &body))
@@ -1026,6 +1278,7 @@ static bool expand_loop(Unroller *u, const Block *header, uint32_t *merge)
 	if (!cont)
 		return xsdk_xsc_fail(u->x, XSDK_XSC_MALFORMED, "no continue block");
 	int trips = 0;
+	u->unrolling++;
 	while (loop_runs(u, &test)) {
 		if (++trips > MAX_TRIP)
 			return refuse(u, "loop trip count exceeds the unroll cap");
@@ -1038,6 +1291,7 @@ static bool expand_loop(Unroller *u, const Block *header, uint32_t *merge)
 		if (env_get(u, test.iv) == before)
 			return refuse(u, "loop induction variable does not advance");
 	}
+	u->unrolling--;
 	return true;
 }
 
@@ -1066,6 +1320,11 @@ static bool walk(Unroller *u, uint32_t start, uint32_t stop, bool has_stop, uint
 		} else if (!branch(u, b, &lm, &cur)) {
 			return false;
 		}
+		const bool leaves = u->hardware && (cur == u->hardware->merge || (cur == u->hardware->cont && cur != stop));
+		if (!*ended && leaves)
+			return refuse(u,
+				"a break or continue other than an if (c) break; ending a pass of a loop counted by a "
+				"block (v1)");
 	}
 	return true;
 }
@@ -1200,6 +1459,10 @@ static bool rewrite_function(Unroller *u)
 	m->branch_count = u->branch_count;
 	m->merges = u->merges;
 	m->merge_count = u->merge_count;
+	m->loops = u->loops;
+	m->loop_count = u->loop_count;
+	m->carried = u->carried;
+	m->carried_count = u->carried_count;
 	return xsdk_xsc_spirv_index(u->x, m);
 }
 

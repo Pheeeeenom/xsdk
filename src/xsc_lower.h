@@ -109,6 +109,18 @@ typedef struct {
 	uint32_t *walked_ids;
 	size_t walked_count;
 	size_t walked_capacity;
+	// By SSA id, the hardware loop a value at the top of a pass or after the loop is of, and which value it carries, -1
+	// for the induction variable; -1 for any other id.
+	int32_t *loop_of;
+	int32_t *carried_of;
+	// By loop, whether it's laid out; whether the lowering is in a loop's body now, and the caches before it.
+	bool *loop_done;
+	bool in_loop;
+	XscSaved loop_saved;
+	// The loop constants the loops read, for the runtime to set from their blocks.
+	XsdkXscNeed *loop_needs;
+	size_t loop_need_count;
+	size_t loop_need_capacity;
 } XscLower;
 
 // Enters one level of recursion, false with the error set past the bound.
@@ -237,6 +249,8 @@ bool xsdk_xsc_emit_merge(XscLower *l, uint32_t ssa, int64_t dst, bool export_);
 XscOperand xsdk_xsc_merge_operand(XscLower *l, uint32_t ssa);
 // Marks what varies from one vertex or pixel to the next and what anything reads, for the branches' execs.
 bool xsdk_xsc_find_varying(XscLower *l);
+// A hardware loop's value after it, the loop laid out the first time one is wanted.
+XscOperand xsdk_xsc_loop_operand(XscLower *l, uint32_t ssa);
 
 // Matrices (xsc_lower_matrix.c).
 const XscMatrix *xsdk_xsc_matrix_operands(XscLower *l, uint32_t ssa);
@@ -299,6 +313,8 @@ bool xsdk_xsc_add_need(Xsc *x, XscLowered *out, XsdkXscNeed need);
 // The literal pool as constants named _lit<register>, and as needs.
 bool xsdk_xsc_literal_constants(XscLower *l, XscConstants *constants);
 bool xsdk_xsc_literal_needs(XscLower *l, XscLowered *out);
+// The loop constants the hardware loops read, as needs (xsc_lower_flow.c).
+bool xsdk_xsc_loop_needs(XscLower *l, XscLowered *out);
 
 bool xsdk_xsc_lower_vertex(
 	Xsc *x, const XscModule *m, const XsdkXscOptions *options, XscInterface *si, XscLowered *out);
