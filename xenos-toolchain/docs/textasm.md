@@ -52,8 +52,8 @@ These match both XDK corpus vintages and our hardware-verified shaders:
 | field | convention |
 |---|---|
 | exec `is_predicate_clean` | 1 |
-| exec `vc_hi` | vertex shaders: `(1 << n_fetches_in_block) - 1` (vs0: 4→0xF, cube_vs: 3→0x7); pixel: 0 |
-| exec `is_yield`, `vc_lo`, addressing | 0 |
+| exec `vc_hi`, `vc_lo` | vertex shaders: `(1 << n_fetches_in_block) - 1`, its low four bits in `vc_hi` and the next two in `vc_lo` (vs0: 4→0xF; a fifth fetch unmarked drew wrong on the console, xsdk:docs/HARDWARE.md "A fifth vertex fetch"); pixel: 0 |
+| exec `is_yield`, addressing | 0 |
 | alloc `size`/`is_unserialized` | 0 / false |
 | ALU scalar half without `+` line | kRetainPrev idiom (corpus mov encoding) |
 | scalar 2-comp source swizzle | printed chars at components 3,0; unprinted 1-2 replicate the right-hand char (cube_ps: `.ww` → wwww) |

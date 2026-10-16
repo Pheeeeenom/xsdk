@@ -502,7 +502,7 @@ typedef struct {
 bool xsdk_xsc_build_alu(Xsc *x, const XscAlu *f, uint32_t triple[3]);
 bool xsdk_xsc_build_tfetch(Xsc *x, const XscFetch *f, uint32_t triple[3]);
 bool xsdk_xsc_build_vfetch(Xsc *x, const XscFetch *f, uint32_t triple[3]);
-bool xsdk_xsc_build_cf_exec(Xsc *x, uint32_t opcode, int64_t address, int64_t count, int64_t sequence, int64_t vc_hi,
+bool xsdk_xsc_build_cf_exec(Xsc *x, uint32_t opcode, int64_t address, int64_t count, int64_t sequence, int64_t vc,
 	bool is_predicate_clean, uint32_t pair[2]);
 bool xsdk_xsc_build_cf_alloc(Xsc *x, int64_t alloc_type, uint32_t pair[2]);
 bool xsdk_xsc_build_cf_loop_start(Xsc *x, int64_t address, int64_t loop_id, uint32_t pair[2]);

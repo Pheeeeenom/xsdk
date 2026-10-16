@@ -3331,3 +3331,25 @@ With that, on the console (`results/2026-10-16-depth-export/`):
   setting left it, 921438 pixels hid the first draw each time and the check failed (`xsdk_test_hiz_test_broken.log`,
   `xsdk_test_hiz_put_broken.log`). The quad at 0.5 still showed everywhere, though the buffer wrote during the draw
   from 0.2: it didn't keep that polygon's depth.
+
+## A fifth vertex fetch (2026-10-16)
+
+Melee's fighters drew with spikes on the console. Two frames were dumped from a diagnostic build, each GX draw as the
+GPU got it: its decoded vertices, indices, uniform pieces and GLSL. Off the console, the vertices transformed as the
+GLSL says, and xost's microcode run on its simulator, put every vertex where it belonged. Replayed through vulkan4xenon
+alone, each draw white over black on the console, the draws out of place were the ones whose vertex shader fetched
+five attributes in one exec: 96 of the 99 that drew, against none of the 68 with four or fewer
+(`results/2026-10-16-fifth-vertex-fetch/replay_dump1_before.log`, `replay_dump2_before.log`).
+- **The exec's vertex cache bits.** An exec has six bits Xenia calls "vertex cache?", four in vc_hi at the top of its
+  first word and two in vc_lo at the bottom of its second (xenia:src/xenia/gpu/ucode.h:243-246). xost set a mask of
+  its fetch count capped at four, and vc_lo 0, so a fifth or sixth fetch went unmarked. In these programs the fifth
+  fetch was the position.
+- **Marked, the fetch is right.** With the mask over all six bits, the fifth and sixth fetch in vc_lo's bits 0 and 1,
+  every draw of both frames that drew stayed in place (`replay_dump1_after.log`, `replay_dump2_after.log`), and
+  Melee's fighters drew whole (`melee.log`). Which instruction each bit stands for in other orders, with fetches after
+  ALU instructions, isn't known; xost's vertex shaders fetch first.
+- **Xenos draws past a viewport as far as the scissor.** One draw, a backdrop across the camera, filled all 1280
+  columns of the replay's target where its viewport was 1168 wide (`replay_dump1_layer_before.log`). vulkan4xenon now
+  stops its scissor at the viewport (vulkan4xenon:docs/SUPPORT.md, Pipelines), and the draw covered exactly the 840960
+  pixels its triangles clipped to the viewport do (`replay_dump1_layer_after.log`).
+- **xsdk_test passed 316 of 316** with the mask over all six bits (`xsdk_test.log`).

@@ -66,13 +66,16 @@ static bool scaled_field(Xsc *x, uint32_t *word, double value, int scale, int lo
 	return signed_field(x, word, (int64_t)raw, lo, width, name);
 }
 
-bool xsdk_xsc_build_cf_exec(Xsc *x, uint32_t opcode, int64_t address, int64_t count, int64_t sequence, int64_t vc_hi,
+// vc's first four bits are vc_hi, at word 0's top, and its last two vc_lo, at word 1's bottom
+// (xenia:src/xenia/gpu/ucode.h:243-246).
+bool xsdk_xsc_build_cf_exec(Xsc *x, uint32_t opcode, int64_t address, int64_t count, int64_t sequence, int64_t vc,
 	bool is_predicate_clean, uint32_t pair[2])
 {
 	uint32_t d0 = 0, d1 = 0;
 	if (!field(x, &d0, address, 0, 12, "address") || !field(x, &d0, count, 12, 3, "count"))
 		return false;
-	if (!field(x, &d0, sequence, 16, 12, "sequence") || !field(x, &d0, vc_hi, 28, 4, "vc_hi"))
+	if (!field(x, &d0, sequence, 16, 12, "sequence") || !field(x, &d0, vc & 0xF, 28, 4, "vc_hi") ||
+		!field(x, &d1, vc >> 4, 0, 2, "vc_lo"))
 		return false;
 	flag(&d1, is_predicate_clean, 9);
 	d1 |= (uint32_t)ADDRESSING_RELATIVE << 11 | opcode << 12;

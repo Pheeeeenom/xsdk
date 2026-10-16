@@ -322,7 +322,7 @@ typedef struct {
 	int64_t address;
 	int64_t count;
 	int64_t sequence;
-	int64_t vc_hi;
+	int64_t vc;
 	bool pred_clean;
 	int64_t alloc_type;
 	uint32_t loop_id;
@@ -389,14 +389,15 @@ static CfEntry exec_entry(const XscProgram *p, const Chunk *chunk, bool last)
 		if (xsdk_xsc_modifies_predicate(op))
 			pred_clean = false;
 	}
-	// A vertex shader's fetch-bearing exec carries a mask of its fetches (program.py _build_ucode).
-	const int64_t vc = fetches && !p->pixel ? ((int64_t)1 << (fetches < 4 ? fetches : 4)) - 1 : 0;
+	// A vertex shader's fetch-bearing exec carries a mask of its fetches, all six bits of it: the console drew a fifth
+	// fetch wrong without its bit (docs/HARDWARE.md, "A fifth vertex fetch").
+	const int64_t vc = fetches && !p->pixel ? ((int64_t)1 << fetches) - 1 : 0;
 	return (CfEntry){ .type = CF_EXEC,
 		.opcode = last ? XSC_CF_EXEC_END : XSC_CF_EXEC,
 		.address = chunk->ops[0]->slot,
 		.count = (int64_t)chunk->count,
 		.sequence = seq,
-		.vc_hi = vc,
+		.vc = vc,
 		.pred_clean = pred_clean };
 }
 
@@ -457,7 +458,7 @@ static bool cf_pair(Xsc *x, const CfEntry *d, uint32_t pair[2])
 {
 	switch (d->type) {
 	case CF_EXEC:
-		return xsdk_xsc_build_cf_exec(x, d->opcode, d->address, d->count, d->sequence, d->vc_hi, d->pred_clean, pair);
+		return xsdk_xsc_build_cf_exec(x, d->opcode, d->address, d->count, d->sequence, d->vc, d->pred_clean, pair);
 	case CF_ALLOC:
 		return xsdk_xsc_build_cf_alloc(x, d->alloc_type, pair);
 	case CF_LOOP_START:

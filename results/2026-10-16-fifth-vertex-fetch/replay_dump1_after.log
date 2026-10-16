@@ -1,0 +1,262 @@
+log: game:\replay.log
+log: named after \Device\Harddisk0\Partition1\replay\replay.xex
+sbrk: the heap may grow to 474 MB from 0x00070000, the title's free memory
+replay title
+replay: 2296456 bytes, magic 52504C59, 120 draws
+display: 1280x720 scaled to the 1920x1080 output
+display: the line counter reached 720 after 23918 us
+display: Xbox 360 video output, 1280x720 at 60000 mHz
+PASS: replay: device, swapchain and layouts made
+vulkan4xenon: compiled SPIR-V 2F4D7470511C6023, 10740 bytes, in 1411 us
+vulkan4xenon: compiled SPIR-V 1BFF8557E3CCF98D, 332 bytes, in 79 us
+replay: draw 229: 888 white pixels, 0 outside its reference box (576 319 626 393), 2 frames
+PASS: replay: draw 229 stays in its box
+replay: draw 230: 1905 white pixels, 0 outside its reference box (515 337 617 420), 2 frames
+PASS: replay: draw 230 stays in its box
+replay: draw 231: 3200 white pixels, 0 outside its reference box (456 349 580 428), 2 frames
+PASS: replay: draw 231 stays in its box
+replay: draw 232: 691 white pixels, 0 outside its reference box (548 331 617 398), 2 frames
+PASS: replay: draw 232 stays in its box
+replay: draw 233: 326 white pixels, 0 outside its reference box (539 363 601 407), 2 frames
+PASS: replay: draw 233 stays in its box
+replay: draw 234: 282 white pixels, 0 outside its reference box (524 337 591 387), 2 frames
+PASS: replay: draw 234 stays in its box
+replay: draw 235: 265 white pixels, 0 outside its reference box (532 338 596 383), 2 frames
+PASS: replay: draw 235 stays in its box
+replay: draw 236: 490 white pixels, 0 outside its reference box (486 348 576 410), 2 frames
+PASS: replay: draw 236 stays in its box
+replay: draw 237: 320 white pixels, 0 outside its reference box (542 345 617 386), 2 frames
+PASS: replay: draw 237 stays in its box
+replay: draw 238: 262 white pixels, 0 outside its reference box (515 348 592 410), 2 frames
+PASS: replay: draw 238 stays in its box
+replay: draw 239: 345 white pixels, 0 outside its reference box (479 332 609 403), 2 frames
+PASS: replay: draw 239 stays in its box
+replay: draw 240: 123 white pixels, 0 outside its reference box (506 353 571 413), 2 frames
+PASS: replay: draw 240 stays in its box
+vulkan4xenon: compiled SPIR-V B585C55E754E22D5, 9752 bytes, in 1266 us
+replay: draw 241: 3574 white pixels, 0 outside its reference box (490 418 610 479), 2 frames
+PASS: replay: draw 241 stays in its box
+replay: draw 242: 3025 white pixels, 0 outside its reference box (466 399 572 459), 2 frames
+PASS: replay: draw 242 stays in its box
+vulkan4xenon: compiled SPIR-V FC7082B64CFE99B0, 7768 bytes, in 997 us
+replay: draw 243: 1497 white pixels, 0 outside its reference box (497 429 600 485), 2 frames
+PASS: replay: draw 243 stays in its box
+replay: draw 244: 500 white pixels, 0 outside its reference box (471 433 547 465), 2 frames
+PASS: replay: draw 244 stays in its box
+replay: draw 245: 1417 white pixels, 0 outside its reference box (471 425 600 485), 2 frames
+PASS: replay: draw 245 stays in its box
+replay: draw 246: 226 white pixels, 0 outside its reference box (513 424 567 458), 2 frames
+PASS: replay: draw 246 stays in its box
+replay: draw 247: 1422 white pixels, 0 outside its reference box (469 338 538 391), 2 frames
+PASS: replay: draw 247 stays in its box
+replay: draw 248: 1216 white pixels, 0 outside its reference box (462 336 546 397), 2 frames
+PASS: replay: draw 248 stays in its box
+replay: draw 249: 1101 white pixels, 0 outside its reference box (527 260 597 359), 2 frames
+PASS: replay: draw 249 stays in its box
+replay: draw 250: 522 white pixels, 0 outside its reference box (552 319 600 357), 2 frames
+PASS: replay: draw 250 stays in its box
+replay: draw 251: 30 white pixels, 0 outside its reference box (524 336 547 359), 2 frames
+PASS: replay: draw 251 stays in its box
+replay: draw 252: 491 white pixels, 0 outside its reference box (488 369 571 436), 2 frames
+PASS: replay: draw 252 stays in its box
+replay: draw 253: 457 white pixels, 0 outside its reference box (488 362 562 448), 2 frames
+PASS: replay: draw 253 stays in its box
+replay: draw 254: 297 white pixels, 0 outside its reference box (488 374 545 431), 2 frames
+PASS: replay: draw 254 stays in its box
+replay: draw 255: 1424 white pixels, 0 outside its reference box (556 349 651 399), 2 frames
+PASS: replay: draw 255 stays in its box
+replay: draw 256: 313 white pixels, 0 outside its reference box (550 355 597 397), 2 frames
+PASS: replay: draw 256 stays in its box
+replay: draw 257: 1436 white pixels, 0 outside its reference box (532 338 614 392), 2 frames
+PASS: replay: draw 257 stays in its box
+replay: draw 258: 123 white pixels, 0 outside its reference box (533 351 582 387), 2 frames
+PASS: replay: draw 258 stays in its box
+replay: draw 259: 7111 white pixels, 0 outside its reference box (561 215 677 342), 2 frames
+PASS: replay: draw 259 stays in its box
+replay: draw 260: 570 white pixels, 0 outside its reference box (580 217 673 327), 2 frames
+PASS: replay: draw 260 stays in its box
+replay: draw 261: 1056 white pixels, 0 outside its reference box (599 271 670 341), 2 frames
+PASS: replay: draw 261 stays in its box
+replay: draw 262: 1141 white pixels, 0 outside its reference box (578 224 673 327), 2 frames
+PASS: replay: draw 262 stays in its box
+replay: draw 263: 308 white pixels, 0 outside its reference box (574 254 643 342), 2 frames
+PASS: replay: draw 263 stays in its box
+replay: draw 264: 627 white pixels, 0 outside its reference box (608 221 668 332), 2 frames
+PASS: replay: draw 264 stays in its box
+replay: draw 265: 612 white pixels, 0 outside its reference box (578 228 666 332), 2 frames
+PASS: replay: draw 265 stays in its box
+replay: draw 266: 168 white pixels, 0 outside its reference box (614 226 654 266), 2 frames
+PASS: replay: draw 266 stays in its box
+replay: draw 267: 187 white pixels, 0 outside its reference box (691 253 733 293), 2 frames
+PASS: replay: draw 267 stays in its box
+replay: draw 268: 543 white pixels, 0 outside its reference box (610 286 663 332), 2 frames
+PASS: replay: draw 268 stays in its box
+replay: draw 269: 1846 white pixels, 0 outside its reference box (417 335 500 410), 2 frames
+PASS: replay: draw 269 stays in its box
+replay: draw 270: 4964 white pixels, 0 outside its reference box (619 252 733 335), 2 frames
+PASS: replay: draw 270 stays in its box
+replay: draw 271: 1098 white pixels, 0 outside its reference box (512 365 585 451), 2 frames
+PASS: replay: draw 271 stays in its box
+replay: draw 272: 189 white pixels, 0 outside its reference box (526 356 576 409), 2 frames
+PASS: replay: draw 272 stays in its box
+replay: draw 273: 2257 white pixels, 0 outside its reference box (512 373 584 450), 2 frames
+PASS: replay: draw 273 stays in its box
+replay: draw 274: 2148 white pixels, 0 outside its reference box (488 354 576 432), 2 frames
+PASS: replay: draw 274 stays in its box
+replay: draw 275: 32 white pixels, 0 outside its reference box (489 355 544 385), 2 frames
+PASS: replay: draw 275 stays in its box
+replay: draw 276: 397 white pixels, 0 outside its reference box (610 286 664 329), 2 frames
+PASS: replay: draw 276 stays in its box
+replay: draw 277: 647 white pixels, 0 outside its reference box (605 240 668 292), 2 frames
+PASS: replay: draw 277 stays in its box
+replay: draw 278: 1277 white pixels, 0 outside its reference box (583 340 653 389), 2 frames
+PASS: replay: draw 278 stays in its box
+replay: draw 279: 1147 white pixels, 0 outside its reference box (616 363 671 418), 2 frames
+PASS: replay: draw 279 stays in its box
+vulkan4xenon: compiled SPIR-V 6A17080D61453897, 9128 bytes, in 7160 us
+replay: draw 280: 1382 white pixels, 0 outside its reference box (608 223 662 285), 2 frames
+PASS: replay: draw 280 stays in its box
+replay: draw 281: 1132 white pixels, 0 outside its reference box (624 228 670 291), 2 frames
+PASS: replay: draw 281 stays in its box
+replay: draw 282: 1096 white pixels, 0 outside its reference box (616 280 693 320), 2 frames
+PASS: replay: draw 282 stays in its box
+replay: draw 283: 1753 white pixels, 0 outside its reference box (590 341 650 415), 2 frames
+PASS: replay: draw 283 stays in its box
+replay: draw 284: 1496 white pixels, 0 outside its reference box (572 397 664 447), 2 frames
+PASS: replay: draw 284 stays in its box
+replay: draw 285: 460 white pixels, 0 outside its reference box (572 416 664 447), 2 frames
+PASS: replay: draw 285 stays in its box
+replay: draw 286: 2391 white pixels, 0 outside its reference box (577 216 687 308), 2 frames
+PASS: replay: draw 286 stays in its box
+replay: draw 287: 1078 white pixels, 0 outside its reference box (582 234 692 319), 2 frames
+PASS: replay: draw 287 stays in its box
+replay: draw 288: 301 white pixels, 0 outside its reference box (561 233 682 304), 2 frames
+PASS: replay: draw 288 stays in its box
+replay: draw 289: 82 white pixels, 0 outside its reference box (569 247 600 273), 2 frames
+PASS: replay: draw 289 stays in its box
+replay: draw 290: 5681 white pixels, 0 outside its reference box (575 219 694 319), 2 frames
+PASS: replay: draw 290 stays in its box
+replay: draw 291: 1042 white pixels, 0 outside its reference box (560 214 685 300), 2 frames
+PASS: replay: draw 291 stays in its box
+replay: draw 292: 173 white pixels, 0 outside its reference box (576 216 685 305), 2 frames
+PASS: replay: draw 292 stays in its box
+replay: draw 293: 48 white pixels, 0 outside its reference box (570 240 605 269), 2 frames
+PASS: replay: draw 293 stays in its box
+replay: draw 294: 5584 white pixels, 0 outside its reference box (589 289 703 413), 2 frames
+PASS: replay: draw 294 stays in its box
+replay: draw 295: 439 white pixels, 0 outside its reference box (628 308 685 405), 2 frames
+PASS: replay: draw 295 stays in its box
+replay: draw 296: 1464 white pixels, 0 outside its reference box (582 245 676 310), 2 frames
+PASS: replay: draw 296 stays in its box
+replay: draw 297: 4711 white pixels, 0 outside its reference box (585 289 702 397), 2 frames
+PASS: replay: draw 297 stays in its box
+replay: draw 298: 580 white pixels, 0 outside its reference box (605 305 691 413), 2 frames
+PASS: replay: draw 298 stays in its box
+replay: draw 299: 396 white pixels, 0 outside its reference box (582 245 676 297), 2 frames
+PASS: replay: draw 299 stays in its box
+replay: draw 300: 670 white pixels, 0 outside its reference box (560 214 644 274), 2 frames
+PASS: replay: draw 300 stays in its box
+replay: draw 301: 1006 white pixels, 0 outside its reference box (582 221 644 276), 2 frames
+PASS: replay: draw 301 stays in its box
+replay: draw 302: 1791 white pixels, 0 outside its reference box (624 376 707 440), 2 frames
+PASS: replay: draw 302 stays in its box
+replay: draw 303: 1605 white pixels, 0 outside its reference box (635 412 724 464), 2 frames
+PASS: replay: draw 303 stays in its box
+replay: draw 304: 681 white pixels, 0 outside its reference box (635 432 723 464), 2 frames
+PASS: replay: draw 304 stays in its box
+replay: draw 305: 1785 white pixels, 0 outside its reference box (548 252 606 329), 2 frames
+PASS: replay: draw 305 stays in its box
+replay: draw 306: 375 white pixels, 0 outside its reference box (553 252 606 302), 2 frames
+PASS: replay: draw 306 stays in its box
+replay: draw 307: 21 white pixels, 0 outside its reference box (573 257 601 275), 2 frames
+PASS: replay: draw 307 stays in its box
+replay: draw 308: 1464 white pixels, 0 outside its reference box (507 287 593 336), 2 frames
+PASS: replay: draw 308 stays in its box
+replay: draw 309: 1788 white pixels, 0 outside its reference box (637 212 713 282), 2 frames
+PASS: replay: draw 309 stays in its box
+replay: draw 310: 411 white pixels, 0 outside its reference box (637 212 688 258), 2 frames
+PASS: replay: draw 310 stays in its box
+replay: draw 311: 20 white pixels, 0 outside its reference box (634 222 659 247), 2 frames
+PASS: replay: draw 311 stays in its box
+replay: draw 312: 1021 white pixels, 0 outside its reference box (664 240 722 290), 2 frames
+PASS: replay: draw 312 stays in its box
+vulkan4xenon: compiled SPIR-V F52AC10635D3FA1E, 3684 bytes, in 524 us
+replay: draw 313: 17 white pixels, 0 outside its reference box (564 223 585 247), 2 frames
+PASS: replay: draw 313 stays in its box
+replay: draw 314: 109 white pixels, 0 outside its reference box (555 206 581 244), 2 frames
+PASS: replay: draw 314 stays in its box
+replay: draw 315: 518 white pixels, 0 outside its reference box (556 216 609 261), 2 frames
+PASS: replay: draw 315 stays in its box
+replay: draw 316: 280 white pixels, 0 outside its reference box (576 211 612 249), 2 frames
+PASS: replay: draw 316 stays in its box
+replay: draw 317: 100 white pixels, 0 outside its reference box (585 211 615 247), 2 frames
+PASS: replay: draw 317 stays in its box
+replay: draw 318: 786 white pixels, 0 outside its reference box (558 198 620 255), 2 frames
+PASS: replay: draw 318 stays in its box
+replay: draw 319: 692 white pixels, 0 outside its reference box (576 197 629 247), 2 frames
+PASS: replay: draw 319 stays in its box
+replay: draw 320: 530 white pixels, 0 outside its reference box (580 222 631 263), 2 frames
+PASS: replay: draw 320 stays in its box
+replay: draw 321: 25 white pixels, 0 outside its reference box (571 234 597 255), 2 frames
+PASS: replay: draw 321 stays in its box
+replay: draw 322: 279 white pixels, 0 outside its reference box (557 217 620 255), 2 frames
+PASS: replay: draw 322 stays in its box
+replay: draw 323: 55 white pixels, 0 outside its reference box (601 220 629 245), 2 frames
+PASS: replay: draw 323 stays in its box
+replay: draw 324: 561 white pixels, 0 outside its reference box (620 287 709 323), 2 frames
+PASS: replay: draw 324 stays in its box
+replay: draw 325: 113 white pixels, 0 outside its reference box (649 296 678 323), 2 frames
+PASS: replay: draw 325 stays in its box
+replay: draw 326: 71 white pixels, 0 outside its reference box (669 285 694 313), 2 frames
+PASS: replay: draw 326 stays in its box
+replay: draw 327: 601 white pixels, 0 outside its reference box (480 287 538 328), 2 frames
+PASS: replay: draw 327 stays in its box
+replay: draw 328: 68 white pixels, 0 outside its reference box (482 300 513 326), 2 frames
+PASS: replay: draw 328 stays in its box
+replay: draw 329: 546 white pixels, 0 outside its reference box (480 287 535 328), 2 frames
+PASS: replay: draw 329 stays in its box
+replay: draw 330: 73 white pixels, 0 outside its reference box (480 295 513 323), 2 frames
+PASS: replay: draw 330 stays in its box
+replay: draw 331: 93 white pixels, 0 outside its reference box (507 292 538 328), 2 frames
+PASS: replay: draw 331 stays in its box
+replay: draw 332: 841 white pixels, 0 outside its reference box (666 244 726 302), 2 frames
+PASS: replay: draw 332 stays in its box
+replay: draw 333: 51 white pixels, 0 outside its reference box (665 249 703 282), 2 frames
+PASS: replay: draw 333 stays in its box
+replay: draw 334: 325 white pixels, 0 outside its reference box (665 244 715 290), 2 frames
+PASS: replay: draw 334 stays in its box
+replay: draw 335: 118 white pixels, 0 outside its reference box (669 249 703 283), 2 frames
+PASS: replay: draw 335 stays in its box
+replay: draw 336: 600 white pixels, 0 outside its reference box (678 259 726 302), 2 frames
+PASS: replay: draw 336 stays in its box
+vulkan4xenon: compiled SPIR-V C5E5EE77129AC527, 7960 bytes, in 6430 us
+replay: draw 337: 107 white pixels, 0 outside its reference box (616 283 643 313), 2 frames
+PASS: replay: draw 337 stays in its box
+vulkan4xenon: compiled SPIR-V C98DC13D50A5F34C, 7144 bytes, in 3744 us
+replay: draw 338: 605 white pixels, 0 outside its reference box (674 288 727 339), 2 frames
+PASS: replay: draw 338 stays in its box
+replay: draw 339: 356 white pixels, 0 outside its reference box (674 289 724 339), 2 frames
+PASS: replay: draw 339 stays in its box
+replay: draw 340: 287 white pixels, 0 outside its reference box (686 288 727 338), 2 frames
+PASS: replay: draw 340 stays in its box
+replay: draw 341: 91 white pixels, 0 outside its reference box (688 289 718 314), 2 frames
+PASS: replay: draw 341 stays in its box
+vulkan4xenon: compiled SPIR-V D8747B41479BECB9, 10116 bytes, in 8668 us
+replay: draw 342: 1859 white pixels, 0 outside its reference box (626 196 701 259), 2 frames
+PASS: replay: draw 342 stays in its box
+replay: draw 343: 1675 white pixels, 0 outside its reference box (626 196 701 259), 2 frames
+PASS: replay: draw 343 stays in its box
+vulkan4xenon: compiled SPIR-V A53EAA02C0512AC3, 11352 bytes, in 15868 us
+replay: draw 344: 0 white pixels, 0 outside its reference box (-1370 -3911 -962 -3364), 2 frames
+PASS: replay: draw 344 stays in its box
+replay: draw 345: 0 white pixels, 0 outside its reference box (-1008 -3499 -899 -3300), 2 frames
+PASS: replay: draw 345 stays in its box
+vulkan4xenon: compiled SPIR-V B55DD010AEBF26CD, 4312 bytes, in 1383 us
+replay: draw 346: 0 white pixels, 0 outside its reference box (-3947 -1333 13033 -127), 2 frames
+PASS: replay: draw 346 stays in its box
+replay: draw 347: 921600 white pixels, 385280 outside its reference box (-3716 -66 11664 418), 2 frames
+FAIL: replay: draw 347 stays in its box
+replay: draw 360: 0 white pixels, 0 outside its reference box (3293 -229 3613 62), 2 frames
+PASS: replay: draw 360 stays in its box
+tests: 120 passed, 1 failed
+exit: status 1

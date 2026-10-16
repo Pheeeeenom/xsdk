@@ -17,7 +17,7 @@ the allocator packs them, the fetch layout and the optimiser.
 
 Conventions baked in (validated on hardware by xost's first demo apps, in its
 archived repo, and by the SDK's titles since):
-exec entries use is_predicate_clean=True; fetch-bearing execs carry vc_hi=15;
+exec entries use is_predicate_clean=True; fetch-bearing execs carry a mask of their fetches in vc_hi and vc_lo;
 sequence bit0 marks fetch slots; VS tail flags: POSITION=0x1, COLOR=0x3,
 TEXCOORD=0x0; interpolator flags: VS (index<<4)|nibble, PS nibble
 (nibble: TEXCOORD=0x3, COLOR=0xF).
@@ -295,16 +295,16 @@ class _Program:
                     if ins.is_fetch:
                         seq |= 0b01 << (2 * k)
                         n_fetch += 1
-                # XDK convention: vc_hi = per-fetch-count mask (VS only);
-                # corpus: 4 fetches -> 0xF, 3 -> 0x7 (cube_vs)
-                vc = ((1 << min(n_fetch, 4)) - 1) if (
+                # A mask of the fetches (VS only), the first four in vc_hi and the fifth and sixth in vc_lo: the
+                # console drew a fifth fetch wrong without its bit (xsdk:docs/HARDWARE.md, "A fifth vertex fetch").
+                vc = ((1 << n_fetch) - 1) if (
                     n_fetch and self.shader_type == "vertex") else 0
                 # An exec that sets the predicate is not predicate-clean.
                 pred_clean = not any(_modifies_predicate(ins) for ins in chunk)
                 cf.append({"t": "exec",
                            "opcode": K.kExecEnd if is_last else K.kExec,
                            "address": chunk[0].slot, "count": len(chunk),
-                           "sequence": seq, "vc_hi": vc,
+                           "sequence": seq, "vc": vc,
                            "pred_clean": pred_clean})
             if si in self._alloc_after:
                 cf.append({"t": "alloc", "alloc_type": self._alloc_after[si]})
@@ -322,7 +322,7 @@ class _Program:
                 pairs.append(enc.build_cf_exec(
                     opcode=d["opcode"], address=d["address"], count=d["count"],
                     is_yield=False, sequence=d["sequence"],
-                    vc_hi=d["vc_hi"], vc_lo=0,
+                    vc_hi=d["vc"] & 0xF, vc_lo=d["vc"] >> 4,
                     is_predicate_clean=d["pred_clean"], addressing_mode=0))
             elif d["t"] == "alloc":
                 pairs.append(enc.build_cf_alloc(
