@@ -86,6 +86,14 @@ work begins.
 - **A constant blend colour.** The blend factors stop short of `kConstantColor` to `kOneMinusConstantAlpha`
   (xenos.h:719-722), which read `RB_BLEND_RED` to `RB_BLEND_ALPHA` (xenia:src/xenia/gpu/register_table.inc:506-509).
   Vulkan's blend constants need them.
+- **Destination alpha,** vulkan4xenon milestone 18's step 4, put off (vulkan4xenon:docs/ROADMAP.md). Aurora's backend
+  refuses a pipeline with `GXSetDstAlpha` on and skips its draws, logging `vulkan4xenon can't draw destination alpha`
+  (aurora-melee:lib/vulkan4xenon/pipeline.cpp, `unsupported`). Dawn's backend writes the constant as alpha through a
+  blend constant; where the colour blend reads source alpha, it needs dual-source blending, which Xenos lacks, or an
+  alpha-only pass before the colour (aurora-melee:lib/gx/pipeline.cpp, `create_pipeline`). So it needs the constant
+  blend colour above, Vulkan's blend constants in the layer, and that pass in the backend. Melee sets it through its
+  HSD state (melee-pc:src/sysdolphin/baselib/state.c:376); no Melee session or Dusklight title scene has logged the
+  refusal yet.
 - **Primitive restart.** `VGT_MULTI_PRIM_IB_RESET_INDX` (registers.h:343-360) and `PA_SU_SC_MODE_CNTL`'s
   `multi_prim_ib_ena` (registers.h:480).
 - **Draws of more than 65535 indices.** The draw initiator's count is 16 bits (registers.h:327), so a layer would split
@@ -93,8 +101,9 @@ work begins.
 - **Wireframe and point fill.** `PA_SU_SC_MODE_CNTL`'s `poly_mode` and polygon types (registers.h:463-468).
 - **Border and mirror-once addressing.** `ClampMode` 3 to 7, with a black or white border (xenos.h:104-162); Vulkan's
   clamp to border and mirror clamp to edge.
-- **Level-of-detail clamps.** The fetch constant's `mip_min_level` and `mip_max_level` (xenos.h:1265-1266), for
-  Vulkan's `minLod`, `maxLod` and image views' level ranges. The SDK always samples every level.
+- **Image views of some of a texture's levels.** vulkan4xenon refuses a view that doesn't cover every level
+  (vulkan4xenon:src/image.c). The sampler's lowest level and count of levels (include/xsdk/texture.h), which took
+  Vulkan's `minLod` and `maxLod` in vulkan4xenon milestone 18's step 2, could take a view's range too.
 - **More texture formats.** Milestone 16 covers 13. A Vulkan layer will also want DXN (BC5), 16-bit fixed point,
   32-bit float, 10-11-11, and the signed and gamma (sRGB) variants: `TextureFormat` (xenos.h:450-532) and
   `TextureSign` (xenos.h:121-129).
