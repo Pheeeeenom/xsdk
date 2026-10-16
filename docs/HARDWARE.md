@@ -3323,9 +3323,10 @@ low bit from the pixel shader's record: while it's set, `RB_HIZCONTROL` is 0, an
 after, as such a draw's depth still passes the depth test and stays within the buffer's bound.
 
 With that, on the console (`results/2026-10-16-depth-export/`):
-- **xsdk_test passed 314 of 316** (`xsdk_test.log`), the two failures the controller's, with no one at the pad. Its new
-  check drew, over clears to 1 and less-than, the depth shader at 0.75 writing 0.1 behind a near quad, and at 0.2
-  writing 0.8 with a quad at 0.5 drawn over it: of 921600 pixels, none hid the first or failed the second.
+- **xsdk_test passed 316 of 316** with the user at the pad (`xsdk_test_pad.log`), and 314 without, the two failures
+  the controller's (`xsdk_test.log`). Its new check drew, over clears to 1 and less-than, the depth shader at 0.75
+  writing 0.1 behind a near quad, and at 0.2 writing 0.8 with a quad at 0.5 drawn over it: of 921600 pixels, none hid
+  the first or failed the second.
 - **Broken on purpose,** the buffer's control ignoring the shader, or `xsdk_gpu_set_shaders` leaving it as the depth
   setting left it, 921438 pixels hid the first draw each time and the check failed (`xsdk_test_hiz_test_broken.log`,
   `xsdk_test_hiz_put_broken.log`). The quad at 0.5 still showed everywhere, though the buffer wrote during the draw
