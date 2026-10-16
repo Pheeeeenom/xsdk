@@ -62,13 +62,25 @@ typedef struct {
 	const uint32_t *source;
 } XsdkShader;
 
-// One attribute of a vertex: the shader input it feeds, its format, its stream, and where it sits in the stream.
+// Which of a format's components an attribute's x, y, z or w reads, counted as the formats above lay them out; 0 reads
+// its own, so x reads the first.
+enum {
+	XSDK_COMPONENT_OWN,
+	XSDK_COMPONENT_X,
+	XSDK_COMPONENT_Y,
+	XSDK_COMPONENT_Z,
+	XSDK_COMPONENT_W,
+};
+
+// One attribute of a vertex: the shader input it feeds, its format, its stream, where it sits in the stream, and the
+// XSDK_COMPONENT_* each of x to w reads, so data whose components lie in another order is fetched as it is.
 typedef struct {
 	uint32_t usage;
 	uint32_t usage_index;
 	uint32_t format;
 	uint32_t stream;
 	uint32_t offset_bytes;
+	uint8_t components[4];
 } XsdkVertexElement;
 
 // Copies the container's microcode into GPU memory.

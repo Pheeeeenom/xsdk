@@ -124,7 +124,7 @@ which implements what the games it runs need:
 
 | Capability | Status | How | Verified by | Missing |
 |---|---|---|---|---|
-| Draws, indexed or not: points, lines, line strips, triangle lists, strips and fans; up to 16 vertex streams (`XSDK_VERTEX_STREAMS`) | Yes | `gpu.h` | `tests/test_triangle.c`, `test_indexed.c`, `test_vertex.c` | More than 65,535 indices a draw; primitive restart (TODO.md) |
+| Draws, indexed or not: points, lines, line strips, triangle lists, strips and fans; up to 16 vertex streams (`XSDK_VERTEX_STREAMS`); 18 vertex formats, their components picked in any order | Yes | `gpu.h`, `shader.h` | `tests/test_triangle.c`, `test_indexed.c`, `test_vertex.c` | More than 65,535 indices a draw; primitive restart (TODO.md); 10-bit vertex formats |
 | Shader constants, set by the CPU or loaded by the GPU from memory | Yes | `gpu.h` | `tests/test_constants.c` | |
 | Depth, stencil, blending, write masks, culling, depth bias, scissor, viewport | Yes | `gpu.h` | `tests/test_depth.c`, `test_raster.c` | Two-sided stencil; a constant blend colour; wireframe and point fill (TODO.md) |
 | Hierarchical depth | Yes | automatic after a depth clear, at 1 sample | `tests/test_hiz.c` | Multisampled targets |

@@ -188,17 +188,31 @@ NTSTATUS xsdk_shader_load(XsdkShader *shader, const uint32_t *container, uint32_
 	return STATUS_SUCCESS;
 }
 
-// Components the data lacks read as 0, and w as 1, as libxenon pads them (xe.c:900-916).
-static uint32_t padded_swizzle(uint32_t swizzle, uint32_t components)
+// The fetch's swizzle with each of x to w the component the element picks for it, as the swizzle chooses among the
+// fetched components (xenia:src/xenia/gpu/ucode.h:677-688); components the data lacks read as 0, and w as 1, as
+// libxenon pads them (xe.c:900-916).
+static uint32_t picked_swizzle(uint32_t swizzle, const XsdkVertexElement *element, uint32_t components)
 {
 	for (uint32_t component = 0; component < 4; component++) {
 		const uint32_t shift = component * SWIZZLE_BITS;
-		const uint32_t source = swizzle >> shift & SWIZZLE_SOURCE_MASK;
-		if (source <= SWIZZLE_W && source >= components)
-			swizzle = (swizzle & ~(SWIZZLE_SOURCE_MASK << shift)) |
-				(source == SWIZZLE_W ? SWIZZLE_ONE : SWIZZLE_ZERO) << shift;
+		uint32_t source = swizzle >> shift & SWIZZLE_SOURCE_MASK;
+		if (source > SWIZZLE_W)
+			continue;
+		const uint32_t own = source == SWIZZLE_W ? SWIZZLE_ONE : SWIZZLE_ZERO;
+		if (element->components[source])
+			source = element->components[source] - XSDK_COMPONENT_X;
+		swizzle = (swizzle & ~(SWIZZLE_SOURCE_MASK << shift)) | (source >= components ? own : source) << shift;
 	}
 	return swizzle;
+}
+
+static bool picks_in_range(const XsdkVertexElement *element)
+{
+	for (uint32_t i = 0; i < 4; i++) {
+		if (element->components[i] > XSDK_COMPONENT_W)
+			return false;
+	}
+	return true;
 }
 
 // Xe_ShaderApplyVFetchPatches for one-dword prefetches, with each element's stream and format (xe.c:788-933).
@@ -213,8 +227,9 @@ NTSTATUS xsdk_shader_set_vertex_layout(
 			patch >> PATCH_USAGE_SHIFT & PATCH_FIELD_MASK, patch >> PATCH_INDEX_SHIFT & PATCH_FIELD_MASK);
 		if (!element)
 			return reject("the vertex layout lacks an input the shader fetches");
-		if (element->format >= XSDK_VERTEX_FORMATS || element->stream >= XSDK_VERTEX_STREAMS)
-			return reject("vertex format or stream out of range");
+		if (element->format >= XSDK_VERTEX_FORMATS || element->stream >= XSDK_VERTEX_STREAMS ||
+			!picks_in_range(element))
+			return reject("vertex format, stream or component out of range");
 		const uint32_t stride_bytes = stream_strides[element->stream];
 		if (stride_bytes % 4 || stride_bytes / 4 > FETCH_STRIDE_MASK)
 			return reject("vertex stride not a whole number of dwords up to 255");
@@ -230,7 +245,7 @@ NTSTATUS xsdk_shader_set_vertex_layout(
 		fetch[1] =
 			(source[1] &
 				~(FETCH_SWIZZLE_MASK | FETCH_SIGNED | FETCH_INTEGER | FETCH_NO_ZERO | FETCH_FORMAT_MASK | FETCH_MINI)) |
-			padded_swizzle(source[1] & FETCH_SWIZZLE_MASK, info->components) |
+			picked_swizzle(source[1] & FETCH_SWIZZLE_MASK, element, info->components) |
 			(uint32_t)info->is_signed * FETCH_SIGNED | (uint32_t)!info->normalized * FETCH_INTEGER |
 			(uint32_t)info->format << FETCH_FORMAT_SHIFT;
 		fetch[2] = (source[2] & ~(FETCH_OFFSET_MASK | FETCH_STRIDE_MASK)) |

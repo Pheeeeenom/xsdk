@@ -12,7 +12,8 @@
 #include "xsdk/shader.h"
 #include "xsdk/thread.h"
 
-// One cell per vertex format, positions and colours from separate streams with their own strides, checked by pixel.
+// One cell per vertex format, positions and colours from separate streams with their own strides, checked by pixel; and
+// cells whose colours' components lie in other orders, each picked back into place.
 
 enum {
 	WIDTH = 1280,
@@ -31,11 +32,13 @@ enum {
 	COMPONENTS = 4,
 	// Fixed point and floats convert once more on the way to the 8-bit target.
 	TOLERANCE = 1,
-	MAX_CELLS = 24,
+	MAX_CELLS = 28,
 	POINTS_PER_CELL = SQUARES + 1,
 	CELL_STEP = 130,
 	ROW_STEP = 140,
 	COLOUR_FORMATS_PER_ROW = 9,
+	// Cells whose colour components are picked in another order.
+	PICKED_CELLS = 4,
 };
 
 typedef struct {
@@ -50,6 +53,8 @@ typedef struct {
 	uint32_t colour_offset;
 	uint32_t x;
 	uint32_t y;
+	// The XSDK_COMPONENT_* each of the colour's x to w reads; all 0 for each its own.
+	uint8_t picks[4];
 } Cell;
 
 typedef struct {
@@ -111,6 +116,28 @@ static void colour_of(uint32_t cell, uint32_t format, uint32_t square, float out
 		out[spec->components > 2 ? 2 : 0] = is_integer(format) ? -1.0f : -0.5f;
 	if (square == SQUARES - 1 && is_integer(format))
 		out[1] = 2.0f;
+}
+
+// The format's component a colour component reads, as the cell picks it.
+static uint32_t picked(const Cell *cell, uint32_t component)
+{
+	return cell->picks[component] ? (uint32_t)(cell->picks[component] - XSDK_COMPONENT_X) : component;
+}
+
+static bool is_picked(const Cell *cell)
+{
+	return cell->picks[0] || cell->picks[1] || cell->picks[2] || cell->picks[3];
+}
+
+// The colour's components where the cell's picks read them: the component each picks holds it.
+static void scatter(const Cell *cell, const float value[COMPONENTS], float out[COMPONENTS])
+{
+	for (uint32_t c = 0; c < COMPONENTS; c++)
+		out[c] = value[c];
+	for (uint32_t c = 0; c < COMPONENTS; c++) {
+		if (picked(cell, c) < specs[cell->colour_format].components)
+			out[picked(cell, c)] = value[c];
+	}
 }
 
 static int32_t round_to_int(float value)
@@ -201,16 +228,35 @@ static uint32_t to_byte(float value)
 	return rounded < 0.0f ? 0 : rounded >= 255.0f ? 255 : (uint32_t)rounded;
 }
 
-// The ARGB a square should draw, from the colour the GPU decodes.
+// The cell's colour as its stream holds it, each component where the cell's picks read it.
+static void encode_colour(const Cell *cell, const float colour[COMPONENTS], uint32_t *words)
+{
+	float stored[COMPONENTS];
+	scatter(cell, colour, stored);
+	encode(cell->colour_format, stored, words);
+}
+
+// A colour component as the GPU fetches it: the decoded component the cell picks, or past the format's, 0, or 1 for w.
+static float fetched(const Cell *cell, const float decoded[COMPONENTS], uint32_t component)
+{
+	if (picked(cell, component) < specs[cell->colour_format].components)
+		return decoded[picked(cell, component)];
+	return component == COMPONENTS - 1 ? 1.0f : 0.0f;
+}
+
+// The ARGB a square should draw, from the colour the GPU decodes and picks.
 static uint32_t square_argb(const Cell *cell, uint32_t index, uint32_t square)
 {
 	float colour[COMPONENTS];
 	uint32_t words[COMPONENTS];
 	colour_of(index, cell->colour_format, square, colour);
-	encode(cell->colour_format, colour, words);
+	encode_colour(cell, colour, words);
 	float decoded[COMPONENTS];
 	decode(cell->colour_format, words, decoded);
-	return to_byte(decoded[3]) << 24 | to_byte(decoded[0]) << 16 | to_byte(decoded[1]) << 8 | to_byte(decoded[2]);
+	float out[COMPONENTS];
+	for (uint32_t c = 0; c < COMPONENTS; c++)
+		out[c] = fetched(cell, decoded, c);
+	return to_byte(out[3]) << 24 | to_byte(out[0]) << 16 | to_byte(out[1]) << 8 | to_byte(out[2]);
 }
 
 // Positions vary in stream, stride and offset across cells, as do colours, crossing three fetch constant groups.
@@ -221,20 +267,37 @@ static uint32_t make_cells(Cell *cells)
 	uint32_t count = 0;
 	for (uint32_t format = 0; format < XSDK_VERTEX_FORMATS; format++) {
 		const uint32_t i = count;
-		cells[count++] = (Cell){ specs[format].name, XSDK_VERTEX_FLOAT4, format, position_streams[i % 3],
-			colour_streams[i % 3], 16 + 4 * (1 + i % 3), specs[format].bytes + 4 * (1 + i % 2), 4 * (i % 2),
-			4 * (i % 2), 40 + i % COLOUR_FORMATS_PER_ROW * CELL_STEP, 60 + i / COLOUR_FORMATS_PER_ROW * ROW_STEP };
+		cells[count++] =
+			(Cell){ specs[format].name, XSDK_VERTEX_FLOAT4, format, position_streams[i % 3], colour_streams[i % 3],
+				16 + 4 * (1 + i % 3), specs[format].bytes + 4 * (1 + i % 2), 4 * (i % 2), 4 * (i % 2),
+				40 + i % COLOUR_FORMATS_PER_ROW * CELL_STEP, 60 + i / COLOUR_FORMATS_PER_ROW * ROW_STEP, { 0 } };
 	}
 	static const uint32_t position_formats[] = { XSDK_VERTEX_HALF2, XSDK_VERTEX_SHORT2N, XSDK_VERTEX_FLOAT2,
 		XSDK_VERTEX_FLOAT3 };
 	for (uint32_t i = 0; i < sizeof position_formats / sizeof position_formats[0]; i++) {
 		const uint32_t format = position_formats[i];
 		cells[count++] = (Cell){ specs[format].name, format, XSDK_VERTEX_UBYTE4N, 5, 6, specs[format].bytes + 4, 4, 4,
-			0, 40 + i * CELL_STEP, 60 + 2 * ROW_STEP };
+			0, 40 + i * CELL_STEP, 60 + 2 * ROW_STEP, { 0 } };
 	}
 	// Both in one stream, colour after position.
 	cells[count++] = (Cell){ "interleaved", XSDK_VERTEX_FLOAT4, XSDK_VERTEX_HALF4, 0, 0, 24, 24, 0, 16,
-		40 + 4 * CELL_STEP, 60 + 2 * ROW_STEP };
+		40 + 4 * CELL_STEP, 60 + 2 * ROW_STEP, { 0 } };
+	// Bytes and shorts first in memory, as Vulkan lays them out, reversed in each word; and bytes in BGRA's order.
+	static const struct {
+		uint32_t format;
+		uint8_t picks[4];
+	} picked_cells[PICKED_CELLS] = {
+		{ XSDK_VERTEX_UBYTE4N, { XSDK_COMPONENT_W, XSDK_COMPONENT_Z, XSDK_COMPONENT_Y, XSDK_COMPONENT_X } },
+		{ XSDK_VERTEX_HALF2, { XSDK_COMPONENT_Y, XSDK_COMPONENT_X } },
+		{ XSDK_VERTEX_SHORT4N, { XSDK_COMPONENT_Y, XSDK_COMPONENT_X, XSDK_COMPONENT_W, XSDK_COMPONENT_Z } },
+		{ XSDK_VERTEX_UBYTE4, { XSDK_COMPONENT_Y, XSDK_COMPONENT_Z, XSDK_COMPONENT_W, XSDK_COMPONENT_X } },
+	};
+	for (uint32_t i = 0; i < PICKED_CELLS; i++) {
+		const uint32_t format = picked_cells[i].format;
+		const uint8_t *const picks = picked_cells[i].picks;
+		cells[count++] = (Cell){ specs[format].name, XSDK_VERTEX_FLOAT4, format, 3, 4, 20, specs[format].bytes + 4, 0,
+			4, 40 + (5 + i) * CELL_STEP, 60 + 2 * ROW_STEP, { picks[0], picks[1], picks[2], picks[3] } };
+	}
 	return count;
 }
 
@@ -285,7 +348,7 @@ static void fill_streams(const Cell *cell, uint32_t index, volatile uint32_t *po
 			encode(cell->position_format, corners[i], words);
 			put_words(positions, vertex * cell->position_stride + cell->position_offset, words,
 				specs[cell->position_format].bytes);
-			encode(cell->colour_format, colour, words);
+			encode_colour(cell, colour, words);
 			put_words(
 				colours, vertex * cell->colour_stride + cell->colour_offset, words, specs[cell->colour_format].bytes);
 		}
@@ -336,9 +399,9 @@ static uint32_t error(uint32_t stored, uint32_t argb)
 
 static void log_miss(const Cell *cell, uint32_t frame, uint32_t x, uint32_t y, uint32_t stored, uint32_t argb)
 {
-	xsdk_log_write("vertex: frame %u: %s from %s at (%u, %u) held %08X, not %08X", (unsigned)frame,
-		specs[cell->colour_format].name, specs[cell->position_format].name, (unsigned)x, (unsigned)y, (unsigned)stored,
-		(unsigned)__builtin_bswap32(argb));
+	xsdk_log_write("vertex: frame %u: %s%s from %s at (%u, %u) held %08X, not %08X", (unsigned)frame,
+		specs[cell->colour_format].name, is_picked(cell) ? " picked" : "", specs[cell->position_format].name,
+		(unsigned)x, (unsigned)y, (unsigned)stored, (unsigned)__builtin_bswap32(argb));
 }
 
 // Every pixel of the cell and the ring around it; returns how many are wrong.
@@ -394,6 +457,8 @@ static void draw_frames(const Scene *scene)
 	uint32_t frames_wrong = 0;
 	uint32_t checked = 0;
 	uint32_t pixels_wrong = 0;
+	// Points and pixels wrong in cells of each format's own order, and in the picked cells.
+	uint32_t wrong_in[2] = { 0, 0 };
 	bool fences_landed = true;
 	bool shown = true;
 	for (uint32_t frame = 0; frame < FRAMES && fences_landed; frame++) {
@@ -414,6 +479,7 @@ static void draw_frames(const Scene *scene)
 					continue;
 				if (misses++ < MAX_MISSES_LOGGED)
 					log_miss(&scene->cells[p->cell], frame, p->x, p->y, stored, p->argb);
+				wrong_in[is_picked(&scene->cells[p->cell])]++;
 				frame_holds = false;
 			}
 			frames_wrong += !frame_holds;
@@ -426,10 +492,11 @@ static void draw_frames(const Scene *scene)
 				const uint32_t wrong = cell_wrong(cell, i, buffer, frame, &logged);
 				checked += ring;
 				pixels_wrong += wrong;
+				wrong_in[is_picked(cell)] += wrong;
 				if (wrong)
-					xsdk_log_write("vertex: %s colour from %s positions: %u of %u pixels wrong",
-						specs[cell->colour_format].name, specs[cell->position_format].name, (unsigned)wrong,
-						(unsigned)ring);
+					xsdk_log_write("vertex: %s%s colour from %s positions: %u of %u pixels wrong",
+						specs[cell->colour_format].name, is_picked(cell) ? " picked" : "",
+						specs[cell->position_format].name, (unsigned)wrong, (unsigned)ring);
 			}
 		}
 		if (scene->has_display)
@@ -443,7 +510,9 @@ static void draw_frames(const Scene *scene)
 		(unsigned)pixels_wrong, (unsigned)checked);
 	check("vertex: every frame's fence landed", fences_landed);
 	check("vertex: every format, stream, stride and offset drew its colours",
-		fences_landed && checked > 0 && frames_wrong == 0 && pixels_wrong == 0);
+		fences_landed && checked > 0 && wrong_in[0] == 0);
+	check("vertex: colours whose components lie in other orders, each picked back into place, drew their colours",
+		fences_landed && checked > 0 && wrong_in[1] == 0);
 	if (scene->has_display) {
 		check("vertex: every frame shown", shown);
 		xsdk_log_write("vertex: the last frame stays on screen for %u ms for a capture", (unsigned)TEST_SHOW_MS);
@@ -465,7 +534,8 @@ static bool load_shaders(XsdkShader *shaders, const Cell *cells, uint32_t cell_c
 			{ .usage = XSDK_USAGE_COLOR,
 				.format = cell->colour_format,
 				.stream = cell->colour_stream,
-				.offset_bytes = cell->colour_offset },
+				.offset_bytes = cell->colour_offset,
+				.components = { cell->picks[0], cell->picks[1], cell->picks[2], cell->picks[3] } },
 		};
 		uint32_t strides[XSDK_VERTEX_STREAMS] = { 0 };
 		strides[cell->position_stream] = cell->position_stride;
