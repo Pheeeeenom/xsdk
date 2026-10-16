@@ -15,6 +15,7 @@ enum {
 	INTERPOLATOR_INFO = 0x2000 | 0x3,
 	VERTEX_FIELD18 = 1,
 	VERTEX_MYSTERY = 0x290,
+	// XenosRecomp's mask of a pixel shader's outputs, oC0 alone unless the parts say (shader.h:80-92).
 	PIXEL_OUTPUTS = 0x1,
 	EXPORT_SLOT = 0x1000,
 };
@@ -139,7 +140,8 @@ static bool shader_record(const XscContainerParts *parts, Bytes *rec)
 			return false;
 	}
 	if (parts->pixel) {
-		if (!put_word(rec, parts->ps_field18) || !put_word(rec, PIXEL_OUTPUTS))
+		if (!put_word(rec, parts->ps_field18) ||
+			!put_word(rec, parts->pixel_outputs ? parts->pixel_outputs : PIXEL_OUTPUTS))
 			return false;
 	} else {
 		if (!put_word(rec, VERTEX_FIELD18) || !put_word(rec, (uint32_t)parts->vertex_element_count) ||

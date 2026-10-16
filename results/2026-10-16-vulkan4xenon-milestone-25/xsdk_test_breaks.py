@@ -6,6 +6,10 @@ drawn as 2_10_10_10, which clamps at 1; 16_16_16_16's clear words swapped, so it
 and alpha; 16_16_FLOAT's and 16_16_16_16_FLOAT's halves resolved swapped 8 in 32, so neighbouring channels trade
 places; and 32_FLOAT's floats resolved unswapped. Set b blends nothing, so 2_10_10_10's blend check fails, and
 test_raster's blends with it.
+
+Four targets at once: set c leaves RB_BLENDCONTROL1 to 3 unblended, so target 1's check fails, and counts a 64-bit
+target's tiles as a 32-bit one's, so targets 2 and 3 overlap and both fail; set d gives every target target 0's write
+mask, so targets 1 to 3 fail; set e resolves target 0 whichever is asked for, so all four fail.
 """
 import pathlib
 import sys
@@ -14,9 +18,9 @@ SETS = {
     "a": [
         ("src/gpu_resolve.c", "COPY_DEST_2_10_10_10 = 7 << COPY_DEST_FORMAT_SHIFT | COPY_DEST_ENDIAN_8IN32,",
          "COPY_DEST_2_10_10_10 = 7 << COPY_DEST_FORMAT_SHIFT | COPY_DEST_ENDIAN_8IN32 | COPY_DEST_SWAP,"),
-        ("src/gpu_draw.c", "color_tile | color_target.format << COLOR_FORMAT_SHIFT,",
-         "color_tile | (color_target.format == XSDK_TARGET_2_10_10_10_FLOAT ? XSDK_TARGET_2_10_10_10 : "
-         "color_target.format) << COLOR_FORMAT_SHIFT,"),
+        ("src/gpu_draw.c", "return tile | color->format << COLOR_FORMAT_SHIFT;",
+         "return tile | (color->format == XSDK_TARGET_2_10_10_10_FLOAT ? XSDK_TARGET_2_10_10_10 : color->format) "
+         "<< COLOR_FORMAT_SHIFT;"),
         ("src/gpu_resolve.c", "\t\twords[0] = fixed_16(rgba[0]) | fixed_16(rgba[1]) << 16;\n"
          "\t\twords[1] = fixed_16(rgba[2]) | fixed_16(rgba[3]) << 16;\n",
          "\t\twords[1] = fixed_16(rgba[0]) | fixed_16(rgba[1]) << 16;\n"
@@ -35,6 +39,19 @@ SETS = {
     "b": [
         ("src/gpu_draw.c", "gpu_put_register(&packets, RB_BLENDCONTROL0, state->blend_control);",
          "gpu_put_register(&packets, RB_BLENDCONTROL0, BLEND_ONE_ZERO);"),
+    ],
+    "c": [
+        ("src/gpu_draw.c", "controls[i - 1] = states[i].blend_control;", "controls[i - 1] = BLEND_ONE_ZERO;"),
+        ("src/gpu_draw.c", "return xsdk_gpu_target_tiles(width, height) << is_64_bit(format);",
+         "return xsdk_gpu_target_tiles(width, height) << (is_64_bit(format) && 0);"),
+    ],
+    "d": [
+        ("src/gpu_draw.c", "color_mask |= states[i].color_mask << COLOR_MASK_BITS * i;",
+         "color_mask |= states[0].color_mask << COLOR_MASK_BITS * i;"),
+    ],
+    "e": [
+        ("src/gpu_draw.c", "put_surface(packets, width, height, target, 1);",
+         "put_surface(packets, width, height, 0, 1);"),
     ],
 }
 

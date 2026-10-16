@@ -63,6 +63,7 @@ enum {
 	PA_SU_SC_MODE_CNTL = 0x2205,
 	PA_CL_VTE_CNTL = 0x2206,
 	RB_MODECONTROL = 0x2208,
+	RB_BLENDCONTROL1 = 0x2209,
 	PA_SU_POINT_SIZE = 0x2280,
 	PA_SC_AA_CONFIG = 0x2301,
 	PA_SU_VTX_CNTL = 0x2302,
@@ -234,10 +235,11 @@ void xsdk_gpu_put_back(void);
 // libxenon's Xe_pSetSurfaceClip with no offset, and its cache invalidation with a wait.
 void xsdk_gpu_put_window(GpuPackets *packets, uint32_t width, uint32_t height);
 void xsdk_gpu_put_coherency(GpuPackets *packets, uint32_t actions, uint32_t base, uint32_t size_bytes);
-// The eDRAM layout for a colour and depth target of this size, with the last target's samples, where it was placed.
-void xsdk_gpu_put_surface(GpuPackets *packets, uint32_t width, uint32_t height);
-// The XSDK_TARGET_* the last target's colour is.
-uint32_t xsdk_gpu_color_target_format(void);
+// The eDRAM layout for a colour and depth target of this size, with the last target's samples, where it was placed,
+// for a resolve of the colour target `target` of the last set, which goes where colour target 0 does.
+void xsdk_gpu_put_surface(GpuPackets *packets, uint32_t width, uint32_t height, uint32_t target);
+// The XSDK_TARGET_* of the last set's colour target `target`.
+uint32_t xsdk_gpu_color_target_format(uint32_t target);
 // RB_COPY_CONTROL's sample select that averages the last target's samples.
 uint32_t xsdk_gpu_copy_sample_select(void);
 // For a resolve: draws need the target set again.

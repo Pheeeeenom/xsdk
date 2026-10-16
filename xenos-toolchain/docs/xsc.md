@@ -78,6 +78,7 @@ came from; that test and its test vectors stay in xost's archived repo (github.c
 | fragment `gl_FragDepth` stored in both arms of an `if/else`, or before one and again in an arm | merged by a select as a vertex shader's outputs are, exported once; stored on one path alone, refused (see Control flow) |
 | a store into one component of a local or an output, `v.x = …` | an insert into the vector it held (`tests/test_local_stores.py`) |
 | vertex `gl_InstanceIndex`, firstInstance included | a float constant the runtime writes each instance's index into (see Interface conventions); `float()` of it, integer arithmetic on it and a block array's index at it lower as integers do (`tests/test_instance_index.py`). `gl_VertexIndex` is refused |
+| fragment outputs at locations 0 to 3, each stored once outside any `if/else` when there are several | `oC0` to `oC3`, the four colour targets, a float in every component; the record's outputs mask names them (`tests/test_color_outputs.py`) |
 | float / vec literals in FS/VS | constant pool; 0/1 folds (see below) |
 | ternary `cond ? a : b` (OpSelect) | `f + (t−f)·cond` (sub + mad) |
 | vector relational `lessThan`/`greaterThan`/`equal`/`notEqual`/… → bvec | per-component `sgt`/`sge`/`seq`/`sne` (1.0/0.0) |
@@ -104,7 +105,13 @@ came from; that test and its test vectors stay in xost's archived repo (github.c
 - VS inputs → vfetch in Location order; vertex-element usage by location:
   0=POSITION, 1=COLOR, 2=TEXCOORD, 3+=TEXCOORD(idx++). Host vertex format
   must match. VS output BuiltIn Position → oPos; Location *N* → interpolator
-  o*N*. FS input Location *N* → register r*N*; output Location 0 → oC0.
+  o*N*. FS input Location *N* → register r*N*; output Location *N*, 0 to 3,
+  → oC*N*, colour target *N* (xenia:src/xenia/gpu/ucode.h:1836-1839), under
+  the one `alloc colors`; past 3 is refused. The container's outputs word is
+  the mask of them, bit *N* for oC*N* (XenosRecomp:XenosRecomp/shader.h:80-92),
+  and SQ_PROGRAM_CNTL's ps_export_mode stays 2, or 3 with depth, however many
+  there are: Xenia never reads the mode (registers.h:145), and whether the
+  console counts colours in it isn't known (vulkan4xenon milestone 25).
 - Bare uniforms → constant registers by Location; scalars read the register's
   `.x`.
 - Uniform and push constant blocks → the block's raw std140 bytes in

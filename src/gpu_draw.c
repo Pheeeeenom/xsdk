@@ -64,6 +64,10 @@ enum {
 	SURFACE_HIZ_PITCH_SHIFT = 18,
 	// RB_COLOR_INFO's color_format (xenia:src/xenia/gpu/registers.h:736-750).
 	COLOR_FORMAT_SHIFT = 16,
+	// RB_DEPTHCONTROL to RB_BLENDCONTROL3 (xenia:src/xenia/gpu/register_table.inc:536-547).
+	CONTROL_REGISTERS_ALL = 12,
+	// A colour target's red, green, blue and alpha bits in RB_COLOR_MASK (xenia:src/xenia/gpu/registers.h:755-777).
+	COLOR_MASK_BITS = 4,
 	EDRAM_MODE_COLOR_DEPTH = 4,
 	// libxenon's control state from RB_DEPTHCONTROL on, less depth and culling (xe.c:1403-1416).
 	BLEND_ONE_ZERO = 0x00010001,
@@ -152,8 +156,9 @@ static const uint32_t copy_sample_selects[] = { 0, 4, 6 };
 static uint32_t target_samples = 1;
 static bool target_placed;
 static uint32_t placed_depth_tile;
-// Its colour target, the tile kept only when placed.
-static XsdkColorTarget color_target = { .format = XSDK_TARGET_8_8_8_8 };
+// Its colour targets, the first's tile kept only when placed.
+static XsdkColorTarget color_targets[XSDK_COLOR_TARGETS] = { { .format = XSDK_TARGET_8_8_8_8 } };
+static uint32_t color_target_count = 1;
 // A resolve leaves eDRAM copying with the viewport transform off, where a draw hung the GPU (docs/HARDWARE.md).
 static bool target_undone;
 
@@ -242,9 +247,10 @@ uint32_t xsdk_gpu_color_target_tiles(uint32_t width, uint32_t height, uint32_t f
 	return xsdk_gpu_target_tiles(width, height) << is_64_bit(format);
 }
 
-uint32_t xsdk_gpu_color_target_format(void)
+uint32_t xsdk_gpu_color_target_format(uint32_t target)
 {
-	return color_target.format;
+	assert(target < color_target_count);
+	return color_targets[target].format;
 }
 
 uint32_t xsdk_gpu_copy_sample_select(void)
@@ -258,30 +264,50 @@ static uint32_t msaa_enable(void)
 	return target_samples > 1 ? MSAA_ENABLE : 0;
 }
 
-// Xe_SetRenderTarget's layout unless placed: depth then colour, as many tiles each (xe.c:998-1036).
-void xsdk_gpu_put_surface(GpuPackets *packets, uint32_t width, uint32_t height)
+// A colour target as RB_COLOR_INFO takes it; unplaced, after the depth.
+static uint32_t color_info(uint32_t target, uint32_t target_tiles)
+{
+	const XsdkColorTarget *const color = &color_targets[target];
+	const uint32_t tile = target_placed ? color->tile : target_tiles;
+	assert(tile + (target_tiles << is_64_bit(color->format)) <= XSDK_EDRAM_TILES);
+	return tile | color->format << COLOR_FORMAT_SHIFT;
+}
+
+// Xe_SetRenderTarget's layout unless placed: depth then colour, as many tiles each (xe.c:998-1036). Colour targets from
+// first take RB_COLOR_INFO, then RB_COLOR1_INFO to RB_COLOR3_INFO after RB_DEPTH_INFO
+// (xenia:src/xenia/gpu/register_table.inc:481-485).
+static void put_surface(GpuPackets *packets, uint32_t width, uint32_t height, uint32_t first, uint32_t count)
 {
 	const uint32_t target_tiles = xsdk_gpu_target_sample_tiles(width, height, target_samples);
-	const uint32_t color_tile = target_placed ? color_target.tile : target_tiles;
 	const uint32_t depth_tile = target_placed ? placed_depth_tile : 0;
-	assert(color_tile + (target_tiles << is_64_bit(color_target.format)) <= XSDK_EDRAM_TILES &&
-		depth_tile + target_tiles <= XSDK_EDRAM_TILES);
+	assert(depth_tile + target_tiles <= XSDK_EDRAM_TILES);
 	// The pitch counts pixels (xenia:src/xenia/gpu/xenos.h:426-437).
 	const uint32_t edram_pitch = tiles_across(width, target_samples) * TILE_WIDTH / samples_across(target_samples);
-	const uint32_t surface[] = { edram_pitch | samples_log2(target_samples) << SURFACE_SAMPLES_SHIFT |
+	uint32_t surface[2 + XSDK_COLOR_TARGETS] = { edram_pitch | samples_log2(target_samples) << SURFACE_SAMPLES_SHIFT |
 			edram_pitch << SURFACE_HIZ_PITCH_SHIFT,
-		color_tile | color_target.format << COLOR_FORMAT_SHIFT, depth_tile };
-	gpu_put_registers(packets, RB_SURFACE_INFO, surface, 3);
+		color_info(first, target_tiles), depth_tile };
+	for (uint32_t i = 1; i < count; i++)
+		surface[2 + i] = color_info(first + i, target_tiles);
+	gpu_put_registers(packets, RB_SURFACE_INFO, surface, count > 1 ? 2 + count : 3);
 	// Resolves too take the target's samples here, else they miss pixels or copy zeros (docs/HARDWARE.md).
 	gpu_put_register(packets, PA_SC_AA_CONFIG, aa_configs[samples_log2(target_samples)]);
 	gpu_put_register(packets, PA_SC_AA_MASK, 0xFFFF);
 }
 
+// A resolve copies colour target 0, so the target it resolves goes there.
+void xsdk_gpu_put_surface(GpuPackets *packets, uint32_t width, uint32_t height, uint32_t target)
+{
+	assert(target < color_target_count);
+	put_surface(packets, width, height, target, 1);
+}
+
 // Xe_pSetState's control and miscellaneous state (xe.c:1688-1744).
 static void put_target(uint32_t width, uint32_t height)
 {
+	// Then RB_BLENDCONTROL1 to 3 after RB_MODECONTROL, for more than one colour target.
 	const uint32_t control[] = { 0, BLEND_ONE_ZERO, COLOR_CONTROL, 0, CLIP_D3D_SPACE,
-		SC_MODE_WINDOW_OFFSET_NO_CULL | msaa_enable(), VTE_VIEWPORT_AND_W0, 0, EDRAM_MODE_COLOR_DEPTH };
+		SC_MODE_WINDOW_OFFSET_NO_CULL | msaa_enable(), VTE_VIEWPORT_AND_W0, 0, EDRAM_MODE_COLOR_DEPTH, BLEND_ONE_ZERO,
+		BLEND_ONE_ZERO, BLEND_ONE_ZERO };
 	// The index range, and the offset added to each index: 0, set here rather than before every draw as libxenon
 	// does (xe.c:191-200), as every draw has a target set after anything that could change it.
 	const uint32_t indices[] = { MAX_VERTEX_INDEX, 0, 0 };
@@ -296,13 +322,13 @@ static void put_target(uint32_t width, uint32_t height)
 	uint32_t dwords[DRAW_MAX_DWORDS];
 	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = DRAW_MAX_DWORDS };
 	gpu_put_registers(&packets, PA_SU_POLY_OFFSET_FRONT_SCALE, polygon_offset, 8);
-	gpu_put_registers(&packets, RB_DEPTHCONTROL, control, 9);
+	gpu_put_registers(&packets, RB_DEPTHCONTROL, control, color_target_count > 1 ? CONTROL_REGISTERS_ALL : 9);
 	xsdk_gpu_put_window(&packets, width, height);
-	xsdk_gpu_put_surface(&packets, width, height);
+	put_surface(&packets, width, height, 0, color_target_count);
 	gpu_put_register(&packets, COHER_DEST_BASE_1, 0);
 	gpu_put_register(&packets, COHER_DEST_BASE_7, 0);
 	gpu_put_registers(&packets, VGT_MAX_VTX_INDX, indices, 3);
-	gpu_put_register(&packets, RB_COLOR_MASK, 0xF);
+	gpu_put_register(&packets, RB_COLOR_MASK, (1u << COLOR_MASK_BITS * color_target_count) - 1);
 	gpu_put_registers(&packets, RB_STENCILREFMASK_BF, viewport, 9);
 	xsdk_gpu_write(&packets);
 	// A recorded target is set when its buffer runs, not now.
@@ -320,7 +346,8 @@ void xsdk_gpu_set_target_samples(uint32_t width, uint32_t height, uint32_t sampl
 	assert(samples == 1 || samples == 2 || samples == 4);
 	target_samples = samples;
 	target_placed = false;
-	color_target = (XsdkColorTarget){ .format = XSDK_TARGET_8_8_8_8 };
+	color_targets[0] = (XsdkColorTarget){ .format = XSDK_TARGET_8_8_8_8 };
+	color_target_count = 1;
 	put_target(width, height);
 }
 
@@ -336,7 +363,8 @@ void xsdk_gpu_set_target_samples_at(
 	assert(samples == 1 || samples == 2 || samples == 4);
 	target_samples = samples;
 	target_placed = true;
-	color_target = (XsdkColorTarget){ .format = XSDK_TARGET_8_8_8_8, .tile = color_tile };
+	color_targets[0] = (XsdkColorTarget){ .format = XSDK_TARGET_8_8_8_8, .tile = color_tile };
+	color_target_count = 1;
 	placed_depth_tile = depth_tile;
 	put_target(width, height);
 }
@@ -349,10 +377,11 @@ void xsdk_gpu_set_target_at(uint32_t width, uint32_t height, uint32_t color_tile
 void xsdk_gpu_set_targets(
 	uint32_t width, uint32_t height, const XsdkColorTarget *targets, uint32_t count, uint32_t depth_tile)
 {
-	assert(count == 1);
+	assert(count >= 1 && count <= XSDK_COLOR_TARGETS);
 	target_samples = 1;
 	target_placed = true;
-	color_target = targets[0];
+	memcpy(color_targets, targets, count * sizeof *targets);
+	color_target_count = count;
 	placed_depth_tile = depth_tile;
 	put_target(width, height);
 }
@@ -524,6 +553,23 @@ void xsdk_gpu_set_blend(const XsdkBlendState *state)
 	GpuPackets packets = gpu_reserve_packets(BLEND_DWORDS);
 	gpu_put_register(&packets, RB_BLENDCONTROL0, state->blend_control);
 	gpu_put_register(&packets, RB_COLOR_MASK, state->color_mask);
+	gpu_packets_done(&packets);
+}
+
+void xsdk_gpu_set_blends(const XsdkBlendState *states, uint32_t count)
+{
+	assert(count >= 1 && count <= XSDK_COLOR_TARGETS);
+	uint32_t controls[XSDK_COLOR_TARGETS - 1];
+	uint32_t color_mask = states[0].color_mask;
+	for (uint32_t i = 1; i < count; i++) {
+		controls[i - 1] = states[i].blend_control;
+		color_mask |= states[i].color_mask << COLOR_MASK_BITS * i;
+	}
+	GpuPackets packets = gpu_reserve_packets(BLEND_DWORDS + (count > 1 ? count : 0));
+	gpu_put_register(&packets, RB_BLENDCONTROL0, states[0].blend_control);
+	if (count > 1)
+		gpu_put_registers(&packets, RB_BLENDCONTROL1, controls, count - 1);
+	gpu_put_register(&packets, RB_COLOR_MASK, color_mask);
 	gpu_packets_done(&packets);
 }
 

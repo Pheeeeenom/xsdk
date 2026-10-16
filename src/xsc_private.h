@@ -647,6 +647,8 @@ typedef struct {
 	const int64_t *export_slots;
 	size_t export_slot_count;
 	uint32_t ps_field18;
+	// The colours a pixel shader exports, bit n for oCn; 0 for oC0 alone.
+	uint32_t pixel_outputs;
 } XscContainerParts;
 
 bool xsdk_xsc_container(Xsc *x, const XscContainerParts *parts, uint8_t **out, size_t *out_bytes);
@@ -728,6 +730,8 @@ typedef struct {
 	uint32_t loop_open_id;
 	int64_t param_gen;
 	bool exports_depth;
+	// The colours a pixel shader exports, bit n for oCn.
+	uint32_t color_outputs;
 } XscProgram;
 
 bool xsdk_xsc_program_init(Xsc *x, XscProgram *p, bool pixel, uint32_t registers);

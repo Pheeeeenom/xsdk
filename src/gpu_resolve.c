@@ -254,7 +254,7 @@ static void put_hiz_test(GpuPackets *packets, uint32_t hiz_clear)
 }
 
 // Xe_ResolveInto, less its scratch write, with the layout Xe_SetRenderTarget gives the target (xe.c:998-1165).
-static void resolve(uint32_t source, uint32_t address, uint32_t width, uint32_t height, uint32_t pitch,
+static void resolve(uint32_t source, uint32_t target, uint32_t address, uint32_t width, uint32_t height, uint32_t pitch,
 	uint32_t dest_info, uint32_t dest_bytes, const uint32_t clear[2])
 {
 	assert(width % 32 == 0);
@@ -276,7 +276,7 @@ static void resolve(uint32_t source, uint32_t address, uint32_t width, uint32_t 
 	GpuPackets packets = { .dwords = dwords, .count = 0, .capacity = RESOLVE_MAX_DWORDS };
 	xsdk_gpu_put_window(&packets, width, height);
 	xsdk_gpu_put_coherency(&packets, COHER_VERTEX_CACHE, vertices, RECTANGLE_INVALIDATE_BYTES);
-	xsdk_gpu_put_surface(&packets, width, height);
+	xsdk_gpu_put_surface(&packets, width, height, target);
 	gpu_put_register(&packets, RB_COLOR_MASK, 0xF);
 	gpu_put_registers(&packets, PA_CL_VPORT_XSCALE, viewport, 6);
 	gpu_put_registers(&packets, RB_COPY_CONTROL, copy, 4);
@@ -332,7 +332,7 @@ void xsdk_gpu_set_depth_clear(float depth, uint8_t stencil)
 void xsdk_gpu_resolve(uint32_t address, uint32_t width, uint32_t height, uint32_t clear_argb)
 {
 	const uint32_t clear[2] = { packed_8888(clear_argb), packed_8888(clear_argb) };
-	resolve(COPY_SOURCE_COLOR_0, address, width, height, width, COPY_DEST_INFO_8888_SWAP,
+	resolve(COPY_SOURCE_COLOR_0, 0, address, width, height, width, COPY_DEST_INFO_8888_SWAP,
 		xsdk_gpu_resolve_bytes(width, height), clear);
 }
 
@@ -361,10 +361,10 @@ void xsdk_gpu_resolve_texture(const XsdkTexture *texture, uint32_t clear_argb)
 	assert(texture->tiled);
 	// A resolve writes from the corner, so the base can't sit inside the packed tail.
 	assert(xsdk_texture_packed_level(texture->width, texture->height) > 0);
-	assert(xsdk_gpu_color_target_format() == XSDK_TARGET_8_8_8_8);
+	assert(xsdk_gpu_color_target_format(0) == XSDK_TARGET_8_8_8_8);
 	// The pitch is whole tiles of 32 texels, as a resolve's width must be.
 	const uint32_t clear[2] = { packed_8888(clear_argb), packed_8888(clear_argb) };
-	resolve(COPY_SOURCE_COLOR_0, texture->address, texture->pitch, texture->height, texture->pitch,
+	resolve(COPY_SOURCE_COLOR_0, 0, texture->address, texture->pitch, texture->height, texture->pitch,
 		texture_dest_info(texture->format), texture->size_bytes, clear);
 }
 
@@ -393,13 +393,12 @@ static uint32_t target_dest_info(uint32_t target_format, uint32_t texture_format
 
 void xsdk_gpu_resolve_target(uint32_t target, const XsdkTexture *texture, const float clear_rgba[4])
 {
-	assert(target == 0);
 	assert(texture->tiled);
 	assert(xsdk_texture_packed_level(texture->width, texture->height) > 0);
-	const uint32_t format = xsdk_gpu_color_target_format();
+	const uint32_t format = xsdk_gpu_color_target_format(target);
 	uint32_t clear[2];
 	clear_words(format, clear_rgba, clear);
-	resolve(COPY_SOURCE_COLOR_0, texture->address, texture->pitch, texture->height, texture->pitch,
+	resolve(COPY_SOURCE_COLOR_0, target, texture->address, texture->pitch, texture->height, texture->pitch,
 		target_dest_info(format, texture->format), texture->size_bytes, clear);
 }
 
@@ -410,6 +409,6 @@ void xsdk_gpu_resolve_depth_texture(const XsdkTexture *texture)
 	assert(texture->tiled && texture->format == XSDK_FORMAT_D24S8);
 	assert(xsdk_texture_packed_level(texture->width, texture->height) > 0);
 	const uint32_t clear[2] = { 0, 0 };
-	resolve(COPY_SOURCE_DEPTH, texture->address, texture->pitch, texture->height, texture->pitch,
+	resolve(COPY_SOURCE_DEPTH, 0, texture->address, texture->pitch, texture->height, texture->pitch,
 		COPY_DEST_INFO_8888 | COPY_DEST_ENDIAN_8IN32, texture->size_bytes, clear);
 }

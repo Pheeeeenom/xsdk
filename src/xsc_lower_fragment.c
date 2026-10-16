@@ -16,6 +16,8 @@ enum {
 	// SPIR-V's comparisons, OpIEqual to OpFUnordGreaterThanEqual (SPIR-V 1.0, section 3.32.13).
 	FIRST_COMPARISON = 170,
 	LAST_COMPARISON = 191,
+	// Outputs at locations 0 to 3 go to exports 0 to 3, oC0 to oC3 (xenia:src/xenia/gpu/ucode.h:1836-1839).
+	COLOR_OUTPUTS = 4,
 };
 
 typedef struct Region Region;
@@ -33,8 +35,11 @@ typedef struct {
 	const XscStores *stores;
 	const bool *locals;
 	bool *gathered;
-	uint32_t out_var;
-	uint32_t out_value;
+	// The colour outputs by location, the value each is given and the export it goes to.
+	uint32_t out_vars[COLOR_OUTPUTS];
+	uint32_t out_values[COLOR_OUTPUTS];
+	int64_t out_exports[COLOR_OUTPUTS];
+	size_t out_count;
 	// What gl_FragDepth is given; 0 for none.
 	uint32_t depth_value;
 	// The local the if/else assigns, read after it merges; 0 for none.
@@ -304,7 +309,7 @@ static bool leaf_region(Fragment *f, size_t start, size_t end, uint32_t target, 
 	for (size_t i = start; i < end; i++) {
 		const XscInstr *const ins = &m->instrs[i];
 		const uint32_t t = xsdk_xsc_operand(ins, 0);
-		if (ins->opcode != SPV_STORE || (!target && t != f->out_var && !is_local(f, t)))
+		if (ins->opcode != SPV_STORE || (!target && t != f->out_vars[0] && !is_local(f, t)))
 			continue;
 		if (!chosen)
 			chosen = t;
@@ -312,7 +317,7 @@ static bool leaf_region(Fragment *f, size_t start, size_t end, uint32_t target, 
 		if (t == chosen)
 			value = xsdk_xsc_operand(ins, 1);
 	}
-	if (target && !value && target != f->out_var)
+	if (target && !value && target != f->out_vars[0])
 		return xsdk_xsc_lower_refuse(&f->l, "if/else arm does not assign %%%u", (unsigned)target);
 	if (!value || (!target && several))
 		return xsdk_xsc_lower_refuse(&f->l, "if/else arm does not assign o_color");
@@ -387,13 +392,21 @@ static bool gather_region(Fragment *f, const Region *r)
 	return gather_condition(f, r->cmp) && gather_region(f, r->on_true) && gather_region(f, r->on_false);
 }
 
+// Each colour output's value, and what it reads.
 static bool gather_output(Fragment *f)
 {
-	const uint32_t value = f->stores->value[f->out_var];
-	if (!value)
-		return xsdk_xsc_lower_refuse(&f->l, "o_color never written");
-	f->out_value = value;
-	return gather(f, value);
+	for (size_t i = 0; i < f->out_count; i++) {
+		const uint32_t value = f->stores->value[f->out_vars[i]];
+		if (!value && !i)
+			return xsdk_xsc_lower_refuse(&f->l, "o_color never written");
+		if (!value)
+			return xsdk_xsc_lower_refuse(
+				&f->l, "the colour output at location %lld never written", (long long)f->out_exports[i]);
+		f->out_values[i] = value;
+		if (!gather(f, value))
+			return false;
+	}
+	return true;
 }
 
 static bool plan_kill(Fragment *f, const XscInstr *top, bool true_kills, bool false_kills)
@@ -410,7 +423,7 @@ static bool plan_selection(Fragment *f, const XscInstr *top)
 {
 	if (!selection(f, top, 0, &f->region, &f->region_target) || !gather_region(f, f->region))
 		return false;
-	if (f->region_target == f->out_var)
+	if (f->region_target == f->out_vars[0])
 		return true;
 	if (!is_local(f, f->region_target))
 		return xsdk_xsc_lower_refuse(&f->l, "if/else arms assign unsupported variable");
@@ -442,12 +455,9 @@ static uint32_t merge_label(const XscModule *m, const XscInstr *top)
 	return before->opcode == SPV_SELECTION_MERGE ? xsdk_xsc_operand(before, 0) : 0;
 }
 
-// gl_FragDepth's one store, outside the if/else, so every pixel exports what it holds.
-static bool plan_depth(Fragment *f, const XscInstr *top)
+// How many times var is stored, and whether its last store sits inside the module's if/else.
+static uint32_t stores_of(const XscModule *m, const XscInstr *top, uint32_t var, bool *inside)
 {
-	XscLower *const l = &f->l;
-	const XscModule *const m = l->m;
-	const uint32_t var = l->si->frag_depth->vid;
 	uint32_t stores = 0;
 	size_t at = 0;
 	for (size_t i = 0; i < m->instr_count; i++) {
@@ -456,14 +466,42 @@ static bool plan_depth(Fragment *f, const XscInstr *top)
 			at = i;
 		}
 	}
+	const XscInstr *const merge = top ? xsdk_xsc_by_result(m, merge_label(m, top)) : NULL;
+	*inside = top && (!merge || (at > (size_t)(top - m->instrs) && at < (size_t)(merge - m->instrs)));
+	return stores;
+}
+
+// gl_FragDepth's one store, outside the if/else, so every pixel exports what it holds.
+static bool plan_depth(Fragment *f, const XscInstr *top)
+{
+	XscLower *const l = &f->l;
+	const uint32_t var = l->si->frag_depth->vid;
+	bool inside;
+	const uint32_t stores = stores_of(l->m, top, var, &inside);
 	if (stores != 1)
 		return xsdk_xsc_lower_refuse(l, "gl_FragDepth stored %u times", (unsigned)stores);
-	const XscInstr *const merge = top ? xsdk_xsc_by_result(m, merge_label(m, top)) : NULL;
-	if (top && (!merge || (at > (size_t)(top - m->instrs) && at < (size_t)(merge - m->instrs))))
+	if (inside)
 		return xsdk_xsc_lower_refuse(l, "gl_FragDepth stored inside an if/else");
 	f->depth_value = f->stores->value[var];
 	l->p->exports_depth = true;
 	return gather(f, f->depth_value);
+}
+
+// With several colour outputs, each is stored once outside any if/else too; an if/else may assign a local they read.
+static bool plan_outputs(Fragment *f, const XscInstr *top)
+{
+	XscLower *const l = &f->l;
+	for (size_t i = 0; i < f->out_count && f->out_count > 1; i++) {
+		bool inside;
+		const uint32_t stores = stores_of(l->m, top, f->out_vars[i], &inside);
+		if (stores != 1)
+			return xsdk_xsc_lower_refuse(l, "the colour output at location %lld stored %u times",
+				(long long)f->out_exports[i], (unsigned)stores);
+		if (inside)
+			return xsdk_xsc_lower_refuse(
+				l, "the colour output at location %lld stored inside an if/else", (long long)f->out_exports[i]);
+	}
+	return true;
 }
 
 static bool compared(XscLower *l, const XscInstr *cmp, bool swap, XscOrigin *a, XscOrigin *b)
@@ -588,15 +626,19 @@ static bool emit_output(Fragment *f)
 	XscLower *const l = &f->l;
 	if (f->kill_cmp && !emit_kill(f))
 		return false;
-	if (f->region && f->region_target == f->out_var)
-		return emit_region(f, f->region, 0, true);
+	if (f->region && f->region_target == f->out_vars[0])
+		return emit_region(f, f->region, f->out_exports[0], true);
 	if (f->region) {
 		const int64_t r = xsdk_xsc_fresh(l);
 		if (!emit_region(f, f->region, r, false))
 			return false;
 		l->local_values[f->merged_local] = xsc_reg(r);
 	}
-	return xsdk_xsc_emit_value(l, f->out_value, 0, true, false);
+	for (size_t i = 0; i < f->out_count; i++) {
+		if (!xsdk_xsc_emit_value(l, f->out_values[i], f->out_exports[i], true, false))
+			return false;
+	}
+	return true;
 }
 
 static bool emit_depth(Fragment *f)
@@ -636,6 +678,32 @@ static bool add_constants(Fragment *f, XscConstants *constants)
 	return xsdk_xsc_literal_constants(l, constants);
 }
 
+// The colour outputs in order of location, each its export, and the container's mask of them
+// (XenosRecomp:XenosRecomp/shader.h:80-92).
+static bool find_outputs(Fragment *f)
+{
+	XscLower *const l = &f->l;
+	const XscInterface *const si = l->si;
+	if (!si->color_out_count)
+		return xsdk_xsc_fail(l->x, XSDK_XSC_MALFORMED, "list index out of range");
+	for (size_t i = 0; i < si->color_out_count; i++) {
+		const int64_t location = si->color_out[i].a;
+		if (location >= COLOR_OUTPUTS)
+			return xsdk_xsc_lower_refuse(l, "a colour output at location %lld, past oC3", (long long)location);
+		if (l->p->color_outputs >> location & 1)
+			return xsdk_xsc_lower_refuse(l, "two colour outputs at location %lld", (long long)location);
+		l->p->color_outputs |= 1u << location;
+		size_t at = f->out_count++;
+		for (; at > 0 && f->out_exports[at - 1] > location; at--) {
+			f->out_vars[at] = f->out_vars[at - 1];
+			f->out_exports[at] = f->out_exports[at - 1];
+		}
+		f->out_vars[at] = si->color_out[i].var->vid;
+		f->out_exports[at] = location;
+	}
+	return true;
+}
+
 // The interpolators from r0, then the pixel parameters past them for gl_FragCoord and gl_FrontFacing; the highest
 // register they take.
 static bool declare_inputs(Xsc *x, const XscModule *m, const XscType *types, XscProgram *p, const XscInterface *si,
@@ -672,13 +740,12 @@ static bool lower_body(Fragment *f, int64_t param_reg, XscConstants *constants, 
 		return false;
 	if (si->front_facing && !front_facing_register(l, si, param_reg))
 		return false;
-	if (!si->color_out_count)
-		return xsdk_xsc_fail(l->x, XSDK_XSC_MALFORMED, "list index out of range");
-	f->out_var = si->color_out[0].var->vid;
+	if (!find_outputs(f))
+		return false;
 	const XscInstr *top = NULL;
 	for (size_t i = 0; !top && i < l->m->instr_count; i++)
 		top = l->m->instrs[i].opcode == SPV_BRANCH_CONDITIONAL ? &l->m->instrs[i] : NULL;
-	if (!plan(f, top) || (si->frag_depth && !plan_depth(f, top)) ||
+	if (!plan_outputs(f, top) || !plan(f, top) || (si->frag_depth && !plan_depth(f, top)) ||
 		!xsdk_xsc_check_local_stores(l->x, l->m, f->locals, f->merged_local, merge_label(l->m, top)))
 		return false;
 	return xsdk_xsc_program_alloc(l->x, l->p, XSC_ALLOC_COLORS) && emit_output(f) && emit_depth(f) &&

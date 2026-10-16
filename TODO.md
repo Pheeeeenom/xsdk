@@ -74,7 +74,10 @@ work begins.
 
 ## GPU features SCOPE.md left out of milestones 11 to 18
 
-- **Multiple render targets.** Unproven in xost.
+- **Several targets at once, multisampled.** vulkan4xenon milestone 25 drew up to four colour targets at once at one
+  sample, each blended and masked on its own (`xsdk_gpu_set_targets`, `xsdk_gpu_set_blends`), and xost exports
+  fragment outputs at locations 1 to 3 to oC1 to oC3, keeping ps_export_mode 2 (xenos-toolchain/docs/xsc.md). Left:
+  several targets at 2 or 4 samples (vulkan4xenon milestone 17).
 - **More target formats.** vulkan4xenon milestone 25 added 2_10_10_10, its 7e3 float, 16_16_16_16 and the 16- and
   32-bit floats at one sample, each resolved into a texture of the format it converts to (`xsdk_gpu_set_targets`,
   `xsdk_gpu_resolve_target`). Left: 16_16, 32_32_FLOAT, 8_8_8_8_GAMMA and the two AS_ formats

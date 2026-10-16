@@ -4,7 +4,7 @@
 # tree itself is never touched. Run in WSL.
 S=${1:?a scratch folder}
 shift
-SETS=${*:-a b}
+SETS=${*:-a b c d e}
 HERE=$(cd "$(dirname "$0")" && pwd)
 XSDK=$(cd "$HERE/../.." && pwd)
 for set in $SETS; do

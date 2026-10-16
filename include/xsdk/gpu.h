@@ -157,6 +157,11 @@ enum {
 	XSDK_TARGET_32_FLOAT = 14,
 };
 
+enum {
+	// Colour targets drawn at once, target i from oCi (xenia:src/xenia/gpu/xenos.h:297; ucode.h:1836-1839).
+	XSDK_COLOR_TARGETS = 4,
+};
+
 // A colour target: its format and the eDRAM tile it starts at.
 typedef struct {
 	uint32_t format;
@@ -165,7 +170,8 @@ typedef struct {
 
 // The eDRAM tiles a colour target this size and format takes.
 uint32_t xsdk_gpu_color_target_tiles(uint32_t width, uint32_t height, uint32_t format);
-// As xsdk_gpu_set_target_at, with count colour targets, each of its own format and tile; count is 1.
+// As xsdk_gpu_set_target_at, with 1 to XSDK_COLOR_TARGETS colour targets, each of its own format and tile, apart in
+// eDRAM; each writes every channel, unblended, till xsdk_gpu_set_blends.
 void xsdk_gpu_set_targets(
 	uint32_t width, uint32_t height, const XsdkColorTarget *targets, uint32_t count, uint32_t depth_tile);
 // Queues copying colour target `target` of the last xsdk_gpu_set_targets into a tiled texture drawn at its size, its
@@ -297,8 +303,13 @@ typedef struct {
 } XsdkBlendState;
 
 void xsdk_gpu_blend_state(XsdkBlendState *state, const XsdkBlend *setting);
-// Applies to the draws after; xsdk_gpu_set_target turns blending off and writes every channel.
+// Applies to the draws after, the first colour target alone, the others then written nowhere; xsdk_gpu_set_target turns
+// blending off and writes every channel.
 void xsdk_gpu_set_blend(const XsdkBlendState *state);
+// The same for count colour targets, target i blended and masked by states[i] (RB_BLENDCONTROL0 to 3,
+// xenia:src/xenia/gpu/register_table.inc:537-547; RB_COLOR_MASK, registers.h:755-777); the targets past count are
+// written nowhere.
+void xsdk_gpu_set_blends(const XsdkBlendState *states, uint32_t count);
 // The colour the constant factors take, red to alpha, for the draws after; nothing else sets it, so a draw blending by
 // it sets it first (docs/HARDWARE.md, "Blend constants").
 void xsdk_gpu_set_blend_constants(const float rgba[4]);

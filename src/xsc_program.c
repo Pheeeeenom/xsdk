@@ -1055,5 +1055,6 @@ bool xsdk_xsc_program_finish(Xsc *x, XscProgram *p, const XscConstant *constants
 	parts.context_misc = 0x8 | (params ? (uint32_t)p->param_gen << 8 | 0x2 : 0);
 	parts.field10 = 0x20000;
 	parts.ps_field18 = (uint32_t)p->interpolator_count << 16 | 7;
+	parts.pixel_outputs = p->color_outputs;
 	return xsdk_xsc_container(x, &parts, container, container_bytes);
 }
