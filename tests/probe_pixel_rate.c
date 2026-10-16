@@ -487,9 +487,9 @@ static bool make_resources(void)
 static void make_states(void)
 {
 	const XsdkSampler point = { XSDK_FILTER_POINT, XSDK_FILTER_POINT, XSDK_FILTER_POINT, XSDK_ADDRESS_WRAP,
-		XSDK_ADDRESS_WRAP, 0.0f, 0, 0, 0 };
+		XSDK_ADDRESS_WRAP, 0.0f, 0, 0, 0, XSDK_ADDRESS_WRAP, XSDK_BORDER_BLACK };
 	const XsdkSampler bilinear = { XSDK_FILTER_LINEAR, XSDK_FILTER_LINEAR, XSDK_FILTER_POINT, XSDK_ADDRESS_WRAP,
-		XSDK_ADDRESS_WRAP, 0.0f, 0, 0, 0 };
+		XSDK_ADDRESS_WRAP, 0.0f, 0, 0, 0, XSDK_ADDRESS_WRAP, XSDK_BORDER_BLACK };
 	xsdk_texture_sampler_state(&samplers[SAMPLER_POINT], &point);
 	xsdk_texture_sampler_state(&samplers[SAMPLER_BILINEAR], &bilinear);
 	const XsdkDepthStencil off = { .depth_compare = XSDK_COMPARE_ALWAYS, .stencil_compare = XSDK_COMPARE_ALWAYS };

@@ -113,8 +113,10 @@ work begins.
 - **Draws of more than 65535 indices.** The draw initiator's count is 16 bits (registers.h:327), so a layer would split
   them.
 - **Wireframe and point fill.** `PA_SU_SC_MODE_CNTL`'s `poly_mode` and polygon types (registers.h:463-468).
-- **Border and mirror-once addressing.** `ClampMode` 3 to 7, with a black or white border (xenos.h:104-162); Vulkan's
-  clamp to border and mirror clamp to edge.
+- **The YCbCr borders.** vulkan4xenon milestone 23 brought `ClampMode` 3 to 7 and the black and white borders
+  (include/xsdk/texture.h), unproven till xsdk_test's sampling check runs on the console, which also tells whether the
+  black border's alpha is 0 or 1 (xenos.h:150-156). The two blacks for YCbCr data, whose colours Xenia guesses
+  (xenos.h:156-161), aren't offered.
 - **Image views of some of a texture's levels.** vulkan4xenon refuses a view that doesn't cover every level
   (vulkan4xenon:src/image.c). The sampler's lowest level and count of levels (include/xsdk/texture.h), which took
   Vulkan's `minLod` and `maxLod` in vulkan4xenon milestone 18's step 2, could take a view's range too.

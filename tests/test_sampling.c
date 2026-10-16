@@ -14,7 +14,8 @@
 #include "xsdk/texture.h"
 #include "xsdk/thread.h"
 
-// Every mip level drawn one texel to a pixel, then a cell per filter and address mode, checked against a CPU sampler.
+// Every mip level drawn one texel to a pixel, then a cell per filter and address mode, checked against a CPU sampler,
+// and the black border's alpha.
 
 enum {
 	WIDTH = 1280,
@@ -33,19 +34,23 @@ enum {
 	TEXTURE_SLOT = 0,
 	// Linear filters weigh texels in fixed point and round on the way out.
 	LINEAR_TOLERANCE = 3,
-	MAX_CELLS = 64,
+	MAX_CELLS = 72,
 	POINTS_PER_CELL = 10,
 	MAX_LEVEL_TEXELS = 256 * 256,
 	LEVEL_GAP = 12,
 	CELL_SIZE = 128,
 	HUES = 9,
 	REGIONS = 4,
+	// The black border's cell, whose top left pixel reads the border alone.
+	BORDER_ROW_Y = 580,
+	BLACK_BORDER_X = 520,
 };
 
 enum {
 	GROUP_MIPS,
 	GROUP_FILTERS,
 	GROUP_ADDRESSING,
+	GROUP_BORDERS,
 	GROUPS,
 };
 
@@ -144,7 +149,7 @@ static const XsdkVertexElement vertex_layout[] = {
 };
 
 static const XsdkSampler point_clamped = { XSDK_FILTER_POINT, XSDK_FILTER_POINT, XSDK_FILTER_POINT, XSDK_ADDRESS_CLAMP,
-	XSDK_ADDRESS_CLAMP, 0.0f, 0, 0, 0 };
+	XSDK_ADDRESS_CLAMP, 0.0f, 0, 0, 0, XSDK_ADDRESS_CLAMP, XSDK_BORDER_BLACK };
 
 static uint32_t image[MAX_LEVEL_TEXELS];
 
@@ -209,38 +214,60 @@ static uint32_t add_grid(Cell *cells, uint32_t count)
 {
 	enum { POINT = XSDK_FILTER_POINT, LINEAR = XSDK_FILTER_LINEAR };
 	enum { WRAP = XSDK_ADDRESS_WRAP, MIRROR = XSDK_ADDRESS_MIRROR, CLAMP = XSDK_ADDRESS_CLAMP };
+	enum { MIRROR_ONCE = XSDK_ADDRESS_MIRROR_ONCE, HALFWAY = XSDK_ADDRESS_CLAMP_HALFWAY };
+	enum { MIRROR_ONCE_HALFWAY = XSDK_ADDRESS_MIRROR_ONCE_HALFWAY, BORDER = XSDK_ADDRESS_BORDER };
+	enum { MIRROR_ONCE_BORDER = XSDK_ADDRESS_MIRROR_ONCE_BORDER };
+	enum { BLACK = XSDK_BORDER_BLACK, WHITE = XSDK_BORDER_WHITE };
 	// A quarter texel in: point samples miss texel edges, and linear weighs a quarter and three quarters.
 	const float in = 0.25f / 256.0f;
 	const Cell grid[] = {
 		// Four pixels a texel; the other filter is set the other way, so using it fails.
 		{ "magnified, point", GROUP_FILTERS, TEXTURE_CHECKER_SMALL, 0, 480, 40, CELL_SIZE, CELL_SIZE, 0.0f, 0.0f, 1.0f,
-			1.0f, { POINT, LINEAR, POINT, CLAMP, CLAMP, 0.0f, 0, 0, 0 } },
+			1.0f, { POINT, LINEAR, POINT, CLAMP, CLAMP, 0.0f, 0, 0, 0, CLAMP, BLACK } },
 		{ "magnified, linear", GROUP_FILTERS, TEXTURE_CHECKER_SMALL, 0, 660, 40, CELL_SIZE, CELL_SIZE, 0.0f, 0.0f, 1.0f,
-			1.0f, { LINEAR, POINT, POINT, CLAMP, CLAMP, 0.0f, 0, 0, 0 } },
+			1.0f, { LINEAR, POINT, POINT, CLAMP, CLAMP, 0.0f, 0, 0, 0, CLAMP, BLACK } },
 		// Two texels a pixel.
 		{ "minified, point", GROUP_FILTERS, TEXTURE_CHECKER_LARGE, 0, 840, 40, CELL_SIZE, CELL_SIZE, in, in, 1.0f + in,
-			1.0f + in, { LINEAR, POINT, POINT, CLAMP, CLAMP, 0.0f, 0, 0, 0 } },
+			1.0f + in, { LINEAR, POINT, POINT, CLAMP, CLAMP, 0.0f, 0, 0, 0, CLAMP, BLACK } },
 		{ "minified, linear", GROUP_FILTERS, TEXTURE_CHECKER_LARGE, 0, 1020, 40, CELL_SIZE, CELL_SIZE, in, in,
-			1.0f + in, 1.0f + in, { POINT, LINEAR, POINT, CLAMP, CLAMP, 0.0f, 0, 0, 0 } },
+			1.0f + in, 1.0f + in, { POINT, LINEAR, POINT, CLAMP, CLAMP, 0.0f, 0, 0, 0, CLAMP, BLACK } },
 		// Level 1, biased to 1.375: the nearest level is 1, and linear takes 3/8 of level 2.
 		{ "mip point", GROUP_FILTERS, TEXTURE_SOLID_LEVELS, 0, 480, 240, CELL_SIZE, CELL_SIZE, 0.0f, 0.0f, 1.0f, 1.0f,
-			{ POINT, POINT, POINT, CLAMP, CLAMP, 0.375f, 0, 0, 0 } },
+			{ POINT, POINT, POINT, CLAMP, CLAMP, 0.375f, 0, 0, 0, CLAMP, BLACK } },
 		{ "mip linear", GROUP_FILTERS, TEXTURE_SOLID_LEVELS, 0, 660, 240, CELL_SIZE, CELL_SIZE, 0.0f, 0.0f, 1.0f, 1.0f,
-			{ POINT, POINT, LINEAR, CLAMP, CLAMP, 0.375f, 0, 0, 0 } },
+			{ POINT, POINT, LINEAR, CLAMP, CLAMP, 0.375f, 0, 0, 0, CLAMP, BLACK } },
 		// Level 1 as drawn, kept to level 3 and up; level 4 biased, kept to the first 3 levels, so level 2 whole.
 		{ "mip lowest level", GROUP_FILTERS, TEXTURE_SOLID_LEVELS, 0, 840, 240, CELL_SIZE, CELL_SIZE, 0.0f, 0.0f, 1.0f,
-			1.0f, { POINT, POINT, POINT, CLAMP, CLAMP, 0.0f, 0, 3, 0 } },
+			1.0f, { POINT, POINT, POINT, CLAMP, CLAMP, 0.0f, 0, 3, 0, CLAMP, BLACK } },
 		{ "mip level count", GROUP_FILTERS, TEXTURE_SOLID_LEVELS, 0, 1020, 240, CELL_SIZE, CELL_SIZE, 0.0f, 0.0f, 1.0f,
-			1.0f, { POINT, POINT, LINEAR, CLAMP, CLAMP, 3.0f, 0, 0, 3 } },
+			1.0f, { POINT, POINT, LINEAR, CLAMP, CLAMP, 3.0f, 0, 0, 3, CLAMP, BLACK } },
 		// Half the texture past each edge, two pixels a texel.
 		{ "wrap", GROUP_ADDRESSING, TEXTURE_BLOCKS, 0, 480, 440, CELL_SIZE, CELL_SIZE, -0.5f, -0.5f, 1.5f, 1.5f,
-			{ POINT, POINT, POINT, WRAP, WRAP, 0.0f, 0, 0, 0 } },
+			{ POINT, POINT, POINT, WRAP, WRAP, 0.0f, 0, 0, 0, WRAP, BLACK } },
 		{ "mirror", GROUP_ADDRESSING, TEXTURE_BLOCKS, 0, 660, 440, CELL_SIZE, CELL_SIZE, -0.5f, -0.5f, 1.5f, 1.5f,
-			{ POINT, POINT, POINT, MIRROR, MIRROR, 0.0f, 0, 0, 0 } },
+			{ POINT, POINT, POINT, MIRROR, MIRROR, 0.0f, 0, 0, 0, MIRROR, BLACK } },
 		{ "clamp", GROUP_ADDRESSING, TEXTURE_BLOCKS, 0, 840, 440, CELL_SIZE, CELL_SIZE, -0.5f, -0.5f, 1.5f, 1.5f,
-			{ POINT, POINT, POINT, CLAMP, CLAMP, 0.0f, 0, 0, 0 } },
+			{ POINT, POINT, POINT, CLAMP, CLAMP, 0.0f, 0, 0, 0, CLAMP, BLACK } },
 		{ "mirror across, clamp down", GROUP_ADDRESSING, TEXTURE_BLOCKS, 0, 1020, 440, CELL_SIZE, CELL_SIZE, -0.5f,
-			-0.5f, 1.5f, 1.5f, { POINT, POINT, POINT, MIRROR, CLAMP, 0.0f, 0, 0, 0 } },
+			-0.5f, 1.5f, 1.5f, { POINT, POINT, POINT, MIRROR, CLAMP, 0.0f, 0, 0, 0, CLAMP, BLACK } },
+		// Past -1 and 2, a texel a pixel, mirrored once then the edge or the border; halfway is the edge when point
+		// sampled.
+		{ "mirror once", GROUP_BORDERS, TEXTURE_BLOCKS, 0, 40, 580, CELL_SIZE, CELL_SIZE, -1.5f, -1.5f, 2.5f, 2.5f,
+			{ POINT, POINT, POINT, MIRROR_ONCE, MIRROR_ONCE, 0.0f, 0, 0, 0, CLAMP, BLACK } },
+		{ "mirror once, halfway", GROUP_BORDERS, TEXTURE_BLOCKS, 0, 200, 580, CELL_SIZE, CELL_SIZE, -1.5f, -1.5f, 2.5f,
+			2.5f, { POINT, POINT, POINT, MIRROR_ONCE_HALFWAY, MIRROR_ONCE_HALFWAY, 0.0f, 0, 0, 0, CLAMP, BLACK } },
+		{ "mirror once to a white border", GROUP_BORDERS, TEXTURE_BLOCKS, 0, 360, 580, CELL_SIZE, CELL_SIZE, -1.5f,
+			-1.5f, 2.5f, 2.5f,
+			{ POINT, POINT, POINT, MIRROR_ONCE_BORDER, MIRROR_ONCE_BORDER, 0.0f, 0, 0, 0, CLAMP, WHITE } },
+		// Half the texture past each edge, two pixels a texel; filtered, the edge's texels take the border's share.
+		{ "black border", GROUP_BORDERS, TEXTURE_BLOCKS, 0, BLACK_BORDER_X, BORDER_ROW_Y, CELL_SIZE, CELL_SIZE, -0.5f,
+			-0.5f, 1.5f, 1.5f, { POINT, POINT, POINT, BORDER, BORDER, 0.0f, 0, 0, 0, CLAMP, BLACK } },
+		{ "white border", GROUP_BORDERS, TEXTURE_BLOCKS, 0, 680, 580, CELL_SIZE, CELL_SIZE, -0.5f, -0.5f, 1.5f, 1.5f,
+			{ POINT, POINT, POINT, BORDER, BORDER, 0.0f, 0, 0, 0, CLAMP, WHITE } },
+		{ "white border, linear", GROUP_BORDERS, TEXTURE_BLOCKS, 0, 840, 580, CELL_SIZE, CELL_SIZE, -0.5f, -0.5f, 1.5f,
+			1.5f, { LINEAR, LINEAR, POINT, BORDER, BORDER, 0.0f, 0, 0, 0, CLAMP, WHITE } },
+		{ "halfway to a white border, linear", GROUP_BORDERS, TEXTURE_BLOCKS, 0, 1000, 580, CELL_SIZE, CELL_SIZE, -0.5f,
+			-0.5f, 1.5f, 1.5f, { LINEAR, LINEAR, POINT, HALFWAY, HALFWAY, 0.0f, 0, 0, 0, CLAMP, WHITE } },
 	};
 	for (uint32_t i = 0; i < sizeof grid / sizeof grid[0]; i++)
 		cells[count++] = grid[i];
@@ -266,21 +293,53 @@ static int32_t floor_to_int(float value)
 	return (float)truncated > value ? truncated - 1 : truncated;
 }
 
-static uint32_t addressed(uint32_t mode, int32_t index, uint32_t size)
+// A texel past the texture's edge that reads the border.
+enum { BORDER_TEXEL = -1 };
+
+static int32_t clamped(int32_t index, uint32_t size)
 {
-	if (mode == XSDK_ADDRESS_CLAMP)
-		return index < 0 ? 0 : index >= (int32_t)size ? size - 1 : (uint32_t)index;
-	const int32_t period = mode == XSDK_ADDRESS_MIRROR ? 2 * (int32_t)size : (int32_t)size;
-	const int32_t folded = (index % period + period) % period;
-	return (uint32_t)(folded < (int32_t)size ? folded : period - 1 - folded);
+	return index < 0 ? 0 : index >= (int32_t)size ? (int32_t)size - 1 : index;
 }
 
-static void add_texel(float sum[3], const Cell *cell, uint32_t level, int32_t x, int32_t y, float weight)
+// A tap's texel in the level, or BORDER_TEXEL. Point sampled, a halfway mode is its edge mode; filtered, it stops the
+// coordinate at the edge (halfway_coordinate), and taps past the edge read the border.
+static int32_t addressed(uint32_t mode, int32_t index, uint32_t size, bool linear)
+{
+	const int32_t once = index < 0 ? -1 - index : index;
+	const bool inside = index >= 0 && index < (int32_t)size;
+	if (mode == XSDK_ADDRESS_CLAMP || (mode == XSDK_ADDRESS_CLAMP_HALFWAY && !linear))
+		return clamped(index, size);
+	if (mode == XSDK_ADDRESS_MIRROR_ONCE || (mode == XSDK_ADDRESS_MIRROR_ONCE_HALFWAY && !linear))
+		return clamped(once, size);
+	if (mode == XSDK_ADDRESS_BORDER || mode == XSDK_ADDRESS_CLAMP_HALFWAY || mode == XSDK_ADDRESS_MIRROR_ONCE_HALFWAY)
+		return inside ? index : BORDER_TEXEL;
+	if (mode == XSDK_ADDRESS_MIRROR_ONCE_BORDER)
+		return once < (int32_t)size ? once : BORDER_TEXEL;
+	const int32_t period = mode == XSDK_ADDRESS_MIRROR ? 2 * (int32_t)size : (int32_t)size;
+	const int32_t folded = (index % period + period) % period;
+	return folded < (int32_t)size ? folded : period - 1 - folded;
+}
+
+// A halfway mode stops a filtered coordinate at the edge, mirrored once first if it mirrors: GL_CLAMP's half edge and
+// half border, which Xenia takes for it (xenia:src/xenia/gpu/d3d12/d3d12_texture_cache.cc:2146-2160).
+static float halfway_coordinate(uint32_t mode, float x, uint32_t size)
+{
+	if (mode == XSDK_ADDRESS_MIRROR_ONCE_HALFWAY && x < 0.0f)
+		x = -x;
+	if (mode != XSDK_ADDRESS_CLAMP_HALFWAY && mode != XSDK_ADDRESS_MIRROR_ONCE_HALFWAY)
+		return x;
+	return x<0.0f ? 0.0f : x>(float) size ? (float)size : x;
+}
+
+static void add_texel(float sum[3], const Cell *cell, uint32_t level, int32_t x, int32_t y, bool linear, float weight)
 {
 	const TextureSpec *const spec = &specs[cell->texture];
-	const uint32_t argb =
-		texel_argb(cell->texture, level, addressed(cell->sampler.address_u, x, level_size(spec->width, level)),
-			addressed(cell->sampler.address_v, y, level_size(spec->height, level)));
+	const int32_t across = addressed(cell->sampler.address_u, x, level_size(spec->width, level), linear);
+	const int32_t down = addressed(cell->sampler.address_v, y, level_size(spec->height, level), linear);
+	const uint32_t border = cell->sampler.border == XSDK_BORDER_WHITE ? 0xFFFFFFFF : 0;
+	const uint32_t argb = across == BORDER_TEXEL || down == BORDER_TEXEL
+		? border
+		: texel_argb(cell->texture, level, (uint32_t)across, (uint32_t)down);
 	for (uint32_t channel = 0; channel < 3; channel++)
 		sum[channel] += weight * (float)(argb >> (16 - 8 * channel) & 0xFF);
 }
@@ -289,21 +348,23 @@ static void sample_level(
 	float sum[3], const Cell *cell, uint32_t level, uint32_t filter, float u, float v, float weight)
 {
 	const TextureSpec *const spec = &specs[cell->texture];
-	const float x = u * (float)level_size(spec->width, level);
-	const float y = v * (float)level_size(spec->height, level);
+	const uint32_t width = level_size(spec->width, level);
+	const uint32_t height = level_size(spec->height, level);
 	if (filter == XSDK_FILTER_POINT) {
-		add_texel(sum, cell, level, floor_to_int(x), floor_to_int(y), weight);
+		add_texel(sum, cell, level, floor_to_int(u * (float)width), floor_to_int(v * (float)height), false, weight);
 		return;
 	}
+	const float x = halfway_coordinate(cell->sampler.address_u, u * (float)width, width);
+	const float y = halfway_coordinate(cell->sampler.address_v, v * (float)height, height);
 	// The four texels whose centres surround the point.
 	const int32_t left = floor_to_int(x - 0.5f);
 	const int32_t top = floor_to_int(y - 0.5f);
 	const float right_share = x - 0.5f - (float)left;
 	const float bottom_share = y - 0.5f - (float)top;
-	add_texel(sum, cell, level, left, top, weight * (1.0f - right_share) * (1.0f - bottom_share));
-	add_texel(sum, cell, level, left + 1, top, weight * right_share * (1.0f - bottom_share));
-	add_texel(sum, cell, level, left, top + 1, weight * (1.0f - right_share) * bottom_share);
-	add_texel(sum, cell, level, left + 1, top + 1, weight * right_share * bottom_share);
+	add_texel(sum, cell, level, left, top, true, weight * (1.0f - right_share) * (1.0f - bottom_share));
+	add_texel(sum, cell, level, left + 1, top, true, weight * right_share * (1.0f - bottom_share));
+	add_texel(sum, cell, level, left, top + 1, true, weight * (1.0f - right_share) * bottom_share);
+	add_texel(sum, cell, level, left + 1, top + 1, true, weight * right_share * bottom_share);
 }
 
 // Texels a pixel steps over, as a power of two, plus the bias.
@@ -502,6 +563,7 @@ static const char *const group_checks[GROUPS] = {
 	"sampling: every level of square, wide, tall and packed-base textures, one texel to a pixel",
 	"sampling: magnification, minification and mip filters as worked out",
 	"sampling: wrap, mirror and clamp as worked out",
+	"sampling: mirror once, halfway, and black and white borders as worked out",
 };
 
 // Each frame draws every cell into eDRAM, resolves into the buffer not on screen, and shows it.
@@ -514,6 +576,7 @@ static void draw_frames(const Scene *scene)
 	uint32_t wrong[GROUPS] = { 0 };
 	uint32_t checked = 0;
 	uint32_t pixels_wrong = 0;
+	uint32_t border_alpha = 0;
 	bool fences_landed = true;
 	bool shown = true;
 	for (uint32_t frame = 0; frame < FRAMES && fences_landed; frame++) {
@@ -542,6 +605,8 @@ static void draw_frames(const Scene *scene)
 		if (frame == FRAMES - 1 && fences_landed) {
 			uint32_t last_wrong[GROUPS] = { 0 };
 			checked = count_wrong(scene->cells, scene->cell_count, buffer, frame, last_wrong);
+			// A resolve stores B, G, R then A.
+			border_alpha = buffer[tiled_index(BLACK_BORDER_X, BORDER_ROW_Y, WIDTH)] & 0xFF;
 			for (uint32_t i = 0; i < GROUPS; i++) {
 				pixels_wrong += last_wrong[i];
 				wrong[i] += last_wrong[i];
@@ -559,6 +624,9 @@ static void draw_frames(const Scene *scene)
 	check("sampling: every frame's fence landed", fences_landed);
 	for (uint32_t i = 0; i < GROUPS; i++)
 		check(group_checks[i], fences_landed && checked > 0 && wrong[i] == 0);
+	// Xenia isn't sure of it (xenia:src/xenia/gpu/xenos.h:150-153), and its backends take 0.
+	xsdk_log_write("sampling: the black border's alpha read %02X", (unsigned)border_alpha);
+	check("sampling: the black border's alpha is 0, as Xenia's backends take it", checked > 0 && border_alpha == 0);
 	if (scene->has_display) {
 		check("sampling: every frame shown", shown);
 		xsdk_log_write("sampling: the last frame stays on screen for %u ms for a capture", (unsigned)TEST_SHOW_MS);

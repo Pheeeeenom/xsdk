@@ -246,7 +246,7 @@ int main(void)
 	__asm__ volatile("sync" ::: "memory");
 	xsdk_gpu_invalidate(xsdk_gpu_address(vertices), cell_count * QUAD_BYTES);
 	const XsdkSampler point_clamped = { XSDK_FILTER_POINT, XSDK_FILTER_POINT, XSDK_FILTER_POINT, XSDK_ADDRESS_CLAMP,
-		XSDK_ADDRESS_CLAMP, 0.0f, 0, 0, 0 };
+		XSDK_ADDRESS_CLAMP, 0.0f, 0, 0, 0, XSDK_ADDRESS_CLAMP, XSDK_BORDER_BLACK };
 	XsdkSamplerState sampler;
 	xsdk_texture_sampler_state(&sampler, &point_clamped);
 	bool landed = true;

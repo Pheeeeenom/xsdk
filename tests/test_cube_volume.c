@@ -14,7 +14,8 @@
 #include "xsdk/thread.h"
 
 // Cube and 3D textures: every face, slice and level its own colours, each drawn one texel to a pixel where Vulkan's
-// directions and coordinates point. The shaders are xost's (tools/gen_volume_shaders.py).
+// directions and coordinates point, then w wrapped, clamped and filtered between slices. The shaders are xost's
+// (tools/gen_volume_shaders.py).
 
 enum {
 	WIDTH = 1280,
@@ -31,6 +32,8 @@ enum {
 	QUAD_BYTES = QUAD_VERTICES * STRIDE_BYTES,
 	COORD_OFFSET_BYTES = 16,
 	TEXTURE_SLOT = 0,
+	// A linear filter weighs texels in fixed point and rounds on the way out.
+	LINEAR_TOLERANCE = 3,
 	MAX_CELLS = 48,
 	CELL_GAP = 8,
 	FIRST_X = 40,
@@ -71,6 +74,7 @@ enum {
 	GROUP_SMALL_CUBE,
 	GROUP_VOLUME,
 	GROUP_SMALL_VOLUME,
+	GROUP_W,
 	GROUPS,
 };
 
@@ -79,13 +83,15 @@ static const char *const group_checks[GROUPS] = {
 	"cube and 3D: an 8x8 cube's six faces at levels 0 and 2, from each face's packed tail",
 	"cube and 3D: a 32x32x8 texture's eight slices, each at its w",
 	"cube and 3D: an 8x8x3 texture's three slices, from its packed tail",
+	"cube and 3D: w wrapped, clamped, and filtered halfway between two slices",
 };
 
 typedef struct {
 	uint32_t group;
 	uint32_t texture;
-	// The face or slice shown.
+	// The face or slice shown, or the first of two blended halves each.
 	uint32_t slice;
+	bool blended;
 	uint32_t level;
 	uint32_t x;
 	uint32_t y;
@@ -179,7 +185,8 @@ static const XsdkSampler point_clamped = { .mag_filter = XSDK_FILTER_POINT,
 	.min_filter = XSDK_FILTER_POINT,
 	.mip_filter = XSDK_FILTER_POINT,
 	.address_u = XSDK_ADDRESS_CLAMP,
-	.address_v = XSDK_ADDRESS_CLAMP };
+	.address_v = XSDK_ADDRESS_CLAMP,
+	.address_w = XSDK_ADDRESS_CLAMP };
 
 // A row of cells, one a face or slice from the first, left to right; returns the count.
 static uint32_t add_row(
@@ -188,13 +195,29 @@ static uint32_t add_row(
 	const TextureSpec *const spec = &specs[texture];
 	const uint32_t size = level_size(spec->size, level);
 	for (uint32_t slice = 0; slice < slices; slice++) {
-		Cell cell = { group, texture, slice, level, FIRST_X + slice * (size + CELL_GAP), y, size,
+		Cell cell = { group, texture, slice, false, level, FIRST_X + slice * (size + CELL_GAP), y, size,
 			((float)slice + 0.5f) / (float)spec->depth, point_clamped };
 		// The level alone, whatever the GPU works out from the cube's coordinates.
 		cell.sampler.min_level = level;
 		cell.sampler.level_count = level + 1;
 		cells[count++] = cell;
 	}
+	return count;
+}
+
+// Slice 1 past w's 1 wrapped and slice 7 clamped, the same coordinates; halfway between slices 2 and 3, filtered.
+static uint32_t add_w_cells(Cell *cells, uint32_t count, uint32_t y)
+{
+	const uint32_t step = MAX_SIDE + CELL_GAP;
+	XsdkSampler wrapped = point_clamped;
+	wrapped.address_w = XSDK_ADDRESS_WRAP;
+	XsdkSampler linear = point_clamped;
+	linear.mag_filter = XSDK_FILTER_LINEAR;
+	linear.min_filter = XSDK_FILTER_LINEAR;
+	cells[count++] = (Cell){ GROUP_W, TEXTURE_VOLUME, 1, false, 0, FIRST_X, y, MAX_SIDE, 1.1875f, wrapped };
+	cells[count++] =
+		(Cell){ GROUP_W, TEXTURE_VOLUME, 7, false, 0, FIRST_X + step, y, MAX_SIDE, 1.1875f, point_clamped };
+	cells[count++] = (Cell){ GROUP_W, TEXTURE_VOLUME, 2, true, 0, FIRST_X + 2 * step, y, MAX_SIDE, 0.375f, linear };
 	return count;
 }
 
@@ -205,13 +228,23 @@ static uint32_t make_cells(Cell *cells)
 	count = add_row(cells, count, GROUP_SMALL_CUBE, TEXTURE_SMALL_CUBE, 0, XSDK_CUBE_FACES, 104);
 	count = add_row(cells, count, GROUP_SMALL_CUBE, TEXTURE_SMALL_CUBE, 2, XSDK_CUBE_FACES, 120);
 	count = add_row(cells, count, GROUP_VOLUME, TEXTURE_VOLUME, 0, specs[TEXTURE_VOLUME].depth, 130);
-	return add_row(cells, count, GROUP_SMALL_VOLUME, TEXTURE_SMALL_VOLUME, 0, specs[TEXTURE_SMALL_VOLUME].depth, 170);
+	count = add_row(cells, count, GROUP_SMALL_VOLUME, TEXTURE_SMALL_VOLUME, 0, specs[TEXTURE_SMALL_VOLUME].depth, 170);
+	return add_w_cells(cells, count, 186);
+}
+
+static uint32_t half_way(uint32_t a, uint32_t b)
+{
+	uint32_t out = 0xFF000000;
+	for (uint32_t shift = 0; shift < 24; shift += 8)
+		out |= ((a >> shift & 0xFF) + (b >> shift & 0xFF) + 1) / 2 << shift;
+	return out;
 }
 
 // What the cell's pixel i across and j down should hold: one texel to a pixel, at its centre.
 static uint32_t expected_argb(const Cell *cell, uint32_t i, uint32_t j)
 {
-	return texel_argb(cell->texture, cell->slice, cell->level, i, j);
+	const uint32_t texel = texel_argb(cell->texture, cell->slice, cell->level, i, j);
+	return cell->blended ? half_way(texel, texel_argb(cell->texture, cell->slice + 1, cell->level, i, j)) : texel;
 }
 
 // A resolve stores the colour's bytes B, G, R, A; alpha isn't checked.
@@ -242,7 +275,7 @@ static bool pixel_right(
 	const bool inside = x >= cell->x && x < cell->x + cell->size && y >= cell->y && y < cell->y + cell->size;
 	const uint32_t argb = inside ? expected_argb(cell, x - cell->x, y - cell->y) : CLEAR_ARGB;
 	const uint32_t stored = pixels[tiled_index(x, y, WIDTH)];
-	if (holds(stored, argb, 0))
+	if (holds(stored, argb, inside && cell->blended ? LINEAR_TOLERANCE : 0))
 		return true;
 	if ((*logged)++ < MAX_MISSES_LOGGED)
 		log_miss(cell, frame, x, y, stored, argb);

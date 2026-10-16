@@ -51,6 +51,7 @@ enum {
 	FETCH_TYPE_TEXTURE = 2,
 	CLAMP_X_SHIFT = 10,
 	CLAMP_Y_SHIFT = 13,
+	CLAMP_Z_SHIFT = 16,
 	PITCH_SHIFT = 22,
 	PITCH_UNIT_LOG2 = 5,
 	TILED_SHIFT = 31,
@@ -73,6 +74,8 @@ enum {
 	MIN_FILTER_SHIFT = 21,
 	MIP_FILTER_SHIFT = 23,
 	ANISO_FILTER_SHIFT = 25,
+	VOL_MAG_FILTER_SHIFT = 0,
+	VOL_MIN_FILTER_SHIFT = 1,
 	MIP_MIN_LEVEL_SHIFT = 2,
 	MIP_MAX_LEVEL_SHIFT = 6,
 	MIP_LEVEL_MASK = 0xF,
@@ -80,6 +83,7 @@ enum {
 	// A signed 10-bit field with 5 fractional bits.
 	LOD_BIAS_STEPS = 32,
 	LOD_BIAS_MASK = 0x3FF,
+	BORDER_COLOR_SHIFT = 0,
 	DIMENSION_SHIFT = 9,
 	// Levels at 16 texels and under share a tail (xenia:src/xenia/gpu/texture_util.h:76-83).
 	PACKED_MIPS = 1 << 11,
@@ -538,7 +542,9 @@ void xsdk_texture_sampler_state(XsdkSamplerState *state, const XsdkSampler *samp
 {
 	assert(sampler->mag_filter <= XSDK_FILTER_LINEAR && sampler->min_filter <= XSDK_FILTER_LINEAR);
 	assert(sampler->mip_filter <= XSDK_FILTER_LINEAR);
-	assert(sampler->address_u <= XSDK_ADDRESS_CLAMP && sampler->address_v <= XSDK_ADDRESS_CLAMP);
+	assert(
+		sampler->address_u <= XSDK_ADDRESS_MIRROR_ONCE_BORDER && sampler->address_v <= XSDK_ADDRESS_MIRROR_ONCE_BORDER);
+	assert(sampler->address_w <= XSDK_ADDRESS_MIRROR_ONCE_BORDER && sampler->border <= XSDK_BORDER_WHITE);
 	assert(sampler->lod_bias >= -16.0f && sampler->lod_bias < 16.0f);
 	assert(sampler->max_anisotropy <= XSDK_MAX_ANISOTROPY);
 	assert(sampler->min_level <= MIP_LEVEL_MASK && sampler->level_count <= MIP_LEVEL_MASK + 1);
@@ -546,17 +552,17 @@ void xsdk_texture_sampler_state(XsdkSamplerState *state, const XsdkSampler *samp
 	// The sampler's last level, which xsdk_texture_levels takes the lower of with the texture's.
 	const uint32_t last = sampler->level_count ? sampler->level_count - 1 : MIP_LEVEL_MASK;
 	const int32_t bias = (int32_t)(steps < 0.0f ? steps - 0.5f : steps + 0.5f);
-	*state = (XsdkSamplerState){ .fetch = {
-									 sampler->address_u << CLAMP_X_SHIFT | sampler->address_v << CLAMP_Y_SHIFT,
-									 0,
-									 0,
-									 sampler->mag_filter << MAG_FILTER_SHIFT | sampler->min_filter << MIN_FILTER_SHIFT |
-										 sampler->mip_filter << MIP_FILTER_SHIFT |
-										 aniso_filter(sampler->max_anisotropy) << ANISO_FILTER_SHIFT,
-									 ((uint32_t)bias & LOD_BIAS_MASK) << LOD_BIAS_SHIFT |
-										 sampler->min_level << MIP_MIN_LEVEL_SHIFT | last << MIP_MAX_LEVEL_SHIFT,
-									 0,
-								 } };
+	const uint32_t clamps =
+		sampler->address_u << CLAMP_X_SHIFT | sampler->address_v << CLAMP_Y_SHIFT | sampler->address_w << CLAMP_Z_SHIFT;
+	const uint32_t filters = sampler->mag_filter << MAG_FILTER_SHIFT | sampler->min_filter << MIN_FILTER_SHIFT |
+		sampler->mip_filter << MIP_FILTER_SHIFT | aniso_filter(sampler->max_anisotropy) << ANISO_FILTER_SHIFT;
+	// Between a 3D texture's slices as within them; libxenon sets both linear for its 2D textures (xe.c:1203-1204).
+	const uint32_t volume_filters =
+		sampler->mag_filter << VOL_MAG_FILTER_SHIFT | sampler->min_filter << VOL_MIN_FILTER_SHIFT;
+	const uint32_t levels = ((uint32_t)bias & LOD_BIAS_MASK) << LOD_BIAS_SHIFT |
+		sampler->min_level << MIP_MIN_LEVEL_SHIFT | last << MIP_MAX_LEVEL_SHIFT;
+	*state = (XsdkSamplerState){ .fetch = { clamps, 0, 0, filters, volume_filters | levels,
+									 sampler->border << BORDER_COLOR_SHIFT } };
 }
 
 // The fetch constant's dword of levels and bias: the sampler's bias and lowest level, the lower of the texture's last

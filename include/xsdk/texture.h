@@ -99,11 +99,25 @@ enum {
 	XSDK_FILTER_LINEAR = 1,
 };
 
-// The fetch constant's ClampMode values (xenia:src/xenia/gpu/xenos.h:104-113).
+// The fetch constant's ClampMode values (xenia:src/xenia/gpu/xenos.h:104-113; libxenon:drivers/xenos/xe.h:68-75).
+// Mirrored once, the texture shows itself and its mirror image, then its edge or the border past them; halfway, a
+// coordinate stops at the edge, and a linear filter there takes half the border.
 enum {
 	XSDK_ADDRESS_WRAP = 0,
 	XSDK_ADDRESS_MIRROR = 1,
 	XSDK_ADDRESS_CLAMP = 2,
+	XSDK_ADDRESS_MIRROR_ONCE = 3,
+	XSDK_ADDRESS_CLAMP_HALFWAY = 4,
+	XSDK_ADDRESS_MIRROR_ONCE_HALFWAY = 5,
+	XSDK_ADDRESS_BORDER = 6,
+	XSDK_ADDRESS_MIRROR_ONCE_BORDER = 7,
+};
+
+// The fetch constant's BorderColor values (xenia:src/xenia/gpu/xenos.h:150-156). Black's alpha isn't known; Xenia's
+// backends take 0 (xenia:src/xenia/gpu/vulkan/vulkan_texture_cache.cc:817-824).
+enum {
+	XSDK_BORDER_BLACK = 0,
+	XSDK_BORDER_WHITE = 1,
 };
 
 typedef struct {
@@ -141,6 +155,11 @@ typedef struct {
 	// mip_max_level). The sampled levels end at the texture's last whichever is fewer.
 	uint32_t min_level;
 	uint32_t level_count;
+	// Across a 3D texture's slices, filtered between them as mag_filter and min_filter say. A cube clamps to each
+	// face's edge whatever the modes (xenia:src/xenia/gpu/texture_util.cc:556-577).
+	uint32_t address_w;
+	// XSDK_BORDER_*, where an address mode reads the border.
+	uint32_t border;
 } XsdkSampler;
 
 typedef struct {
