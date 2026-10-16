@@ -617,7 +617,7 @@ def main():
     # Batch C texture sampling: explicit LOD -> tfetch LOD bias, projective
     # divide, and a computed (non-interpolator) coordinate.
     for name, needles, desc in [
-        ("fs_texlod", ["LODBias"], "textureLod explicit LOD -> tfetch LOD bias"),
+        ("fs_texlod", ["UseComputedLOD=false, LODBias=2"], "textureLod explicit LOD -> tfetch LOD bias"),
         ("fs_texproj", ["rcp", "tfetch2D"], "textureProj perspective divide"),
         ("fs_texscale", ["tfetch2D"], "texture2D with a computed coordinate"),
     ]:

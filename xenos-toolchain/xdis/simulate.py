@@ -8,10 +8,12 @@ constants each loop's body runs once. The ALU's vector and scalar ops are as Xen
 (xenia:src/xenia/gpu/ucode.h, AluScalarOpcode and AluVectorOpcode), with a temp's absolute-value bit, a constant's,
 negation, swizzles, write masks, clamps, a0- and aL-relative constants (MOVA's maxas and maxasf), the predicate and
 kills; every value written is rounded to a single, as the GPU keeps it. Exports land in their export registers.
-Vertex and texture fetches come from functions the caller gives.
+Vertex and texture fetches come from functions the caller gives; setTexLOD and the gradients' setters keep the state
+the texture fetches after them read.
 """
 import math
 import struct
+from dataclasses import dataclass
 
 import xdis.container as container
 import xdis.xenos_ucode as xu
@@ -19,6 +21,19 @@ import xdis.xenos_ucode as xu
 V = xu.AluVectorOpcode
 S = xu.AluScalarOpcode
 FLT_MAX = 3.4028234663852886e38
+SET_LOD = int(xu.FetchOpcode.kSetTextureLod)
+SET_GRADIENTS = (int(xu.FetchOpcode.kSetTextureGradientsHorz), int(xu.FetchOpcode.kSetTextureGradientsVert))
+
+
+@dataclass
+class Lod:
+    """What a texture fetch's LOD comes from, as Xenia sums it (xenia:src/xenia/gpu/spirv_shader_translator_fetch.cc:
+    1498-1536): the fetch's own bias, the register LOD if it reads it, and, where it computes the LOD, the coordinate's
+    gradients or the registers' (horizontal, vertical), each three floats. The fetch constant's bias is the caller's."""
+    computed: bool
+    bias: float
+    register: float | None
+    gradients: tuple | None
 
 
 def single(x: float) -> float:
@@ -182,7 +197,7 @@ def _scalar(op, s3, ps, state):
     raise NotImplementedError(f"simulate: scalar op {so.name}")
 
 
-def _execute(rec, regs, consts, exports, state, vertex_fetch, texture_fetch):
+def _execute(rec, regs, consts, exports, state, vertex_fetch, texture_fetch, texture_lod):
     """One instruction of an exec that runs."""
     if rec.kind == "vfetch":
         fetch = xu.VertexFetchInstruction(*rec.raw)
@@ -198,10 +213,22 @@ def _execute(rec, regs, consts, exports, state, vertex_fetch, texture_fetch):
         src = regs.get(fetch.src(), [0.0] * 4)
         swizzle = fetch.src_swizzle()
         coords = [src[(swizzle >> (2 * i)) & 3] for i in range(3)]
-        if texture_fetch is None:
+        if fetch.opcode() == SET_LOD:
+            state["lod"] = coords[0]
+            return
+        if fetch.opcode() in SET_GRADIENTS:
+            state["gradients"][SET_GRADIENTS.index(fetch.opcode())] = coords
+            return
+        if texture_lod is not None:
+            lod = Lod(fetch.use_computed_lod(), fetch.lod_bias(),
+                      state["lod"] if fetch.use_register_lod() else None,
+                      tuple(list(g) for g in state["gradients"]) if fetch.use_register_gradients() else None)
+            value = texture_lod(fetch.fetch_constant_index(), coords, lod)
+        elif texture_fetch is not None:
+            value = texture_fetch(fetch.fetch_constant_index(), coords)
+        else:
             raise NotImplementedError("simulate: a texture fetch with no texture_fetch")
-        value = [single(x) for x in texture_fetch(fetch.fetch_constant_index(), coords)]
-        _write_fetch(regs, fetch.dest(), fetch.dest_swizzle(), value)
+        _write_fetch(regs, fetch.dest(), fetch.dest_swizzle(), [single(x) for x in value])
         return
     if rec.kind != "alu":
         return
@@ -265,19 +292,21 @@ def _control_flow(blob):
 
 
 def run(blob: bytes, registers: dict | None = None, constants: dict | None = None, vertex_fetch=None,
-        texture_fetch=None, loops: dict | None = None) -> Result:
+        texture_fetch=None, loops: dict | None = None, texture_lod=None) -> Result:
     """Runs the program in the container blob.
 
     registers: temp -> 4 floats at the start (a pixel shader's interpolators and pixel parameters; a vertex shader's
     vertex index in r0). constants: float constant -> 4 floats; others read 0. vertex_fetch(n, fetch, index) gives
     the 4 floats the program's nth vertex fetch reads for the vertex index it reads from its source register;
     texture_fetch(slot, coordinates) the 4 a texture fetch from fetch constant slot samples at the 3 coordinates its
-    source swizzle picks. loops: loop constant -> its count of passes; without it each loop's body runs once.
+    source swizzle picks; texture_lod(slot, coordinates, lod), given in its place, the same with the fetch's Lod.
+    loops: loop constant -> its count of passes; without it each loop's body runs once.
     """
     regs = {r: [single(x) for x in v] for r, v in (registers or {}).items()}
     consts = constants or {}
     exports = {}
-    state = {"a0": 0, "aL": 0, "p0": False, "killed": False, "ps": 0.0, "fetches": 0}
+    state = {"a0": 0, "aL": 0, "p0": False, "killed": False, "ps": 0.0, "fetches": 0, "lod": 0.0,
+             "gradients": [[0.0] * 3, [0.0] * 3]}
     cf, body = _control_flow(blob)
     pc, stack, steps = 0, [], 0
     while pc in cf:
@@ -291,7 +320,7 @@ def run(blob: bytes, registers: dict | None = None, constants: dict | None = Non
                 raise NotImplementedError("simulate: an exec on a boolean constant")
             runs = d.type == xu._ExecType.kUnconditional or d.condition == state["p0"]
             for rec in body[pc] if runs else ():
-                _execute(rec, regs, consts, exports, state, vertex_fetch, texture_fetch)
+                _execute(rec, regs, consts, exports, state, vertex_fetch, texture_fetch, texture_lod)
             if d.is_end and runs:
                 break
         elif isinstance(d, xu.ParsedLoopStartInstruction):

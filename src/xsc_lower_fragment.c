@@ -9,9 +9,6 @@ enum {
 	GRADIENT_Y = 0x39,
 	// The parameter type xost's containers give a sampler.
 	SAMPLER_PARAMETER = 0xC,
-	IMAGE_OPERANDS_BIAS_OR_LOD = 0x3,
-	DIM_2D = 1,
-	DIM_CUBE = 3,
 	// A pixel shader's depth goes to export 61, its x alone (xenia:src/xenia/gpu/ucode.h:1842,
 	// dxbc_shader_translator.cc:1591-1594).
 	EXPORT_DEPTH = 61,
@@ -159,54 +156,6 @@ static bool gather_derivative(Fragment *f, uint32_t ssa, const XscInstr *ins)
 	return true;
 }
 
-static bool sample_cube(XscLower *l, int64_t coord, int64_t slot, double lod_bias, int64_t dst)
-{
-	static const int64_t zzxy[] = { 2, 2, 0, 1 };
-	static const int64_t yxzz[] = { 1, 0, 2, 2 };
-	const int64_t cube = xsdk_xsc_fresh(l);
-	const XscSrc a = xsc_src(xsc_reg(coord), false, xsdk_xsc_swz(zzxy, 4));
-	const XscSrc b = xsc_src(xsc_reg(coord), false, xsdk_xsc_swz(yxzz, 4));
-	if (!xsc_emit2(l, XSC_VECTOR_CUBE, a, b, cube, false, 0xF) ||
-		xsdk_xsc_emit_scalar(l, XSC_SCALAR_RCP, cube, xsc_reg(cube | XSC_ABS_SOURCE), 2, 0x4) == XSC_NONE)
-		return false;
-	const int64_t bias = xsdk_xsc_literal_splat(l, 1.5);
-	const XscSrc ma = xsc_src(xsc_reg(cube), false, xsdk_xsc_bsw(2));
-	if (bias == XSC_NONE ||
-		!xsc_emit3(l, XSC_VECTOR_MAD, xsc_temp(cube), ma, xsc_plain(xsc_const(bias)), cube, false, 0x3))
-		return false;
-	XscFetch t = xsdk_xsc_template_tfetch();
-	t.fetch_constant_index = slot;
-	t.dimension = XSC_DIMENSION_CUBE;
-	t.lod_bias = lod_bias;
-	t.src_swizzle = 1 | 0 << 2 | 3 << 4;
-	t.dest = dst;
-	t.src = cube;
-	return xsdk_xsc_program_tfetch(l->x, l->p, &t) != NULL;
-}
-
-// A projective sample divides the coordinate by its last component first.
-static bool sample_2d(
-	XscLower *l, uint32_t coord, int64_t coord_reg, bool proj, int64_t slot, double lod_bias, int64_t dst)
-{
-	if (proj) {
-		const int64_t size = xsdk_xsc_vec_size(l, coord);
-		const int64_t rw = xsdk_xsc_emit_scalar(
-			l, XSC_SCALAR_RCP, xsdk_xsc_fresh(l), xsc_reg(coord_reg), size - 1 > 1 ? size - 1 : 1, 0xF);
-		if (rw == XSC_NONE)
-			return false;
-		const int64_t uv = xsdk_xsc_fresh(l);
-		if (!xsc_emit2(l, XSC_VECTOR_MUL, xsc_temp(coord_reg), xsc_temp(rw), uv, false, 0xF))
-			return false;
-		coord_reg = uv;
-	}
-	XscFetch t = xsdk_xsc_template_tfetch();
-	t.fetch_constant_index = slot;
-	t.lod_bias = lod_bias;
-	t.dest = dst;
-	t.src = coord_reg;
-	return xsdk_xsc_program_tfetch(l->x, l->p, &t) != NULL;
-}
-
 static bool use_slot(Fragment *f, int64_t slot)
 {
 	for (size_t i = 0; i < f->slot_count; i++) {
@@ -219,43 +168,17 @@ static bool use_slot(Fragment *f, int64_t slot)
 	return true;
 }
 
-// A tfetch, its coordinate's work and any sample that coordinate reads first.
+// A tfetch, its coordinate's work and any sample that coordinate or its LOD reads first.
 static bool gather_sample(Fragment *f, uint32_t ssa, const XscInstr *ins)
 {
-	XscLower *const l = &f->l;
-	const bool proj =
-		ins->opcode == SPV_IMAGE_SAMPLE_PROJ_IMPLICIT_LOD || ins->opcode == SPV_IMAGE_SAMPLE_PROJ_EXPLICIT_LOD;
-	const XscInstr *const sampled = xsdk_xsc_by_result(l->m, xsdk_xsc_operand(ins, 0));
-	const XscRole *const role = sampled ? xsdk_xsc_role(l->si, xsdk_xsc_operand(sampled, 0)) : NULL;
-	if (!role || role->kind != XSC_ROLE_SAMPLER)
-		return xsdk_xsc_lower_refuse(l, "ImageSample needs a sampler");
-	const int64_t slot = role->a;
-	const int64_t dim = role->b;
-	if (dim == XSC_NONE)
-		return xsdk_xsc_lower_refuse(l, "unsupported sampler dimension None");
-	if (dim != DIM_2D && dim != DIM_CUBE)
-		return xsdk_xsc_lower_refuse(l, "unsupported sampler dimension %lld", (long long)dim);
-	const uint32_t coord = xsdk_xsc_operand(ins, 1);
-	// A constant bias or LOD folds into the tfetch's.
-	double lod_bias = 0.0;
-	uint32_t count;
-	const uint32_t *const ops = xsdk_xsc_operands(ins, &count);
-	if (count > 3 && (ops[2] & IMAGE_OPERANDS_BIAS_OR_LOD) && !xsdk_xsc_const_scalar(l, ops[3], &lod_bias))
-		return false;
-	if (!gather(f, coord))
-		return false;
-	const XscOperand coord_reg = xsdk_xsc_to_reg(l, xsdk_xsc_lower_operand(l, coord));
-	if (xsc_failed(l))
-		return false;
-	const int64_t dst = xsdk_xsc_fresh(l);
-	if (dim == DIM_CUBE && proj)
-		return xsdk_xsc_lower_refuse(l, "projective cube sampling unsupported");
-	const bool sampled_ok = dim == DIM_CUBE ? sample_cube(l, coord_reg.value, slot, lod_bias, dst)
-											: sample_2d(l, coord, coord_reg.value, proj, slot, lod_bias, dst);
-	if (!sampled_ok)
-		return false;
-	l->sample_reg[ssa] = dst;
-	return use_slot(f, slot);
+	uint32_t inputs[XSC_SAMPLE_INPUTS];
+	const uint32_t count = xsdk_xsc_sample_inputs(ins, inputs);
+	for (uint32_t i = 0; i < count; i++) {
+		if (!gather(f, inputs[i]))
+			return false;
+	}
+	int64_t slot;
+	return xsdk_xsc_emit_sample(&f->l, ssa, ins, &slot) && use_slot(f, slot);
 }
 
 // A hardware loop's samples: those its values on entry read, and those its passes read; one at coordinates a pass works

@@ -82,7 +82,7 @@ came from; that test and its test vectors stay in xost's archived repo (github.c
 | `refract(I,N,eta)` | Snell vector + total-internal-reflection (`k<0`) mask |
 | runtime int `/` `%` (SDiv/SMod/U*) | `trunc(a·rcp(b)+ε)`; remainder `a−b·q` — **approximate, non-negative domain** |
 | `mat3` / `mat2` × vec | per-row `dp3` / `dp2add` (matrix uploaded as rows, same as mat4) |
-| `textureLod` / `texture(…,bias)` | constant LOD folded into the tfetch LOD-bias field (1/16 units) |
+| `textureLod`, `texture(…,bias)`, `textureGrad` (2D), and their projective forms | a LOD the fetch's own LOD-bias field holds (1/16 steps, -4 to 3.9375), any other through `setTexLOD`; an explicit LOD turns the computed one off; gradients through `setGradientH` and `setGradientV` (see LOD and gradients) |
 | `textureProj` | perspective divide `uv·rcp(w)` then `tfetch2D` |
 | `texture()` with a computed coord | coord expression emitted, then tfetch (not just bare interpolators); a coord from another sample (a dependent read) has that sample fetched first; in a pixel shader the coords' work goes first and the fetches together (see Fetch layout) |
 | `CompositeInsert` (`v[i] = x`) | copy + masked component mov |
@@ -381,6 +381,29 @@ fetch is benign to the pipeline -- confirmed by the DSOLID isolation slot
 rendering a clean cube). A raw derivative visualization looks faceted because
 screen-space derivatives are constant per triangle and discontinuous at the
 shared edge; that is correct, not a geometry bug.
+
+## LOD and gradients
+
+A texture fetch samples at the sum of the fetch constant's LOD bias, the register LOD if it reads it (UseRegisterLOD),
+and its own LOD-bias field. Where it computes the LOD (UseComputedLOD), it works it out from its coordinate's gradients,
+or from the registers' if it reads them (UseRegisterGradients), and adds the sum to it
+(xenia:src/xenia/gpu/spirv_shader_translator_fetch.cc:1498-1536). `setTexLOD` sets the register LOD from one component,
+and `setGradientH` and `setGradientV` the gradients from three; they write no temp (xenia:src/xenia/gpu/ucode.h:669-674,
+spirv_shader_translator_fetch.cc:521-541).
+- **An explicit LOD,** `textureLod`'s, turns the computed LOD off. A constant the bias field holds goes there; any other
+  goes through `setTexLOD`, a constant copied into a temp first, as fetches read temps alone. Before, a constant LOD was
+  added to the computed one, and one past the field's range didn't encode.
+- **A bias,** `texture()`'s third argument, keeps the computed LOD and adds to it the same way.
+- **Gradients,** `textureGrad`'s, go to `setGradientH` and `setGradientV`, x and y, the z they don't use x again; the
+  fetch computes its LOD from them. A cube map's gradients are refused: Xenia takes them in cube space
+  (ucode.h:580-583), unchecked on the console.
+- **Ordering:** a fetch keeps its place against every state fetch (`xsdk:src/xsc_program.c`, ordered), so each sample
+  reads the state set for it; and a state fetch counts as writing no temp, so the allocator never takes its unused
+  destination, which keeps every component (DEST_KEEP), for one.
+
+Offsets, a sample index and a minimum LOD, the image operands xsc doesn't take, are refused; they were dropped before.
+`tests/test_lod_gradients.py` checks each on `xdis/simulate.py`, which keeps the state the setters write. None of it is
+checked on the console yet (vulkan4xenon:docs/ROADMAP.md, milestone 22).
 
 ## Validation
 Every test shader is checked by the XenosRecomp oracle (which does the

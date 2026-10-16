@@ -554,12 +554,19 @@ static bool build_ucode(Xsc *x, XscProgram *p, uint8_t **ucode, size_t *ucode_by
 
 // ---- fetches grouped after the work their coordinates need (program.py _group_fetches) ----
 
+static bool state_fetch(const XscOp *op)
+{
+	return op->is_fetch && op->fetch.opcode >= XSC_FETCH_SET_LOD && op->fetch.opcode <= XSC_FETCH_SET_GRADIENTS_VERT;
+}
+
+// setTexLOD and the gradients' setters write the fetches' state, not a temp.
 static void defs_uses(
 	const XscProgram *p, const XscOp *op, int64_t *defs, size_t *def_count, int64_t *uses, size_t *use_count)
 {
 	*def_count = *use_count = 0;
 	if (op->kind != XSC_OP_ALU) {
-		defs[(*def_count)++] = op->fetch.dest;
+		if (!state_fetch(op))
+			defs[(*def_count)++] = op->fetch.dest;
 		uses[(*use_count)++] = op->fetch.src;
 		return;
 	}
@@ -572,11 +579,6 @@ static void defs_uses(
 		if (f->src_is_temp[i])
 			uses[(*use_count)++] = src_temp_index(p, f->src_reg[i]);
 	}
-}
-
-static bool state_fetch(const XscOp *op)
-{
-	return op->is_fetch && op->fetch.opcode >= XSC_FETCH_SET_LOD && op->fetch.opcode <= XSC_FETCH_SET_GRADIENTS_VERT;
 }
 
 static bool is_predicated(const XscOp *op)

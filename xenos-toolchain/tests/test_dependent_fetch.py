@@ -47,6 +47,9 @@ def instructions(blob):
         for part in r.text.split("+"):
             m = re.search(r"\b[a-zA-Z0-9_]+\s+([^,\s]+)\s*,(.*)", part)
             if not m:
+                # setTexLOD and the gradients' setters name their source alone.
+                if r.kind == "tfetch":
+                    reads |= {int(t) for t in TEMP.findall(part)}
                 continue
             writes |= {int(t) for t in TEMP.findall(m.group(1))}
             reads |= {int(t) for t in TEMP.findall(m.group(2))}

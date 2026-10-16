@@ -277,6 +277,17 @@ XscOperand xsdk_xsc_block_value(XscLower *l, uint32_t ssa, const XscBlockAccess 
 const XscMatrix *xsdk_xsc_block_matrix(XscLower *l, uint32_t ssa, const XscBlockAccess *access);
 XscOperand xsdk_xsc_int_operand(XscLower *l, uint32_t ssa);
 
+// Samples (xsc_lower_sample.c).
+enum {
+	// A sample's coordinate, then its bias or LOD, or its two gradients.
+	XSC_SAMPLE_INPUTS = 4,
+};
+// The ids a sample reads besides its sampler; their count.
+uint32_t xsdk_xsc_sample_inputs(const XscInstr *ins, uint32_t ids[XSC_SAMPLE_INPUTS]);
+// The sample's fetch into sample_reg[ssa], after its coordinate's work and any LOD or gradients; its fetch constant in
+// slot.
+bool xsdk_xsc_emit_sample(XscLower *l, uint32_t ssa, const XscInstr *ins, int64_t *slot);
+
 // Stages (xsc_lower_stage.c and a file each): a container and what it needs, lower.py's literal manifest.
 typedef struct {
 	uint8_t *container;
