@@ -100,6 +100,11 @@ typedef struct {
 	float lod_bias;
 	// The most anisotropy, 1 to 16, rounded down to a power of two; 0 is none.
 	uint32_t max_anisotropy;
+	// The finest level sampled, from 0 to 15, and how many levels from the base it may sample, from 1 to 16, or 0 for
+	// all the texture's: Xenos clamps to whole levels (xenia:src/xenia/gpu/xenos.h:1265-1266, mip_min_level and
+	// mip_max_level). The sampled levels end at the texture's last whichever is fewer.
+	uint32_t min_level;
+	uint32_t level_count;
 } XsdkSampler;
 
 typedef struct {

@@ -296,11 +296,11 @@ static bool make_resources(void)
 	xsdk_gpu_invalidate(narrow_quad_address, 2 * QUAD_BYTES);
 
 	const XsdkSampler point = { XSDK_FILTER_POINT, XSDK_FILTER_POINT, XSDK_FILTER_POINT, XSDK_ADDRESS_WRAP,
-		XSDK_ADDRESS_WRAP, 0.0f, 0 };
+		XSDK_ADDRESS_WRAP, 0.0f, 0, 0, 0 };
 	const XsdkSampler bilinear = { XSDK_FILTER_LINEAR, XSDK_FILTER_LINEAR, XSDK_FILTER_POINT, XSDK_ADDRESS_WRAP,
-		XSDK_ADDRESS_WRAP, 0.0f, 0 };
+		XSDK_ADDRESS_WRAP, 0.0f, 0, 0, 0 };
 	const XsdkSampler trilinear = { XSDK_FILTER_LINEAR, XSDK_FILTER_LINEAR, XSDK_FILTER_LINEAR, XSDK_ADDRESS_WRAP,
-		XSDK_ADDRESS_WRAP, 0.0f, 0 };
+		XSDK_ADDRESS_WRAP, 0.0f, 0, 0, 0 };
 	xsdk_texture_sampler_state(&samplers[FILTER_POINT], &point);
 	xsdk_texture_sampler_state(&samplers[FILTER_BILINEAR], &bilinear);
 	xsdk_texture_sampler_state(&samplers[FILTER_TRILINEAR_64], &trilinear);

@@ -63,7 +63,9 @@ enum {
 	MIN_FILTER_SHIFT = 21,
 	MIP_FILTER_SHIFT = 23,
 	ANISO_FILTER_SHIFT = 25,
+	MIP_MIN_LEVEL_SHIFT = 2,
 	MIP_MAX_LEVEL_SHIFT = 6,
+	MIP_LEVEL_MASK = 0xF,
 	LOD_BIAS_SHIFT = 12,
 	// A signed 10-bit field with 5 fractional bits.
 	LOD_BIAS_STEPS = 32,
@@ -375,7 +377,10 @@ void xsdk_texture_sampler_state(XsdkSamplerState *state, const XsdkSampler *samp
 	assert(sampler->address_u <= XSDK_ADDRESS_CLAMP && sampler->address_v <= XSDK_ADDRESS_CLAMP);
 	assert(sampler->lod_bias >= -16.0f && sampler->lod_bias < 16.0f);
 	assert(sampler->max_anisotropy <= XSDK_MAX_ANISOTROPY);
+	assert(sampler->min_level <= MIP_LEVEL_MASK && sampler->level_count <= MIP_LEVEL_MASK + 1);
 	const float steps = sampler->lod_bias * LOD_BIAS_STEPS;
+	// The sampler's last level, which xsdk_texture_levels takes the lower of with the texture's.
+	const uint32_t last = sampler->level_count ? sampler->level_count - 1 : MIP_LEVEL_MASK;
 	const int32_t bias = (int32_t)(steps < 0.0f ? steps - 0.5f : steps + 0.5f);
 	*state = (XsdkSamplerState){ .fetch = {
 									 sampler->address_u << CLAMP_X_SHIFT | sampler->address_v << CLAMP_Y_SHIFT,
@@ -384,7 +389,21 @@ void xsdk_texture_sampler_state(XsdkSamplerState *state, const XsdkSampler *samp
 									 sampler->mag_filter << MAG_FILTER_SHIFT | sampler->min_filter << MIN_FILTER_SHIFT |
 										 sampler->mip_filter << MIP_FILTER_SHIFT |
 										 aniso_filter(sampler->max_anisotropy) << ANISO_FILTER_SHIFT,
-									 ((uint32_t)bias & LOD_BIAS_MASK) << LOD_BIAS_SHIFT,
+									 ((uint32_t)bias & LOD_BIAS_MASK) << LOD_BIAS_SHIFT |
+										 sampler->min_level << MIP_MIN_LEVEL_SHIFT | last << MIP_MAX_LEVEL_SHIFT,
 									 0,
 								 } };
+}
+
+// The fetch constant's dword of levels and bias: the sampler's bias and lowest level, the lower of the texture's last
+// level and the sampler's, and the lowest no higher than that.
+uint32_t xsdk_texture_levels(uint32_t texture, uint32_t sampler)
+{
+	const uint32_t texture_last = texture >> MIP_MAX_LEVEL_SHIFT & MIP_LEVEL_MASK;
+	const uint32_t sampler_last = sampler >> MIP_MAX_LEVEL_SHIFT & MIP_LEVEL_MASK;
+	const uint32_t last = texture_last < sampler_last ? texture_last : sampler_last;
+	const uint32_t first = sampler >> MIP_MIN_LEVEL_SHIFT & MIP_LEVEL_MASK;
+	const uint32_t fields = MIP_LEVEL_MASK << MIP_MIN_LEVEL_SHIFT | MIP_LEVEL_MASK << MIP_MAX_LEVEL_SHIFT;
+	return ((texture | sampler) & ~fields) | (first < last ? first : last) << MIP_MIN_LEVEL_SHIFT |
+		last << MIP_MAX_LEVEL_SHIFT;
 }

@@ -79,6 +79,8 @@ enum {
 	FETCHES_PER_GROUP = 3,
 	VERTEX_FETCH_DWORDS = 2,
 	FETCH_GROUP_DWORDS = 6,
+	// The dword of a texture fetch constant whose levels its texture and sampler both clamp (src/texture.c).
+	TEXTURE_LEVELS_DWORD = 4,
 	LAST_GROUP = VERTEX_FETCH_CONSTANT / FETCHES_PER_GROUP,
 	STREAM_GROUPS = LAST_GROUP - (VERTEX_FETCH_CONSTANT - (XSDK_VERTEX_STREAMS - 1)) / FETCHES_PER_GROUP + 1,
 	// A texture fetch takes a 5-bit fetch constant index (xenia:src/xenia/gpu/ucode.h:789-790).
@@ -406,7 +408,9 @@ void xsdk_gpu_set_texture(uint32_t slot, const XsdkTexture *texture, const XsdkS
 	GpuPackets packets = gpu_reserve_packets(TEXTURE_DWORDS);
 	gpu_put_type0(&packets, SHADER_CONSTANT_FETCH_00_0 + slot * FETCH_GROUP_DWORDS, FETCH_GROUP_DWORDS);
 	for (uint32_t i = 0; i < FETCH_GROUP_DWORDS; i++)
-		gpu_put(&packets, texture->fetch[i] | sampler->fetch[i]);
+		gpu_put(&packets,
+			i == TEXTURE_LEVELS_DWORD ? xsdk_texture_levels(texture->fetch[i], sampler->fetch[i])
+									  : texture->fetch[i] | sampler->fetch[i]);
 	gpu_packets_done(&packets);
 }
 

@@ -804,7 +804,7 @@ void test_formats(void)
 	static Cell cells[MAX_CELLS];
 	const uint32_t cell_count = make_cells(cells);
 	const XsdkSampler point_clamped = { XSDK_FILTER_POINT, XSDK_FILTER_POINT, XSDK_FILTER_POINT, XSDK_ADDRESS_CLAMP,
-		XSDK_ADDRESS_CLAMP, 0.0f, 0 };
+		XSDK_ADDRESS_CLAMP, 0.0f, 0, 0, 0 };
 	XsdkSamplerState sampler;
 	xsdk_texture_sampler_state(&sampler, &point_clamped);
 	volatile uint32_t *const vertices = xsdk_gpu_alloc(cell_count * QUAD_BYTES);

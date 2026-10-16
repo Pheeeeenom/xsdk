@@ -144,7 +144,7 @@ static const XsdkVertexElement vertex_layout[] = {
 };
 
 static const XsdkSampler point_clamped = { XSDK_FILTER_POINT, XSDK_FILTER_POINT, XSDK_FILTER_POINT, XSDK_ADDRESS_CLAMP,
-	XSDK_ADDRESS_CLAMP, 0.0f, 0 };
+	XSDK_ADDRESS_CLAMP, 0.0f, 0, 0, 0 };
 
 static uint32_t image[MAX_LEVEL_TEXELS];
 
@@ -214,28 +214,33 @@ static uint32_t add_grid(Cell *cells, uint32_t count)
 	const Cell grid[] = {
 		// Four pixels a texel; the other filter is set the other way, so using it fails.
 		{ "magnified, point", GROUP_FILTERS, TEXTURE_CHECKER_SMALL, 0, 480, 40, CELL_SIZE, CELL_SIZE, 0.0f, 0.0f, 1.0f,
-			1.0f, { POINT, LINEAR, POINT, CLAMP, CLAMP, 0.0f, 0 } },
+			1.0f, { POINT, LINEAR, POINT, CLAMP, CLAMP, 0.0f, 0, 0, 0 } },
 		{ "magnified, linear", GROUP_FILTERS, TEXTURE_CHECKER_SMALL, 0, 660, 40, CELL_SIZE, CELL_SIZE, 0.0f, 0.0f, 1.0f,
-			1.0f, { LINEAR, POINT, POINT, CLAMP, CLAMP, 0.0f, 0 } },
+			1.0f, { LINEAR, POINT, POINT, CLAMP, CLAMP, 0.0f, 0, 0, 0 } },
 		// Two texels a pixel.
 		{ "minified, point", GROUP_FILTERS, TEXTURE_CHECKER_LARGE, 0, 840, 40, CELL_SIZE, CELL_SIZE, in, in, 1.0f + in,
-			1.0f + in, { LINEAR, POINT, POINT, CLAMP, CLAMP, 0.0f, 0 } },
+			1.0f + in, { LINEAR, POINT, POINT, CLAMP, CLAMP, 0.0f, 0, 0, 0 } },
 		{ "minified, linear", GROUP_FILTERS, TEXTURE_CHECKER_LARGE, 0, 1020, 40, CELL_SIZE, CELL_SIZE, in, in,
-			1.0f + in, 1.0f + in, { POINT, LINEAR, POINT, CLAMP, CLAMP, 0.0f, 0 } },
+			1.0f + in, 1.0f + in, { POINT, LINEAR, POINT, CLAMP, CLAMP, 0.0f, 0, 0, 0 } },
 		// Level 1, biased to 1.375: the nearest level is 1, and linear takes 3/8 of level 2.
 		{ "mip point", GROUP_FILTERS, TEXTURE_SOLID_LEVELS, 0, 480, 240, CELL_SIZE, CELL_SIZE, 0.0f, 0.0f, 1.0f, 1.0f,
-			{ POINT, POINT, POINT, CLAMP, CLAMP, 0.375f, 0 } },
+			{ POINT, POINT, POINT, CLAMP, CLAMP, 0.375f, 0, 0, 0 } },
 		{ "mip linear", GROUP_FILTERS, TEXTURE_SOLID_LEVELS, 0, 660, 240, CELL_SIZE, CELL_SIZE, 0.0f, 0.0f, 1.0f, 1.0f,
-			{ POINT, POINT, LINEAR, CLAMP, CLAMP, 0.375f, 0 } },
+			{ POINT, POINT, LINEAR, CLAMP, CLAMP, 0.375f, 0, 0, 0 } },
+		// Level 1 as drawn, kept to level 3 and up; level 4 biased, kept to the first 3 levels, so level 2 whole.
+		{ "mip lowest level", GROUP_FILTERS, TEXTURE_SOLID_LEVELS, 0, 840, 240, CELL_SIZE, CELL_SIZE, 0.0f, 0.0f, 1.0f,
+			1.0f, { POINT, POINT, POINT, CLAMP, CLAMP, 0.0f, 0, 3, 0 } },
+		{ "mip level count", GROUP_FILTERS, TEXTURE_SOLID_LEVELS, 0, 1020, 240, CELL_SIZE, CELL_SIZE, 0.0f, 0.0f, 1.0f,
+			1.0f, { POINT, POINT, LINEAR, CLAMP, CLAMP, 3.0f, 0, 0, 3 } },
 		// Half the texture past each edge, two pixels a texel.
 		{ "wrap", GROUP_ADDRESSING, TEXTURE_BLOCKS, 0, 480, 440, CELL_SIZE, CELL_SIZE, -0.5f, -0.5f, 1.5f, 1.5f,
-			{ POINT, POINT, POINT, WRAP, WRAP, 0.0f, 0 } },
+			{ POINT, POINT, POINT, WRAP, WRAP, 0.0f, 0, 0, 0 } },
 		{ "mirror", GROUP_ADDRESSING, TEXTURE_BLOCKS, 0, 660, 440, CELL_SIZE, CELL_SIZE, -0.5f, -0.5f, 1.5f, 1.5f,
-			{ POINT, POINT, POINT, MIRROR, MIRROR, 0.0f, 0 } },
+			{ POINT, POINT, POINT, MIRROR, MIRROR, 0.0f, 0, 0, 0 } },
 		{ "clamp", GROUP_ADDRESSING, TEXTURE_BLOCKS, 0, 840, 440, CELL_SIZE, CELL_SIZE, -0.5f, -0.5f, 1.5f, 1.5f,
-			{ POINT, POINT, POINT, CLAMP, CLAMP, 0.0f, 0 } },
+			{ POINT, POINT, POINT, CLAMP, CLAMP, 0.0f, 0, 0, 0 } },
 		{ "mirror across, clamp down", GROUP_ADDRESSING, TEXTURE_BLOCKS, 0, 1020, 440, CELL_SIZE, CELL_SIZE, -0.5f,
-			-0.5f, 1.5f, 1.5f, { POINT, POINT, POINT, MIRROR, CLAMP, 0.0f, 0 } },
+			-0.5f, 1.5f, 1.5f, { POINT, POINT, POINT, MIRROR, CLAMP, 0.0f, 0, 0, 0 } },
 	};
 	for (uint32_t i = 0; i < sizeof grid / sizeof grid[0]; i++)
 		cells[count++] = grid[i];
@@ -331,14 +336,20 @@ static uint32_t expected_argb(const Cell *cell, float lod, uint32_t x, uint32_t 
 	const XsdkSampler *const sampler = &cell->sampler;
 	const float u = cell->u0 + (cell->u1 - cell->u0) * ((float)(x - cell->x) + 0.5f) / (float)cell->width;
 	const float v = cell->v0 + (cell->v1 - cell->v0) * ((float)(y - cell->y) + 0.5f) / (float)cell->height;
-	const uint32_t last = specs[cell->texture].levels - 1;
+	// The levels the sampler keeps to, within the texture's (src/texture.c, xsdk_texture_levels).
+	const uint32_t texture_last = specs[cell->texture].levels - 1;
+	const uint32_t last =
+		sampler->level_count && sampler->level_count - 1 < texture_last ? sampler->level_count - 1 : texture_last;
+	const uint32_t first = sampler->min_level < last ? sampler->min_level : last;
 	float sum[3] = { 0.0f, 0.0f, 0.0f };
 	if (lod <= 0.0f) {
 		sample_level(sum, cell, 0, sampler->mag_filter, u, v, 1.0f);
 	} else if (sampler->mip_filter == XSDK_FILTER_POINT) {
 		const uint32_t nearest = (uint32_t)floor_to_int(lod + 0.5f);
-		sample_level(sum, cell, nearest < last ? nearest : last, sampler->min_filter, u, v, 1.0f);
+		const uint32_t level = nearest < first ? first : nearest < last ? nearest : last;
+		sample_level(sum, cell, level, sampler->min_filter, u, v, 1.0f);
 	} else {
+		lod = (lod < (float)first) ? (float)first : (lod > (float)last) ? (float)last : lod;
 		const uint32_t below = (uint32_t)floor_to_int(lod);
 		const float above_share = below >= last ? 0.0f : lod - (float)below;
 		sample_level(sum, cell, below < last ? below : last, sampler->min_filter, u, v, 1.0f - above_share);
