@@ -15,7 +15,7 @@
 
 // Times four samples a pixel, at coordinates each pixel shader works out, laid out a way each
 // (tools/gen_texel_shaders.py; docs/scope/36-texel-rate.md): fills of a 1280x720 target, checked after each, then with
-// more registers declared, under a split giving pixel shaders more, and from a 64-bit texture filtered between two
+// more registers declared, under splits giving pixel shaders more, and from a 64-bit texture filtered between two
 // levels. Last, whether xost's build of the same GLSL runs within 5% of the fastest hand-built layout.
 
 enum {
@@ -65,6 +65,8 @@ enum {
 	// Vertex shaders' share in bits 12-19, pixel shaders' in bits 4-11, out of 128 (src/gpu_setup.c).
 	SPLIT_TOTAL = 0x80,
 	SPLIT_XSDK_VERTEX = 0x40,
+	// 96 pixel registers and 32 vertex ones, Shader Model 3's temporaries each (vulkan4xenon milestone 22).
+	SPLIT_SHADER_MODEL_3_VERTEX = 0x20,
 	SPLIT_PIXEL_HEAVY_VERTEX = 0x10,
 	SPLIT_REPEATS = 8,
 	SPLIT_DYNAMIC = 1,
@@ -470,16 +472,17 @@ int main(void)
 	for (uint32_t i = 0; i < LAYOUTS && ran; i++)
 		for (uint32_t filter = FILTER_POINT; filter <= FILTER_BILINEAR && ran; filter++)
 			ran = measure(i, 0, SPLIT_XSDK_VERTEX, filter);
-	// Those without the wait bit, bilinear, with 12 and 17 registers declared, under xsdk's split and a pixel-heavy
-	// one.
-	static const uint32_t registers[] = { 0, 12, 17 };
+	// Those without the wait bit, bilinear, with 12, 17 and Shader Model 3's 32 registers declared, under xsdk's split
+	// and two giving pixel shaders more.
+	static const uint32_t registers[] = { 0, 12, 17, 32 };
+	static const uint32_t vertex_shares[] = { SPLIT_XSDK_VERTEX, SPLIT_SHADER_MODEL_3_VERTEX,
+		SPLIT_PIXEL_HEAVY_VERTEX };
 	for (uint32_t i = 0; i < PLAIN_LAYOUTS && ran; i++)
-		for (uint32_t r = 0; r < 3 && ran; r++)
-			for (uint32_t split = 0; split < 2 && ran; split++) {
+		for (uint32_t r = 0; r < sizeof registers / sizeof registers[0] && ran; r++)
+			for (uint32_t split = 0; split < sizeof vertex_shares / sizeof vertex_shares[0] && ran; split++) {
 				if (r == 0 && split == 0)
 					continue;
-				ran = measure(plain_layouts[i], registers[r], split ? SPLIT_PIXEL_HEAVY_VERTEX : SPLIT_XSDK_VERTEX,
-					FILTER_BILINEAR);
+				ran = measure(plain_layouts[i], registers[r], vertex_shares[split], FILTER_BILINEAR);
 			}
 	// The 64-bit texture, trilinear, with their own registers and 12.
 	for (uint32_t i = 0; i < PLAIN_LAYOUTS && ran; i++)
