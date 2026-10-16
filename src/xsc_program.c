@@ -861,6 +861,8 @@ static bool assign_registers(Xsc *x, Ranges *r, int64_t *temps, size_t temp_coun
 	return true;
 }
 
+static bool check_registers(Xsc *x, const XscProgram *p);
+
 static bool allocate_registers(Xsc *x, XscProgram *p)
 {
 	size_t count;
@@ -901,6 +903,11 @@ static bool allocate_registers(Xsc *x, XscProgram *p)
 	int64_t most = npinned - 1;
 	for (size_t t = 0; t < temp_count; t++)
 		most = highest(most, mapping[temps[t]]);
+	// Past the budget, refused as such before an instruction is encoded with a register it can't name.
+	if (most + 1 > p->registers || most + 1 > ENCODABLE_REGS) {
+		p->max_reg = most;
+		return check_registers(x, p);
+	}
 	for (size_t idx = 0; idx < count; idx++) {
 		XscOp remapped;
 		remap(p, ops[idx], mapping, r.limit, &remapped);

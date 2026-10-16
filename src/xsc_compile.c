@@ -120,7 +120,7 @@ static bool copy_out(Xsc *x, const XscInterface *si, const XscLowered *lowered, 
 	return true;
 }
 
-XsdkXscStatus xsdk_xsc_compile(
+static XsdkXscStatus compile_once(
 	const uint32_t *spirv, size_t spirv_words, const XsdkXscOptions *options, XsdkXscShader *shader)
 {
 	memset(shader, 0, sizeof *shader);
@@ -137,6 +137,19 @@ XsdkXscStatus xsdk_xsc_compile(
 	memcpy(shader->message, x.message, sizeof shader->message);
 	xsdk_xsc_release(&x);
 	return x.status;
+}
+
+// A pixel shader whose fetches, laid out together, keep more registers live than the split gives it is laid out as
+// before milestone 36 instead, each fetch where its work is: slower to fetch, but drawn (vulkan4xenon milestone 18).
+XsdkXscStatus xsdk_xsc_compile(
+	const uint32_t *spirv, size_t spirv_words, const XsdkXscOptions *options, XsdkXscShader *shader)
+{
+	const XsdkXscStatus status = compile_once(spirv, spirv_words, options, shader);
+	if (status != XSDK_XSC_REGISTERS || !options->group_fetches)
+		return status;
+	XsdkXscOptions apart = *options;
+	apart.group_fetches = false;
+	return compile_once(spirv, spirv_words, &apart, shader);
 }
 
 void xsdk_xsc_free(XsdkXscShader *shader)

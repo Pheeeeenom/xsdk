@@ -1097,6 +1097,19 @@ static int64_t fmod_value(XscLower *l, uint32_t a, uint32_t b, int64_t dst, bool
 
 // ---- operands (lower.py operand, scalar_origin) ----
 
+// A scalar as a value of its own: its component, wherever it is, in every component of a fresh register, by a max of
+// it with itself.
+static XscOperand scalar_value(XscLower *l, uint32_t ssa)
+{
+	const XscOrigin origin = xsdk_xsc_scalar_origin(l, ssa);
+	if (xsc_failed(l))
+		return (XscOperand){ 0 };
+	const int64_t swizzle = origin.comp == XSC_BROADCAST ? 0 : xsdk_xsc_bsw(origin.comp);
+	const int64_t r = xsdk_xsc_fresh(l);
+	const XscSrc ops[2] = { xsc_src(origin.o, false, swizzle), xsc_src(origin.o, false, swizzle) };
+	return xsdk_xsc_emit(l, XSC_VECTOR_MAX, ops, 2, r, false, 0xF, false) ? xsc_reg(r) : (XscOperand){ 0 };
+}
+
 static XscOperand load_operand(XscLower *l, uint32_t ssa, const XscInstr *ins)
 {
 	const uint32_t src = xsdk_xsc_operand(ins, 0);
@@ -1107,15 +1120,8 @@ static XscOperand load_operand(XscLower *l, uint32_t ssa, const XscInstr *ins)
 		return (XscOperand){ 0 };
 	if (found)
 		return xsdk_xsc_block_value(l, ssa, &access);
-	if (ptr && ptr->opcode == SPV_ACCESS_CHAIN) {
-		const XscOrigin origin = xsdk_xsc_scalar_origin(l, ssa);
-		if (xsc_failed(l))
-			return (XscOperand){ 0 };
-		const int64_t swizzle = origin.comp == XSC_BROADCAST ? 0 : xsdk_xsc_bsw(origin.comp);
-		const int64_t r = xsdk_xsc_fresh(l);
-		const XscSrc ops[2] = { xsc_src(origin.o, false, swizzle), xsc_src(origin.o, false, swizzle) };
-		return xsdk_xsc_emit(l, XSC_VECTOR_MAX, ops, 2, r, false, 0xF, false) ? xsc_reg(r) : (XscOperand){ 0 };
-	}
+	if (ptr && ptr->opcode == SPV_ACCESS_CHAIN)
+		return scalar_value(l, ssa);
 	const bool known = src < l->m->id_limit;
 	if (known && l->inputs[src] != XSC_NONE)
 		return xsc_reg(l->inputs[src]);
@@ -1281,6 +1287,12 @@ static XscOperand value_operand(XscLower *l, uint32_t ssa, const XscInstr *ins)
 		return from_reg(xsdk_xsc_extinst(l, ins, XSC_NONE, false));
 	case SPV_CONVERT_S_TO_F:
 		return xsdk_xsc_int_operand(l, a);
+	case SPV_COMPOSITE_EXTRACT:
+		// A float out of a vector that's a value rather than a variable, as glslang makes of `vec3(x).r`: its
+		// component, as a scalar loaded from a block is. Anything else extracted stays refused below.
+		if (result_kind(l, ssa) == XSC_TYPE_FLOAT)
+			return scalar_value(l, ssa);
+		break;
 	default:
 		break;
 	}
