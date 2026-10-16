@@ -121,6 +121,9 @@ void test_raster(void);
 // Sampling and mipmaps (milestone 15).
 void test_sampling(void);
 
+// Cube and 3D textures (vulkan4xenon milestone 23).
+void test_cube_volume(void);
+
 // Anisotropic filtering (milestone 33).
 void test_anisotropy(void);
 

@@ -56,6 +56,10 @@ enum {
 	TILED_SHIFT = 31,
 	ENDIAN_SHIFT = 6,
 	HEIGHT_SHIFT = 13,
+	// A cube's stack depth is its faces less one; a 3D texture's sizes are narrower (xenos.h:1232-1250).
+	STACK_DEPTH_SHIFT = 26,
+	HEIGHT_3D_SHIFT = 11,
+	DEPTH_3D_SHIFT = 22,
 	SWIZZLE_SHIFT = 1,
 	SWIZZLE_BITS = 3,
 	SWIZZLE_MASK = 0xFFF,
@@ -76,10 +80,14 @@ enum {
 	// A signed 10-bit field with 5 fractional bits.
 	LOD_BIAS_STEPS = 32,
 	LOD_BIAS_MASK = 0x3FF,
-	DIMENSION_2D = 1 << 9,
+	DIMENSION_SHIFT = 9,
 	// Levels at 16 texels and under share a tail (xenia:src/xenia/gpu/texture_util.h:76-83).
 	PACKED_MIPS = 1 << 11,
 	FETCH_ADDRESS_ALIGNMENT = 0x1000,
+	// A 3D texture's tiles are 4 slices deep (xenia:src/xenia/gpu/xenos.h:1155-1158, texture_util.cc:346-353).
+	TILE_SLICES = 4,
+	// Past the console's memory several times over, and short of where the sizes would overflow.
+	MAX_TEXTURE_PAGES = 0x80000000u / PAGE_BYTES,
 	// In the tiled layout, a row's blocks sit together for 16 bytes, or 8 blocks of a byte: x's low 3 bits and the
 	// offset's low 4 stay where they are (xsdk_tiled_2d).
 	TILED_RUN_BYTES = 16,
@@ -182,7 +190,8 @@ static TextureLayout layout_of(const XsdkTexture *texture)
 		.block_log2 = info->block_log2,
 		.block_bytes_log2 = info->block_bytes_log2,
 		.base_pitch_blocks = texture->pitch >> info->block_log2,
-		.mip_offset_bytes = texture->mip_offset_bytes };
+		.mip_offset_bytes = texture->mip_offset_bytes,
+		.faces = texture->dimension == XSDK_TEXTURE_CUBE ? XSDK_CUBE_FACES : 1 };
 }
 
 // Whole tiles of blocks; linear rows also start every 256 bytes.
@@ -194,31 +203,40 @@ static uint32_t base_pitch_blocks(const FormatInfo *info, uint32_t width, bool t
 	return round_up(blocks << info->block_bytes_log2, LINEAR_ROW_ALIGNMENT_BYTES) >> info->block_bytes_log2;
 }
 
-// Xe_CreateTexture and TEXTURE_FETCH for the format's levels, the base then the mips, a page apart.
-NTSTATUS xsdk_texture_init(
-	XsdkTexture *texture, uint32_t format, uint32_t width, uint32_t height, uint32_t levels, bool tiled)
+// The fetch constant's sizes, each less one: a cube's stack depth is 5 (xenia:src/xenia/gpu/texture_util.cc:50-52).
+static uint32_t fetch_size(uint32_t dimension, uint32_t width, uint32_t height, uint32_t depth)
+{
+	if (dimension == XSDK_TEXTURE_3D)
+		return (depth - 1) << DEPTH_3D_SHIFT | (height - 1) << HEIGHT_3D_SHIFT | (width - 1);
+	return (depth - 1) << STACK_DEPTH_SHIFT | (height - 1) << HEIGHT_SHIFT | (width - 1);
+}
+
+// Xe_CreateTexture and TEXTURE_FETCH for the format's levels, the base then the mips, a page apart. A cube's levels
+// each hold its six faces in turn, a page apart, and a 3D texture's slices share its tiles
+// (xenia:src/xenia/gpu/texture_util.cc:337-353, 438-444).
+static NTSTATUS init_texture(XsdkTexture *texture, uint32_t dimension, uint32_t format, uint32_t width, uint32_t height,
+	uint32_t depth, uint32_t levels, bool tiled)
 {
 	if (format >= XSDK_FORMATS)
 		return reject("format not one of XSDK_FORMAT_*");
-	if (!width || !height || width > XSDK_TEXTURE_MAX_SIZE || height > XSDK_TEXTURE_MAX_SIZE)
-		return reject("texture size not from 1 to 8192");
-	if (!levels || levels > level_count(width, height))
-		return reject("levels not from 1 to a 1x1 level");
-	if (!tiled && levels > 1) {
-		xsdk_log_write("texture: linear textures have one level");
-		return STATUS_NOT_IMPLEMENTED;
-	}
 	const FormatInfo *const info = &formats[format];
 	const uint32_t pitch_blocks = base_pitch_blocks(info, width, tiled);
 	const uint32_t rows = round_up(xsdk_texture_blocks(height, info->block_log2), TILE_BLOCKS);
-	const uint32_t mip_offset_bytes = round_up(pitch_blocks * rows << info->block_bytes_log2, PAGE_BYTES);
+	const uint32_t slices = dimension == XSDK_TEXTURE_3D ? round_up(depth, TILE_SLICES) : 1;
+	const uint32_t faces = dimension == XSDK_TEXTURE_CUBE ? XSDK_CUBE_FACES : 1;
+	const uint64_t face_pages =
+		(((uint64_t)pitch_blocks * rows * slices << info->block_bytes_log2) + PAGE_BYTES - 1) / PAGE_BYTES;
+	if (face_pages * faces > MAX_TEXTURE_PAGES)
+		return reject("texture past 2 GB");
+	const uint32_t mip_offset_bytes = (uint32_t)face_pages * PAGE_BYTES * faces;
 	const TextureLayout layout = { .width = width,
 		.height = height,
 		.levels = levels,
 		.block_log2 = info->block_log2,
 		.block_bytes_log2 = info->block_bytes_log2,
 		.base_pitch_blocks = pitch_blocks,
-		.mip_offset_bytes = mip_offset_bytes };
+		.mip_offset_bytes = mip_offset_bytes,
+		.faces = faces };
 	const uint32_t size_bytes = mip_offset_bytes + xsdk_texture_mip_bytes(&layout);
 	const uint32_t pitch = pitch_blocks << info->block_log2;
 	*texture = (XsdkTexture){
@@ -227,19 +245,53 @@ NTSTATUS xsdk_texture_init(
 		.width = width,
 		.height = height,
 		.levels = levels,
+		.dimension = dimension,
+		.depth = depth,
 		.pitch = pitch,
 		.tiled = tiled,
 		.mip_offset_bytes = mip_offset_bytes,
 		.fetch = {
 			FETCH_TYPE_TEXTURE | (pitch >> PITCH_UNIT_LOG2) << PITCH_SHIFT | (uint32_t)tiled << TILED_SHIFT,
 			info->endian << ENDIAN_SHIFT | info->format,
-			(height - 1) << HEIGHT_SHIFT | (width - 1),
+			fetch_size(dimension, width, height, depth),
 			info->swizzle << SWIZZLE_SHIFT,
 			(levels - 1) << MIP_MAX_LEVEL_SHIFT,
-			PACKED_MIPS | DIMENSION_2D,
+			PACKED_MIPS | dimension << DIMENSION_SHIFT,
 		},
 	};
 	return STATUS_SUCCESS;
+}
+
+NTSTATUS xsdk_texture_init(
+	XsdkTexture *texture, uint32_t format, uint32_t width, uint32_t height, uint32_t levels, bool tiled)
+{
+	if (!width || !height || width > XSDK_TEXTURE_MAX_SIZE || height > XSDK_TEXTURE_MAX_SIZE)
+		return reject("texture size not from 1 to 8192");
+	if (!levels || levels > level_count(width, height))
+		return reject("levels not from 1 to a 1x1 level");
+	if (!tiled && levels > 1) {
+		xsdk_log_write("texture: linear textures have one level");
+		return STATUS_NOT_IMPLEMENTED;
+	}
+	return init_texture(texture, XSDK_TEXTURE_2D, format, width, height, 1, levels, tiled);
+}
+
+NTSTATUS xsdk_texture_init_cube(XsdkTexture *texture, uint32_t format, uint32_t size, uint32_t levels)
+{
+	if (!size || size > XSDK_TEXTURE_MAX_SIZE)
+		return reject("cube size not from 1 to 8192");
+	if (!levels || levels > level_count(size, size))
+		return reject("levels not from 1 to a 1x1 level");
+	return init_texture(texture, XSDK_TEXTURE_CUBE, format, size, size, XSDK_CUBE_FACES, levels, true);
+}
+
+NTSTATUS xsdk_texture_init_3d(XsdkTexture *texture, uint32_t format, uint32_t width, uint32_t height, uint32_t depth)
+{
+	if (!width || !height || width > XSDK_TEXTURE_3D_MAX_SIZE || height > XSDK_TEXTURE_3D_MAX_SIZE)
+		return reject("3D texture size not from 1 to 2048");
+	if (!depth || depth > XSDK_TEXTURE_3D_MAX_DEPTH)
+		return reject("3D texture depth not from 1 to 1024");
+	return init_texture(texture, XSDK_TEXTURE_3D, format, width, height, depth, 1, true);
 }
 
 void xsdk_texture_attach(XsdkTexture *texture, volatile uint32_t *texels)
@@ -268,10 +320,13 @@ NTSTATUS xsdk_texture_create(
 	return STATUS_SUCCESS;
 }
 
-// A block's byte offset in its stored image.
-static uint32_t block_offset(const XsdkTexture *texture, const TextureLevelPlace *place, uint32_t x, uint32_t y)
+// A block's byte offset in its stored image; z, a 3D texture's slice.
+static uint32_t block_offset(
+	const XsdkTexture *texture, const TextureLevelPlace *place, uint32_t x, uint32_t y, uint32_t z)
 {
 	const uint32_t bytes_log2 = formats[texture->format].block_bytes_log2;
+	if (texture->dimension == XSDK_TEXTURE_3D)
+		return xsdk_tiled_3d(x, y, z, place->pitch_blocks, place->slice_rows, bytes_log2);
 	if (texture->tiled)
 		return xsdk_tiled_2d(x, y, place->pitch_blocks, bytes_log2);
 	return (y * place->pitch_blocks + x) << bytes_log2;
@@ -362,16 +417,17 @@ static uint32_t level_rows(const XsdkTexture *texture, uint32_t level)
 	return xsdk_texture_blocks(level_size(texture->height, level), formats[texture->format].block_log2);
 }
 
-// Rows of a level's blocks, from first_row, copied in from data or out to it, row_bytes apart.
-static void copy_rows(const XsdkTexture *texture, uint32_t level, uint32_t first_row, uint32_t row_count, uint8_t *data,
-	uint32_t row_bytes, bool out)
+// Rows of a level's blocks in a face or slice, from first_row, copied in from data or out to it, row_bytes apart.
+static void copy_rows(const XsdkTexture *texture, uint32_t level, uint32_t slice, uint32_t first_row,
+	uint32_t row_count, uint8_t *data, uint32_t row_bytes, bool out)
 {
-	assert(level < texture->levels && first_row + row_count <= level_rows(texture, level));
+	assert(level < texture->levels && slice < texture->depth && first_row + row_count <= level_rows(texture, level));
 	const FormatInfo *const info = &formats[texture->format];
 	const TextureLayout layout = layout_of(texture);
 	TextureLevelPlace place;
 	xsdk_texture_place(&layout, level, &place);
-	volatile uint32_t *const image = texture->texels + place.offset_bytes / WORD_BYTES;
+	const uint32_t face = texture->dimension == XSDK_TEXTURE_CUBE ? slice : 0;
+	volatile uint32_t *const image = texture->texels + (place.offset_bytes + face * place.face_bytes) / WORD_BYTES;
 	const uint32_t block_bytes = 1u << info->block_bytes_log2;
 	const uint32_t columns = xsdk_texture_blocks(level_size(texture->width, level), info->block_log2);
 	// A run goes as whole words, read from or written to the rows as words, so they must be word-aligned; unaligned
@@ -382,7 +438,7 @@ static void copy_rows(const XsdkTexture *texture, uint32_t level, uint32_t first
 		uint8_t *const row = data + y * row_bytes;
 		uint32_t x = 0;
 		while (x < columns) {
-			const uint32_t offset = block_offset(texture, &place, place.x + x, place.y + first_row + y);
+			const uint32_t offset = block_offset(texture, &place, place.x + x, place.y + first_row + y, slice);
 			// A whole run, starting where the layout's runs start, of whole words: at a packed level's edges and
 			// across a linear row's last bytes, blocks go one at a time.
 			const bool whole = (place.x + x) % run == 0 && x + run <= columns && run_bytes % WORD_BYTES == 0 &&
@@ -401,14 +457,26 @@ void xsdk_texture_upload(XsdkTexture *texture, uint32_t level, const void *data,
 void xsdk_texture_upload_rows(
 	XsdkTexture *texture, uint32_t level, uint32_t first_row, uint32_t row_count, const void *data, uint32_t row_bytes)
 {
-	copy_rows(texture, level, first_row, row_count, (uint8_t *)(uintptr_t)data, row_bytes, false);
-	__asm__ volatile("sync" ::: "memory");
+	xsdk_texture_upload_slice_rows(texture, level, 0, first_row, row_count, data, row_bytes);
 }
 
 void xsdk_texture_download_rows(
 	const XsdkTexture *texture, uint32_t level, uint32_t first_row, uint32_t row_count, void *data, uint32_t row_bytes)
 {
-	copy_rows(texture, level, first_row, row_count, data, row_bytes, true);
+	xsdk_texture_download_slice_rows(texture, level, 0, first_row, row_count, data, row_bytes);
+}
+
+void xsdk_texture_upload_slice_rows(XsdkTexture *texture, uint32_t level, uint32_t slice, uint32_t first_row,
+	uint32_t row_count, const void *data, uint32_t row_bytes)
+{
+	copy_rows(texture, level, slice, first_row, row_count, (uint8_t *)(uintptr_t)data, row_bytes, false);
+	__asm__ volatile("sync" ::: "memory");
+}
+
+void xsdk_texture_download_slice_rows(const XsdkTexture *texture, uint32_t level, uint32_t slice, uint32_t first_row,
+	uint32_t row_count, void *data, uint32_t row_bytes)
+{
+	copy_rows(texture, level, slice, first_row, row_count, data, row_bytes, true);
 }
 
 // Where the GPU takes an XSDK_CHANNEL_* from, among the swizzle sources, given the format's own swizzle.

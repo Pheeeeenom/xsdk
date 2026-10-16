@@ -289,6 +289,9 @@ bool xsdk_splash_hand_over(uint32_t *width, uint32_t *height);
 void xsdk_splash_free(void);
 // A texel's byte offset in Xenos's tiled layout, the pitch a multiple of 32.
 uint32_t xsdk_tiled_2d(uint32_t x, uint32_t y, uint32_t pitch_texels, uint32_t bytes_per_texel_log2);
+// The same in a 3D texture's tiled layout, the slices height_texels rows apart, a multiple of 32 too.
+uint32_t xsdk_tiled_3d(
+	uint32_t x, uint32_t y, uint32_t z, uint32_t pitch_texels, uint32_t height_texels, uint32_t bytes_per_texel_log2);
 
 // What places a texture's levels in memory.
 typedef struct {
@@ -300,6 +303,8 @@ typedef struct {
 	uint32_t block_bytes_log2;
 	uint32_t base_pitch_blocks;
 	uint32_t mip_offset_bytes;
+	// A cube's 6, each level holding every face in turn; 1 otherwise.
+	uint32_t faces;
 } TextureLayout;
 
 // Where a texture level's block (0, 0) is stored.
@@ -307,6 +312,10 @@ typedef struct {
 	// From the texture's start: 0 for the base and its tail, else the mip offset plus the levels stored before it.
 	uint32_t offset_bytes;
 	uint32_t pitch_blocks;
+	// Rows of blocks from one 3D slice to the next, whole tiles of them.
+	uint32_t slice_rows;
+	// From one face of a cube to the next.
+	uint32_t face_bytes;
 	// Inside the packed tail, in blocks; 0 above it.
 	uint32_t x;
 	uint32_t y;

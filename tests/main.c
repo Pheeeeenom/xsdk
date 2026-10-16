@@ -67,6 +67,7 @@ int main(int argc, char **argv)
 	test_hiz();
 	test_raster();
 	test_sampling();
+	test_cube_volume();
 	test_anisotropy();
 	test_formats();
 	test_multisample();

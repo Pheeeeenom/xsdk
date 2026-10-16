@@ -77,8 +77,11 @@ work begins.
 - **Multiple render targets.** Unproven in xost.
 - **Float render targets and multisampling.**
 - **Predicated tiling,** for targets larger than eDRAM.
-- **Cube and 3D textures.** The fetch constant's dimension field (xenia:src/xenia/gpu/xenos.h:97-102, 1280) and the
-  layout's slices (xenia:src/xenia/gpu/texture_util.cc:209-449).
+- **Cube and 3D textures, the rest.** vulkan4xenon milestone 23 brought tiled cubes with their mips and tiled 3D
+  textures of one level (include/xsdk/texture.h), unproven on the console till its checks run. Left: linear cubes and
+  3D textures; a 3D texture's mips, which Xenia sizes by the base's depth at every level
+  (xenia:src/xenia/gpu/texture_util.cc:347-350) and packs along z once they're small (texture_util.cc:190-198); and
+  resolving into a face or slice (vulkan4xenon milestone 25).
 - **Occlusion queries.** vulkan4xenon milestone 19's step 6 put them off: every `ZPASS_DONE` the probe sent, as D3D
   sends it and as Adreno 3xx's driver does, left the sample counts unwritten and hung the next draw, the render backend
   and memory hub busy (docs/HARDWARE.md, "Queries and events"). Left to try: `RB_SAMPLE_COUNT_CTL`'s RESET bit, a

@@ -14,8 +14,21 @@ extern "C" {
 
 enum {
 	XSDK_TEXTURE_MAX_SIZE = 8192,
+	// A 3D texture's sides and slices (xenia:src/xenia/gpu/xenos.h:1144-1147).
+	XSDK_TEXTURE_3D_MAX_SIZE = 2048,
+	XSDK_TEXTURE_3D_MAX_DEPTH = 1024,
+	// A cube's faces, +x, -x, +y, -y, +z then -z, as the cube instruction numbers them
+	// (xenia:src/xenia/gpu/spirv_shader_translator_alu.cc:583-640).
+	XSDK_CUBE_FACES = 6,
 	XSDK_TEXTURE_FETCH_DWORDS = 6,
 	XSDK_MAX_ANISOTROPY = 16,
+};
+
+// The fetch constant's DataDimension values (xenia:src/xenia/gpu/xenos.h:97-102).
+enum {
+	XSDK_TEXTURE_2D = 1,
+	XSDK_TEXTURE_3D = 2,
+	XSDK_TEXTURE_CUBE = 3,
 };
 
 // Formats, read as Vulkan's red, green, blue and alpha; uploads take each format's units in the CPU's order.
@@ -101,6 +114,9 @@ typedef struct {
 	uint32_t width;
 	uint32_t height;
 	uint32_t levels;
+	// XSDK_TEXTURE_2D, _CUBE or _3D, and its faces or slices: 1 for 2D.
+	uint32_t dimension;
+	uint32_t depth;
 	// Texels from one row to the next of the base level; tiled textures go in tiles of 32 by 32 texels or blocks.
 	uint32_t pitch;
 	bool tiled;
@@ -151,6 +167,17 @@ void xsdk_texture_upload_rows(
 // the GPU writes the texture. It reads write-combined memory, so it's slow.
 void xsdk_texture_download_rows(
 	const XsdkTexture *texture, uint32_t level, uint32_t first_row, uint32_t row_count, void *data, uint32_t row_bytes);
+// xsdk_texture_init for a cube of six square faces size texels on a side, tiled, with levels from 1 to a 1x1 level,
+// each face's laid out as a 2D texture's (xenia:src/xenia/gpu/texture_util.cc:209-449).
+NTSTATUS xsdk_texture_init_cube(XsdkTexture *texture, uint32_t format, uint32_t size, uint32_t levels);
+// xsdk_texture_init for a 3D texture depth slices deep, tiled, of one level.
+NTSTATUS xsdk_texture_init_3d(XsdkTexture *texture, uint32_t format, uint32_t width, uint32_t height, uint32_t depth);
+// xsdk_texture_upload_rows and xsdk_texture_download_rows for one face of a cube, from 0 to 5, or one slice of a 3D
+// texture; slice 0 of a 2D texture is the texture.
+void xsdk_texture_upload_slice_rows(XsdkTexture *texture, uint32_t level, uint32_t slice, uint32_t first_row,
+	uint32_t row_count, const void *data, uint32_t row_bytes);
+void xsdk_texture_download_slice_rows(const XsdkTexture *texture, uint32_t level, uint32_t slice, uint32_t first_row,
+	uint32_t row_count, void *data, uint32_t row_bytes);
 // Has the texture return, as red, green, blue and alpha, the XSDK_CHANNEL_* each names; xsdk_texture_init returns
 // the format's own channels.
 void xsdk_texture_swizzle(XsdkTexture *texture, const uint32_t channels[4]);

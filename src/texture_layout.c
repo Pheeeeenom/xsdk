@@ -1,5 +1,5 @@
 // The mip layout below comes from xenia:src/xenia/gpu/texture_util.cc:116-207, 209-449 and texture_util.h:41-44,
-// rewritten in C for 2D textures. Xenia carries this notice:
+// rewritten in C for 2D, cube and 3D textures. Xenia carries this notice:
 //
 // Copyright (c) 2015, Ben Vanik.
 // All rights reserved.
@@ -107,13 +107,19 @@ uint32_t xsdk_texture_mip_bytes(const TextureLayout *layout)
 	uint32_t bytes = 0;
 	for (uint32_t stored = 1; stored <= last; stored++)
 		bytes += stored_bytes(layout, stored);
-	return bytes;
+	return bytes * layout->faces;
 }
 
 void xsdk_texture_place(const TextureLayout *layout, uint32_t level, TextureLevelPlace *place)
 {
 	const uint32_t packed_level = xsdk_texture_packed_level(layout->width, layout->height);
-	*place = (TextureLevelPlace){ .offset_bytes = 0, .pitch_blocks = layout->base_pitch_blocks, .x = 0, .y = 0 };
+	// The base's faces are its own size apart, rounded to a page; a level's slices are its rows in whole tiles.
+	*place = (TextureLevelPlace){ .offset_bytes = 0,
+		.pitch_blocks = layout->base_pitch_blocks,
+		.slice_rows = round_up(xsdk_texture_blocks(layout->height, layout->block_log2), TILE_BLOCKS),
+		.face_bytes = layout->mip_offset_bytes / layout->faces,
+		.x = 0,
+		.y = 0 };
 	if (level >= packed_level) {
 		uint32_t x;
 		uint32_t y;
@@ -126,6 +132,8 @@ void xsdk_texture_place(const TextureLayout *layout, uint32_t level, TextureLeve
 	const uint32_t stored = level < packed_level ? level : packed_level;
 	place->offset_bytes = layout->mip_offset_bytes;
 	for (uint32_t before = 1; before < stored; before++)
-		place->offset_bytes += stored_bytes(layout, before);
+		place->offset_bytes += stored_bytes(layout, before) * layout->faces;
 	place->pitch_blocks = stored_blocks(layout->width, stored, layout->block_log2);
+	place->slice_rows = stored_blocks(layout->height, stored, layout->block_log2);
+	place->face_bytes = stored_bytes(layout, stored);
 }

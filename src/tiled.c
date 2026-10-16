@@ -1,4 +1,5 @@
-// xsdk_tiled_2d comes from xenia:src/xenia/gpu/texture_address.h:174-206, rewritten in C for positive coordinates.
+// xsdk_tiled_2d and xsdk_tiled_3d come from xenia:src/xenia/gpu/texture_address.h:174-238, rewritten in C for positive
+// coordinates.
 // Xenia carries this notice:
 //
 // Copyright (c) 2015, Ben Vanik.
@@ -35,6 +36,10 @@ enum {
 	MACRO_TILE_LOG2 = 5,
 	MACRO_TILE_TEXELS = 1 << MACRO_TILE_LOG2,
 	MACRO_TILE_BLOCKS_LOG2 = 6,
+	// A 3D macro tile is 32 by 16 by 4 blocks.
+	MACRO_TILE_HEIGHT_3D_LOG2 = 4,
+	MACRO_TILE_DEPTH_3D_LOG2 = 2,
+	MACRO_TILE_BLOCKS_3D_LOG2 = 7,
 };
 
 // TiledCombine: spreads the offset's bits around the bank, pipe and row bits.
@@ -52,5 +57,20 @@ uint32_t xsdk_tiled_2d(uint32_t x, uint32_t y, uint32_t pitch_texels, uint32_t b
 	const uint32_t inner_blocks = (y >> 1 & 7) << 3 | (x & 7);
 	const uint32_t bank = y >> 4 & 1;
 	const uint32_t pipe = (x >> 3 & 3) ^ (y >> 3 & 1) << 1;
+	return combine((outer_blocks | inner_blocks) << bytes_per_texel_log2, bank, pipe, y & 1);
+}
+
+uint32_t xsdk_tiled_3d(
+	uint32_t x, uint32_t y, uint32_t z, uint32_t pitch_texels, uint32_t height_texels, uint32_t bytes_per_texel_log2)
+{
+	assert(pitch_texels % MACRO_TILE_TEXELS == 0 && height_texels % MACRO_TILE_TEXELS == 0);
+	const uint32_t tile_rows = (z >> MACRO_TILE_DEPTH_3D_LOG2) * (height_texels >> MACRO_TILE_HEIGHT_3D_LOG2) +
+		(y >> MACRO_TILE_HEIGHT_3D_LOG2);
+	const uint32_t outer_blocks = (tile_rows * (pitch_texels >> MACRO_TILE_LOG2) + (x >> MACRO_TILE_LOG2))
+		<< MACRO_TILE_BLOCKS_3D_LOG2;
+	const uint32_t inner_blocks = (z & 3) << 5 | (y >> 1 & 3) << 3 | (x & 7);
+	// Every other four slices flip the bank, and the pipe's high bit with it.
+	const uint32_t bank = (y >> 3 ^ z >> 2) & 1;
+	const uint32_t pipe = (x >> 3 & 3) ^ bank << 1;
 	return combine((outer_blocks | inner_blocks) << bytes_per_texel_log2, bank, pipe, y & 1);
 }
