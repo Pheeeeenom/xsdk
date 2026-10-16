@@ -72,7 +72,7 @@ class _Interface(ctypes.Structure):
                 ("color_out", ctypes.POINTER(_VarUse)), ("color_out_count", ctypes.c_size_t),
                 ("samplers", ctypes.POINTER(_VarUse)), ("sampler_count", ctypes.c_size_t),
                 ("position_out", ctypes.c_uint32), ("frag_coord", ctypes.POINTER(_Var)),
-                ("frag_depth", ctypes.POINTER(_Var)),
+                ("frag_depth", ctypes.POINTER(_Var)), ("front_facing", ctypes.POINTER(_Var)),
                 ("constants", ctypes.POINTER(_ConstantSlot)), ("constant_count", ctypes.c_size_t),
                 ("blocks", ctypes.POINTER(_Block)), ("block_count", ctypes.c_size_t),
                 ("constant_end", ctypes.c_uint32),
@@ -160,6 +160,7 @@ def resolve_spirv(spirv: bytes):
             samplers=uses(si.samplers, si.sampler_count, True),
             position_out=si.position_out or None,
             frag_coord=var(si.frag_coord),
+            front_facing=var(si.front_facing),
             constants=[(_text(c.name), c.reg, c.regs, c.member)
                        for c in (si.constants[i] for i in range(si.constant_count))],
             blocks=[("push" if b.push else "uniform", var(b.var), b.struct_type, b.reg, b.regs)

@@ -15,6 +15,7 @@ enum {
 	BUILTIN_VERTEX_ID = 5,
 	BUILTIN_INSTANCE_ID = 6,
 	BUILTIN_FRAG_COORD = 15,
+	BUILTIN_FRONT_FACING = 17,
 	BUILTIN_FRAG_DEPTH = 22,
 	// The console loads float constants from memory in whole groups of 4 (docs/HARDWARE.md, "Constants loaded from
 	// memory go in groups of 4 too").
@@ -352,6 +353,10 @@ static bool resolve_input(
 	if (v->builtin == BUILTIN_FRAG_COORD) {
 		si->frag_coord = v;
 		return set_role(x, si, v->vid, (XscRole){ XSC_ROLE_FRAG_COORD, 0, 0, 0 });
+	}
+	if (v->builtin == BUILTIN_FRONT_FACING) {
+		si->front_facing = v;
+		return set_role(x, si, v->vid, (XscRole){ XSC_ROLE_FRONT_FACING, 0, 0, 0 });
 	}
 	const uint32_t r = location_or_zero(v);
 	if (!add_use(x, &si->interp_in, &si->interp_in_count, &capacity->interp_in,

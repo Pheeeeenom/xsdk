@@ -13,6 +13,9 @@ enum {
 	// dxbc_shader_translator.cc:1591-1594).
 	EXPORT_DEPTH = 61,
 	WRITE_X = 0x1,
+	// SPIR-V's comparisons, OpIEqual to OpFUnordGreaterThanEqual (SPIR-V 1.0, section 3.32.13).
+	FIRST_COMPARISON = 170,
+	LAST_COMPARISON = 191,
 };
 
 typedef struct Region Region;
@@ -112,6 +115,21 @@ static bool frag_coord_register(XscLower *l, const XscInterface *si, int64_t par
 	if (!xsc_emit2(l, XSC_VECTOR_ADD, params, xsc_plain(xsc_const(half)), coord, false, 0x3))
 		return false;
 	l->inputs[si->frag_coord->vid] = coord;
+	return true;
+}
+
+// gl_FrontFacing, 1.0 on a front face and 0.0 on a back one: the pixel parameters' x is negative on a back face, and
+// rcpc keeps the sign of column 0's zero for the compare (xenia:src/xenia/gpu/registers.h:224-227).
+static bool front_facing_register(XscLower *l, const XscInterface *si, int64_t param_reg)
+{
+	const int64_t sign = xsdk_xsc_emit_scalar(l, XSC_SCALAR_RCPC, xsdk_xsc_fresh(l), xsc_reg(param_reg), 0, WRITE_X);
+	if (sign == XSC_NONE)
+		return false;
+	const int64_t face = xsdk_xsc_fresh(l);
+	const XscSrc x = xsc_src(xsc_reg(sign), false, xsdk_xsc_bsw(0));
+	if (!xsc_emit2(l, XSC_VECTOR_SGE, x, xsc_src(xsc_reg(sign), true, xsdk_xsc_bsw(0)), face, false, 0xF))
+		return false;
+	l->inputs[si->front_facing->vid] = face;
 	return true;
 }
 
@@ -348,12 +366,24 @@ static bool region_at(Fragment *f, uint32_t label, uint32_t target, const Region
 	return ok;
 }
 
+// A condition that isn't a comparison is a bool value, gl_FrontFacing's or a logical operation's: 1.0 where it holds.
+static bool is_bool_value(const XscInstr *cmp)
+{
+	return cmp->opcode < FIRST_COMPARISON || cmp->opcode > LAST_COMPARISON;
+}
+
+static bool gather_condition(Fragment *f, const XscInstr *cmp)
+{
+	if (is_bool_value(cmp))
+		return gather(f, cmp->result_id);
+	return gather(f, xsdk_xsc_operand(cmp, 0)) && gather(f, xsdk_xsc_operand(cmp, 1));
+}
+
 static bool gather_region(Fragment *f, const Region *r)
 {
 	if (!r->cmp)
 		return gather(f, r->value);
-	return gather(f, xsdk_xsc_operand(r->cmp, 0)) && gather(f, xsdk_xsc_operand(r->cmp, 1)) &&
-		gather_region(f, r->on_true) && gather_region(f, r->on_false);
+	return gather_condition(f, r->cmp) && gather_region(f, r->on_true) && gather_region(f, r->on_false);
 }
 
 static bool gather_output(Fragment *f)
@@ -371,8 +401,7 @@ static bool plan_kill(Fragment *f, const XscInstr *top, bool true_kills, bool fa
 		return xsdk_xsc_lower_refuse(&f->l, "if/discard kills both arms");
 	f->kill_cmp = xsdk_xsc_lower_result(&f->l, xsdk_xsc_operand(top, 0));
 	f->kill_on_true = true_kills;
-	return f->kill_cmp && gather(f, xsdk_xsc_operand(f->kill_cmp, 0)) && gather(f, xsdk_xsc_operand(f->kill_cmp, 1)) &&
-		gather_output(f);
+	return f->kill_cmp && gather_condition(f, f->kill_cmp) && gather_output(f);
 }
 
 // An if/else assigns the color itself, or a local the color reads after it merges.
@@ -452,9 +481,22 @@ static bool compared(XscLower *l, const XscInstr *cmp, bool swap, XscOrigin *a, 
 	return true;
 }
 
+// A discard on a bool b, 1.0 or 0.0, kills where b > -b if it's taken where b holds, and where b == -b if not.
+static bool emit_bool_kill(Fragment *f)
+{
+	XscLower *const l = &f->l;
+	const XscOperand b = xsdk_xsc_lower_operand(l, f->kill_cmp->result_id);
+	if (xsc_failed(l))
+		return false;
+	const int64_t op = f->kill_on_true ? XSC_VECTOR_KILL_GT : XSC_VECTOR_KILL_EQ;
+	return xsc_emit2(l, op, xsc_plain(b), xsc_negated(b), 0, false, 0);
+}
+
 static bool emit_kill(Fragment *f)
 {
 	XscLower *const l = &f->l;
+	if (is_bool_value(f->kill_cmp))
+		return emit_bool_kill(f);
 	const XscComparison *const c = xsdk_xsc_comparison(f->kill_cmp->opcode);
 	char name[16];
 	if (!c)
@@ -487,12 +529,30 @@ static XscOperand region_value(Fragment *f, const Region *region)
 	return xsdk_xsc_emit_value(l, region->value, r, false, false) ? xsc_reg(r) : (XscOperand){ 0 };
 }
 
+// cnd(b > 0, the true arm's value, the false arm's), for a bool b, 1.0 where it holds.
+static bool emit_bool_region(Fragment *f, const Region *region, int64_t dst, bool export_)
+{
+	XscLower *const l = &f->l;
+	const XscOperand b = xsdk_xsc_lower_operand(l, region->cmp->result_id);
+	if (xsc_failed(l))
+		return false;
+	const XscOperand tv = region_value(f, region->on_true);
+	if (xsc_failed(l))
+		return false;
+	const XscOperand fv = region_value(f, region->on_false);
+	if (xsc_failed(l))
+		return false;
+	return xsc_emit3(l, XSC_VECTOR_CND_GT, xsc_plain(b), xsc_plain(tv), xsc_plain(fv), dst, export_, 0xF);
+}
+
 // cnd(a - b, the true arm's value, the false arm's).
 static bool emit_region(Fragment *f, const Region *region, int64_t dst, bool export_)
 {
 	XscLower *const l = &f->l;
 	if (!region->cmp)
 		return xsdk_xsc_emit_value(l, region->value, dst, export_, false);
+	if (is_bool_value(region->cmp))
+		return emit_bool_region(f, region, dst, export_);
 	const XscComparison *const c = xsdk_xsc_comparison(region->cmp->opcode);
 	char name[16];
 	if (!c)
@@ -575,7 +635,8 @@ static bool add_constants(Fragment *f, XscConstants *constants)
 	return xsdk_xsc_literal_constants(l, constants);
 }
 
-// The interpolators from r0, then gl_FragCoord's pixel parameters past them; the highest register they take.
+// The interpolators from r0, then the pixel parameters past them for gl_FragCoord and gl_FrontFacing; the highest
+// register they take.
 static bool declare_inputs(Xsc *x, const XscModule *m, const XscType *types, XscProgram *p, const XscInterface *si,
 	int64_t *highest, int64_t *param_reg)
 {
@@ -588,10 +649,10 @@ static bool declare_inputs(Xsc *x, const XscModule *m, const XscType *types, Xsc
 		if ((int64_t)use->a > *highest)
 			*highest = use->a;
 	}
-	if (!si->frag_coord)
+	if (!si->frag_coord && !si->front_facing)
 		return true;
-	bool depth;
-	if (!reads_depth(x, m, types, si->frag_coord->vid, &depth))
+	bool depth = false;
+	if (si->frag_coord && !reads_depth(x, m, types, si->frag_coord->vid, &depth))
 		return false;
 	if (depth)
 		return xsdk_xsc_fail(x, XSDK_XSC_REFUSED, "gl_FragCoord.zw: the pixel parameters hold no depth (v1)");
@@ -606,7 +667,9 @@ static bool lower_body(Fragment *f, int64_t param_reg, XscConstants *constants, 
 	const XscInterface *const si = l->si;
 	for (size_t i = 0; i < si->interp_in_count; i++)
 		l->inputs[si->interp_in[i].var->vid] = si->interp_in[i].a;
-	if (param_reg != XSC_NONE && !frag_coord_register(l, si, param_reg))
+	if (si->frag_coord && !frag_coord_register(l, si, param_reg))
+		return false;
+	if (si->front_facing && !front_facing_register(l, si, param_reg))
 		return false;
 	if (!si->color_out_count)
 		return xsdk_xsc_fail(l->x, XSDK_XSC_MALFORMED, "list index out of range");

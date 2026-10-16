@@ -306,6 +306,7 @@ typedef enum {
 	XSC_ROLE_NONE,
 	XSC_ROLE_VFETCH,
 	XSC_ROLE_FRAG_COORD,
+	XSC_ROLE_FRONT_FACING,
 	XSC_ROLE_INTERP_IN,
 	XSC_ROLE_POSITION_STRUCT,
 	XSC_ROLE_INTERP_OUT,
@@ -363,6 +364,7 @@ typedef struct {
 	uint32_t position_out;
 	const XscVar *frag_coord;
 	const XscVar *frag_depth;
+	const XscVar *front_facing;
 	XscConstantSlot *constants;
 	size_t constant_count;
 	XscBlock *blocks;

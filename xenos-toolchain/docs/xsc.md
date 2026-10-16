@@ -70,7 +70,7 @@ came from; that test and its test vectors stay in xost's archived repo (github.c
 | Vulkan uniform / push constant block members at any std140 offset | the member's register, swizzled from its first component |
 | block matrix (column-major, std140) `M * v` / `v * M` / `A * B` | `mul`+`mad` over columns / 4x `dp4` with columns / columns of A times each column of B |
 | block array at a run-time index, `rows[int(f) + k]`, `m[i]` | `movasf` (`int(f)`) or `movas` sets a0, then `c[a0 + base + k]` is copied into a temp; reads at one index share the `movas` (`tests/test_dynamic_index.py`) |
-| fragment `gl_FragCoord.xy` | the pixel parameters in the register past the interpolators, `\|r.xy\| + 0.5`; `.zw` refused |
+| fragment `gl_FragCoord.xy`, `gl_FrontFacing` | the pixel parameters in the register past the interpolators, `\|r.xy\| + 0.5`, `.zw` refused; facing from x's sign (see Facing) |
 | fragment `gl_FragDepth`, stored once outside any `if/else` | `oDepth.x___` after the colour, the record's ps_export_mode 3 (`tests/test_frag_depth.py`) |
 | fragment `gl_FragDepth` stored in both arms of an `if/else`, or before one and again in an arm | merged by a select as a vertex shader's outputs are, exported once; stored on one path alone, refused (see Control flow) |
 | a store into one component of a local or an output, `v.x = …` | an insert into the vector it held (`tests/test_local_stores.py`) |
@@ -404,6 +404,23 @@ spirv_shader_translator_fetch.cc:521-541).
 Offsets, a sample index and a minimum LOD, the image operands xsc doesn't take, are refused; they were dropped before.
 `tests/test_lod_gradients.py` checks each on `xdis/simulate.py`, which keeps the state the setters write. None of it is
 checked on the console yet (vulkan4xenon:docs/ROADMAP.md, milestone 22).
+
+## Facing
+
+The pixel parameters' x holds the pixel's column, its sign set on a back face, as Xenia reads `vFace` and
+`gl_FrontFacing` from it (xenia:src/xenia/gpu/registers.h:224-227) and XenosRecomp makes it
+(XenosRecomp:XenosRecomp/shader_recompiler.cpp:1465-1467). Column 0's x is a zero, -0.0 on a back face, so xsc takes
+`rcpc` of it, which keeps the sign as -FLT_MAX, then `sge` of that and its negation: `gl_FrontFacing` is 1.0 on a front
+face and 0.0 on a back one, in every component, and turns the pixel parameters on as `gl_FragCoord` does, both from the
+one register. Before, xsc took the variable for an interpolator at r0.
+
+So that `gl_FrontFacing` works where GLSL takes a bool, a pixel shader's if/else or discard whose condition is a bool
+value rather than a comparison, `gl_FrontFacing` or a logical operation on comparisons, lowers on it as a value b: the
+if/else to `cndgt b, true arm, false arm`, a discard where b holds to `kill_gt b, -b`, and where it doesn't to
+`kill_eq b, -b`. `tests/test_front_facing.py` checks a `?:`, an if/else beside `gl_FragCoord`, and a discard on the
+simulator, at columns 3 and 0 of each face. The console has to settle which face the sign marks: Xenia gives it the
+host's front face, set from PA_SU_SC_MODE_CNTL's face as culling is
+(xenia:src/xenia/gpu/vulkan/vulkan_pipeline_cache.cc:625).
 
 ## Validation
 Every test shader is checked by the XenosRecomp oracle (which does the
