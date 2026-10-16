@@ -766,12 +766,15 @@ static void restore(Unroller *u, const State *s)
 	memcpy(u->slot_value, s->slots, sizeof u->slot_value);
 }
 
-// Whether instructions emitted since first work anything out, as a load or a pointer doesn't.
+// Whether instructions emitted since first work anything out, as a load, a pointer or a bool, the right of an && or
+// ||, doesn't.
 static bool works(const Unroller *u, size_t first)
 {
 	for (size_t i = first; i < u->emitted_count; i++) {
-		const uint32_t op = u->emitted[i].opcode;
-		if (op != SPV_LOAD && op != SPV_STORE && !is_chain(op))
+		const XscInstr *const ins = &u->emitted[i];
+		const XscInstr *const type = xsdk_xsc_by_result(u->m, ins->result_type);
+		const bool flag = type && type->opcode == SPV_TYPE_BOOL;
+		if (ins->opcode != SPV_LOAD && ins->opcode != SPV_STORE && !is_chain(ins->opcode) && !flag)
 			return true;
 	}
 	return false;
@@ -838,6 +841,7 @@ static bool data_branch(Unroller *u, const Block *b, LocalMap *lm, uint32_t merg
 	State after[2] = { { 0 }, { 0 } };
 	uint32_t exits[2];
 	bool work = false;
+	const uint32_t first_id = u->counter;
 	if (!save(u, &before))
 		return false;
 	for (int arm = 0; arm < 2; arm++) {
@@ -856,7 +860,7 @@ static bool data_branch(Unroller *u, const Block *b, LocalMap *lm, uint32_t merg
 	}
 	if (!xsdk_xsc_room(u->x, &u->branches, u->branch_count, &u->branch_capacity, sizeof *u->branches))
 		return false;
-	u->branches[u->branch_count++] = (XscBranch){ condition, work };
+	u->branches[u->branch_count++] = (XscBranch){ condition, work, first_id, u->counter };
 	u->meeting = (Meeting){ .merge = merge,
 		.exit = { exits[0], exits[1] },
 		.condition = condition,

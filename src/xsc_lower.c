@@ -75,10 +75,11 @@ bool xsdk_xsc_lower_init(Xsc *x, XscLower *l, const XscModule *m, const XscInter
 	const uint32_t branches = (uint32_t)m->branch_count + 1;
 	l->branch_cnd = xsdk_xsc_alloc(x, branches * sizeof *l->branch_cnd);
 	l->branch_swap = xsdk_xsc_alloc(x, branches);
+	l->branch_done = xsdk_xsc_alloc(x, branches);
 	return fill_operands(x, &l->op_cache, n) && fill_operands(x, &l->local_values, n) && fill_regs(x, &l->inputs, n) &&
 		fill_regs(x, &l->sample_reg, n) && fill_regs(x, &l->deriv_reg, n) && l->matrix_cache && l->col_major &&
 		l->local_store && l->seen && l->merge_branch && fill_operands(x, &l->branch_test, branches) && l->branch_cnd &&
-		l->branch_swap;
+		l->branch_swap && l->branch_done && (!m->branch_count || xsdk_xsc_find_varying(l));
 }
 
 // An SSA id's instruction, refused as Python's by_result[ssa] would fail.

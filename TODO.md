@@ -173,6 +173,11 @@ it removes.
 - **Point mip filtering exactly halfway between two levels:** the nearer level, or the one below. Milestone 15
   avoided it.
 - **Linear filtering's precision.** Milestone 15 bounds it only by its tolerance of 3 per channel.
+- **An if/else on data in execs on the predicate.** xost makes one selects, both arms running, as an exec on the
+  predicate runs for a whole group of 64 vertices or pixels when any of them needs it (xenia:src/xenia/gpu/ucode.h:114-124);
+  only an if/else every vertex or pixel agrees on goes in such execs (xenos-toolchain/docs/xsc.md, "Control flow").
+  Where they agree over whole groups, as a mesh's parts often do, the execs would skip the arm not taken; whether that
+  pays against an exec's own cost is for the console to measure.
 - **Which partial constant write hangs the GPU:** the floats, or the lone boolean or loop word. It matters only for
   writing just the changed constants, to save ring space (docs/HARDWARE.md, "Shader constants: partial writes hang the
   GPU, libxenon's whole blocks don't").

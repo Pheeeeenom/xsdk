@@ -46,6 +46,17 @@ typedef struct {
 	double value[4];
 } XscLiteral;
 
+// The lowering's caches as they were before an if/else's arms went into execs on the predicate (xsc_lower_flow.c).
+typedef struct {
+	XscOperand *op_cache;
+	const XscMatrix **matrix_cache;
+	XscOperand *local_values;
+	XscOperand *branch_test;
+	bool a0_set;
+	uint32_t a0_part;
+	int64_t a0_scale;
+} XscSaved;
+
 typedef struct {
 	Xsc *x;
 	const XscModule *m;
@@ -85,6 +96,19 @@ typedef struct {
 	XscOperand *branch_test;
 	int64_t *branch_cnd;
 	bool *branch_swap;
+	// By SSA id, whether a value can differ from one vertex or pixel to the next, and whether anything reads it; NULL
+	// for a module without merged branches.
+	bool *varies;
+	bool *used;
+	// By branch, whether its arms are laid out in execs on the predicate; whether the lowering is in one now.
+	bool *branch_done;
+	bool in_arm;
+	XscSaved saved;
+	// The ids a walk of a branch's arms has reached, marked by id, listed to clear.
+	bool *walked;
+	uint32_t *walked_ids;
+	size_t walked_count;
+	size_t walked_capacity;
 } XscLower;
 
 // Enters one level of recursion, false with the error set past the bound.
@@ -211,6 +235,8 @@ const XscComparison *xsdk_xsc_comparison(uint32_t opcode);
 bool xsdk_xsc_is_merge(const XscLower *l, uint32_t ssa);
 bool xsdk_xsc_emit_merge(XscLower *l, uint32_t ssa, int64_t dst, bool export_);
 XscOperand xsdk_xsc_merge_operand(XscLower *l, uint32_t ssa);
+// Marks what varies from one vertex or pixel to the next and what anything reads, for the branches' execs.
+bool xsdk_xsc_find_varying(XscLower *l);
 
 // Matrices (xsc_lower_matrix.c).
 const XscMatrix *xsdk_xsc_matrix_operands(XscLower *l, uint32_t ssa);

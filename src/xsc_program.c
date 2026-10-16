@@ -147,7 +147,9 @@ static XscOp *add_op(Xsc *x, XscProgram *p, XscOpKind kind)
 	return op;
 }
 
-// Builds an op and records its registers; NULL with the error set if it doesn't encode.
+// Builds an op and records its registers; NULL with the error set if it doesn't encode. In a predicated stage the op is
+// predicated as its exec is, as an exec on the predicate runs every vertex or pixel of 64 when any needs it
+// (xenia:src/xenia/gpu/ucode.h:114-124).
 static XscOp *declare(Xsc *x, XscProgram *p, XscOpKind kind, const XscAlu *alu, const XscFetch *fetch)
 {
 	XscOp candidate = { .kind = kind, .is_fetch = kind != XSC_OP_ALU, .slot = -1, .vertex_element = XSC_NONE };
@@ -155,6 +157,14 @@ static XscOp *declare(Xsc *x, XscProgram *p, XscOpKind kind, const XscAlu *alu, 
 		candidate.alu = *alu;
 	if (fetch)
 		candidate.fetch = *fetch;
+	const uint8_t predicate = p->stages[p->stage_count - 1].predicate;
+	if (predicate && alu) {
+		candidate.alu.is_predicated = true;
+		candidate.alu.predicate_condition = predicate == XSC_PREDICATE_TRUE;
+	} else if (predicate) {
+		candidate.fetch.is_predicated = true;
+		candidate.fetch.predicate_condition = predicate == XSC_PREDICATE_TRUE;
+	}
 	if (!encode_if_encodable(x, p, &candidate))
 		return NULL;
 	p->max_reg = tracked(p, &candidate, p->max_reg);
@@ -263,6 +273,15 @@ bool xsdk_xsc_program_begin_loop(Xsc *x, XscProgram *p, uint32_t loop_id)
 	return true;
 }
 
+bool xsdk_xsc_program_predicate(Xsc *x, XscProgram *p, uint8_t predicate)
+{
+	const XscStage *const last = &p->stages[p->stage_count - 1];
+	if ((last->count || last->alloc_after != XSC_NONE) && !add_stage(x, p))
+		return false;
+	p->stages[p->stage_count - 1].predicate = predicate;
+	return true;
+}
+
 bool xsdk_xsc_program_end_loop(Xsc *x, XscProgram *p, bool predicated_break, bool break_condition)
 {
 	if (!xsdk_xsc_room(x, &p->loops, p->loop_count, &p->loop_capacity, sizeof *p->loops))
@@ -324,6 +343,9 @@ typedef struct {
 	int64_t sequence;
 	int64_t vc;
 	bool pred_clean;
+	// An exec on the predicate, and the predicate it runs on.
+	bool predicated;
+	bool condition;
 	int64_t alloc_type;
 	uint32_t loop_id;
 	int64_t skip;
@@ -360,7 +382,7 @@ static bool any_written(const uint8_t written[XSC_TEMPS], const int64_t *temps, 
 // instruction, and a fetch that reads one the ALU wrote. Unserialized, the console's ALU read a fetched index before
 // the fetch had written it; the next exec found it written (docs/HARDWARE.md, "Serialized fetches"). A serialized
 // instruction waits for everything before it, so it clears what's tracked.
-static CfEntry exec_entry(const XscProgram *p, const Chunk *chunk, bool last)
+static CfEntry exec_entry(const XscProgram *p, const XscStage *stage, const Chunk *chunk, bool last)
 {
 	uint8_t written[XSC_TEMPS] = { 0 };
 	int64_t seq = 0;
@@ -372,8 +394,8 @@ static CfEntry exec_entry(const XscProgram *p, const Chunk *chunk, bool last)
 		size_t def_count, use_count;
 		defs_uses(p, op, defs, &def_count, uses, &use_count);
 		const bool waits = op->is_fetch ? any_written(written, uses, use_count, XSC_WRITTEN_ALU)
-						: any_written(written, uses, use_count, XSC_WRITTEN_FETCH) ||
-							  any_written(written, defs, def_count, XSC_WRITTEN_FETCH);
+										: any_written(written, uses, use_count, XSC_WRITTEN_FETCH) ||
+				any_written(written, defs, def_count, XSC_WRITTEN_FETCH);
 		if (waits) {
 			seq |= (int64_t)2 << (2 * k);
 			memset(written, 0, XSC_TEMPS);
@@ -392,8 +414,12 @@ static CfEntry exec_entry(const XscProgram *p, const Chunk *chunk, bool last)
 	// A vertex shader's fetch-bearing exec carries a mask of its fetches, all six bits of it: the console drew a fifth
 	// fetch wrong without its bit (docs/HARDWARE.md, "A fifth vertex fetch").
 	const int64_t vc = fetches && !p->pixel ? ((int64_t)1 << fetches) - 1 : 0;
+	const bool predicated = stage->predicate != XSC_PREDICATE_NONE;
+	const uint32_t opcode = predicated ? XSC_CF_COND_EXEC_PRED : last ? XSC_CF_EXEC_END : XSC_CF_EXEC;
 	return (CfEntry){ .type = CF_EXEC,
-		.opcode = last ? XSC_CF_EXEC_END : XSC_CF_EXEC,
+		.opcode = opcode,
+		.predicated = predicated,
+		.condition = stage->predicate == XSC_PREDICATE_TRUE,
 		.address = chunk->ops[0]->slot,
 		.count = (int64_t)chunk->count,
 		.sequence = seq,
@@ -413,6 +439,9 @@ static bool control_flow(Xsc *x, const XscProgram *p, CfEntry **cf, size_t *cf_c
 			last_chunk = n - 1;
 		}
 	}
+	// A predicated exec that ends the program ends it only where it runs (xenia:src/xenia/gpu/ucode.h:125-130).
+	if (last_stage != SIZE_MAX && p->stages[last_stage].predicate != XSC_PREDICATE_NONE)
+		return xsdk_xsc_fail(x, XSDK_XSC_MALFORMED, "a program ending in a predicated exec");
 	int64_t *const open = xsdk_xsc_alloc(x, (p->loop_count + 1) * sizeof *open);
 	if (!open)
 		return false;
@@ -431,7 +460,8 @@ static bool control_flow(Xsc *x, const XscProgram *p, CfEntry **cf, size_t *cf_c
 			return false;
 		const size_t n = exec_chunks(p, stage, chunks);
 		for (size_t ci = 0; ci < n; ci++) {
-			if (!add_cf(x, cf, cf_count, &capacity, exec_entry(p, &chunks[ci], si == last_stage && ci == last_chunk)))
+			if (!add_cf(x, cf, cf_count, &capacity,
+					exec_entry(p, stage, &chunks[ci], si == last_stage && ci == last_chunk)))
 				return false;
 		}
 		if (stage->alloc_after != XSC_NONE &&
@@ -458,6 +488,9 @@ static bool cf_pair(Xsc *x, const CfEntry *d, uint32_t pair[2])
 {
 	switch (d->type) {
 	case CF_EXEC:
+		if (d->predicated)
+			return xsdk_xsc_build_cf_exec_pred(
+				x, d->opcode, d->address, d->count, d->sequence, d->vc, d->pred_clean, d->condition, pair);
 		return xsdk_xsc_build_cf_exec(x, d->opcode, d->address, d->count, d->sequence, d->vc, d->pred_clean, pair);
 	case CF_ALLOC:
 		return xsdk_xsc_build_cf_alloc(x, d->alloc_type, pair);

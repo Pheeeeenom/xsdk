@@ -150,11 +150,13 @@ typedef struct {
 	uint32_t interface_count;
 } XscEntryPoint;
 
-// An if/else on data the unroller merged: its condition, a bool, and whether either arm works anything out of its own
-// beyond picking values.
+// An if/else on data the unroller merged: its condition, a bool, whether either arm works anything out of its own
+// beyond picking values, and the ids made in its arms, first to end.
 typedef struct {
 	uint32_t condition;
 	bool work;
+	uint32_t first;
+	uint32_t end;
 } XscBranch;
 
 // A select the unroller made where an if/else's arms meet, and that if/else.
@@ -445,6 +447,8 @@ enum {
 	XSC_EXPORT_POSITION = 62,
 	XSC_CF_EXEC = 1,
 	XSC_CF_EXEC_END = 2,
+	XSC_CF_COND_EXEC_PRED = 5,
+	XSC_CF_COND_EXEC_PRED_END = 6,
 	XSC_CF_LOOP_START = 7,
 	XSC_CF_LOOP_END = 8,
 	XSC_CF_ALLOC = 12,
@@ -525,6 +529,9 @@ bool xsdk_xsc_build_tfetch(Xsc *x, const XscFetch *f, uint32_t triple[3]);
 bool xsdk_xsc_build_vfetch(Xsc *x, const XscFetch *f, uint32_t triple[3]);
 bool xsdk_xsc_build_cf_exec(Xsc *x, uint32_t opcode, int64_t address, int64_t count, int64_t sequence, int64_t vc,
 	bool is_predicate_clean, uint32_t pair[2]);
+// An exec that runs where the predicate is condition (xenia:src/xenia/gpu/ucode.h:300-332).
+bool xsdk_xsc_build_cf_exec_pred(Xsc *x, uint32_t opcode, int64_t address, int64_t count, int64_t sequence, int64_t vc,
+	bool is_predicate_clean, bool condition, uint32_t pair[2]);
 bool xsdk_xsc_build_cf_alloc(Xsc *x, int64_t alloc_type, uint32_t pair[2]);
 bool xsdk_xsc_build_cf_loop_start(Xsc *x, int64_t address, int64_t loop_id, uint32_t pair[2]);
 bool xsdk_xsc_build_cf_loop_end(
@@ -622,6 +629,8 @@ typedef struct {
 	size_t capacity;
 	// The alloc after it, or XSC_NONE.
 	int64_t alloc_after;
+	// Where its ops run: everywhere, or where the predicate is true or false (XSC_PREDICATE_*).
+	uint8_t predicate;
 } XscStage;
 
 typedef struct {
@@ -633,6 +642,9 @@ typedef struct {
 } XscLoop;
 
 enum {
+	XSC_PREDICATE_NONE = 0,
+	XSC_PREDICATE_TRUE = 1,
+	XSC_PREDICATE_FALSE = 2,
 	// A whole temp source's absolute value, past its register (program.py ABS_SOURCE).
 	XSC_ABS_SOURCE = 1 << 16,
 	XSC_ALLOC_POSITION = 1,
@@ -680,6 +692,8 @@ bool xsdk_xsc_program_input(Xsc *x, XscProgram *p, int64_t r, uint32_t usage);
 bool xsdk_xsc_program_pixel_parameters(Xsc *x, XscProgram *p, int64_t r);
 bool xsdk_xsc_program_begin_loop(Xsc *x, XscProgram *p, uint32_t loop_id);
 bool xsdk_xsc_program_end_loop(Xsc *x, XscProgram *p, bool predicated_break, bool break_condition);
+// The ops after run where the predicate is true or false, or everywhere again (XSC_PREDICATE_*), a stage of their own.
+bool xsdk_xsc_program_predicate(Xsc *x, XscProgram *p, uint8_t predicate);
 bool xsdk_xsc_program_finish(Xsc *x, XscProgram *p, const XscConstant *constants, size_t constant_count,
 	uint8_t **container, size_t *container_bytes);
 // Whether an ALU op writes the predicate (program.py _modifies_predicate).

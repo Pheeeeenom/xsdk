@@ -60,7 +60,7 @@ came from; that test and its test vectors stay in xost's archived repo (github.c
 | `clamp(x, lo, hi)` arbitrary | `min(max(x,lo),hi)`, lo/hi pooled literals |
 | **`if/else`**, incl. **nested**, assigning the output | branch-free chained `cndgt`/`cndge`/`cndeq` selects |
 | **`if/else` assigning a Function-local** later read by the output | branch-free `cnd*` select into a temp registered as that local's merged value (pixel shaders) |
-| `if/else`, or a `?:` glslang branches for, in a **vertex** shader, nested, `&&`/`\|\|` (a Phi) | the unroller runs both arms and merges each local and output they leave apart with a select, a `cnd*` on the comparison branched on (see Control flow; `tests/test_vertex_branches.py`) |
+| `if/else`, or a `?:` glslang branches for, in a **vertex** shader, nested, `&&`/`\|\|` (a Phi) | the unroller runs both arms and merges each local and output they leave apart with a select: a `cnd*` on the comparison branched on, or on a condition every vertex shares, the arms in execs on the predicate (see Control flow; `tests/test_vertex_branches.py`) |
 | **`discard` / `OpKill` inside `if(cond)`** | `kill_gt`/`kill_ge`/`kill_eq`/`kill_ne` ALU side effect; oracle-valid, pending console verification in `glslgallery` G26 |
 | **`for`/`while`** with a compile-time trip count, incl. **nested** | unrolled to branch-free SSA; induction variable constant-folded (see below) |
 | uniform-bound loop `sum += const` | real `LOOP_START/END` (G28 pending) |
@@ -277,25 +277,52 @@ both arms, each from the locals and outputs as they were before the branch, and
 where the arms meet it gives each local and output they leave apart a select of
 the condition and the two values, and each Phi there (glslang's `&&` and `||`)
 the same. Outputs are kept as locals are and stored once at the end. The
-lowering (`xsdk:src/xsc_lower_flow.c`) makes each select a `cnd*` on the
-comparison branched on, `a - b` worked out once a branch, as a pixel shader's
-if/else has lowered since v1; a condition that isn't a float comparison is its
-0.0 or 1.0, which `cndgt` tests. A pixel shader's other if/else keeps the
-fragment lowering's selects, and every shader without such a branch lowers byte
-for byte as before.
+lowering (`xsdk:src/xsc_lower_flow.c`) then picks, for each if/else:
 
-- **Why selects:** an arm here has no side effect a select can't keep, as each
-  output is exported once after the arms meet, and for every vertex or pixel of
-  64 the GPU takes a predicated exec if any of them needs it (xenia:src/xenia/gpu/ucode.h:114-124),
-  so arms that differ within a group run both arms either way.
+- **Execs on the predicate,** where every vertex or pixel takes the same arm, as
+  its condition reads only constants (uniforms, push constants, literals), and
+  an arm works anything out of its own beyond picking values or a bool: a
+  `setp_*` on `a - b`, or on the bool's 0.0 or 1.0 not being 0, sets p0
+  (xenia:src/xenia/gpu/ucode.h:1162-1204); the true arm's values go in `(p0)`
+  execs and the false arm's in `(!p0)` execs, each into one register a value,
+  every instruction in them predicated as its exec is, as Xenia says the
+  compiler does (ucode.h:114-124); then the value is that register. The exec
+  that sets p0 is marked PredicateClean=false. What the arms read from before
+  the branch is lowered before the `setp`, an earlier if/else's arms with it.
+  An exec on the predicate runs for none of a group of 64 that all fail it, so
+  the arm not taken costs its execs' control flow and no instructions.
+- **Selects** otherwise: each a `cnd*` on the comparison branched on, `a - b`
+  worked out once a branch, as a pixel shader's if/else has lowered since v1; a
+  condition that isn't a float comparison is its 0.0 or 1.0, which `cndgt`
+  tests. On data, a predicated exec runs for every vertex or pixel of 64 if any
+  of them needs it (ucode.h:114-124), so arms that differ within a group run both
+  either way, and selects need no predicate. An if/else inside an arm in execs on
+  the predicate is selects too, as there's one predicate.
+
+A pixel shader's other if/else keeps the fragment lowering's selects, and every
+shader without such a branch lowers byte for byte as before.
+
+- **No jumps:** Xenia documents how an exec on the predicate treats a group of
+  64 but not how a predicated jump does, and the execs a jump would skip cost
+  their control flow alone.
+- **No boolean constants:** `cexec b#` would need the runtime to work each
+  condition out on the CPU at every draw; the `setp` works it out in the shader,
+  and every vertex or pixel agrees all the same.
 - **Exports stay out of control flow:** each is written once, unconditionally,
-  so every path writes it, which a pixel shader's depth needs: nothing else
-  gives the pixel a depth (xenia:src/xenia/gpu/draw_util.cc:498-502).
-  `gl_FragDepth` stored on one path alone is refused for that; an interpolator or
-  colour stored on one path takes that value on the other, which GLSL leaves
-  undefined.
+  after the arms meet, so every path writes it, which a pixel shader's depth
+  needs: nothing else gives the pixel a depth
+  (xenia:src/xenia/gpu/draw_util.cc:498-502). `gl_FragDepth` stored on one path
+  alone is refused for that; an interpolator or colour stored on one path takes
+  that value on the other, which GLSL leaves undefined.
 - **Refused:** a `discard` or `return` in an arm of an if/else the unroller
   merges, a `switch`, and a matrix, array or struct an if/else chooses.
+- **The optimiser** leaves a program with predicated instructions alone, as it
+  did before (`can_optimize`).
+
+`tests/test_vertex_branches.py` and `tests/test_loop_branches.py` check both
+layouts and every arm on `xdis/simulate.py`, which follows a program's control
+flow as Xenia's interpreter does for one vertex or pixel
+(xenia:src/xenia/gpu/shader_interpreter.cc:26-258).
 
 ## Not yet / out of scope
 - **Bitwise (`& | ^ ~`) and dynamic shifts** — the Xenos ALU has no bit

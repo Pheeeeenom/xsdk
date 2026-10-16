@@ -84,6 +84,16 @@ bool xsdk_xsc_build_cf_exec(Xsc *x, uint32_t opcode, int64_t address, int64_t co
 	return true;
 }
 
+// The condition is word 1's bit 10, where an exec has none (xenia:src/xenia/gpu/ucode.h:300-332).
+bool xsdk_xsc_build_cf_exec_pred(Xsc *x, uint32_t opcode, int64_t address, int64_t count, int64_t sequence, int64_t vc,
+	bool is_predicate_clean, bool condition, uint32_t pair[2])
+{
+	if (!xsdk_xsc_build_cf_exec(x, opcode, address, count, sequence, vc, is_predicate_clean, pair))
+		return false;
+	flag(&pair[1], condition, 10);
+	return true;
+}
+
 bool xsdk_xsc_build_cf_alloc(Xsc *x, int64_t alloc_type, uint32_t pair[2])
 {
 	uint32_t d1 = 0;
