@@ -55,6 +55,8 @@ enum {
 	SPV_TYPE_STRUCT = 30,
 	SPV_TYPE_POINTER = 32,
 	SPV_TYPE_FUNCTION = 33,
+	SPV_CONSTANT_TRUE = 41,
+	SPV_CONSTANT_FALSE = 42,
 	SPV_CONSTANT = 43,
 	SPV_CONSTANT_COMPOSITE = 44,
 	SPV_FUNCTION = 54,
@@ -103,6 +105,7 @@ enum {
 	SPV_FWIDTH = 209,
 	SPV_SELECT = 169,
 	SPV_S_LESS_THAN = 177,
+	SPV_PHI = 245,
 	SPV_LOOP_MERGE = 246,
 	SPV_SELECTION_MERGE = 247,
 	SPV_LABEL = 248,
@@ -147,6 +150,19 @@ typedef struct {
 	uint32_t interface_count;
 } XscEntryPoint;
 
+// An if/else on data the unroller merged: its condition, a bool, and whether either arm works anything out of its own
+// beyond picking values.
+typedef struct {
+	uint32_t condition;
+	bool work;
+} XscBranch;
+
+// A select the unroller made where an if/else's arms meet, and that if/else.
+typedef struct {
+	uint32_t select;
+	uint32_t branch;
+} XscMerge;
+
 typedef struct {
 	uint32_t version;
 	uint32_t generator;
@@ -166,6 +182,11 @@ typedef struct {
 	size_t member_decoration_count;
 	XscEntryPoint *entry_points;
 	size_t entry_point_count;
+	// What the unroller leaves the lowering besides its code (xsc_unroll.c).
+	XscBranch *branches;
+	size_t branch_count;
+	XscMerge *merges;
+	size_t merge_count;
 } XscModule;
 
 bool xsdk_xsc_spirv_parse(Xsc *x, const uint32_t *words, size_t word_count, XscModule *m);

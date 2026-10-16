@@ -7,9 +7,10 @@ error, and vk_local_chain.frag's 64 multiply-adds on one local recursed until Py
 such a shader into single assignments when it has no branches (xsc/unroll.py), and the lowering refuses what's left.
 
 - vk_local_reassign.frag, vk_local_chain.frag and vk_local_reassign.vert lower, and the simulator gives what the GLSL
-  says for each.
-- vk_local_partial.frag stores into one component of a local; vk_local_branch_reassign.frag stores a local twice beside
-  an if/else; vk_local_merged_early.frag reads the if/else's variable before the if/else. Each is refused.
+  says for each; so does vk_local_partial.frag, which stores into one component of a local, an insert into the vector
+  the local held (xsdk:src/xsc_unroll.c).
+- vk_local_branch_reassign.frag stores a local twice beside an if/else; vk_local_merged_early.frag reads the if/else's
+  variable before the if/else. Each is refused.
 """
 import sys
 from pathlib import Path
@@ -80,7 +81,9 @@ def main():
     check("vk_local_reassign.vert, the position scaled then moved", result.exports[OPOS],
           [p * s + o for p, s, o in zip(position, B, A)])
 
-    for name in ("vk_local_partial.frag", "vk_local_branch_reassign.frag", "vk_local_merged_early.frag"):
+    check("vk_local_partial.frag, t.x = v_uv.x", run_fragment("vk_local_partial.frag", [A]), [UV[0]] + A[1:])
+
+    for name in ("vk_local_branch_reassign.frag", "vk_local_merged_early.frag"):
         try:
             lower_ex(module(name), XSDK_REGISTERS)
         except LowerError as error:

@@ -1,6 +1,5 @@
 #version 450
-// A ?: of calls, which glslang makes a branch: a vertex shader lowers as straight-line code, so it's refused rather
-// than lowered as its last arm (tests/test_vertex_branches.py).
+// A ?: of calls, which glslang makes a branch, its arms merged by a select (tests/test_vertex_branches.py).
 layout(location = 0) in vec4 a_position;
 layout(location = 0) out vec4 v_scaled;
 

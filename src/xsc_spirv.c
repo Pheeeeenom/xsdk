@@ -35,13 +35,14 @@ static const struct {
 	{ 194, "ShiftRightLogical" }, { 195, "ShiftRightArithmetic" }, { 196, "ShiftLeftLogical" }, { 197, "BitwiseOr" },
 	{ 198, "BitwiseXor" }, { 199, "BitwiseAnd" }, { 200, "Not" }, { 207, "DPdx" }, { 208, "DPdy" }, { 209, "Fwidth" },
 	{ 246, "LoopMerge" }, { 247, "SelectionMerge" }, { 248, "Label" }, { 249, "Branch" }, { 250, "BranchConditional" },
-	{ 252, "Kill" }, { 253, "Return" }, { 254, "ReturnValue" } };
+	{ 252, "Kill" }, { 253, "Return" }, { 254, "ReturnValue" }, { 41, "ConstantTrue" }, { 42, "ConstantFalse" },
+	{ 245, "Phi" } };
 
 // Opcodes whose first two words are a result type and id, and those with an id alone (spirv.py).
 static const uint16_t type_and_result[] = { 12, 43, 44, 54, 55, 57, 59, 61, 65, 79, 80, 81, 82, 84, 87, 88, 91, 92, 124,
 	127, 129, 130, 131, 133, 136, 141, 142, 144, 145, 146, 148, 169, 180, 182, 184, 186, 188, 190, 110, 111, 128, 132,
 	134, 135, 137, 138, 139, 154, 155, 166, 167, 168, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 194, 195, 196,
-	197, 198, 199, 200, 207, 208, 209 };
+	197, 198, 199, 200, 207, 208, 209, 41, 42, 245 };
 static const uint16_t result_only[] = { 11, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30, 32, 33, 248 };
 
 static bool listed(const uint16_t *list, size_t count, uint32_t opcode)

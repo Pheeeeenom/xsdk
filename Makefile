@@ -27,7 +27,7 @@ SDK_SOURCES := src/start.c src/log.c src/sbrk.c src/thread.c src/file.c src/path
 XSC_SOURCES := src/xsc_memory.c src/xsc_spirv.c src/xsc_resolve.c src/xsc_unroll.c src/xsc_encode.c src/xsc_container.c \
 	src/xsc_program.c src/xsc_optimize.c src/xsc_lower.c src/xsc_lower_block.c src/xsc_lower_matrix.c \
 	src/xsc_lower_glsl.c src/xsc_lower_stage.c src/xsc_lower_vertex.c src/xsc_lower_fragment.c src/xsc_lower_loop.c \
-	src/xsc_compile.c
+	src/xsc_lower_flow.c src/xsc_compile.c
 SDK_SOURCES += $(XSC_SOURCES)
 XSC_HEADERS := include/xsdk/xsc.h src/xsc_private.h src/xsc_lower.h
 # The compiler's version, xsdk_xsc_version(): a hash of its sources, line endings aside, so a changed compiler keeps

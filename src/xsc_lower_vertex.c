@@ -7,7 +7,8 @@ enum {
 	MATRIX_SIZE = 4,
 };
 
-// A branch left after unrolling would lower as its last arm alone, silently.
+// The unroller merges a vertex shader's if/else arms (xsc_unroll.c); a branch it left would lower as its last arm
+// alone, silently.
 static bool has_branches(const XscModule *m)
 {
 	for (size_t i = 0; i < m->instr_count; i++) {
@@ -105,8 +106,7 @@ bool xsdk_xsc_lower_vertex(Xsc *x, const XscModule *m, const XsdkXscOptions *opt
 	if (si->pixel)
 		return xsdk_xsc_fail(x, XSDK_XSC_REFUSED, "lower_vertex called on non-vertex module");
 	if (has_branches(m))
-		return xsdk_xsc_fail(x, XSDK_XSC_REFUSED,
-			"vertex shader control flow (an if/else, a ?: glslang branches for, or a switch) isn't lowered");
+		return xsdk_xsc_fail(x, XSDK_XSC_REFUSED, "vertex shader control flow the unroller left isn't lowered");
 	const XscType *const types = xsdk_xsc_resolve_types(x, m);
 	XscStores stores;
 	XscProgram p;

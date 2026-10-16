@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Generate xsdk_test's check of xost's compiler on the console (tests/test_xsc.c): two shaders' SPIR-V from xost's
-testdata, with the container, literals and resources the compiler makes from each on the PC, at xsdk's register split
-with the optimiser on, as Dusklight's pack is built. vk_block_literals.vert reads a push and a uniform block and pools
-a literal; vk_texel_offsets.frag samples four times, laid out with its coordinates' work first and the fetches
-together. Prints a C header. Runs in WSL, where make builds the compiler for the PC.
+"""Generate xsdk_test's check of xost's compiler on the console (tests/test_xsc.c): shaders' SPIR-V from xost's testdata,
+with the container, literals and resources the compiler makes from each on the PC, at xsdk's register split with the
+optimiser on, as Dusklight's pack is built. vk_block_literals.vert reads a push and a uniform block and pools a literal;
+vk_texel_offsets.frag samples four times, laid out with its coordinates' work first and the fetches together;
+vk_vertex_if.vert has if/else arms on data the unroller merges (vulkan4xenon milestone 21). Prints a C header. Runs in
+WSL, where make builds the compiler for the PC.
 """
 
 import struct
@@ -16,7 +17,7 @@ sys.path.insert(0, str(ROOT / "xenos-toolchain"))
 import xsc.native as native  # noqa: E402
 
 TESTDATA = ROOT / "xenos-toolchain" / "xsc" / "testdata"
-SHADERS = ("vk_block_literals.vert", "vk_texel_offsets.frag")
+SHADERS = ("vk_block_literals.vert", "vk_texel_offsets.frag", "vk_vertex_if.vert")
 # xsdk's split (xsdk:src/gpu_setup.c).
 REGISTERS = 64
 RESOURCE_KINDS = {"push": "XSDK_XSC_PUSH_CONSTANTS", "uniform": "XSDK_XSC_UNIFORM_BUFFER",

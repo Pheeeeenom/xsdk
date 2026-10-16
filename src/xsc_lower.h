@@ -79,6 +79,12 @@ typedef struct {
 	size_t seen_capacity;
 	// How deep the lowering has recursed, bounded where Python raises RecursionError.
 	uint32_t depth;
+	// By SSA id, the branch a select the unroller made where an if/else's arms meet came from; -1 for any other id.
+	int32_t *merge_branch;
+	// By branch, the register its selects test once one has worked it out, the cnd, and whether the arms swap.
+	XscOperand *branch_test;
+	int64_t *branch_cnd;
+	bool *branch_swap;
 } XscLower;
 
 // Enters one level of recursion, false with the error set past the bound.
@@ -183,6 +189,28 @@ int64_t xsdk_xsc_extinst(XscLower *l, const XscInstr *ins, int64_t dst, bool exp
 int64_t xsdk_xsc_dotself(XscLower *l, XscOperand ov, int64_t n);
 int64_t xsdk_xsc_recip(XscLower *l, XscOperand opnd, int64_t n);
 int64_t xsdk_xsc_emit_clamped(XscLower *l, uint32_t ssa, int64_t dst, bool export_);
+
+// A bool as 1.0 where it holds and 0.0 elsewhere.
+XscOperand xsdk_xsc_bool01(XscLower *l, uint32_t ssa);
+
+// How a comparison selects (cnd), and kills where it holds and where it doesn't.
+typedef struct {
+	uint32_t opcode;
+	int64_t cnd;
+	bool cnd_swap_operands;
+	bool cnd_swap_arms;
+	int64_t kill_true;
+	bool kill_true_swap;
+	int64_t kill_false;
+	bool kill_false_swap;
+} XscComparison;
+
+// Control flow the unroller left as values (xsc_lower_flow.c): a float comparison's entry, or NULL; whether an id is a
+// select where an if/else's arms meet; and that select's value, into dst or a fresh register.
+const XscComparison *xsdk_xsc_comparison(uint32_t opcode);
+bool xsdk_xsc_is_merge(const XscLower *l, uint32_t ssa);
+bool xsdk_xsc_emit_merge(XscLower *l, uint32_t ssa, int64_t dst, bool export_);
+XscOperand xsdk_xsc_merge_operand(XscLower *l, uint32_t ssa);
 
 // Matrices (xsc_lower_matrix.c).
 const XscMatrix *xsdk_xsc_matrix_operands(XscLower *l, uint32_t ssa);

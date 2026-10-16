@@ -65,9 +65,20 @@ bool xsdk_xsc_lower_init(Xsc *x, XscLower *l, const XscModule *m, const XscInter
 	l->col_major = xsdk_xsc_alloc(x, n);
 	l->local_store = xsdk_xsc_alloc(x, (size_t)n * sizeof *l->local_store);
 	l->seen = xsdk_xsc_alloc(x, n);
+	l->merge_branch = xsdk_xsc_alloc(x, (size_t)n * sizeof *l->merge_branch);
+	for (uint32_t id = 0; l->merge_branch && id < n; id++)
+		l->merge_branch[id] = -1;
+	for (size_t i = 0; l->merge_branch && i < m->merge_count; i++) {
+		if (m->merges[i].select < n)
+			l->merge_branch[m->merges[i].select] = (int32_t)m->merges[i].branch;
+	}
+	const uint32_t branches = (uint32_t)m->branch_count + 1;
+	l->branch_cnd = xsdk_xsc_alloc(x, branches * sizeof *l->branch_cnd);
+	l->branch_swap = xsdk_xsc_alloc(x, branches);
 	return fill_operands(x, &l->op_cache, n) && fill_operands(x, &l->local_values, n) && fill_regs(x, &l->inputs, n) &&
 		fill_regs(x, &l->sample_reg, n) && fill_regs(x, &l->deriv_reg, n) && l->matrix_cache && l->col_major &&
-		l->local_store && l->seen;
+		l->local_store && l->seen && l->merge_branch && fill_operands(x, &l->branch_test, branches) && l->branch_cnd &&
+		l->branch_swap;
 }
 
 // An SSA id's instruction, refused as Python's by_result[ssa] would fail.
@@ -672,6 +683,8 @@ static XscOperand int_operand_of(XscLower *l, uint32_t ssa)
 			return (XscOperand){ 0 };
 		return xsc_reg(r);
 	}
+	if (op == SPV_SELECT && xsdk_xsc_is_merge(l, ssa))
+		return xsdk_xsc_lower_operand(l, ssa);
 	if (op == SPV_I_ADD || op == SPV_I_SUB || op == SPV_I_MUL)
 		return int_arith(l, ins);
 	if (op == OP_U_DIV || op == SPV_S_DIV || (op >= OP_U_MOD && op <= OP_S_MOD))
@@ -737,7 +750,7 @@ static bool compare_value(XscLower *l, const XscInstr *ins, int64_t dst, bool ex
 	return xsdk_xsc_emit(l, xop, ops, 2, dst, export_, 0xF, false);
 }
 
-static XscOperand bool01(XscLower *l, uint32_t ssa)
+XscOperand xsdk_xsc_bool01(XscLower *l, uint32_t ssa)
 {
 	const XscInstr *const ins = xsdk_xsc_lower_result(l, ssa);
 	if (!ins)
@@ -754,7 +767,7 @@ static XscOperand bool01(XscLower *l, uint32_t ssa)
 // OpSelect(cond, t, f): f + (t - f) * cond, component-wise (lower.py select_value).
 static bool select_value(XscLower *l, const XscInstr *ins, int64_t dst, bool export_)
 {
-	const XscOperand c = bool01(l, xsdk_xsc_operand(ins, 0));
+	const XscOperand c = xsdk_xsc_bool01(l, xsdk_xsc_operand(ins, 0));
 	if (xsc_failed(l))
 		return false;
 	const XscOperand tr = xsdk_xsc_to_reg(l, xsdk_xsc_lower_operand(l, xsdk_xsc_operand(ins, 1)));
@@ -775,7 +788,7 @@ static bool select_value(XscLower *l, const XscInstr *ins, int64_t dst, bool exp
 static bool reduce_bool(XscLower *l, const XscInstr *ins, int64_t dst, bool export_, bool is_all)
 {
 	const uint32_t v = xsdk_xsc_operand(ins, 0);
-	const XscOperand vr = xsdk_xsc_to_reg(l, bool01(l, v));
+	const XscOperand vr = xsdk_xsc_to_reg(l, xsdk_xsc_bool01(l, v));
 	if (xsc_failed(l))
 		return false;
 	const int64_t size = xsdk_xsc_vec_size(l, v);
@@ -796,7 +809,7 @@ static bool reduce_bool(XscLower *l, const XscInstr *ins, int64_t dst, bool expo
 
 static bool logical_not_value(XscLower *l, const XscInstr *ins, int64_t dst, bool export_)
 {
-	const XscOperand v = bool01(l, xsdk_xsc_operand(ins, 0));
+	const XscOperand v = xsdk_xsc_bool01(l, xsdk_xsc_operand(ins, 0));
 	if (xsc_failed(l))
 		return false;
 	const int64_t one = xsdk_xsc_literal_splat(l, 1.0);
@@ -808,10 +821,10 @@ static bool logical_not_value(XscLower *l, const XscInstr *ins, int64_t dst, boo
 
 static bool logical_binop_value(XscLower *l, const XscInstr *ins, int64_t dst, bool export_)
 {
-	const XscOperand a = bool01(l, xsdk_xsc_operand(ins, 0));
+	const XscOperand a = xsdk_xsc_bool01(l, xsdk_xsc_operand(ins, 0));
 	if (xsc_failed(l))
 		return false;
-	const XscOperand b = bool01(l, xsdk_xsc_operand(ins, 1));
+	const XscOperand b = xsdk_xsc_bool01(l, xsdk_xsc_operand(ins, 1));
 	if (xsc_failed(l))
 		return false;
 	const int64_t op = ins->opcode == OP_LOGICAL_AND ? XSC_VECTOR_MIN : XSC_VECTOR_MAX;
@@ -1348,6 +1361,12 @@ static XscOperand regs_by_id(XscLower *l, const int64_t *regs, uint32_t ssa, con
 static XscOperand operand_of(XscLower *l, uint32_t ssa, const XscInstr *ins)
 {
 	const uint32_t op = ins->opcode;
+	if (op == SPV_SELECT && xsdk_xsc_is_merge(l, ssa))
+		return xsdk_xsc_merge_operand(l, ssa);
+	if (op == SPV_CONSTANT_TRUE || op == SPV_CONSTANT_FALSE) {
+		const int64_t reg = xsdk_xsc_literal_splat(l, op == SPV_CONSTANT_TRUE ? 1.0 : 0.0);
+		return reg == XSC_NONE ? (XscOperand){ 0 } : xsc_const(reg);
+	}
 	if (boolean_op(op))
 		return boolean_operand(l, ins);
 	const XscTypeKind kind = result_kind(l, ssa);
@@ -1455,8 +1474,9 @@ static XscOrigin scalar_origin_of(XscLower *l, uint32_t ssa)
 		if (resolved || xsc_failed(l))
 			return found;
 	}
-	const bool broadcast = op == SPV_DOT || op == SPV_CONSTANT || op == SPV_F_ADD || op == SPV_F_SUB ||
-		op == SPV_F_MUL || op == SPV_F_DIV || op == SPV_F_MOD || op == SPV_EXT_INST || boolean_op(op);
+	const bool broadcast = op == SPV_DOT || op == SPV_CONSTANT || op == SPV_CONSTANT_TRUE || op == SPV_CONSTANT_FALSE ||
+		op == SPV_F_ADD || op == SPV_F_SUB || op == SPV_F_MUL || op == SPV_F_DIV || op == SPV_F_MOD ||
+		op == SPV_EXT_INST || boolean_op(op);
 	if (broadcast)
 		return origin(xsdk_xsc_lower_operand(l, ssa), XSC_BROADCAST);
 	xsdk_xsc_lower_refuse(l, "cannot resolve scalar %%%u", (unsigned)ssa);
@@ -1594,6 +1614,8 @@ bool xsdk_xsc_emit_value(XscLower *l, uint32_t ssa, int64_t dst, bool export_, b
 	}
 	const uint32_t a = xsdk_xsc_operand(vi, 0);
 	const uint32_t b = xsdk_xsc_operand(vi, 1);
+	if (op == SPV_SELECT && xsdk_xsc_is_merge(l, ssa))
+		return xsdk_xsc_emit_merge(l, ssa, dst, export_);
 	if (op == SPV_COMPOSITE_CONSTRUCT)
 		return xsdk_xsc_emit_construct(l, vi, dst, export_);
 	if (op == SPV_MATRIX_TIMES_VECTOR)

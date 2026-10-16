@@ -8,7 +8,11 @@ the depth test only with SQ_PROGRAM_CNTL's ps_export_mode at 3, where colour alo
 - vk_frag_depth.frag exports its colour and, after a discard that keeps the pixel, its depth to oDepth's x alone, as
   Xenia takes it (xenia:src/xenia/gpu/dxbc_shader_translator.cc:1591-1594), and its record's ps_export_mode is 3;
   vk_composite_extract.frag, without a depth, keeps 2.
-- vk_frag_depth_branch.frag stores gl_FragDepth in one arm of an if/else, which is refused.
+- vk_frag_depth_arms.frag stores gl_FragDepth in both arms of an if/else on data, and vk_frag_depth_before.frag before
+  an if/else and again in one arm with the colour: the unroller merges each, and the simulator exports the depth and
+  colour of the arm taken, either side of the condition.
+- vk_frag_depth_branch.frag stores gl_FragDepth in one arm of an if/else alone, which is refused: on the other path
+  nothing would give the pixel a depth (xenia:src/xenia/gpu/draw_util.cc:498-502).
 """
 import sys
 from pathlib import Path
@@ -33,7 +37,28 @@ def export_mode(blob):
     return container.Container(blob).program_control >> 27 & 0xF
 
 
+def run_depth(name, uv):
+    blob, manifest = lower_ex(module(name), XSDK_REGISTERS)
+    if export_mode(blob) != 3:
+        raise SystemExit(f"  FAIL {name}: ps_export_mode {export_mode(blob)}, not 3")
+    constants = push_constants(name, [A, B])
+    constants.update({r: list(v) for r, v in manifest})
+    result = simulate.run(blob, registers={0: uv + [0.0, 0.0]}, constants=constants)
+    return result.exports[0], result.exports.get(EXPORT_DEPTH, [None])[0]
+
+
+def check_branches():
+    for uv in ([0.75, 0.25], [0.25, 0.75]):
+        color, depth = run_depth("vk_frag_depth_arms.frag", uv)
+        check(f"vk_frag_depth_arms.frag at {uv}, its colour", color, A)
+        check(f"vk_frag_depth_arms.frag at {uv}, its depth", [depth], [B[1] if uv[0] > B[0] else uv[1]])
+        color, depth = run_depth("vk_frag_depth_before.frag", uv)
+        check(f"vk_frag_depth_before.frag at {uv}, its colour", color, B if uv[1] > B[0] else A)
+        check(f"vk_frag_depth_before.frag at {uv}, its depth", [depth], [B[3] if uv[1] > B[0] else B[2]])
+
+
 def main():
+    check_branches()
     blob, manifest = lower_ex(module("vk_frag_depth.frag"), XSDK_REGISTERS)
     constants = push_constants("vk_frag_depth.frag", [A, B])
     constants.update({r: list(v) for r, v in manifest})

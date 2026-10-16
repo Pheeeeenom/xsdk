@@ -60,7 +60,7 @@ came from; that test and its test vectors stay in xost's archived repo (github.c
 | `clamp(x, lo, hi)` arbitrary | `min(max(x,lo),hi)`, lo/hi pooled literals |
 | **`if/else`**, incl. **nested**, assigning the output | branch-free chained `cndgt`/`cndge`/`cndeq` selects |
 | **`if/else` assigning a Function-local** later read by the output | branch-free `cnd*` select into a temp registered as that local's merged value (pixel shaders) |
-| `if/else`, or a `?:` glslang branches for, in a **vertex** shader | refused: lowered as straight-line code it would take its last arm (`tests/test_vertex_branches.py`) |
+| `if/else`, or a `?:` glslang branches for, in a **vertex** shader, nested, `&&`/`\|\|` (a Phi) | the unroller runs both arms and merges each local and output they leave apart with a select, a `cnd*` on the comparison branched on (see Control flow; `tests/test_vertex_branches.py`) |
 | **`discard` / `OpKill` inside `if(cond)`** | `kill_gt`/`kill_ge`/`kill_eq`/`kill_ne` ALU side effect; oracle-valid, pending console verification in `glslgallery` G26 |
 | **`for`/`while`** with a compile-time trip count, incl. **nested** | unrolled to branch-free SSA; induction variable constant-folded (see below) |
 | uniform-bound loop `sum += const` | real `LOOP_START/END` (G28 pending) |
@@ -71,6 +71,8 @@ came from; that test and its test vectors stay in xost's archived repo (github.c
 | block array at a run-time index, `rows[int(f) + k]`, `m[i]` | `movasf` (`int(f)`) or `movas` sets a0, then `c[a0 + base + k]` is copied into a temp; reads at one index share the `movas` (`tests/test_dynamic_index.py`) |
 | fragment `gl_FragCoord.xy` | the pixel parameters in the register past the interpolators, `\|r.xy\| + 0.5`; `.zw` refused |
 | fragment `gl_FragDepth`, stored once outside any `if/else` | `oDepth.x___` after the colour, the record's ps_export_mode 3 (`tests/test_frag_depth.py`) |
+| fragment `gl_FragDepth` stored in both arms of an `if/else`, or before one and again in an arm | merged by a select as a vertex shader's outputs are, exported once; stored on one path alone, refused (see Control flow) |
+| a store into one component of a local or an output, `v.x = …` | an insert into the vector it held (`tests/test_local_stores.py`) |
 | float / vec literals in FS/VS | constant pool; 0/1 folds (see below) |
 | ternary `cond ? a : b` (OpSelect) | `f + (t−f)·cond` (sub + mad) |
 | vector relational `lessThan`/`greaterThan`/`equal`/`notEqual`/… → bvec | per-component `sgt`/`sge`/`seq`/`sne` (1.0/0.0) |
@@ -86,6 +88,7 @@ came from; that test and its test vectors stay in xost's archived repo (github.c
 | uniform-array loop `for(i<n) sum += w[i]` | real loop; body `add acc, acc, c[base+aL]` (aL-relative array read) |
 | `for(i<n){ …; if(acc.c CMP k) break; }` | body `setp_*` + a predicated LOOP_END (data-dependent break) |
 | if/else in a loop body with a **constant** condition (e.g. `if(i<k)`) | unroller picks the taken arm per iteration |
+| if/else **on data** in an unrolled loop's body | both arms each pass, merged by a select (`tests/test_loop_branches.py`) |
 | `transpose` (mat2/3/4) | per-row column gather (swizzled movs) |
 | `determinant` (mat2/3) | mat2 `ad−bc`; mat3 `row0·cross(row1,row2)` |
 | `inverse` (mat2/3) | mat2 closed form; mat3 adjugate (cofactor crosses) / det · `rcp` |
@@ -263,13 +266,38 @@ predicated `while`-break primitive is hardware-proven (G30); see below.
 
 A data-dependent `while`-break (`if(cond) break;`) now lowers from GLSL to a
 body `setp_*` + a predicated LOOP_END (the G30 primitive). An if/else **with a
-constant condition** inside a loop body unrolls (the arm is picked per pass).
+constant condition** inside a loop body unrolls (the arm is picked per pass); one
+on data runs both arms each pass and merges them (Control flow).
+
+## Control flow
+
+The unroller (`xsdk:src/xsc_unroll.c`) takes an if/else on data in a vertex
+shader, in a loop's body, or around a pixel shader's `gl_FragDepth`: it runs
+both arms, each from the locals and outputs as they were before the branch, and
+where the arms meet it gives each local and output they leave apart a select of
+the condition and the two values, and each Phi there (glslang's `&&` and `||`)
+the same. Outputs are kept as locals are and stored once at the end. The
+lowering (`xsdk:src/xsc_lower_flow.c`) makes each select a `cnd*` on the
+comparison branched on, `a - b` worked out once a branch, as a pixel shader's
+if/else has lowered since v1; a condition that isn't a float comparison is its
+0.0 or 1.0, which `cndgt` tests. A pixel shader's other if/else keeps the
+fragment lowering's selects, and every shader without such a branch lowers byte
+for byte as before.
+
+- **Why selects:** an arm here has no side effect a select can't keep, as each
+  output is exported once after the arms meet, and for every vertex or pixel of
+  64 the GPU takes a predicated exec if any of them needs it (xenia:src/xenia/gpu/ucode.h:114-124),
+  so arms that differ within a group run both arms either way.
+- **Exports stay out of control flow:** each is written once, unconditionally,
+  so every path writes it, which a pixel shader's depth needs: nothing else
+  gives the pixel a depth (xenia:src/xenia/gpu/draw_util.cc:498-502).
+  `gl_FragDepth` stored on one path alone is refused for that; an interpolator or
+  colour stored on one path takes that value on the other, which GLSL leaves
+  undefined.
+- **Refused:** a `discard` or `return` in an arm of an if/else the unroller
+  merges, a `switch`, and a matrix, array or struct an if/else chooses.
 
 ## Not yet / out of scope
-- **Data-dependent if/else inside a loop body** — a conditional *store* in the
-  body can't be modelled by the unroller's mem2reg env; it's refused (`LowerError`)
-  (the constant-condition case above is handled). Constant-trip loops with a
-  data-dependent body conditional are the remaining loop edge.
 - **Bitwise (`& | ^ ~`) and dynamic shifts** — the Xenos ALU has no bit
   operations; these raise a clear compile error rather than miscompiling.
   Constant-amount shifts could be done as mul/div by powers of two (not wired).

@@ -1,5 +1,5 @@
 #version 450
-// gl_FragDepth stored in one arm of an if/else, which the lowering would export on every path.
+// gl_FragDepth stored in one arm of an if/else alone: refused, as nothing gives the other path a depth.
 layout(location = 0) in vec2 v_uv;
 layout(location = 0) out vec4 o_color;
 layout(push_constant) uniform Push { vec4 a; vec4 b; } pc;

@@ -7,8 +7,8 @@
 #include "xsdk/log.h"
 #include "xsdk/xsc.h"
 
-// xost's compiler on the console (docs/scope/shader-compiling.md, step 2): two shaders compiled from their SPIR-V into
-// what it makes from them on the PC (tools/gen_xsc_shaders.py).
+// xost's compiler on the console (docs/scope/shader-compiling.md, step 2): shaders compiled from their SPIR-V into what
+// it makes from them on the PC (tools/gen_xsc_shaders.py).
 
 enum {
 	NAME_BYTES = 128,

@@ -48,38 +48,6 @@ typedef struct {
 	size_t slot_capacity;
 } Fragment;
 
-// How a comparison selects (cnd), and kills where it holds and where it doesn't (lower.py _CMP, _KILL_TRUE,
-// _KILL_FALSE).
-typedef struct {
-	uint32_t opcode;
-	int64_t cnd;
-	bool cnd_swap_operands;
-	bool cnd_swap_arms;
-	int64_t kill_true;
-	bool kill_true_swap;
-	int64_t kill_false;
-	bool kill_false_swap;
-} Comparison;
-
-static const Comparison comparisons[] = {
-	{ SPV_F_ORD_GREATER_THAN, XSC_VECTOR_CND_GT, false, false, XSC_VECTOR_KILL_GT, false, XSC_VECTOR_KILL_GE, true },
-	{ SPV_F_ORD_LESS_THAN, XSC_VECTOR_CND_GT, true, false, XSC_VECTOR_KILL_GT, true, XSC_VECTOR_KILL_GE, false },
-	{ SPV_F_ORD_GREATER_THAN_EQUAL, XSC_VECTOR_CND_GE, false, false, XSC_VECTOR_KILL_GE, false, XSC_VECTOR_KILL_GT,
-		true },
-	{ SPV_F_ORD_LESS_THAN_EQUAL, XSC_VECTOR_CND_GE, true, false, XSC_VECTOR_KILL_GE, true, XSC_VECTOR_KILL_GT, false },
-	{ SPV_F_ORD_EQUAL, XSC_VECTOR_CND_EQ, false, false, XSC_VECTOR_KILL_EQ, false, XSC_VECTOR_KILL_NE, false },
-	{ SPV_F_ORD_NOT_EQUAL, XSC_VECTOR_CND_EQ, false, true, XSC_VECTOR_KILL_NE, false, XSC_VECTOR_KILL_EQ, false },
-};
-
-static const Comparison *comparison(uint32_t opcode)
-{
-	for (size_t i = 0; i < sizeof comparisons / sizeof comparisons[0]; i++) {
-		if (comparisons[i].opcode == opcode)
-			return &comparisons[i];
-	}
-	return NULL;
-}
-
 static bool is_local(const Fragment *f, uint32_t id)
 {
 	return id < f->l.m->id_limit && f->locals[id];
@@ -551,7 +519,7 @@ static bool compared(XscLower *l, const XscInstr *cmp, bool swap, XscOrigin *a, 
 static bool emit_kill(Fragment *f)
 {
 	XscLower *const l = &f->l;
-	const Comparison *const c = comparison(f->kill_cmp->opcode);
+	const XscComparison *const c = xsdk_xsc_comparison(f->kill_cmp->opcode);
 	char name[16];
 	if (!c)
 		return xsdk_xsc_lower_refuse(
@@ -589,7 +557,7 @@ static bool emit_region(Fragment *f, const Region *region, int64_t dst, bool exp
 	XscLower *const l = &f->l;
 	if (!region->cmp)
 		return xsdk_xsc_emit_value(l, region->value, dst, export_, false);
-	const Comparison *const c = comparison(region->cmp->opcode);
+	const XscComparison *const c = xsdk_xsc_comparison(region->cmp->opcode);
 	char name[16];
 	if (!c)
 		return xsdk_xsc_lower_refuse(
