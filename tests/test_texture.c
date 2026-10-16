@@ -32,6 +32,9 @@ enum {
 	STRIDE_BYTES = VERTEX_FLOATS * 4,
 	TEXCOORD_OFFSET_BYTES = 16,
 	TEXTURE_SLOT = 0,
+	// An R8 texture down to 1x1, read back level by level: blocks of a byte, and levels in the packed tail.
+	R8_SIDE = 64,
+	R8_LEVELS = 7,
 };
 
 typedef struct {
@@ -205,6 +208,54 @@ static bool make_texture(XsdkTexture *texture, const Layout *layout)
 	return true;
 }
 
+// Every level's texels differ from the others'.
+static uint8_t r8_texel(uint32_t level, uint32_t x, uint32_t y)
+{
+	return (uint8_t)(level * 37 + x * 3 + y * 11);
+}
+
+// An R8 texture's levels uploaded a half at a time, each read back whole.
+static bool r8_reads_back(void)
+{
+	static uint8_t texels[R8_SIDE][R8_SIDE];
+	XsdkTexture r8;
+	if (!NT_SUCCESS(xsdk_texture_create(&r8, XSDK_FORMAT_R8, R8_SIDE, R8_SIDE, R8_LEVELS, true)))
+		return false;
+	for (uint32_t level = 0; level < R8_LEVELS; level++) {
+		const uint32_t side = R8_SIDE >> level;
+		for (uint32_t y = 0; y < side; y++)
+			for (uint32_t x = 0; x < side; x++)
+				texels[y][x] = r8_texel(level, x, y);
+		xsdk_texture_upload_rows(&r8, level, 0, side / 2, &texels[0][0], R8_SIDE);
+		xsdk_texture_upload_rows(&r8, level, side / 2, side - side / 2, &texels[side / 2][0], R8_SIDE);
+	}
+	bool same = true;
+	for (uint32_t level = 0; level < R8_LEVELS; level++) {
+		const uint32_t side = R8_SIDE >> level;
+		memset(texels, 0, sizeof texels);
+		xsdk_texture_download_rows(&r8, level, 0, side, &texels[0][0], R8_SIDE);
+		for (uint32_t y = 0; y < side; y++)
+			for (uint32_t x = 0; x < side; x++)
+				same = same && texels[y][x] == r8_texel(level, x, y);
+	}
+	xsdk_texture_free(&r8);
+	return same;
+}
+
+static void check_read_back(const XsdkTexture textures[LAYOUTS])
+{
+	static uint32_t back[TEXTURE_HEIGHT][TEXTURE_WIDTH];
+	bool same = true;
+	for (uint32_t i = 0; i < LAYOUTS; i++) {
+		xsdk_texture_download_rows(&textures[i], 0, 0, TEXTURE_HEIGHT, &back[0][0], sizeof back[0]);
+		for (uint32_t y = 0; y < TEXTURE_HEIGHT; y++)
+			for (uint32_t x = 0; x < TEXTURE_WIDTH; x++)
+				same = same && back[y][x] == texel_argb(&layouts[i], x, y);
+	}
+	check("texture: linear and tiled textures read back as uploaded", same);
+	check("texture: R8 levels uploaded a half at a time read back whole, the packed tail's too", r8_reads_back());
+}
+
 typedef struct {
 	const XsdkShader *vertex;
 	const XsdkShader *pixel;
@@ -292,6 +343,8 @@ void test_texture(void)
 		vertices[i] = upload_quad(&layouts[i]);
 	}
 	check("texture: linear and tiled textures made", made);
+	if (made)
+		check_read_back(textures);
 	const uint32_t buffer_bytes = xsdk_gpu_resolve_bytes(WIDTH, HEIGHT);
 	volatile uint32_t *const buffers[BUFFERS] = { xsdk_gpu_alloc(buffer_bytes), xsdk_gpu_alloc(buffer_bytes) };
 	check("texture: vertex and front buffers", vertices[0] && vertices[1] && buffers[0] && buffers[1]);

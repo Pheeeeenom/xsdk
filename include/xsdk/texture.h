@@ -124,6 +124,13 @@ NTSTATUS xsdk_texture_create(
 // Copies in a level's rows of texels or blocks, row_bytes apart, sizes halving per level; not while the GPU reads it.
 // Word-aligned rows go in runs of whole words, far faster than unaligned ones.
 void xsdk_texture_upload(XsdkTexture *texture, uint32_t level, const void *data, uint32_t row_bytes);
+// The same for row_count rows of blocks from first_row, data holding the first of them.
+void xsdk_texture_upload_rows(
+	XsdkTexture *texture, uint32_t level, uint32_t first_row, uint32_t row_count, const void *data, uint32_t row_bytes);
+// Copies rows out to data as the uploads take them, a store at a time, so data may be write-combined memory; not while
+// the GPU writes the texture. It reads write-combined memory, so it's slow.
+void xsdk_texture_download_rows(
+	const XsdkTexture *texture, uint32_t level, uint32_t first_row, uint32_t row_count, void *data, uint32_t row_bytes);
 // Has the texture return, as red, green, blue and alpha, the XSDK_CHANNEL_* each names; xsdk_texture_init returns
 // the format's own channels.
 void xsdk_texture_swizzle(XsdkTexture *texture, const uint32_t channels[4]);
