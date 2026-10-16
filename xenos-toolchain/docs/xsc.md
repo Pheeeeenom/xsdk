@@ -223,10 +223,10 @@ simulator's results and those shaders.
 Within an exec the ALU and the fetches run apart on the console, so the
 builder sets an instruction's serialize bit where it reads across them: an
 ALU instruction reading or writing a temp a fetch in its exec wrote since the
-exec's last serialized instruction, and a fetch reading one the ALU wrote
-there (`xsdk:src/xsc_program.c`, exec_entry; xsdk:docs/HARDWARE.md,
-"Serialized fetches"). Unserialized, the ALU read a fetched index before the
-fetch had written it. `tests/test_dependent_fetch.py` checks it.
+exec's last serialized instruction, and a fetch reading one any instruction
+wrote there (`xsdk:src/xsc_program.c`, exec_entry; xsdk:docs/HARDWARE.md,
+"Serialized fetches"; a fetch after a fetch, see Vertex textures). Unserialized,
+the ALU read a fetched index too soon. `tests/test_dependent_fetch.py` checks it.
 
 ## Loops (unrolling + mem2reg)
 
@@ -421,6 +421,24 @@ if/else to `cndgt b, true arm, false arm`, a discard where b holds to `kill_gt b
 simulator, at columns 3 and 0 of each face. The console has to settle which face the sign marks: Xenia gives it the
 host's front face, set from PA_SU_SC_MODE_CNTL's face as culling is
 (xenia:src/xenia/gpu/vulkan/vulkan_pipeline_cache.cc:625).
+
+## Vertex textures
+
+A vertex shader samples as a pixel shader does, at the LOD it gives. glslang gives `texture()` there an explicit LOD
+of 0, and a sample without a LOD or gradients is refused, as a vertex shader has no quad to work one out over
+(xenia:src/xenia/gpu/spirv_shader_translator_fetch.cc:639-641). Its samples go after the vertex fetches and before the
+position's alloc, as a pixel shader's go before its colours'. Each fetches for every vertex, FetchValidOnly off, as
+that bit is about a quad's pixels (xenia:src/xenia/gpu/ucode.h:558-561), and the container declares the samplers as a
+pixel shader's does.
+- Samplers take fetch constants from 0 in each stage, so a host using both moves one stage's: xsdk's
+  `xsdk_shader_move_textures` adds a base to each texture fetch's constant.
+- Two precautions, neither checked on the console: an exec's vertex cache mask ("A fifth vertex fetch") covers its
+  vertex fetches, which lead it, and none of its texture fetches; and a fetch reading a temp another fetch wrote in its
+  exec is serialized, as a texture fetch at an attribute's coordinate is. No shader in Dusklight's pack, xsc's testdata
+  or vulkan4xenon's bundles lowers differently for either.
+
+`tests/test_vertex_textures.py` checks the fields, the mask and the serialize bit, and the simulator's height and
+colour.
 
 ## Validation
 Every test shader is checked by the XenosRecomp oracle (which does the

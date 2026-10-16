@@ -166,12 +166,18 @@ bool xsdk_xsc_emit_sample(XscLower *l, uint32_t ssa, const XscInstr *ins, int64_
 			(unsigned)(mask & ~(uint32_t)IMAGE_TAKEN));
 	if (dim == DIM_CUBE && (mask & IMAGE_GRAD))
 		return xsdk_xsc_lower_refuse(l, "gradients for a cube map (v1)");
+	// A vertex shader has no quad to work a LOD out over
+	// (xenia:src/xenia/gpu/spirv_shader_translator_fetch.cc:639-641).
+	if (l->vertex && !(mask & (IMAGE_LOD | IMAGE_GRAD)))
+		return xsdk_xsc_lower_refuse(l, "a vertex shader's sample without a LOD or gradients");
 	const uint32_t coord = xsdk_xsc_operand(ins, 1);
 	const XscOperand coord_reg = xsdk_xsc_to_reg(l, xsdk_xsc_lower_operand(l, coord));
 	if (xsc_failed(l))
 		return false;
 	XscFetch t = xsdk_xsc_template_tfetch();
 	t.fetch_constant_index = *slot;
+	// Valid only skips a quad's pixels outside the primitive (xenia:src/xenia/gpu/ucode.h:558-561); vertices have none.
+	t.fetch_valid_only = !l->vertex;
 	if (!lod_fields(l, mask, ops + 3, &t))
 		return false;
 	t.dest = xsdk_xsc_fresh(l);

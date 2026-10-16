@@ -88,6 +88,9 @@ NTSTATUS xsdk_shader_load(XsdkShader *shader, const uint32_t *container, uint32_
 // Patches a vertex shader's fetches for this layout and each stream's stride, as libxenon does; not while it may run.
 NTSTATUS xsdk_shader_set_vertex_layout(
 	XsdkShader *shader, const XsdkVertexElement *elements, uint32_t element_count, const uint32_t *stream_strides);
+// Moves the shader's texture fetches up by first_slot fetch constants, from the container's, so both stages' textures
+// fit among the 32 slots; not while it may run.
+NTSTATUS xsdk_shader_move_textures(XsdkShader *shader, uint32_t first_slot);
 void xsdk_shader_free(XsdkShader *shader);
 
 #ifdef __cplusplus

@@ -8,7 +8,8 @@ index, came out as noise. The next exec found it written. Xenia runs each instru
 
 - In every shader of xsc's testdata, and vk_dependent_fetch.frag, an instruction is serialized exactly when, since
   its exec's last serialized instruction, it reads or writes a temp a fetch there wrote (an ALU instruction), or reads
-  one an ALU instruction there wrote (a fetch).
+  one any instruction there wrote (a fetch): a vertex shader's texture fetch can read what a vertex fetch before it in
+  the exec wrote, unchecked on the console either way.
 - vk_dependent_fetch.frag has serialized ALU and fetch instructions both, and the simulator gives what the GLSL says.
 """
 import re
@@ -64,9 +65,10 @@ def hazards(blob):
     for exec_index, fetch, serialize, writes, reads in instructions(blob):
         if exec_index != current:
             written, current = {}, exec_index
-        other = "alu" if fetch else "fetch"
-        touched = reads if fetch else reads | writes
-        wants = any(written.get(t) == other or written.get(t) == "both" for t in touched)
+        if fetch:
+            wants = any(t in written for t in reads)
+        else:
+            wants = any(written.get(t) in ("fetch", "both") for t in reads | writes)
         result.append((serialize, wants))
         if wants:
             written = {}

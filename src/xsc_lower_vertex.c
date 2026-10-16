@@ -5,6 +5,10 @@
 // The rows and columns a matrix constant declares.
 enum {
 	MATRIX_SIZE = 4,
+	// A texture fetch names one of 32 fetch constants (xenia:src/xenia/gpu/ucode.h:789-790).
+	FETCH_SLOTS = 32,
+	// The parameter type xost's containers give a sampler.
+	SAMPLER_PARAMETER = 0xC,
 };
 
 // The unroller merges a vertex shader's if/else arms (xsc_unroll.c); a branch it left would lower as its last arm
@@ -68,8 +72,40 @@ static bool export_interpolators(XscLower *l, const XscInterface *si, const XscS
 	return true;
 }
 
-static bool add_constants(XscLower *l, const XscInterface *si, XscConstants *constants)
+static bool is_sample(uint32_t opcode)
 {
+	return opcode == SPV_IMAGE_SAMPLE_IMPLICIT_LOD || opcode == SPV_IMAGE_SAMPLE_EXPLICIT_LOD ||
+		opcode == SPV_IMAGE_SAMPLE_PROJ_IMPLICIT_LOD || opcode == SPV_IMAGE_SAMPLE_PROJ_EXPLICIT_LOD;
+}
+
+// Every sample, after the vertex fetches and before the exports, as a pixel shader gathers its samples first; the
+// fetch constants they read marked.
+static bool sample_all(XscLower *l, bool used[FETCH_SLOTS])
+{
+	for (size_t i = 0; i < l->m->instr_count; i++) {
+		const XscInstr *const ins = &l->m->instrs[i];
+		if (!is_sample(ins->opcode))
+			continue;
+		int64_t slot;
+		if (!xsdk_xsc_emit_sample(l, ins->result_id, ins, &slot))
+			return false;
+		if (slot < 0 || slot >= FETCH_SLOTS)
+			return xsdk_xsc_lower_refuse(l, "a sampler at fetch constant %lld, past 31", (long long)slot);
+		used[slot] = true;
+	}
+	return true;
+}
+
+// The samplers first, as a pixel shader's container has them, then the uniforms and the literals.
+static bool add_constants(XscLower *l, const XscInterface *si, const bool used[FETCH_SLOTS], XscConstants *constants)
+{
+	for (int64_t slot = 0; slot < FETCH_SLOTS; slot++) {
+		const char *const name = used[slot] ? xsdk_xsc_format(l->x, "tex%lld", (long long)slot) : NULL;
+		const XscConstant c = { name, XSC_REGISTER_SET_SAMPLER, (uint32_t)slot, 1, XSC_CLASS_OBJECT, SAMPLER_PARAMETER,
+			1, 1 };
+		if (used[slot] && (!name || !xsdk_xsc_add_constant(l->x, constants, c)))
+			return false;
+	}
 	for (size_t i = 0; i < si->constant_count; i++) {
 		const XscConstantSlot *const cs = &si->constants[i];
 		XscConstant c = xsdk_xsc_vector_constant(cs->name, cs->reg, 1);
@@ -124,8 +160,9 @@ bool xsdk_xsc_lower_vertex(Xsc *x, const XscModule *m, const XsdkXscOptions *opt
 	if (!locals || !xsdk_xsc_check_local_stores(x, m, locals, 0, 0))
 		return false;
 	xsdk_xsc_fill_local_store(&l, &stores, locals);
+	bool used[FETCH_SLOTS] = { false };
 	XscConstants constants = { 0 };
-	return lower_body(&l, si, &stores) && add_constants(&l, si, &constants) &&
+	return sample_all(&l, used) && lower_body(&l, si, &stores) && add_constants(&l, si, used, &constants) &&
 		xsdk_xsc_program_finish(x, &p, constants.items, constants.count, &out->container, &out->container_bytes) &&
 		xsdk_xsc_literal_needs(&l, out) && xsdk_xsc_loop_needs(&l, out);
 }

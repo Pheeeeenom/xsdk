@@ -97,6 +97,30 @@ enum {
 	SWIZZLE_ONE = 5,
 };
 
+// Control flow instructions, two in three dwords at the microcode's start (xenia:src/xenia/gpu/ucode.h:520-528), and an
+// exec's address, count and sequence, two bits an instruction, the low one set for a fetch (ucode.h:239-259).
+enum {
+	CF_OPCODE_SHIFT = 12,
+	CF_OPCODE_MASK = 0xF,
+	EXEC_ADDRESS_MASK = 0xFFF,
+	EXEC_COUNT_SHIFT = 12,
+	EXEC_COUNT_MASK = 0x7,
+	EXEC_SEQUENCE_SHIFT = 16,
+	// kExec to kCondExecPredEnd, and kCondExecPredClean and its end (ucode.h:96-162).
+	CF_EXEC_FIRST = 1,
+	CF_EXEC_LAST = 6,
+	CF_EXEC_PRED_CLEAN = 13,
+	CF_EXEC_PRED_CLEAN_END = 14,
+	// A fetch's opcode: the vertex fetch's, then the texture fetches naming a fetch constant, below setTexLOD and the
+	// gradients' setters (ucode.h:532-674).
+	FETCH_OPCODE_MASK = 0x1F,
+	FETCH_OPCODE_VERTEX = 0,
+	FETCH_OPCODE_SET_LOD = 24,
+	// A texture fetch's constant, 0 to 31 (ucode.h:849).
+	TEXTURE_CONSTANT_MASK = 0x1F << FETCH_CONSTANT_INDEX_SHIFT,
+	TEXTURE_SLOTS = 32,
+};
+
 typedef struct {
 	uint8_t format;
 	uint8_t components;
@@ -253,6 +277,59 @@ NTSTATUS xsdk_shader_set_vertex_layout(
 	}
 	__asm__ volatile("sync" ::: "memory");
 	// The GPU may hold the shader as it was.
+	xsdk_gpu_forget_shaders();
+	return STATUS_SUCCESS;
+}
+
+static bool is_exec(uint32_t opcode)
+{
+	return (opcode >= CF_EXEC_FIRST && opcode <= CF_EXEC_LAST) || opcode == CF_EXEC_PRED_CLEAN ||
+		opcode == CF_EXEC_PRED_CLEAN_END;
+}
+
+// Each texture fetch of one exec, from the source, its constant moved; false if one goes past the slots or the code.
+static bool move_exec_textures(XsdkShader *shader, uint32_t exec, uint32_t first_slot)
+{
+	const uint32_t address = exec & EXEC_ADDRESS_MASK;
+	const uint32_t count = exec >> EXEC_COUNT_SHIFT & EXEC_COUNT_MASK;
+	const uint32_t sequence = exec >> EXEC_SEQUENCE_SHIFT;
+	for (uint32_t i = 0; i < count; i++) {
+		const uint32_t slot = address + i;
+		if (!(sequence >> (2 * i) & 1))
+			continue;
+		if ((slot + 1) * SLOT_DWORDS > shader->dword_count)
+			return false;
+		const uint32_t word = shader->source[slot * SLOT_DWORDS];
+		const uint32_t opcode = word & FETCH_OPCODE_MASK;
+		if (opcode == FETCH_OPCODE_VERTEX || opcode >= FETCH_OPCODE_SET_LOD)
+			continue;
+		const uint32_t constant = (word & TEXTURE_CONSTANT_MASK) >> FETCH_CONSTANT_INDEX_SHIFT;
+		if (constant + first_slot >= TEXTURE_SLOTS)
+			return false;
+		shader->microcode[slot * SLOT_DWORDS] =
+			(word & ~TEXTURE_CONSTANT_MASK) | (constant + first_slot) << FETCH_CONSTANT_INDEX_SHIFT;
+	}
+	return true;
+}
+
+// The control flow ends where the first exec's instructions begin, as Xenia finds it
+// (xenia:src/xenia/gpu/shader_translator.cc:60-72).
+NTSTATUS xsdk_shader_move_textures(XsdkShader *shader, uint32_t first_slot)
+{
+	uint32_t pairs = shader->dword_count / SLOT_DWORDS;
+	for (uint32_t pair = 0; pair < pairs; pair++) {
+		const uint32_t *const d = &shader->source[pair * SLOT_DWORDS];
+		const uint32_t words[2][2] = { { d[0], d[1] & 0xFFFF }, { d[1] >> 16 | d[2] << 16, d[2] >> 16 } };
+		for (int i = 0; i < 2; i++) {
+			if (!is_exec(words[i][1] >> CF_OPCODE_SHIFT & CF_OPCODE_MASK))
+				continue;
+			const uint32_t address = words[i][0] & EXEC_ADDRESS_MASK;
+			pairs = address < pairs ? address : pairs;
+			if (!move_exec_textures(shader, words[i][0], first_slot))
+				return reject("texture fetch past the fetch constants or the microcode");
+		}
+	}
+	__asm__ volatile("sync" ::: "memory");
 	xsdk_gpu_forget_shaders();
 	return STATUS_SUCCESS;
 }

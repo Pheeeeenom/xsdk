@@ -35,6 +35,13 @@ enum {
 	// An R8 texture down to 1x1, read back level by level: blocks of a byte, and levels in the packed tail.
 	R8_SIDE = 64,
 	R8_LEVELS = 7,
+	// A texture fetch's opcode and fetch constant (xenia:src/xenia/gpu/ucode.h:601, 843-849).
+	FETCH_OPCODE_MASK = 0x1F,
+	FETCH_OPCODE_TEXTURE = 1,
+	FETCH_CONSTANT_SHIFT = 20,
+	FETCH_CONSTANT_MASK = 0x1F,
+	MOVED_SLOT = 5,
+	TEXTURE_SLOTS = 32,
 };
 
 typedef struct {
@@ -267,6 +274,38 @@ typedef struct {
 	bool has_display;
 } Scene;
 
+// The dwords of the shader's microcode that differ from its container's, and the last one's.
+static uint32_t changed_dwords(const XsdkShader *shader, uint32_t *last)
+{
+	uint32_t changed = 0;
+	for (uint32_t i = 0; i < shader->dword_count; i++) {
+		if (shader->microcode[i] != shader->source[i]) {
+			changed++;
+			*last = shader->microcode[i];
+		}
+	}
+	return changed;
+}
+
+// xsdk_shader_move_textures moves the pixel shader's one texture fetch alone, and back; a shader without one stays as
+// it was, and a move past the 32 fetch constants is refused.
+static bool textures_move(XsdkShader *vertex, XsdkShader *pixel)
+{
+	uint32_t word = 0;
+	const uint32_t vertex_before = changed_dwords(vertex, &word);
+	const bool moved = NT_SUCCESS(xsdk_shader_move_textures(pixel, MOVED_SLOT)) && changed_dwords(pixel, &word) == 1 &&
+		(word & FETCH_OPCODE_MASK) == FETCH_OPCODE_TEXTURE &&
+		(word >> FETCH_CONSTANT_SHIFT & FETCH_CONSTANT_MASK) == TEXTURE_SLOT + MOVED_SLOT;
+	const bool back = NT_SUCCESS(xsdk_shader_move_textures(pixel, 0)) && changed_dwords(pixel, &word) == 0;
+	const bool vertex_kept =
+		NT_SUCCESS(xsdk_shader_move_textures(vertex, MOVED_SLOT)) && changed_dwords(vertex, &word) == vertex_before;
+	const bool refused = !NT_SUCCESS(xsdk_shader_move_textures(pixel, TEXTURE_SLOTS - TEXTURE_SLOT));
+	if (!moved || !back || !vertex_kept || !refused)
+		xsdk_log_write("texture: moving fetches: moved %d, back %d, vertex shader kept %d, past 31 refused %d", moved,
+			back, vertex_kept, refused);
+	return moved && back && vertex_kept && refused;
+}
+
 static void check_layout(const Layout *layout, const char *what, bool passed)
 {
 	char name[96];
@@ -335,6 +374,8 @@ void test_texture(void)
 		NT_SUCCESS(xsdk_shader_set_vertex_layout(&vertex, vertex_layout, sizeof vertex_layout / sizeof vertex_layout[0],
 			(const uint32_t[]){ STRIDE_BYTES }));
 	check("texture: vertex fetches patched for a float4 position and float2 coordinates", patched);
+	check("texture: a texture fetch moved to fetch constant 5 and back, and nothing of a shader without one",
+		patched && textures_move(&vertex, &pixel));
 	XsdkTexture textures[LAYOUTS] = { { .texels = NULL }, { .texels = NULL } };
 	volatile uint32_t *vertices[LAYOUTS] = { NULL, NULL };
 	bool made = true;

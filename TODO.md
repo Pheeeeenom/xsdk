@@ -190,3 +190,6 @@ it removes.
 - **Which partial constant write hangs the GPU:** the floats, or the lone boolean or loop word. It matters only for
   writing just the changed constants, to save ring space (docs/HARDWARE.md, "Shader constants: partial writes hang the
   GPU, libxenon's whole blocks don't").
+- **Texture fetches in vertex shaders** (vulkan4xenon milestone 22's step 3): whether an exec's vertex cache bits
+  should mark them, as xost gives them none, and whether a fetch reading what another fetch wrote in its exec needs
+  its serialize bit, which xost now sets (xenos-toolchain/docs/xsc.md, "Vertex textures").
