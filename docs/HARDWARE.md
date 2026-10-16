@@ -3368,3 +3368,43 @@ Vulkan's blend constants take Xenos's constant blend factors, `kConstantColor` t
 - **Each draw's own:** the constants were set before each of the two draws, and each blended by its own.
 - **Written alpha first,** the four registers reversed, both cells missed and every other point held
   (`xsdk_test_s3_broken.log`). xsdk_test passed 318 of 318 with the user at the pad (`xsdk_test.log`).
+
+## Queries and events, vulkan4xenon milestone 19's step 6 (2026-10-16)
+
+`probe_queries.c` asked what Vulkan's events, time stamps and occlusion queries need of the command processor, in six
+runs (`results/2026-10-16-queries-probe/`, a log a run):
+- **The clock's high word counts.** With the counters on as before ("A clock the GPU and the CPU both read"),
+  `RBBM_PERFCOUNTER1_HI` read 0, then 1 once the low word wrapped 8.8 s later (`probe_queries_steps.log`). The low
+  word ignores the CPU's writes: set to 0xFFFFF000, it read 0x00264397, counting on from where it was. xsdk turns the
+  counter on at set-up and puts it back at close; `xsdk_gpu_write_clock` copies the high word, the low word and the high
+  word again, so a wrap between the copies shows.
+- **The clock counts 498.75 a microsecond,** ten times the time base's 49.875 MHz ("The time base runs at 49.875
+  MHz"). xsdk_test's two copies 100 ms apart by the CPU's clock gave 498.751 and 498.746
+  (`xsdk_test_check_at_498.9.log`, `xsdk_test.log`), and vulkan4xenon's two time stamps 52 ms apart 498.74
+  (vulkan4xenon:results/2026-10-16-milestone-19-step-6/vulkan4xenon_test_period_2.004.log). The 498.9 of "A clock
+  the GPU and the CPU both read" came from 1 ms windows between two register reads.
+- **xsdk_test passed 321 of 321** with the user at the pad, its three checks of these functions new and the fence-wait
+  check moved onto the clock's (`xsdk_test.log`). Broken on purpose, a word written one more than asked, a wait that
+  always passes and the low word copied for the high ones (`xsdk_test_breaks.py`), the three failed, and the fence-wait
+  check, which times waits by the clock (`xsdk_test_s6_broken.log`).
+- **The command processor waits on memory the CPU writes.** `PM4_WAIT_REG_MEM` with its memory bit (0x10) and the
+  equal function, read through the 8-in-32 swap, held the fence after it while the word was 0 and passed 1 to 2 us
+  after the CPU stored 1, after 50 ms and after 2 s alike; read without the swap, the CPU's 1 didn't match
+  (`probe_queries_steps.log`). That's `xsdk_gpu_wait_word`; `xsdk_gpu_write_word` writes a word as fences do.
+- **`ZPASS_DONE` wedges the GPU, and nothing tried wrote a sample count.** Each run filled the counts' memory with
+  D3D's 0xFFFFFEED (xenia:src/xenia/gpu/command_processor.cc:1252-1270), set `RB_SAMPLE_COUNT_ADDR` (0x2325) to it, and
+  sent the event: the fence after the event landed with the memory unwritten, and the next draw never finished. A draw
+  after the address alone was fine (`probe_queries_isolated.log`). What hung it:
+  - `PM4_EVENT_WRITE_ZPD` (0x5B) with `ZPASS_DONE` (21) (xenia:src/xenia/gpu/xenos.h:1559, 1598), as D3D sends it
+    for a query's two records (LostOdysseyRecomp:docs/notes/occlusion-queries.md): with `RB_SAMPLE_COUNT_CTL` as the
+    console leaves it, 2 (`probe_queries_hang.log`, `probe_queries_steps.log`), and at 0 (`probe_queries_controls.log`);
+  - Adreno 3xx's sequence, from a capture of Qualcomm's driver: the address, the control's COPY bit (bit 1, RESET
+    bit 0; Linux:drivers/gpu/drm/msm/registers/adreno/a3xx.xml), a draw of no points, then the event
+    (freedreno:fdre-a3xx/freedreno.c:1113-1127), with `PM4_EVENT_WRITE_ZPD` (`probe_queries_sequence.log`) and with
+    `PM4_EVENT_WRITE` (0x46) (`probe_queries_event_write.log`).
+  The command processor had read everything the ring held, and `RBBM_STATUS` read 0xE8A50110: the render backend,
+  shader export and memory hub busy, the vertex, primitive and scan-converter units idle
+  (Linux:drivers/gpu/drm/msm/registers/adreno/a2xx.xml, `RBBM_STATUS`). So the counts' write to memory is what never
+  finishes. Left untried: the RESET bit, a resolve between the event and the next draw, and the rest of the state the
+  console leaves before xsdk's set-up. vulkan4xenon refuses occlusion queries until a sequence that writes the counts
+  is found (TODO.md).

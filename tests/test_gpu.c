@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include <stdint.h>
+#include <time.h>
 
-#include "probe_gpu.h"
 #include "tests.h"
 #include "xsdk/gpu.h"
 #include "xsdk/kernel.h"
@@ -9,22 +9,17 @@
 
 enum {
 	FENCE_TIMEOUT_MS = 1000,
-	// Copies a register into memory (xenia:src/xenia/gpu/xenos.h:1588, command_processor.cc:1069-1090).
-	PM4_REG_TO_MEM = 0x3E,
-	SWAP_8IN32 = 2,
-	// The performance counters' control and a counter (xenia:src/xenia/gpu/register_table.inc:45-52).
-	CP_PERFMON_CNTL = 0x01F5,
-	RBBM_PERFCOUNTER1_SELECT = 0x0396,
-	RBBM_PERFCOUNTER1_LOW = 0x0399,
-	// It counts every clock once they're on (Linux:drivers/gpu/drm/msm/registers/adreno/a2xx.xml:719-720, 1022-1025).
-	RBBM1_COUNT = 0,
-	PERF_STATE_RESET = 0,
-	PERF_STATE_ENABLE = 1,
-	// The GPU's 500 MHz, which the counter keeps against the CPU's clock (docs/HARDWARE.md).
+	// The GPU's 500 MHz, near enough for the waits' latencies (docs/HARDWARE.md).
 	GPU_CLOCKS_PER_US = 500,
 	NANOSECONDS_PER_MICROSECOND = 1000,
-	// WAIT_UNTIL's wait_3d_idleclean (xenia:src/xenia/gpu/registers.h:110).
-	WAIT_3D_IDLE_CLEAN = 1 << 17,
+	WORD_VALUE = 0x12345678,
+	WORD_AFTER_WAIT = 0x00C0FFEE,
+	WORD_HELD_MS = 20,
+	CLOCK_SLEEP_MS = 100,
+	// 498.75 a microsecond, ten times the time base's 49.875 MHz, within 0.1% (docs/HARDWARE.md, "Queries and
+	// events"), in thousandths.
+	CLOCK_RATE_MIN = 498250,
+	CLOCK_RATE_MAX = 499250,
 	RESOLVE_WIDTH = 1280,
 	RESOLVE_HEIGHT = 720,
 	CLEAR_ARGB = 0xFF202020,
@@ -110,70 +105,126 @@ static void test_stream_wrap(void)
 	check("gpu: fences as the stream wraps", ran && after.dwords - before.dwords >= STREAM_WRAP_NOPS * NOP_DWORDS);
 }
 
-static void put_register(uint32_t index, uint32_t value)
-{
-	volatile uint32_t *const packet = xsdk_gpu_reserve(2);
-	packet[0] = index;
-	packet[1] = value;
-}
-
-// Once the GPU is idle, the command processor copies the counter into memory.
-static void put_clock_copy(uint32_t address)
-{
-	put_register(WAIT_UNTIL, WAIT_3D_IDLE_CLEAN);
-	volatile uint32_t *const packet = xsdk_gpu_reserve(3);
-	packet[0] = xsdk_gpu_type3(PM4_REG_TO_MEM, 2);
-	packet[1] = RBBM_PERFCOUNTER1_LOW;
-	packet[2] = address | SWAP_8IN32;
-}
-
 // A resolve between two copies of the GPU's clock, then a fence; the CPU reads the clock as the wait returns.
-static bool wait_returns(volatile uint32_t *target, volatile uint32_t *clocks, uint32_t *late_clocks)
+static bool wait_returns(volatile uint32_t *target, volatile uint32_t *clocks, uint64_t *late_clocks)
 {
-	clocks[0] = 0;
-	clocks[1] = 0;
+	for (uint32_t i = 0; i < 2 * XSDK_GPU_CLOCK_WORDS; i++)
+		clocks[i] = 0;
 	__asm__ volatile("sync" ::: "memory");
-	put_clock_copy(xsdk_gpu_address(clocks));
+	xsdk_gpu_write_clock(xsdk_gpu_address(clocks), true);
 	xsdk_gpu_resolve(xsdk_gpu_address(target), RESOLVE_WIDTH, RESOLVE_HEIGHT, CLEAR_ARGB);
-	put_clock_copy(xsdk_gpu_address(clocks) + 4);
+	xsdk_gpu_write_clock(xsdk_gpu_address(clocks + XSDK_GPU_CLOCK_WORDS), true);
 	const NTSTATUS status = xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS);
-	const uint32_t returned = probe_gpu_registers[RBBM_PERFCOUNTER1_LOW];
-	const uint32_t job_clocks = clocks[1] - clocks[0];
-	*late_clocks = returned - clocks[1];
+	const uint64_t returned = xsdk_gpu_clock();
+	const uint64_t before = xsdk_gpu_clock_value(clocks);
+	const uint64_t after = xsdk_gpu_clock_value(clocks + XSDK_GPU_CLOCK_WORDS);
+	const uint64_t job_clocks = after - before;
+	*late_clocks = returned - after;
 	xsdk_log_write("gpu: the resolve took %u us by the GPU's clock, and the wait returned %llu ns after its fence",
 		(unsigned)(job_clocks / GPU_CLOCKS_PER_US),
 		(unsigned long long)*late_clocks * NANOSECONDS_PER_MICROSECOND / GPU_CLOCKS_PER_US);
-	return NT_SUCCESS(status) && job_clocks > 0;
+	return NT_SUCCESS(status) && after > before && returned >= after;
 }
 
 static void test_wait_latency(void)
 {
 	volatile uint32_t *const target = xsdk_gpu_alloc(xsdk_gpu_resolve_bytes(RESOLVE_WIDTH, RESOLVE_HEIGHT));
-	volatile uint32_t *const clocks = xsdk_gpu_alloc(2 * sizeof(uint32_t));
-	const uint32_t found_control = probe_gpu_registers[CP_PERFMON_CNTL];
-	const uint32_t found_select = probe_gpu_registers[RBBM_PERFCOUNTER1_SELECT];
-	xsdk_log_write("gpu: the counters' control was %08X and the counter's select %08X", (unsigned)found_control,
-		(unsigned)found_select);
-	put_register(CP_PERFMON_CNTL, PERF_STATE_RESET);
-	put_register(RBBM_PERFCOUNTER1_SELECT, RBBM1_COUNT);
-	put_register(CP_PERFMON_CNTL, PERF_STATE_ENABLE);
+	volatile uint32_t *const clocks = xsdk_gpu_alloc(2 * XSDK_GPU_CLOCK_WORDS * sizeof(uint32_t));
 	bool timed = target && clocks;
-	uint32_t latest_clocks = 0;
+	uint64_t latest_clocks = 0;
 	xsdk_gpu_set_wait_spin(WAIT_SPIN_US);
 	for (uint32_t i = 0; i < WAIT_ROUNDS && timed; i++) {
-		uint32_t late_clocks = 0;
+		uint64_t late_clocks = 0;
 		timed = wait_returns(target, clocks, &late_clocks);
 		latest_clocks = late_clocks > latest_clocks ? late_clocks : latest_clocks;
 	}
 	xsdk_gpu_set_wait_spin(0);
-	put_register(RBBM_PERFCOUNTER1_SELECT, found_select);
-	put_register(CP_PERFMON_CNTL, found_control);
-	timed = NT_SUCCESS(xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS)) && timed;
 	// Xenia's counter holds what was written (xenia:src/xenia/gpu/graphics_system.cc:181-205), so this fails there.
 	check("gpu: a wait set to spin returns within 100 us of its fence passing, by the GPU's clock",
 		timed && latest_clocks <= WAIT_LATE_MAX_US * GPU_CLOCKS_PER_US);
 	xsdk_gpu_free(clocks);
 	xsdk_gpu_free(target);
+}
+
+static uint64_t now_us(void)
+{
+	struct timespec now;
+	(void)clock_gettime(CLOCK_MONOTONIC, &now);
+	return (uint64_t)now.tv_sec * 1000000 + (uint64_t)now.tv_nsec / 1000;
+}
+
+static void sleep_ms(uint32_t ms)
+{
+	const struct timespec request = { .tv_sec = 0, .tv_nsec = (long)ms * 1000000 };
+	(void)nanosleep(&request, NULL);
+}
+
+// A word the GPU writes once a resolve is done, and a wait on a word that holds the GPU until the CPU writes it.
+static void test_words(void)
+{
+	volatile uint32_t *const target = xsdk_gpu_alloc(xsdk_gpu_resolve_bytes(RESOLVE_WIDTH, RESOLVE_HEIGHT));
+	volatile uint32_t *const words = xsdk_gpu_alloc(2 * sizeof(uint32_t));
+	if (!target || !words) {
+		check("gpu: the GPU writes a word after a resolve", false);
+		check("gpu: the GPU waits on a word until the CPU writes it", false);
+		return;
+	}
+	const uint32_t address = xsdk_gpu_address(words);
+	words[0] = 0;
+	words[1] = 0;
+	__asm__ volatile("sync" ::: "memory");
+	xsdk_gpu_resolve(xsdk_gpu_address(target), RESOLVE_WIDTH, RESOLVE_HEIGHT, CLEAR_ARGB);
+	xsdk_gpu_write_word(address, WORD_VALUE);
+	const bool written = NT_SUCCESS(xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS)) && words[0] == WORD_VALUE;
+	check("gpu: the GPU writes a word after a resolve", written);
+
+	xsdk_gpu_wait_word(address + 4, 1);
+	xsdk_gpu_write_word(address, WORD_AFTER_WAIT);
+	const uint32_t fence = xsdk_gpu_fence();
+	sleep_ms(WORD_HELD_MS);
+	const bool held = !xsdk_gpu_fence_done(fence) && words[0] == WORD_VALUE;
+	words[1] = 1;
+	__asm__ volatile("sync" ::: "memory");
+	const uint64_t set = now_us();
+	const bool passed = NT_SUCCESS(xsdk_gpu_wait(fence, FENCE_TIMEOUT_MS)) && words[0] == WORD_AFTER_WAIT;
+	xsdk_log_write("gpu: the wait on a word held %s for %u ms, then passed %s, %llu us after the CPU wrote it",
+		held ? "the GPU" : "nothing", (unsigned)WORD_HELD_MS, passed ? "yes" : "no",
+		(unsigned long long)(now_us() - set));
+	check("gpu: the GPU waits on a word until the CPU writes it", held && passed);
+	xsdk_gpu_free(words);
+	xsdk_gpu_free(target);
+}
+
+// Two copies of the clock a CPU-timed sleep apart, between two reads of it by the CPU.
+static void test_clock(void)
+{
+	volatile uint32_t *const clocks = xsdk_gpu_alloc(2 * XSDK_GPU_CLOCK_WORDS * sizeof(uint32_t));
+	if (!clocks) {
+		check("gpu: the clock counts at 498.75 MHz, the GPU's copies between the CPU's reads", false);
+		return;
+	}
+	const uint64_t first = xsdk_gpu_clock();
+	const uint64_t start = now_us();
+	xsdk_gpu_write_clock(xsdk_gpu_address(clocks), false);
+	bool landed = NT_SUCCESS(xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS));
+	sleep_ms(CLOCK_SLEEP_MS);
+	const uint64_t end = now_us();
+	xsdk_gpu_write_clock(xsdk_gpu_address(clocks + XSDK_GPU_CLOCK_WORDS), false);
+	landed = NT_SUCCESS(xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS)) && landed;
+	const uint64_t last = xsdk_gpu_clock();
+	const uint64_t before = xsdk_gpu_clock_value(clocks);
+	const uint64_t after = xsdk_gpu_clock_value(clocks + XSDK_GPU_CLOCK_WORDS);
+	// In thousandths of a clock a microsecond.
+	const uint64_t rate = (after - before) * 1000 / (end - start);
+	xsdk_log_write(
+		"gpu: the clock: %llu, then copies %llu and %llu, then %llu: %llu.%03llu a microsecond, high word %u",
+		(unsigned long long)first, (unsigned long long)before, (unsigned long long)after, (unsigned long long)last,
+		(unsigned long long)(rate / 1000), (unsigned long long)(rate % 1000), (unsigned)(after >> 32));
+	// The copies go as the command processor reaches them, a microsecond or two after the CPU's clock is read.
+	check("gpu: the clock counts at 498.75 MHz, the GPU's copies between the CPU's reads",
+		landed && first <= before && before < after && after <= last && rate >= CLOCK_RATE_MIN &&
+			rate <= CLOCK_RATE_MAX);
+	xsdk_gpu_free(clocks);
 }
 
 void test_gpu(void)
@@ -190,6 +241,8 @@ void test_gpu(void)
 	test_stats();
 	test_stream_wrap();
 	test_wait_latency();
+	test_words();
+	test_clock();
 
 	// NOPs of different sizes, so the ring wraps at different offsets.
 	uint32_t fence = 0;

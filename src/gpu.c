@@ -530,6 +530,69 @@ bool xsdk_gpu_fence_done(uint32_t fence)
 	return (int32_t)(writeback[FENCE_OFFSET / 4] - fence) >= 0;
 }
 
+void xsdk_gpu_write_word(uint32_t address, uint32_t value)
+{
+	assert(address % 4 == 0);
+	volatile uint32_t *const packet = xsdk_gpu_reserve(4);
+	packet[0] = xsdk_gpu_type3(PM4_EVENT_WRITE_SHD, 3);
+	packet[1] = PS_DONE_TS;
+	packet[2] = address | SWAP_8IN32;
+	packet[3] = value;
+}
+
+// Read through the swap, the word is as the CPU stored it (docs/HARDWARE.md, "Queries and events").
+void xsdk_gpu_wait_word(uint32_t address, uint32_t value)
+{
+	assert(address % 4 == 0);
+	volatile uint32_t *const packet = xsdk_gpu_reserve(6);
+	packet[0] = xsdk_gpu_type3(PM4_WAIT_REG_MEM, 5);
+	packet[1] = WAIT_REG_MEM_MEMORY | WAIT_REG_MEM_EQUAL;
+	packet[2] = address | SWAP_8IN32;
+	packet[3] = value;
+	packet[4] = 0xFFFFFFFF;
+	packet[5] = WAIT_REG_MEM_INTERVAL;
+}
+
+void xsdk_gpu_write_clock(uint32_t address, bool after_work)
+{
+	assert(address % 4 == 0);
+	static const uint32_t halves[XSDK_GPU_CLOCK_WORDS] = {
+		RBBM_PERFCOUNTER1_HI,
+		RBBM_PERFCOUNTER1_LOW,
+		RBBM_PERFCOUNTER1_HI,
+	};
+	if (after_work) {
+		volatile uint32_t *const wait = xsdk_gpu_reserve(2);
+		wait[0] = WAIT_UNTIL;
+		wait[1] = WAIT_3D_IDLE_CLEAN;
+	}
+	volatile uint32_t *const packet = xsdk_gpu_reserve(3 * XSDK_GPU_CLOCK_WORDS);
+	for (uint32_t i = 0; i < XSDK_GPU_CLOCK_WORDS; i++) {
+		packet[3 * i] = xsdk_gpu_type3(PM4_REG_TO_MEM, 2);
+		packet[3 * i + 1] = halves[i];
+		packet[3 * i + 2] = (address + 4 * i) | SWAP_8IN32;
+	}
+}
+
+// The low word wrapped between the high words if they differ: a small low word was read after the wrap.
+static uint64_t clock_value(uint32_t high, uint32_t low, uint32_t high_after)
+{
+	const uint32_t high_of_low = high == high_after || low >= 0x80000000u ? high : high_after;
+	return (uint64_t)high_of_low << 32 | low;
+}
+
+uint64_t xsdk_gpu_clock_value(volatile const uint32_t *words)
+{
+	return clock_value(words[0], words[1], words[2]);
+}
+
+uint64_t xsdk_gpu_clock(void)
+{
+	const uint32_t high = gpu_registers[RBBM_PERFCOUNTER1_HI];
+	const uint32_t low = gpu_registers[RBBM_PERFCOUNTER1_LOW];
+	return clock_value(high, low, gpu_registers[RBBM_PERFCOUNTER1_HI]);
+}
+
 void xsdk_gpu_stats(XsdkGpuStats *stats)
 {
 	close_window();

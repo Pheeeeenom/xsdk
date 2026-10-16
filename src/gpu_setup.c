@@ -37,8 +37,6 @@ enum {
 	SET_UP_MAX_DWORDS = 1536,
 	PUT_BACK_MAX_DWORDS = 128,
 	INVALIDATE_SHADERS = 3 << 8,
-	WAIT_REG_MEM_EQUAL = 3,
-	WAIT_REG_MEM_INTERVAL = 8,
 	COHER_BUSY = 0x80000000,
 	ALL_MEMORY_BYTES = 0x20000000,
 	COHER_PAGE_BYTES = 0x1000,
@@ -101,6 +99,8 @@ static const uint32_t setup_pixel_shader[] = {
 
 // Every register the set-up and resolves change; the title gives them back as it found them (docs/HARDWARE.md).
 static const uint32_t saved_registers[] = {
+	CP_PERFMON_CNTL,
+	RBBM_PERFCOUNTER1_SELECT,
 	UNKNOWN_0081,
 	UNKNOWN_0082,
 	PA_CL_ENHANCE,
@@ -204,6 +204,15 @@ static void put_me_init(GpuPackets *packets)
 	gpu_put_type3(packets, PM4_ME_INIT, sizeof payload / 4);
 	for (uint32_t i = 0; i < sizeof payload / 4; i++)
 		gpu_put(packets, payload[i]);
+}
+
+// The counter xsdk_gpu_write_clock copies, from 0; XAM leaves it off (docs/HARDWARE.md, "A clock the GPU and the CPU
+// both read"). Only at set-up, as a reset later would take the clock back.
+static void put_clock(GpuPackets *packets)
+{
+	gpu_put_register(packets, CP_PERFMON_CNTL, PERF_STATE_RESET);
+	gpu_put_register(packets, RBBM_PERFCOUNTER1_SELECT, RBBM1_COUNT);
+	gpu_put_register(packets, CP_PERFMON_CNTL, PERF_STATE_ENABLE);
 }
 
 // Xe_pGInit4 and Xe_pGInit5; UNKNOWN_0A02-0A05 and the scratch writes are left out (xe.c:464-498).
@@ -318,6 +327,7 @@ void xsdk_gpu_set_up(void)
 		saved_values[i] = gpu_registers[saved_registers[i]];
 	GpuPackets packets = { .dwords = set_up_dwords, .count = 0, .capacity = SET_UP_MAX_DWORDS };
 	put_me_init(&packets);
+	put_clock(&packets);
 	put_state(&packets);
 	xsdk_gpu_write(&packets);
 	xsdk_gpu_forget_shaders();

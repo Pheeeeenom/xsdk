@@ -13,6 +13,12 @@ enum {
 	UNKNOWN_0082 = 0x0082,
 	// Named by Xenia (xenia:src/xenia/gpu/graphics_system.cc:211).
 	CP_RB_WPTR = 0x01C5,
+	// The performance counters' control, and the counter that keeps the GPU's clock
+	// (xenia:src/xenia/gpu/register_table.inc:45-52; docs/HARDWARE.md, "A clock the GPU and the CPU both read").
+	CP_PERFMON_CNTL = 0x01F5,
+	RBBM_PERFCOUNTER1_SELECT = 0x0396,
+	RBBM_PERFCOUNTER1_LOW = 0x0399,
+	RBBM_PERFCOUNTER1_HI = 0x039A,
 	WAIT_UNTIL = 0x05C8,
 	COHER_SIZE_HOST = 0x0A2F,
 	COHER_BASE_HOST = 0x0A30,
@@ -90,6 +96,7 @@ enum {
 	PM4_DRAW_INDX_2 = 0x36,
 	PM4_INVALIDATE_STATE = 0x3B,
 	PM4_WAIT_REG_MEM = 0x3C,
+	PM4_REG_TO_MEM = 0x3E,
 	PM4_INDIRECT_BUFFER = 0x3F,
 	PM4_EVENT_WRITE = 0x46,
 	PM4_ME_INIT = 0x48,
@@ -97,6 +104,16 @@ enum {
 };
 
 enum {
+	// WAIT_REG_MEM's equal function, its memory bit and the interval xsdk waits at
+	// (xenia:src/xenia/gpu/command_processor.cc:955-1000).
+	WAIT_REG_MEM_EQUAL = 3,
+	WAIT_REG_MEM_MEMORY = 0x10,
+	WAIT_REG_MEM_INTERVAL = 8,
+	// Once on, the counter counts every clock (Linux:drivers/gpu/drm/msm/registers/adreno/a2xx.xml:719-720,
+	// 1022-1025).
+	PERF_STATE_RESET = 0,
+	PERF_STATE_ENABLE = 1,
+	RBBM1_COUNT = 0,
 	// A type-0 header's bit 15 sends every value to the same register (libxenon:drivers/xenos/xe.c:25-31).
 	TYPE0_ONE_REGISTER = 1 << 15,
 	WAIT_3D_IDLE_CLEAN = 1 << 17,

@@ -74,7 +74,11 @@ work begins.
 - **Predicated tiling,** for targets larger than eDRAM.
 - **Cube and 3D textures.** The fetch constant's dimension field (xenia:src/xenia/gpu/xenos.h:97-102, 1280) and the
   layout's slices (xenia:src/xenia/gpu/texture_util.cc:209-449).
-- **Occlusion queries.**
+- **Occlusion queries.** vulkan4xenon milestone 19's step 6 put them off: every `ZPASS_DONE` the probe sent, as D3D
+  sends it and as Adreno 3xx's driver does, left the sample counts unwritten and hung the next draw, the render backend
+  and memory hub busy (docs/HARDWARE.md, "Queries and events"). Left to try: `RB_SAMPLE_COUNT_CTL`'s RESET bit, a
+  resolve between the event and the next draw, and the state the console leaves before xsdk's set-up, a register group
+  at a time. vulkan4xenon refuses occlusion query pools till then.
 - **Resolving part of a target.** Depth resolves came with vulkan4xenon's milestone 14 (docs/HARDWARE.md, "Depth
   resolves").
 

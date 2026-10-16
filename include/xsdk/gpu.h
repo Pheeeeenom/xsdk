@@ -51,6 +51,25 @@ NTSTATUS xsdk_gpu_wait(uint32_t fence, uint32_t timeout_ms);
 void xsdk_gpu_set_wait_spin(uint32_t microseconds);
 // Whether the GPU has passed the fence, without waiting; safe in the graphics interrupt callback.
 bool xsdk_gpu_fence_done(uint32_t fence);
+// Queues writing value to the word at address, 4-byte aligned, once the GPU is done with everything before, as a
+// fence is written; the CPU reads it as given.
+void xsdk_gpu_write_word(uint32_t address, uint32_t value);
+// Queues the command processor waiting until the word at address holds value as the CPU wrote it; nothing after it
+// runs until then, so a word no one writes stops the GPU for good (docs/HARDWARE.md, "Queries and events").
+void xsdk_gpu_wait_word(uint32_t address, uint32_t value);
+
+// The GPU's clock: 64 bits, 498.75 a microsecond, from 0 at xsdk_gpu_open (docs/HARDWARE.md, "Queries and events").
+enum {
+	XSDK_GPU_CLOCK_WORDS = 3,
+};
+
+// Queues copying the clock into XSDK_GPU_CLOCK_WORDS words at address, once the GPU is idle if after_work, else as the
+// command processor reaches it.
+void xsdk_gpu_write_clock(uint32_t address, bool after_work);
+// The clock from the words xsdk_gpu_write_clock wrote: its high word, its low word, then its high word again.
+uint64_t xsdk_gpu_clock_value(volatile const uint32_t *words);
+// The clock now, as the CPU reads it.
+uint64_t xsdk_gpu_clock(void);
 
 // What the GPU layer has sent since xsdk_gpu_open, to measure a title by.
 typedef struct {

@@ -1,0 +1,25 @@
+log: game:\probe_queries.log
+log: named after \Device\Harddisk0\Partition1\xsdk_probe\probe_queries.xex
+sbrk: the heap may grow to 474 MB from 0x00070000, the title's free memory
+queries probe
+queries probe: GPU 0x00000000
+queries probe: clock on: high 00000000, low 00000095
+queries probe: clock low set near its wrap: high 00000000, low 002D22AD
+queries probe: clock 1 ms on: high 00000000, low 0089AC8B
+queries probe: clock: waiting 8796 ms for the low word to wrap
+queries probe: clock past the wrap: high 00000001, low 06AD0BE4
+queries probe: wait, swap 2, 50 ms before the write: passed before it no; after it yes, 1 us
+queries probe: wait, swap 0, 50 ms before the write: passed before it no; after it no, 100000 us
+queries probe: wait, swap 2, 2000 ms before the write: passed before it no; after it yes, 1 us
+queries probe: RB_SAMPLE_COUNT_CTL as found: 00000002
+queries probe: control 0: the control: landed
+queries probe: control 0: the address: landed
+queries probe: control 0: the event, nothing drawn: landed
+queries probe: control 0: slot 0: FFFFFEED FFFFFEED FFFFFEED FFFFFEED FFFFFEED FFFFFEED FFFFFEED FFFFFEED
+queries probe: fence 9 didn't land
+queries probe: control 0: a quad: hung
+queries probe: a quad: 0x07D8 20007FFF (bit 28: halted), 0x1740 E8A50110 (bit 31: busy)
+queries probe: a quad: ring base 1FC40000, control 0002060C, read pointer write-back 1FC30002, read 000003B3, write 000003B3
+gpu: the GPU didn't finish: 0xC00000B5; keeping it and its memory
+queries probe: GPU close 0xC00000B5
+exit: status 0

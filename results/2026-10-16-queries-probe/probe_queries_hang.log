@@ -1,0 +1,10 @@
+log: game:\probe_queries.log
+log: named after \Device\Harddisk0\Partition1\xsdk_probe\probe_queries.xex
+sbrk: the heap may grow to 474 MB from 0x00070000, the title's free memory
+queries probe
+queries probe: GPU 0x00000000
+queries probe: RB_SAMPLE_COUNT_CTL as found: 00000002
+queries probe: fence 3 didn't land
+gpu: the GPU didn't finish: 0xC00000B5; keeping it and its memory
+queries probe: GPU close 0xC00000B5
+exit: status 0
