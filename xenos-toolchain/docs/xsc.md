@@ -295,10 +295,13 @@ the loop. The lowering (`xsdk:src/xsc_lower_flow.c`) lays it out:
 The manifest gives `("block_loop", loop_id, kind, set, binding, offset_bytes)`:
 the runtime reads the int there for each draw and sets loop constant `loop_id`
 to that many passes, from aL 0 by 1, none for 0 or less; the constant counts to
-255 (xenia:src/xenia/gpu/xenos.h:1086-1097). A vertex shader's loops take loop
-constants from 0 and a pixel shader's from 16, 16 each: both stages read all 32
-(ucode.h:352), and libxenon gives each stage half of the boolean constants
-the same way (libxenon:drivers/xenos/xe.c:2038-2064). The optimiser leaves a
+255 (xenia:src/xenia/gpu/xenos.h:1086-1097). On the console a pixel shader's
+`loop i0` ran 0, 1 and 3 passes as loop constant 0 said (xsdk:docs/HARDWARE.md,
+"Shader constants: partial writes hang the GPU, libxenon's whole blocks
+don't"). A vertex shader's loops take loop constants from 0 and a pixel
+shader's from 16, 16 each: both stages read all 32 (ucode.h:352), and libxenon
+gives each stage half of the boolean constants the same way
+(libxenon:drivers/xenos/xe.c:2038-2064). The optimiser leaves a
 program with a loop alone, as before. Refused: a loop counted by a block inside
 another loop or an if/else on data, a `continue`, a break anywhere but ending a
 pass or on data, a store into part of an output in the loop, and a sample or
@@ -349,8 +352,9 @@ shader without such a branch lowers byte for byte as before.
   (xenia:src/xenia/gpu/draw_util.cc:498-502). `gl_FragDepth` stored on one path
   alone is refused for that; an interpolator or colour stored on one path takes
   that value on the other, which GLSL leaves undefined.
-- **Refused:** a `discard` or `return` in an arm of an if/else the unroller
-  merges, a `switch`, and a matrix, array or struct an if/else chooses.
+- **Refused:** a `break`, `discard` or `return` in an arm of an if/else the
+  unroller merges, a `switch`, and a matrix, array or struct an if/else
+  chooses.
 - **The optimiser** leaves a program with predicated instructions alone, as it
   did before (`can_optimize`).
 

@@ -887,7 +887,7 @@ static bool data_branch(Unroller *u, const Block *b, LocalMap *lm, uint32_t merg
 		if (!walked)
 			return false;
 		if (ended)
-			return refuse(u, "a discard or return inside an if/else on data");
+			return refuse(u, "a break, discard or return inside an if/else on data");
 		work = work || works(u, first);
 		if (!save(u, &after[arm]))
 			return false;
