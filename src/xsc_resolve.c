@@ -15,6 +15,7 @@ enum {
 	BUILTIN_VERTEX_ID = 5,
 	BUILTIN_INSTANCE_ID = 6,
 	BUILTIN_FRAG_COORD = 15,
+	BUILTIN_FRAG_DEPTH = 22,
 	// The console loads float constants from memory in whole groups of 4 (docs/HARDWARE.md, "Constants loaded from
 	// memory go in groups of 4 too").
 	CONSTANT_GROUP = 4,
@@ -382,6 +383,8 @@ static bool resolve_output(
 		si->position_out = v->vid;
 		return set_role(x, si, v->vid, (XscRole){ XSC_ROLE_POSITION_STRUCT, XSC_NONE, 0, 0 });
 	}
+	if (v->builtin == BUILTIN_FRAG_DEPTH && si->pixel)
+		si->frag_depth = v;
 	if (v->builtin != XSC_NONE)
 		return true;
 	const uint32_t loc = location_or_zero(v);

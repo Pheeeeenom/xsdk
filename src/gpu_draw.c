@@ -43,6 +43,7 @@ enum {
 	// What each call that runs per draw writes, in place: a type-0 packet is its header and a dword a register.
 	IM_LOAD_DWORDS = 3,
 	PROGRAM_DWORDS = 1 + 3,
+	HIZ_CONTROL_DWORDS = 2,
 	VERTICES_DWORDS = 1 + 6 + 1 + 3,
 	TEXTURE_DWORDS = 1 + 6,
 	DRAW_DWORDS = 2,
@@ -72,6 +73,8 @@ enum {
 	// SQ_CONTEXT_MISC's sc_sample_cntl (xenia:src/xenia/gpu/registers.h:157; xenos.h:804-808).
 	SAMPLE_CNTL_MASK = 3 << 2,
 	SAMPLE_CNTL_CENTERS_ONLY = 1 << 2,
+	// SQ_PROGRAM_CNTL's ps_export_mode is 3, not 2, for a pixel shader that writes depth (docs/HARDWARE.md).
+	PS_EXPORT_DEPTH = 1 << 27,
 	MAX_VERTEX_INDEX = 0x00FFFFFF,
 	// Stream 0's vertex fetch constant and libxenon's fetch word: type 3, k8in32, bit 28 (xe.c:1181-1185, 1965).
 	VERTEX_FETCH_CONSTANT = 95,
@@ -161,6 +164,9 @@ typedef struct {
 static bool hiz_kept;
 static bool hiz_greater;
 static Surface hiz_surface;
+// The pixel shader set writes depth, and the depth setting set: the buffer's control follows both.
+static bool pixel_writes_depth;
+static uint32_t depth_control_set;
 
 // MsaaSamples, 0 to 2 for 1, 2 and 4 samples (xenia:src/xenia/gpu/xenos.h:288-292).
 static uint32_t samples_log2(uint32_t samples)
@@ -332,6 +338,8 @@ static void put_im_load(GpuPackets *packets, const XsdkShader *shader)
 static uint32_t loaded_vertex;
 static uint32_t loaded_pixel;
 
+static uint32_t hiz_control(uint32_t depth_control);
+
 void xsdk_gpu_forget_shaders(void)
 {
 	loaded_vertex = 0;
@@ -347,18 +355,23 @@ void xsdk_gpu_set_shaders(const XsdkShader *vertex, const XsdkShader *pixel)
 	const bool load_pixel = pixel->address != loaded_pixel;
 	if (!load_vertex && !load_pixel)
 		return;
+	const bool writes_depth = (pixel->program_control & PS_EXPORT_DEPTH) != 0;
+	const bool put_hiz = load_pixel && (writes_depth || pixel_writes_depth);
+	pixel_writes_depth = writes_depth;
 	// Every interpolant is at its centre, and centroids and centres halve the pixel rate (docs/HARDWARE.md).
 	const uint32_t context_misc =
 		((vertex->context_misc | pixel->context_misc) & ~(uint32_t)SAMPLE_CNTL_MASK) | SAMPLE_CNTL_CENTERS_ONLY;
 	const uint32_t program[] = { vertex->program_control | pixel->program_control, context_misc,
 		INTERPOLATE_ALL_AT_CENTERS };
-	GpuPackets packets =
-		gpu_reserve_packets((load_pixel ? IM_LOAD_DWORDS : 0) + (load_vertex ? IM_LOAD_DWORDS : 0) + PROGRAM_DWORDS);
+	GpuPackets packets = gpu_reserve_packets((load_pixel ? IM_LOAD_DWORDS : 0) + (load_vertex ? IM_LOAD_DWORDS : 0) +
+		PROGRAM_DWORDS + (put_hiz ? HIZ_CONTROL_DWORDS : 0));
 	if (load_pixel)
 		put_im_load(&packets, pixel);
 	if (load_vertex)
 		put_im_load(&packets, vertex);
 	gpu_put_registers(&packets, SQ_PROGRAM_CNTL, program, 3);
+	if (put_hiz)
+		gpu_put_register(&packets, RB_HIZCONTROL, hiz_control(depth_control_set));
 	gpu_packets_done(&packets);
 	loaded_vertex = vertex->address;
 	loaded_pixel = pixel->address;
@@ -445,7 +458,8 @@ static uint32_t hiz_control(uint32_t depth_control)
 	const bool writes = depth_control & Z_WRITE_ENABLE;
 	if (writes && !follows)
 		hiz_kept = false;
-	if (!hiz_kept || !follows)
+	// The buffer tests and writes a polygon's depth, not the one a pixel shader writes (docs/HARDWARE.md).
+	if (!hiz_kept || !follows || pixel_writes_depth)
 		return 0;
 	// A pixel the buffer rejects skips the stencil test, and with it the fail operations.
 	const bool stencil_kept = !(depth_control & STENCIL_ENABLE) || !(depth_control & STENCIL_FAIL_OPS);
@@ -455,6 +469,7 @@ static uint32_t hiz_control(uint32_t depth_control)
 // With backface_enable clear, the front face's stencil setting serves both faces, as D3D's one-sided stencil does.
 void xsdk_gpu_set_depth_stencil(const XsdkDepthStencilState *state)
 {
+	depth_control_set = state->depth_control;
 	GpuPackets packets = gpu_reserve_packets(DEPTH_STENCIL_DWORDS);
 	gpu_put_register(&packets, RB_DEPTHCONTROL, state->depth_control);
 	gpu_put_register(&packets, RB_HIZCONTROL, hiz_control(state->depth_control));

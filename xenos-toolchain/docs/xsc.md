@@ -70,6 +70,7 @@ came from; that test and its test vectors stay in xost's archived repo (github.c
 | block matrix (column-major, std140) `M * v` / `v * M` / `A * B` | `mul`+`mad` over columns / 4x `dp4` with columns / columns of A times each column of B |
 | block array at a run-time index, `rows[int(f) + k]`, `m[i]` | `movasf` (`int(f)`) or `movas` sets a0, then `c[a0 + base + k]` is copied into a temp; reads at one index share the `movas` (`tests/test_dynamic_index.py`) |
 | fragment `gl_FragCoord.xy` | the pixel parameters in the register past the interpolators, `\|r.xy\| + 0.5`; `.zw` refused |
+| fragment `gl_FragDepth`, stored once outside any `if/else` | `oDepth.x___` after the colour, the record's ps_export_mode 3 (`tests/test_frag_depth.py`) |
 | float / vec literals in FS/VS | constant pool; 0/1 folds (see below) |
 | ternary `cond ? a : b` (OpSelect) | `f + (t−f)·cond` (sub + mad) |
 | vector relational `lessThan`/`greaterThan`/`equal`/`notEqual`/… → bvec | per-component `sgt`/`sge`/`seq`/`sne` (1.0/0.0) |
@@ -116,6 +117,12 @@ came from; that test and its test vectors stay in xost's archived repo (github.c
   SC_OUTPUT_SCREEN_XY, without which x read 0 on the console
   (vulkan4xenon:results/2026-10-12-milestone-11-step-3/). xsdk takes both
   registers from the record as they are.
+- gl_FragDepth → export 61's x (xenia:src/xenia/gpu/ucode.h:1842,
+  dxbc_shader_translator.cc:1591-1594), with SQ_PROGRAM_CNTL's ps_export_mode
+  3 in the record, where libxenon's 2 is colour alone: with 2 the console drew
+  nothing of such a shader, and with 3 its depth reached the depth test
+  (xsdk:results/2026-10-16-depth-export/). xsdk turns hierarchical depth off
+  for a pixel shader whose record has it.
 - The execs keep addressing mode 0 when ALU instructions read at a0: a pixel
   shader with its execs' mode 1 drew black on the console (the same results).
 - Samplers (UniformConstant) → with a DescriptorSet decoration (Vulkan), fetch

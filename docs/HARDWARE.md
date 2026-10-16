@@ -3300,3 +3300,33 @@ So milestone 40's handler:
 - ends the title with `XamLoaderTerminateTitle`.
 
 It can't catch a stack overflow, and on this console it doesn't see traps.
+
+## A pixel shader's depth, vulkan4xenon milestone 18's step 3 (2026-10-16)
+
+Aurora's Z textures write each pixel's depth from a texel (vulkan4xenon:docs/ROADMAP.md, "Milestone 18"), so xost
+exports `gl_FragDepth` and xsdk has to know which draws do. Xenia takes a pixel shader's depth from export 61's x
+(xenia:src/xenia/gpu/shader_translator.cc:1337-1338, dxbc_shader_translator.cc:1591-1594) and never reads
+`SQ_PROGRAM_CNTL`'s ps_export_mode (registers.h:145), which xsdk had at libxenon's 2 for every pixel shader
+(libxenon:drivers/xenos/xe.c:419). `tests/probe_depth_export.c` drew with `tools/gen_hiz_shaders.py`'s depth shader,
+the interpolated colour to `oC0` and c0.x to `oDepth.x___`, at mode 2 and at 3, each draw after a resolve clearing
+colour and depth to 1 (log: `results/2026-10-16-depth-export/probe_depth_export.log`).
+- **Mode 2 drew nothing.** A full-screen draw at 0.25 writing 0.75, always, then a plain one at 0.5, less-than: of
+  921600 pixels, none held either draw's colour, so the plain draw failed everywhere too. Behind a near quad at 0.25,
+  the depth shader's draw at 0.75 writing 0.1 showed nowhere, the hierarchical buffer on or off.
+- **Mode 3 exports the depth too.** The plain draw at 0.5 showed on every pixel, over the 0.75 written.
+- **The hierarchical buffer tests a draw by its polygon's depth, not the one its pixel shader writes.** Behind the near
+  quad, the draw at 0.75 writing 0.1, less-than, showed on 162 pixels with the buffer as xsdk set it and on all 921600
+  with it off.
+
+So xost gives a pixel shader that writes `gl_FragDepth` ps_export_mode 3, and `xsdk_gpu_set_shaders` reads the mode's
+low bit from the pixel shader's record: while it's set, `RB_HIZCONTROL` is 0, and the buffer is kept for the draws
+after, as such a draw's depth still passes the depth test and stays within the buffer's bound.
+
+With that, on the console (`results/2026-10-16-depth-export/`):
+- **xsdk_test passed 314 of 316** (`xsdk_test.log`), the two failures the controller's, with no one at the pad. Its new
+  check drew, over clears to 1 and less-than, the depth shader at 0.75 writing 0.1 behind a near quad, and at 0.2
+  writing 0.8 with a quad at 0.5 drawn over it: of 921600 pixels, none hid the first or failed the second.
+- **Broken on purpose,** the buffer's control ignoring the shader, or `xsdk_gpu_set_shaders` leaving it as the depth
+  setting left it, 921438 pixels hid the first draw each time and the check failed (`xsdk_test_hiz_test_broken.log`,
+  `xsdk_test_hiz_put_broken.log`). The quad at 0.5 still showed everywhere, though the buffer wrote during the draw
+  from 0.2: it didn't keep that polygon's depth.

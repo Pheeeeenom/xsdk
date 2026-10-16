@@ -16,7 +16,8 @@
 // Hierarchical depth (SCOPE.md, milestone 30): hidden pixels through a long pixel shader are timed against drawn ones,
 // and frames of near and far rectangles, drawn both ways over depth clears, less-than and greater-than, are checked
 // pixel by pixel against the CPU's depth test. Each frame ends writing near depth everywhere, colour left alone, and
-// the next starts by drawing far over it, so a hierarchical buffer left uncleared when depth clears hides that.
+// the next starts by drawing far over it, so a hierarchical buffer left uncleared when depth clears hides that. Draws
+// whose pixel shader writes depth are checked too, which the buffer would test and write by their polygons' depth.
 
 enum {
 	WIDTH = 1280,
@@ -308,6 +309,58 @@ static void check_frames(
 }
 
 // Over a clear to 1: a near quad, then quads through the long shader behind it, then the same drawn over it.
+static uint32_t pixels_not(volatile const uint32_t *pixels, uint32_t argb)
+{
+	uint32_t wrong = 0;
+	for (uint32_t y = 0; y < HEIGHT; y++) {
+		for (uint32_t x = 0; x < WIDTH; x++)
+			wrong += !matches(pixels[tiled_index(x, y, WIDTH)], argb);
+	}
+	return wrong;
+}
+
+static void draw_writing(
+	const XsdkShader *vertex, const XsdkShader *depth_pixel, const Rectangle *r, float written, uint32_t argb)
+{
+	const float constant[4] = { written, 0.0f, 0.0f, 0.0f };
+	xsdk_gpu_set_pixel_constants(0, constant, 1);
+	xsdk_gpu_set_shaders(vertex, depth_pixel);
+	draw_rectangle(r, argb, 1);
+}
+
+// Less-than over clears to 1: behind a near quad at 0.25, a draw at 0.75 writing 0.1 shows; a draw at 0.2 writing 0.8
+// is then drawn over at 0.5.
+static void check_depth_writes(const XsdkShader *vertex, const XsdkShader *short_pixel, const XsdkShader *depth_pixel,
+	uint32_t vertices, volatile uint32_t *buffer)
+{
+	const Rectangle near = { 0, 0, WIDTH, HEIGHT, 0.25f, XSDK_COMPARE_LESS, false };
+	const Rectangle behind = { 0, 0, WIDTH, HEIGHT, 0.75f, XSDK_COMPARE_LESS, false };
+	const Rectangle nearer = { 0, 0, WIDTH, HEIGHT, 0.2f, XSDK_COMPARE_LESS, false };
+	const Rectangle between = { 0, 0, WIDTH, HEIGHT, 0.5f, XSDK_COMPARE_LESS, false };
+	xsdk_gpu_set_depth_clear(1.0f, 0);
+	xsdk_gpu_resolve(xsdk_gpu_address(buffer), WIDTH, HEIGHT, CLEAR_ARGB);
+	begin_target(vertices);
+	xsdk_gpu_set_depth_stencil(&depth_states[XSDK_COMPARE_LESS]);
+	xsdk_gpu_set_shaders(vertex, short_pixel);
+	draw_rectangle(&near, colour_of(1), 1);
+	draw_writing(vertex, depth_pixel, &behind, 0.1f, colour_of(2));
+	xsdk_gpu_resolve(xsdk_gpu_address(buffer), WIDTH, HEIGHT, CLEAR_ARGB);
+	const bool first_landed = fence_time_us() != 0;
+	const uint32_t hidden = first_landed ? pixels_not(buffer, colour_of(2)) : PIXELS;
+	begin_target(vertices);
+	xsdk_gpu_set_depth_stencil(&depth_states[XSDK_COMPARE_LESS]);
+	draw_writing(vertex, depth_pixel, &nearer, 0.8f, colour_of(3));
+	xsdk_gpu_set_shaders(vertex, short_pixel);
+	draw_rectangle(&between, colour_of(4), 1);
+	xsdk_gpu_resolve(xsdk_gpu_address(buffer), WIDTH, HEIGHT, CLEAR_ARGB);
+	const bool second_landed = fence_time_us() != 0;
+	const uint32_t not_over = second_landed ? pixels_not(buffer, colour_of(4)) : PIXELS;
+	xsdk_log_write("hiz: of %u pixels, %u hid a draw writing nearer depth, %u a draw over one writing farther",
+		(unsigned)PIXELS, (unsigned)hidden, (unsigned)not_over);
+	check("hiz: draws whose pixel shader writes depth are tested and leave depth by what it writes",
+		first_landed && second_landed && hidden == 0 && not_over == 0);
+}
+
 static void check_hidden_time(const XsdkShader *vertex, const XsdkShader *short_pixel, const XsdkShader *long_pixel,
 	uint32_t vertices, volatile uint32_t *buffer)
 {
@@ -363,9 +416,11 @@ void test_hiz(void)
 	XsdkShader vertex = { .microcode = NULL };
 	XsdkShader short_pixel = { .microcode = NULL };
 	XsdkShader long_pixel = { .microcode = NULL };
+	XsdkShader depth_pixel = { .microcode = NULL };
 	const bool loaded = NT_SUCCESS(xsdk_shader_load(&vertex, constant_vertex_shader, sizeof constant_vertex_shader)) &&
 		NT_SUCCESS(xsdk_shader_load(&short_pixel, triangle_pixel_shader, sizeof triangle_pixel_shader)) &&
 		NT_SUCCESS(xsdk_shader_load(&long_pixel, long_pixel_shader, sizeof long_pixel_shader)) &&
+		NT_SUCCESS(xsdk_shader_load(&depth_pixel, depth_pixel_shader, sizeof depth_pixel_shader)) &&
 		NT_SUCCESS(xsdk_shader_set_vertex_layout(
 			&vertex, layout, sizeof layout / sizeof layout[0], (const uint32_t[]){ STRIDE_BYTES }));
 	check("hiz: shaders load", loaded);
@@ -382,9 +437,11 @@ void test_hiz(void)
 	if (loaded && vertices && buffer) {
 		check_hidden_time(&vertex, &short_pixel, &long_pixel, xsdk_gpu_address(vertices), buffer);
 		check_frames(&vertex, &short_pixel, xsdk_gpu_address(vertices), buffer);
+		check_depth_writes(&vertex, &short_pixel, &depth_pixel, xsdk_gpu_address(vertices), buffer);
 	}
 	xsdk_gpu_free(buffer);
 	xsdk_gpu_free(vertices);
+	xsdk_shader_free(&depth_pixel);
 	xsdk_shader_free(&long_pixel);
 	xsdk_shader_free(&short_pixel);
 	xsdk_shader_free(&vertex);

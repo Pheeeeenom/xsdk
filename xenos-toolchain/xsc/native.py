@@ -71,6 +71,7 @@ class _Interface(ctypes.Structure):
                 ("color_out", ctypes.POINTER(_VarUse)), ("color_out_count", ctypes.c_size_t),
                 ("samplers", ctypes.POINTER(_VarUse)), ("sampler_count", ctypes.c_size_t),
                 ("position_out", ctypes.c_uint32), ("frag_coord", ctypes.POINTER(_Var)),
+                ("frag_depth", ctypes.POINTER(_Var)),
                 ("constants", ctypes.POINTER(_ConstantSlot)), ("constant_count", ctypes.c_size_t),
                 ("blocks", ctypes.POINTER(_Block)), ("block_count", ctypes.c_size_t),
                 ("constant_end", ctypes.c_uint32),

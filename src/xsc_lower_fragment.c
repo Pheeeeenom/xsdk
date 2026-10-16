@@ -12,6 +12,10 @@ enum {
 	IMAGE_OPERANDS_BIAS_OR_LOD = 0x3,
 	DIM_2D = 1,
 	DIM_CUBE = 3,
+	// A pixel shader's depth goes to export 61, its x alone (xenia:src/xenia/gpu/ucode.h:1842,
+	// dxbc_shader_translator.cc:1591-1594).
+	EXPORT_DEPTH = 61,
+	WRITE_X = 0x1,
 };
 
 typedef struct Region Region;
@@ -31,6 +35,8 @@ typedef struct {
 	bool *gathered;
 	uint32_t out_var;
 	uint32_t out_value;
+	// What gl_FragDepth is given; 0 for none.
+	uint32_t depth_value;
 	// The local the if/else assigns, read after it merges; 0 for none.
 	uint32_t merged_local;
 	const Region *region;
@@ -502,6 +508,30 @@ static uint32_t merge_label(const XscModule *m, const XscInstr *top)
 	return before->opcode == SPV_SELECTION_MERGE ? xsdk_xsc_operand(before, 0) : 0;
 }
 
+// gl_FragDepth's one store, outside the if/else, so every pixel exports what it holds.
+static bool plan_depth(Fragment *f, const XscInstr *top)
+{
+	XscLower *const l = &f->l;
+	const XscModule *const m = l->m;
+	const uint32_t var = l->si->frag_depth->vid;
+	uint32_t stores = 0;
+	size_t at = 0;
+	for (size_t i = 0; i < m->instr_count; i++) {
+		if (m->instrs[i].opcode == SPV_STORE && xsdk_xsc_operand(&m->instrs[i], 0) == var) {
+			stores++;
+			at = i;
+		}
+	}
+	if (stores != 1)
+		return xsdk_xsc_lower_refuse(l, "gl_FragDepth stored %u times", (unsigned)stores);
+	const XscInstr *const merge = top ? xsdk_xsc_by_result(m, merge_label(m, top)) : NULL;
+	if (top && (!merge || (at > (size_t)(top - m->instrs) && at < (size_t)(merge - m->instrs))))
+		return xsdk_xsc_lower_refuse(l, "gl_FragDepth stored inside an if/else");
+	f->depth_value = f->stores->value[var];
+	l->p->exports_depth = true;
+	return gather(f, f->depth_value);
+}
+
 static bool compared(XscLower *l, const XscInstr *cmp, bool swap, XscOrigin *a, XscOrigin *b)
 {
 	*a = xsdk_xsc_scalar_origin(l, xsdk_xsc_operand(cmp, 0));
@@ -604,6 +634,17 @@ static bool emit_output(Fragment *f)
 	return xsdk_xsc_emit_value(l, f->out_value, 0, true, false);
 }
 
+static bool emit_depth(Fragment *f)
+{
+	if (!f->depth_value)
+		return true;
+	XscLower *const l = &f->l;
+	const XscOrigin depth = xsdk_xsc_scalar_origin(l, f->depth_value);
+	if (xsc_failed(l))
+		return false;
+	return xsdk_xsc_emit_copy(l, depth.o, EXPORT_DEPTH, true, false, origin_swizzle(depth), WRITE_X, false) != XSC_NONE;
+}
+
 static bool add_constants(Fragment *f, XscConstants *constants)
 {
 	XscLower *const l = &f->l;
@@ -669,9 +710,11 @@ static bool lower_body(Fragment *f, int64_t param_reg, XscConstants *constants, 
 	const XscInstr *top = NULL;
 	for (size_t i = 0; !top && i < l->m->instr_count; i++)
 		top = l->m->instrs[i].opcode == SPV_BRANCH_CONDITIONAL ? &l->m->instrs[i] : NULL;
-	if (!plan(f, top) || !xsdk_xsc_check_local_stores(l->x, l->m, f->locals, f->merged_local, merge_label(l->m, top)))
+	if (!plan(f, top) || (si->frag_depth && !plan_depth(f, top)) ||
+		!xsdk_xsc_check_local_stores(l->x, l->m, f->locals, f->merged_local, merge_label(l->m, top)))
 		return false;
-	return xsdk_xsc_program_alloc(l->x, l->p, XSC_ALLOC_COLORS) && emit_output(f) && add_constants(f, constants) &&
+	return xsdk_xsc_program_alloc(l->x, l->p, XSC_ALLOC_COLORS) && emit_output(f) && emit_depth(f) &&
+		add_constants(f, constants) &&
 		xsdk_xsc_program_finish(
 			l->x, l->p, constants->items, constants->count, &out->container, &out->container_bytes) &&
 		xsdk_xsc_literal_needs(l, out);

@@ -305,6 +305,7 @@ typedef struct {
 	size_t sampler_count;
 	uint32_t position_out;
 	const XscVar *frag_coord;
+	const XscVar *frag_depth;
 	XscConstantSlot *constants;
 	size_t constant_count;
 	XscBlock *blocks;
@@ -644,6 +645,7 @@ typedef struct {
 	size_t loop_open_stage;
 	uint32_t loop_open_id;
 	int64_t param_gen;
+	bool exports_depth;
 } XscProgram;
 
 bool xsdk_xsc_program_init(Xsc *x, XscProgram *p, bool pixel, uint32_t registers);
