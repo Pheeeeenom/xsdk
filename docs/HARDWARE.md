@@ -3573,3 +3573,25 @@ checks they aim at (`xsdk_test_broken_a.log` to `_c`). xsdk_test passed 373 of 3
 vulkan4xenon's render areas and blits drawn on the GPU, through it, passed too (vulkan4xenon:docs/ROADMAP.md,
 milestone 27): a replay with a blit drawn took 87 us of the CPU against 24816 us with it on the CPU, its submission
 done after 9.8 ms against 25.9 ms.
+
+## Occlusion queries, vulkan4xenon milestone 28 (2026-10-17)
+
+`tests/probe_occlusion.c` on the zero-fuse console (`results/2026-10-16-vulkan4xenon-milestone-28/`), each try from a
+fresh boot, a 256x128 quad of 32768 pixels and one hidden behind it drawn once to count them, then with the try's
+counting around each. None got sample counts:
+- **`registers`:** Yamato's `RB_TOTAL_SAMPLES` to `RB_SFAIL_SAMPLES`, 0x0F0F to 0x0F12
+  (amd-gpu:include/reg/yamato/22/yamato_offset.h:578-581), read 00000000, 0000001A, 00001041 and A5A5A5A5 before and
+  after every draw, by the CPU and through `PM4_REG_TO_MEM` alike: not counters, or not counting.
+- **`viz_query`:** `PM4_VIZ_QUERY` around a draw with `PA_SC_VIZ_QUERY` on set its query's bit of
+  `PA_SC_VIZ_QUERY_STATUS_0` for the quad, for the quad hidden behind it too, and for one with the register's
+  `KILL_PIX_POST_HI_Z`, which then drew nothing, and left it clear for an empty query. So it answers whether a draw got
+  past rasterizing and the coarse hierarchical test, not whether a sample passed the depth test, and Vulkan's occlusion
+  query can't take it as a count. It didn't hang the GPU.
+- **Every try that sent `ZPASS_DONE` hung at its first one,** its own fence landing and the wait for idle never ending,
+  `RBBM_STATUS` E004450C, as the six runs before (see "Queries and events"): `RB_SAMPLE_COUNT_CTL`'s RESET at a first
+  event, alone or with COPY at each; the `RST_PIX_CNT` event first; the resolve's cache flush or a whole resolve after
+  each; `RB_BC_CONTROL`'s `DISABLE_SAMPLE_COUNTERS` set, so the event hangs without the counters too; and the registers
+  xsdk's set-up writes put back as the dashboard leaves them before each event, all of them and each of seven groups,
+  of which only `CP_PERFMON_CNTL` differed, 0 against xsdk's 1.
+
+So occlusion queries stay off: vulkan4xenon refuses occlusion query pools, and nothing public is left to try.

@@ -1,0 +1,34 @@
+log: game:\occ_viz_query.log
+log: named after \Device\Harddisk0\Partition1\XSDK\m28\occ_viz_query.xex
+sbrk: the heap may grow to 474 MB from 0x00070000, the title's free memory
+occlusion probe: try viz_query
+occlusion probe: GPU 0x00000000
+occlusion probe: clock: 1 of 2 differ, found then set up: 01F5 00000000 00000001 0396 00000000 00000000
+occlusion probe: shader unit: 0 of 8 differ, found then set up: 0081 84410380 84410380 0082 F0180002 F0180002 0D00 00040400 00040400 0D01 04004000 04004000 0D02 00010800 00010800 0D04 00000000 00000000 0E42 00001F60 00001F60 0C85 00000003 00000003
+occlusion probe: render backend: 0 of 1 differ, found then set up: 0F01 0000200E 0000200E
+occlusion probe: surface: 0 of 10 differ, found then set up: 2000 00000000 00000000 2001 00000000 00000000 2002 000003C0 000003C0 200D 00000000 00000000 2104 00000000 00000000 2200 00000000 00000000 2203 00000000 00000000 2208 00000004 00000004 2301 0000C003 0000C003 2312 0000FFFF 0000FFFF
+occlusion probe: copy: 0 of 8 differ, found then set up: 2318 00000000 00000000 2319 1E309000 1E309000 231A 02D00500 02D00500 231B 00000000 00000000 231C 00000FFF 00000FFF 231D FFFFFF00 FFFFFF00 231E 00000000 00000000 231F 00000000 00000000
+occlusion probe: raster: 0 of 19 differ, found then set up: 200E 00000000 00000000 200F 20002000 20002000 2080 00000000 00000000 2081 00000000 00000000 2082 00100010 00100010 2100 0000FFFF 0000FFFF 2101 00000000 00000000 2102 00000000 00000000 210F 44700000 44700000 2110 44700000 44700000 2111 C2A00000 C2A00000 2112 42A00000 42A00000 2113 3F800000 3F800000 2114 00000000 00000000 2204 00010000 00010000 2205 00010000 00010000 2206 00000300 00000300 2280 00080008 00080008 2302 00000004 00000004
+occlusion probe: shader state: 0 of 4 differ, found then set up: 2180 1000000E 1000000E 2181 00000000 00000000 2307 000FF000 000FF000 2308 000FF100 000FF100
+occlusion probe: set up: 0x07D8 00007FFF (bit 28: halted), 0x1740 00040110 (bit 31: busy)
+occlusion probe: set up: ring base 1FC40000, control 0002060C, read pointer write-back 1FC30002, read 0000034A, write 0000034A
+occlusion probe: set up: RB_BC_CONTROL 0000200E, RB_EDRAM_INFO 00000000, COHER_STATUS_HOST 01000000, RB_SAMPLE_COUNT_CTL 00000002, viz status 00000000 00000000
+occlusion probe: the clear: landed
+occlusion probe: the quad covers 32768 pixels, and the hidden quad is behind it
+occlusion probe: the reference draws: landed
+occlusion probe: the reference draws: of 921600 pixels, 32768 the quad's colour, 0 the hidden quad's
+occlusion probe: the clear: landed
+occlusion probe: viz status before the queries: 00000000 00000000
+occlusion probe: the quad: landed
+occlusion probe: the quad: query 1's bit 1; status 00000002 00000000; copied at its end 00000000, once idle 00000002
+occlusion probe: the hidden quad: landed
+occlusion probe: the hidden quad: query 2's bit 1; status 00000006 00000000; copied at its end 00000002, once idle 00000006
+occlusion probe: nothing drawn: landed
+occlusion probe: nothing drawn: query 3's bit 0; status 00000006 00000000; copied at its end 00000006, once idle 00000006
+occlusion probe: a quad killed once tested: landed
+occlusion probe: a quad killed once tested: query 4's bit 1; status 00000016 00000000; copied at its end 00000006, once idle 00000016
+occlusion probe: the queries' draws, the first quad's alone if the kill held: landed
+occlusion probe: the queries' draws, the first quad's alone if the kill held: of 921600 pixels, 32768 the quad's colour, 0 the hidden quad's
+occlusion probe: viz_query: finished; 0 of 0 events wrote their counts
+occlusion probe: GPU close 0x00000000
+exit: status 0

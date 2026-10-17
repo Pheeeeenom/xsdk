@@ -89,30 +89,14 @@ work begins.
   3D textures; a 3D texture's mips, which Xenia sizes by the base's depth at every level
   (xenia:src/xenia/gpu/texture_util.cc:347-350) and packs along z once they're small (texture_util.cc:190-198); and
   resolving into a face or slice (vulkan4xenon milestone 25).
-- **Occlusion queries,** vulkan4xenon milestone 28. Milestone 19's step 6 put them off: every `ZPASS_DONE` the probe
-  sent, as D3D sends it and as Adreno 3xx's driver does, left the sample counts unwritten and hung the next draw, the
-  render backend and memory hub busy (docs/HARDWARE.md, "Queries and events"). `tests/probe_occlusion.c` has the tries
-  left, a build each (`results/2026-10-16-vulkan4xenon-milestone-28/builds.sh`), none run on the console yet. Each
-  counts across a 256x128 quad and a quad hidden behind it, after drawing the two once to count the quad's pixels, and
-  logs the step it hangs at if it does:
-  - `registers`: Yamato's sample counters as registers, without the event: `RB_TOTAL_SAMPLES`, `RB_ZPASS_SAMPLES`,
-    `RB_ZFAIL_SAMPLES` and `RB_SFAIL_SAMPLES`, 0x0F0F to 0x0F12 (amd-gpu:include/reg/yamato/22/yamato_offset.h:578-581),
-    which Xenia doesn't name, read by the CPU and copied by `PM4_REG_TO_MEM`. The one try that can't hang the GPU.
-  - `viz_query`: D3D's visibility query, `PM4_VIZ_QUERY` around a draw with `PA_SC_VIZ_QUERY` on, its answer a bit of
-    `PA_SC_VIZ_QUERY_STATUS_0` (xenia:src/xenia/gpu/command_processor.cc:1601-1633, registers.h:517-531).
-  - `reset` and `reset_copy`: `RB_SAMPLE_COUNT_CTL`'s RESET bit alone at a first event, and with COPY at each
-    (amd-gpu:include/reg/yamato/22/yamato_mask.h:5578-5581); `reset_event`: the `RST_PIX_CNT` event first
-    (Linux:drivers/gpu/drm/msm/registers/adreno/adreno_pm4.xml:28).
-  - `flush` and `resolve`: after each event, the cache flush a resolve sends after its copy
-    (libxenon:drivers/xenos/xe.c:1151), or a whole resolve, before the next draw.
-  - `no_counters`: `RB_BC_CONTROL`'s `DISABLE_SAMPLE_COUNTERS` set
-    (Linux:drivers/gpu/drm/msm/registers/adreno/a2xx.xml:1280), to tell whether the event hangs without the counters.
-  - `group_all`, then `group_clock`, `group_shader_unit`, `group_backend`, `group_surface`, `group_copy`, `group_raster`
-    and `group_shader_state`: the registers xsdk's set-up writes put back as the title found them before each event, all
-    of them, then a group at a time. Each runs from a fresh boot, so it finds the dashboard's state, not a title's.
-
-  vulkan4xenon refuses occlusion query pools till one works; vulkan4xenon:docs/ROADMAP.md, milestone 28, says what each
-  outcome means for it.
+- **Occlusion queries,** put off after vulkan4xenon milestone 28. Every `ZPASS_DONE` sent, by milestone 19's six
+  runs and milestone 28's fourteen tries, hung the GPU at its first event without writing the counts: with
+  `RB_SAMPLE_COUNT_CTL`'s RESET, the `RST_PIX_CNT` event, a cache flush or a resolve after it, the sample counters
+  disabled, and the set-up's registers put back as the dashboard leaves them, all at once or a group at a time
+  (docs/HARDWARE.md, "Occlusion queries, vulkan4xenon milestone 28"). Yamato's counter registers hold the same values
+  across draws, and D3D's visibility query answers whether a draw got past rasterizing and the coarse hierarchical
+  test, a quad hidden behind another too, not whether a sample passed the depth test. Nothing public is left to try;
+  vulkan4xenon refuses occlusion query pools.
 - **Filtering 10-10-10-2 and 16-bit float textures.** The console filtered them wrong halfway between two texels,
   nearest sampling right (docs/HARDWARE.md, "Texture and vertex formats, vulkan4xenon milestone 20"); vulkan4xenon
   samples them nearest. To try: `k_2_10_10_10_AS_16_16_16_16` and the `_EXPAND` formats
