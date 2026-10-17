@@ -15,7 +15,8 @@
 #include "xsdk/texture.h"
 #include "xsdk/thread.h"
 
-// Overlaps drawn both ways, a stencil mask and the cleared depth; with the depth test off, the depth checks must fail.
+// Overlaps drawn both ways, a stencil mask, two-sided stencil and the cleared depth; with the depth test off, the depth
+// checks must fail.
 
 enum {
 	WIDTH = 1280,
@@ -35,6 +36,15 @@ enum {
 	OVERLAP_SIZE = 180,
 	OVERLAP_STEP = 100,
 	STENCIL_MARK = 1,
+	// Two-sided stencil: front faces write 0x11 and pass on it; back faces write 0xF2 through 0x2F, 0x22, and pass on
+	// 0xA2 through 0x0F, so only their own register's reference and masks give the back what it should.
+	FRONT_MARK = 0x11,
+	BACK_MARK_REFERENCE = 0xF2,
+	BACK_MARK_WRITE_MASK = 0x2F,
+	BACK_MARK = 0x22,
+	BACK_TEST_REFERENCE = 0xA2,
+	BACK_TEST_READ_MASK = 0x0F,
+	TWO_SIDED_Y = 540,
 	// The resolved depth's checks: a 24-bit depth's tolerance, the sampled quad's vertices, and its texture's slot.
 	DEPTH_24_MAX = 0xFFFFFF,
 	DEPTH_24_TOLERANCE = 2,
@@ -53,6 +63,9 @@ typedef enum {
 	// Stencil only.
 	PASS_STENCIL_MARK,
 	PASS_STENCIL_TEST,
+	// Front and back faces each with stencil of their own, front faces clockwise.
+	PASS_TWO_SIDED_MARK,
+	PASS_TWO_SIDED_TEST,
 } Pass;
 
 typedef struct {
@@ -64,24 +77,32 @@ typedef struct {
 	float depth;
 	uint32_t argb;
 	Pass pass;
+	// Placed right to left, which turns it from clockwise to counter-clockwise as it looks.
+	bool mirrored;
 } Rectangle;
 
 // Drawn in this order each frame.
 static const Rectangle rectangles[] = {
 	// Back to front: far red, then near green over its lower right.
-	{ "back to front, far", 40, PANEL_Y, OVERLAP_SIZE, OVERLAP_SIZE, 0.375f, 0xFFE04040, PASS_DEPTH },
+	{ "back to front, far", 40, PANEL_Y, OVERLAP_SIZE, OVERLAP_SIZE, 0.375f, 0xFFE04040, PASS_DEPTH, false },
 	{ "back to front, near", 40 + OVERLAP_STEP, PANEL_Y + OVERLAP_STEP, OVERLAP_SIZE, OVERLAP_SIZE, 0.25f, 0xFF40E040,
-		PASS_DEPTH },
+		PASS_DEPTH, false },
 	// Front to back: near blue, then far yellow, which the depth test keeps out of the overlap.
-	{ "front to back, near", 360, PANEL_Y, OVERLAP_SIZE, OVERLAP_SIZE, 0.25f, 0xFF4040E0, PASS_DEPTH },
+	{ "front to back, near", 360, PANEL_Y, OVERLAP_SIZE, OVERLAP_SIZE, 0.25f, 0xFF4040E0, PASS_DEPTH, false },
 	{ "front to back, far", 360 + OVERLAP_STEP, PANEL_Y + OVERLAP_STEP, OVERLAP_SIZE, OVERLAP_SIZE, 0.375f, 0xFFE0E040,
-		PASS_DEPTH },
+		PASS_DEPTH, false },
 	// A grey mask writes stencil, then magenta draws only where it did.
-	{ "stencil mask", 750, PANEL_Y + 70, 140, 140, 0.25f, 0xFF808080, PASS_STENCIL_MARK },
-	{ "stencil-tested", 680, PANEL_Y, 280, 280, 0.25f, 0xFFE040E0, PASS_STENCIL_TEST },
+	{ "stencil mask", 750, PANEL_Y + 70, 140, 140, 0.25f, 0xFF808080, PASS_STENCIL_MARK, false },
+	{ "stencil-tested", 680, PANEL_Y, 280, 280, 0.25f, 0xFFE040E0, PASS_STENCIL_TEST, false },
 	// Against the cleared depth: orange behind it stays hidden, cyan in front shows.
-	{ "behind the clear", 1000, PANEL_Y, 120, 280, 0.75f, 0xFFFF8000, PASS_DEPTH },
-	{ "in front of the clear", 1160, PANEL_Y, 120, 280, 0.25f, 0xFF40E0E0, PASS_DEPTH },
+	{ "behind the clear", 1000, PANEL_Y, 120, 280, 0.75f, 0xFFFF8000, PASS_DEPTH, false },
+	{ "in front of the clear", 1160, PANEL_Y, 120, 280, 0.25f, 0xFF40E0E0, PASS_DEPTH, false },
+	// Two-sided marks, a front face on the left and a back face on the right; then a front face over both in green,
+	// which shows only on the left, and a back face over both in blue, which shows only on the right.
+	{ "two-sided mark, front", 40, TWO_SIDED_Y, 200, 140, 0.25f, 0xFF808080, PASS_TWO_SIDED_MARK, false },
+	{ "two-sided mark, back", 240, TWO_SIDED_Y, 200, 140, 0.25f, 0xFF606060, PASS_TWO_SIDED_MARK, true },
+	{ "two-sided test, front", 40, TWO_SIDED_Y, 400, 140, 0.25f, 0xFF40E040, PASS_TWO_SIDED_TEST, false },
+	{ "two-sided test, back", 40, TWO_SIDED_Y, 400, 140, 0.25f, 0xFF4040E0, PASS_TWO_SIDED_TEST, true },
 };
 
 typedef struct {
@@ -103,6 +124,9 @@ static const Point points[] = {
 	{ "stencil: outside the mask", 700, PANEL_Y + 20, CLEAR_ARGB, false },
 	{ "behind the clear: hidden", 1060, PANEL_Y + 140, CLEAR_ARGB, true },
 	{ "in front of the clear: shown", 1220, PANEL_Y + 140, 0xFF40E0E0, false },
+	{ "two-sided: the front face passes its own test", 140, TWO_SIDED_Y + 70, 0xFF40E040, false },
+	{ "two-sided: the back face passes its own test", 340, TWO_SIDED_Y + 70, 0xFF4040E0, false },
+	{ "two-sided: nothing below it", 240, TWO_SIDED_Y + 150, CLEAR_ARGB, false },
 };
 
 // The depth and stencil each point's word holds once the overlaps' depth is resolved: the depth-tested rectangles'
@@ -124,6 +148,8 @@ static const DepthPoint depth_points[] = {
 	{ "outside the stencil mask", 700, PANEL_Y + 20, 0.5f, 0 },
 	{ "behind the clear", 1060, PANEL_Y + 140, 0.5f, 0 },
 	{ "in front of the clear", 1220, PANEL_Y + 140, 0.25f, 0 },
+	{ "two-sided, the front face's mark", 140, TWO_SIDED_Y + 70, 0.5f, FRONT_MARK },
+	{ "two-sided, the back face's mark", 340, TWO_SIDED_Y + 70, 0.5f, BACK_MARK },
 };
 
 static const float square[QUAD_VERTICES][VERTEX_FLOATS] = {
@@ -162,6 +188,9 @@ typedef struct {
 	XsdkDepthStencilState depth_off;
 	XsdkDepthStencilState stencil_mark;
 	XsdkDepthStencilState stencil_test;
+	XsdkDepthStencilState two_sided_mark;
+	XsdkDepthStencilState two_sided_test;
+	XsdkRasterState front_clockwise;
 } States;
 
 static void make_states(States *states)
@@ -188,6 +217,30 @@ static void make_states(States *states)
 	xsdk_gpu_depth_stencil_state(&states->depth_off, &depth_off);
 	xsdk_gpu_depth_stencil_state(&states->stencil_mark, &stencil_mark);
 	xsdk_gpu_depth_stencil_state(&states->stencil_test, &stencil_test);
+	XsdkDepthStencil two_sided_mark = stencil_mark;
+	two_sided_mark.stencil_reference = FRONT_MARK;
+	two_sided_mark.two_sided = true;
+	two_sided_mark.back = (XsdkStencilFace){ .compare = XSDK_COMPARE_ALWAYS,
+		.fail = XSDK_STENCIL_KEEP,
+		.depth_fail = XSDK_STENCIL_KEEP,
+		.pass = XSDK_STENCIL_REPLACE,
+		.reference = BACK_MARK_REFERENCE,
+		.read_mask = 0xFF,
+		.write_mask = BACK_MARK_WRITE_MASK };
+	XsdkDepthStencil two_sided_test = stencil_test;
+	two_sided_test.stencil_reference = FRONT_MARK;
+	two_sided_test.two_sided = true;
+	two_sided_test.back = (XsdkStencilFace){ .compare = XSDK_COMPARE_EQUAL,
+		.fail = XSDK_STENCIL_KEEP,
+		.depth_fail = XSDK_STENCIL_KEEP,
+		.pass = XSDK_STENCIL_KEEP,
+		.reference = BACK_TEST_REFERENCE,
+		.read_mask = BACK_TEST_READ_MASK,
+		.write_mask = 0 };
+	xsdk_gpu_depth_stencil_state(&states->two_sided_mark, &two_sided_mark);
+	xsdk_gpu_depth_stencil_state(&states->two_sided_test, &two_sided_test);
+	const XsdkRaster front_clockwise = { .cull = XSDK_CULL_NONE, .front_clockwise = true };
+	xsdk_gpu_raster_state(&states->front_clockwise, &front_clockwise);
 }
 
 static float unorm(uint32_t value)
@@ -198,8 +251,10 @@ static float unorm(uint32_t value)
 // The constant vertex shader places the unit square, edges half a pixel early, at the depth in c1.z, coloured by c2.
 static void set_rectangle_constants(const Rectangle *r)
 {
-	const float left = (r->x - 0.5f) / (WIDTH / 2.0f) - 1.0f;
-	const float right = (r->x + r->width - 0.5f) / (WIDTH / 2.0f) - 1.0f;
+	const float x0 = (r->x - 0.5f) / (WIDTH / 2.0f) - 1.0f;
+	const float x1 = (r->x + r->width - 0.5f) / (WIDTH / 2.0f) - 1.0f;
+	const float left = r->mirrored ? x1 : x0;
+	const float right = r->mirrored ? x0 : x1;
 	const float top = 1.0f - (r->y - 0.5f) / (HEIGHT / 2.0f);
 	const float bottom = 1.0f - (r->y + r->height - 0.5f) / (HEIGHT / 2.0f);
 	const float vertex[3][4] = {
@@ -267,6 +322,13 @@ static void draw_rectangles(const States *states, bool depth_on)
 			state = &states->stencil_mark;
 		else if (r->pass == PASS_STENCIL_TEST)
 			state = &states->stencil_test;
+		else if (r->pass == PASS_TWO_SIDED_MARK)
+			state = &states->two_sided_mark;
+		else if (r->pass == PASS_TWO_SIDED_TEST)
+			state = &states->two_sided_test;
+		// The two-sided cell's faces are by their winding as they look; the target set after culls nothing again.
+		if (r->pass == PASS_TWO_SIDED_MARK || r->pass == PASS_TWO_SIDED_TEST)
+			xsdk_gpu_set_raster(&states->front_clockwise);
 		xsdk_gpu_set_depth_stencil(state);
 		set_rectangle_constants(r);
 		xsdk_gpu_draw(XSDK_PRIMITIVE_TRIANGLE_LIST, QUAD_VERTICES);
@@ -406,7 +468,7 @@ static void run(const Drawing *d, bool has_display)
 		(unsigned)(off.depth_all_wrong < off.others_all_right ? off.depth_all_wrong : off.others_all_right),
 		(unsigned)off.frames);
 	check("depth: every frame's fence landed", landed_on && landed_off);
-	check("depth: overlaps, the stencil mask and the cleared depth all right with the depth test on",
+	check("depth: overlaps, the stencil mask, two-sided stencil and the cleared depth all right with the depth test on",
 		landed_on && on.frames == FRAMES - 1 && on.frames_wrong == 0);
 	check("depth: with the depth test off, the depth checks fail and only they do",
 		landed_off && off.frames == DEPTH_OFF_FRAMES - 1 && off.depth_all_wrong == off.frames &&

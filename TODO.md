@@ -103,9 +103,11 @@ work begins.
 
 ## GPU gaps the milestones left
 
-- **Two-sided stencil.** The SDK leaves `backface_enable` clear, so the front face's stencil serves both
-  (src/gpu_draw.c). Vulkan sets front and back apart: `backface_enable` and the `_bf` fields of `RB_DEPTHCONTROL`, and
-  `RB_STENCILREFMASK_BF` (xenia:src/xenia/gpu/registers.h:799-834).
+- **Two-sided stencil, built and not yet run on the console** (vulkan4xenon milestone 26's step 1).
+  `XsdkDepthStencil`'s `two_sided` and `back` set `backface_enable` and the `_bf` fields of `RB_DEPTHCONTROL`, and
+  `RB_STENCILREFMASK_BF` (xenia:src/xenia/gpu/registers.h:799-834); tests/test_depth.c's two-sided cell checks it,
+  broken on purpose by results/2026-10-16-vulkan4xenon-milestone-26/breaks.py. What the run settles goes in
+  docs/HARDWARE.md.
 - **Destination alpha,** vulkan4xenon milestone 18's step 4, put off (vulkan4xenon:docs/ROADMAP.md). Aurora's backend
   refuses a pipeline with `GXSetDstAlpha` on and skips its draws, logging `vulkan4xenon can't draw destination alpha`
   (aurora-melee:lib/vulkan4xenon/pipeline.cpp, `unsupported`). Dawn's backend writes the constant as alpha through a

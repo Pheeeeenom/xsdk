@@ -218,7 +218,19 @@ enum {
 	XSDK_STENCIL_DECREMENT_WRAP,
 };
 
-// How draws test and write the target's 24-bit depth and 8-bit stencil, the same for both faces.
+// One face's stencil test, what it writes, and its reference and masks.
+typedef struct {
+	uint32_t compare;
+	uint32_t fail;
+	uint32_t depth_fail;
+	uint32_t pass;
+	uint8_t reference;
+	uint8_t read_mask;
+	uint8_t write_mask;
+} XsdkStencilFace;
+
+// How draws test and write the target's 24-bit depth and 8-bit stencil. The stencil fields serve both faces, unless
+// two_sided gives back faces their own; lines and points are front faces (xenia:src/xenia/gpu/registers.h:799-834).
 typedef struct {
 	bool depth_test;
 	bool depth_write;
@@ -231,12 +243,15 @@ typedef struct {
 	uint8_t stencil_reference;
 	uint8_t stencil_read_mask;
 	uint8_t stencil_write_mask;
+	bool two_sided;
+	XsdkStencilFace back;
 } XsdkDepthStencil;
 
 // The registers a depth/stencil setting writes, worked out once.
 typedef struct {
 	uint32_t depth_control;
 	uint32_t stencil_ref_mask;
+	uint32_t stencil_ref_mask_back;
 } XsdkDepthStencilState;
 
 void xsdk_gpu_depth_stencil_state(XsdkDepthStencilState *state, const XsdkDepthStencil *setting);

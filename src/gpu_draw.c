@@ -48,7 +48,7 @@ enum {
 	TEXTURE_DWORDS = 1 + 6,
 	DRAW_DWORDS = 2,
 	DRAW_INDEXED_DWORDS = 5,
-	DEPTH_STENCIL_DWORDS = 3 * 2,
+	DEPTH_STENCIL_DWORDS = 2 * 2 + 3,
 	BLEND_DWORDS = 2 * 2,
 	BLEND_CONSTANT_DWORDS = 1 + 4,
 	RASTER_DWORDS = 2 + 1 + 4,
@@ -109,14 +109,21 @@ enum {
 	Z_ENABLE = 1 << 1,
 	Z_WRITE_ENABLE = 1 << 2,
 	ZFUNC_SHIFT = 4,
+	BACKFACE_ENABLE = 1 << 7,
 	STENCILFUNC_SHIFT = 8,
 	STENCILFAIL_SHIFT = 11,
 	STENCILZPASS_SHIFT = 14,
 	STENCILZFAIL_SHIFT = 17,
+	STENCILFUNC_BF_SHIFT = 20,
+	STENCILFAIL_BF_SHIFT = 23,
+	STENCILZPASS_BF_SHIFT = 26,
+	STENCILZFAIL_BF_SHIFT = 29,
 	STENCILMASK_SHIFT = 8,
 	STENCILWRITEMASK_SHIFT = 16,
 	COMPARE_MASK = 7,
-	STENCIL_FAIL_OPS = 7 << STENCILFAIL_SHIFT | 7 << STENCILZFAIL_SHIFT,
+	// Both faces' fail operations; a back face's are 0 unless two-sided.
+	STENCIL_FAIL_OPS =
+		7 << STENCILFAIL_SHIFT | 7 << STENCILZFAIL_SHIFT | 7 << STENCILFAIL_BF_SHIFT | 7u << STENCILZFAIL_BF_SHIFT,
 	// RB_DEPTH_CLEAR's 0.5, depth above the stencil.
 	DEPTH_CLEAR_HALF = 0x80000000,
 	// RB_BLENDCONTROL's fields (xenia:src/xenia/gpu/registers.h:780-794).
@@ -499,15 +506,34 @@ void xsdk_gpu_draw(uint32_t primitive_type, uint32_t vertex_count)
 	gpu_packets_done(&packets);
 }
 
+static uint32_t stencil_ref_mask(uint8_t reference, uint8_t read_mask, uint8_t write_mask)
+{
+	return reference | (uint32_t)read_mask << STENCILMASK_SHIFT | (uint32_t)write_mask << STENCILWRITEMASK_SHIFT;
+}
+
+// Back faces take the _bf fields and RB_STENCILREFMASK_BF with backface_enable set, as Xenia reads them
+// (xenia:src/xenia/gpu/vulkan/vulkan_pipeline_cache.cc:650-668, vulkan_command_processor.cc:3266-3285).
+static uint32_t back_face_control(const XsdkStencilFace *back)
+{
+	assert(back->compare <= XSDK_COMPARE_ALWAYS);
+	return BACKFACE_ENABLE | back->compare << STENCILFUNC_BF_SHIFT | back->fail << STENCILFAIL_BF_SHIFT |
+		back->pass << STENCILZPASS_BF_SHIFT | back->depth_fail << STENCILZFAIL_BF_SHIFT;
+}
+
 void xsdk_gpu_depth_stencil_state(XsdkDepthStencilState *state, const XsdkDepthStencil *setting)
 {
 	assert(setting->depth_compare <= XSDK_COMPARE_ALWAYS && setting->stencil_compare <= XSDK_COMPARE_ALWAYS);
+	const XsdkStencilFace *const back = &setting->back;
 	state->depth_control = (setting->stencil_test ? STENCIL_ENABLE : 0) | (setting->depth_test ? Z_ENABLE : 0) |
 		(setting->depth_write ? Z_WRITE_ENABLE : 0) | setting->depth_compare << ZFUNC_SHIFT |
 		setting->stencil_compare << STENCILFUNC_SHIFT | setting->stencil_fail << STENCILFAIL_SHIFT |
-		setting->stencil_pass << STENCILZPASS_SHIFT | setting->stencil_depth_fail << STENCILZFAIL_SHIFT;
-	state->stencil_ref_mask = setting->stencil_reference | (uint32_t)setting->stencil_read_mask << STENCILMASK_SHIFT |
-		(uint32_t)setting->stencil_write_mask << STENCILWRITEMASK_SHIFT;
+		setting->stencil_pass << STENCILZPASS_SHIFT | setting->stencil_depth_fail << STENCILZFAIL_SHIFT |
+		(setting->two_sided ? back_face_control(back) : 0);
+	state->stencil_ref_mask =
+		stencil_ref_mask(setting->stencil_reference, setting->stencil_read_mask, setting->stencil_write_mask);
+	state->stencil_ref_mask_back = setting->two_sided
+		? stencil_ref_mask(back->reference, back->read_mask, back->write_mask)
+		: state->stencil_ref_mask;
 }
 
 // What the hierarchical buffer can do for this setting; a depth write it can't follow drops it (docs/HARDWARE.md).
@@ -528,14 +554,16 @@ static uint32_t hiz_control(uint32_t depth_control)
 	return (hiz_greater ? HIZ_GREATER : 0) | (writes ? HIZ_WRITE_ENABLE : 0) | (stencil_kept ? HIZ_ENABLE : 0);
 }
 
-// With backface_enable clear, the front face's stencil setting serves both faces, as D3D's one-sided stencil does.
+// With backface_enable clear, the front face's stencil setting serves both faces, as D3D's one-sided stencil does;
+// the back's register then holds the front's too.
 void xsdk_gpu_set_depth_stencil(const XsdkDepthStencilState *state)
 {
 	depth_control_set = state->depth_control;
+	const uint32_t ref_masks[] = { state->stencil_ref_mask_back, state->stencil_ref_mask };
 	GpuPackets packets = gpu_reserve_packets(DEPTH_STENCIL_DWORDS);
 	gpu_put_register(&packets, RB_DEPTHCONTROL, state->depth_control);
 	gpu_put_register(&packets, RB_HIZCONTROL, hiz_control(state->depth_control));
-	gpu_put_register(&packets, RB_STENCILREFMASK, state->stencil_ref_mask);
+	gpu_put_registers(&packets, RB_STENCILREFMASK_BF, ref_masks, 2);
 	gpu_packets_done(&packets);
 }
 
