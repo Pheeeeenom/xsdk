@@ -918,7 +918,18 @@ static size_t stage_of(const XscProgram *p, const XscOp *op)
 	return SIZE_MAX;
 }
 
-// Whether x joined an op y before or after it, searching from j (optimize.py co_issue's inner loop, both ways).
+// Where op j's stage starts and ends among the ops flatten lays out, a stage after another.
+static void stage_bounds(const XscProgram *p, size_t j, size_t *first, size_t *end)
+{
+	*first = 0;
+	*end = 0;
+	for (size_t si = 0; si < p->stage_count && *end <= j; si++) {
+		*first = *end;
+		*end += p->stages[si].count;
+	}
+}
+
+// Whether op j joined an op before or after it in its stage (optimize.py co_issue's inner loop, both ways).
 static bool join(Optimizer *o, size_t j, bool later)
 {
 	XscOp *const x = o->ops[j];
@@ -926,12 +937,11 @@ static bool join(Optimizer *o, size_t j, bool later)
 	KeySet x_reads, x_defs;
 	temp_reads(x, &x_reads);
 	defs(x, &x_defs);
-	const size_t x_stage = stage_of(o->p, x);
-	const size_t reach = later ? o->count - 1 - j : j;
+	size_t first, end;
+	stage_bounds(o->p, j, &first, &end);
+	const size_t reach = later ? end - 1 - j : j - first;
 	for (size_t n = 1; n <= reach; n++) {
 		XscOp *const y = o->ops[later ? j + n : j - n];
-		if (stage_of(o->p, y) != x_stage)
-			return false;
 		KeySet y_defs, y_reads;
 		defs(y, &y_defs);
 		temp_reads(y, &y_reads);
