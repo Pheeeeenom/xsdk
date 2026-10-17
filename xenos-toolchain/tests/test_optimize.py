@@ -188,6 +188,11 @@ CASES = [
     ("a value computed before the colours' alloc is copied to its export after it",
      [alu(V.kAdd, 2, 0xF, r(0), c(0))],
      [export(r(2))], 2),
+    ("copies taken in one scan, the last of what the first two put in place",
+     [alu(V.kDp4, 2, 0x1, r(0), c(0)), scalar(S.kExp, 3, r(0, "zzzz"), 0x1), move(4, r(2), 0x1),
+      move(4, r(3, "xxxx"), 0x2), move(5, r(4), 0x3), alu(V.kAdd, 5, 0x4, r(1, "xxxx"), c(2)),
+      alu(V.kMul, 6, 0xF, r(5, "xyzx"), r(1))],
+     [export(r(6))], 4),
 ]
 
 

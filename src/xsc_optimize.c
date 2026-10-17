@@ -388,20 +388,11 @@ static bool grow(Xsc *x, void *items, size_t *capacity, size_t needed, size_t it
 	return true;
 }
 
-// Which instruction's write each key holds at each instruction, and each write's readers (optimize.py _Flow).
-static bool build_flow(Optimizer *o)
+// The flow from each instruction's reads and defs as they stand.
+static bool index_flow(Optimizer *o)
 {
-	if (!flatten(o))
-		return false;
 	const size_t n = o->count;
 	const size_t keys = (size_t)o->key_count;
-	size_t sets = o->sets_capacity;
-	if (!grow(o->x, &o->reads, &sets, n + 1, sizeof *o->reads))
-		return false;
-	sets = o->sets_capacity;
-	if (!grow(o->x, &o->defs, &sets, n + 1, sizeof *o->defs))
-		return false;
-	o->sets_capacity = sets;
 	size_t key_capacity = o->key_capacity;
 	bool ok = grow(o->x, &o->write_start, &key_capacity, keys + 1, sizeof *o->write_start);
 	key_capacity = o->key_capacity;
@@ -415,8 +406,6 @@ static bool build_flow(Optimizer *o)
 	memset(o->reader_start, 0, (keys + 1) * sizeof *o->reader_start);
 	size_t total_defs = 0, total_reads = 0;
 	for (size_t i = 0; i < n; i++) {
-		temp_reads(o->ops[i], &o->reads[i]);
-		defs(o->ops[i], &o->defs[i]);
 		for (size_t k = 0; k < o->defs[i].count; k++)
 			o->write_start[o->defs[i].keys[k] + 1]++;
 		for (size_t k = 0; k < o->reads[i].count; k++)
@@ -444,6 +433,30 @@ static bool build_flow(Optimizer *o)
 			o->write_list[o->fill[o->defs[i].keys[k]]++] = i;
 	}
 	return true;
+}
+
+// Op i's reads and defs, found again as compute_in_place changes it, so the flow needn't be built again.
+static void find_keys(Optimizer *o, size_t i)
+{
+	temp_reads(o->ops[i], &o->reads[i]);
+	defs(o->ops[i], &o->defs[i]);
+}
+
+// Which instruction's write each key holds at each instruction, and each write's readers (optimize.py _Flow).
+static bool build_flow(Optimizer *o)
+{
+	if (!flatten(o))
+		return false;
+	size_t sets = o->sets_capacity;
+	if (!grow(o->x, &o->reads, &sets, o->count + 1, sizeof *o->reads))
+		return false;
+	sets = o->sets_capacity;
+	if (!grow(o->x, &o->defs, &sets, o->count + 1, sizeof *o->defs))
+		return false;
+	o->sets_capacity = sets;
+	for (size_t i = 0; i < o->count; i++)
+		find_keys(o, i);
+	return index_flow(o);
 }
 
 // The write of key that op i reads (OUTSIDE if none).
@@ -1117,6 +1130,7 @@ static void redirect(Optimizer *o, const Place *pl, size_t r)
 		}
 		set_source(reader, n, &moved);
 	}
+	find_keys(o, r);
 }
 
 // Whether the writer can write the copy's lanes itself, its other readers finding its result there unclamped.
@@ -1167,6 +1181,7 @@ static void place(Optimizer *o, const Place *pl, size_t *users)
 		f->scalar_dest = c->vector_dest;
 		f->scalar_write_mask = pl->lanes;
 		f->scalar_clamp = f->scalar_clamp || c->vector_clamp;
+		find_keys(o, pl->i);
 		return;
 	}
 	int table[3];
@@ -1182,6 +1197,7 @@ static void place(Optimizer *o, const Place *pl, size_t *users)
 	f->vector_write_mask = pl->lanes;
 	f->is_export = c->is_export;
 	f->vector_clamp = f->vector_clamp || c->vector_clamp;
+	find_keys(o, pl->i);
 	if (c->is_export)
 		sink(o->p, w, o->ops[pl->j]);
 }
@@ -1247,6 +1263,17 @@ static bool try_place(Optimizer *o, size_t j, size_t *users)
 	return true;
 }
 
+// Takes op j, a copy that went, out of the flow.
+static bool drop_op(Optimizer *o, size_t j)
+{
+	o->count--;
+	memmove(&o->ops[j], &o->ops[j + 1], (o->count - j) * sizeof *o->ops);
+	memmove(&o->reads[j], &o->reads[j + 1], (o->count - j) * sizeof *o->reads);
+	memmove(&o->defs[j], &o->defs[j + 1], (o->count - j) * sizeof *o->defs);
+	return index_flow(o);
+}
+
+// Takes every copy it can before the round starts over, the scan starting over on the flow as it stands after each.
 static bool compute_in_place(Optimizer *o, bool *changed)
 {
 	*changed = false;
@@ -1256,11 +1283,18 @@ static bool compute_in_place(Optimizer *o, bool *changed)
 	size_t *const users = xsdk_xsc_alloc(o->x, (4 * o->count + 1) * sizeof *users);
 	if (!users)
 		return false;
-	for (size_t j = 0; j < o->count; j++) {
-		if (try_place(o, j, users)) {
-			*changed = true;
-			return true;
+	size_t j = 0;
+	while (j < o->count) {
+		if (!try_place(o, j, users)) {
+			j++;
+			continue;
 		}
+		*changed = true;
+		// An export's writer moved down to it, so the program is read again.
+		if (!(o->ops[j]->alu.is_export ? build_flow(o) : drop_op(o, j)))
+			return false;
+		fill_readers(o);
+		j = 0;
 	}
 	return true;
 }
