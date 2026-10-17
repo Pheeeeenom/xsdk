@@ -3558,3 +3558,18 @@ xsdk_test on the zero-fuse console (`results/2026-10-16-vulkan4xenon-milestone-2
   sets. With `-(FILL_HEIGHT / (HEIGHT / 2.0f))` the check passes.
 - **Broken on purpose,** each of the nine sets failed the checks `breaks.py` names for it (`xsdk_test_broken_s1a.log`
   to `_s4b`). xsdk_test passed 364 of 366, the two left the controller's, no button pressed.
+
+## Resolving part of a target, vulkan4xenon milestone 27 (2026-10-17)
+
+xsdk_test on the zero-fuse console (`results/2026-10-16-vulkan4xenon-milestone-27/`): a resolve keeps to its drawn
+rectangle and its window scissor, as Xenia has it (xenia:src/xenia/gpu/xenos.h:911-984). Rectangles of four quarters
+meeting off the grid in a 204x116 target, one inside and one reaching the right and bottom edges, resolved into a
+texture of sentinels into the same texels and no others, 0 texels wrong, and each resolve cleared what it copied
+alone; past an edge off the grid it wrote only the texture's padding. A depth clear of a rectangle cleared its depth
+alone, and a quad between the two depths showed in the rectangle alone, hierarchical depth turned off after it. Broken
+on purpose, the rectangle at the corner, the whole target resolved, and hierarchical depth left on each failed the
+checks they aim at (`xsdk_test_broken_a.log` to `_c`). xsdk_test passed 373 of 373, a button pressed.
+
+vulkan4xenon's render areas and blits drawn on the GPU, through it, passed too (vulkan4xenon:docs/ROADMAP.md,
+milestone 27): a replay with a blit drawn took 87 us of the CPU against 24816 us with it on the CPU, its submission
+done after 9.8 ms against 25.9 ms.

@@ -136,7 +136,7 @@ which implements what the games it runs need:
 | Float, 10-bit and 64-bit targets: 2_10_10_10, 7e3, 16_16_16_16, 16- and 32-bit floats, at 1 sample | Yes | `xsdk_gpu_set_targets`, `xsdk_gpu_resolve_target` | `tests/test_targets.c` | 16_16, 32_32_FLOAT and gamma targets (TODO.md); blending into the 16- and 32-bit floats, which Xenos doesn't (docs/HARDWARE.md) |
 | Four targets at once (MRT), each blended and masked on its own, at 1 sample | Yes | `xsdk_gpu_set_targets`, `xsdk_gpu_set_blends`; xost's outputs at locations 1 to 3 | `tests/test_targets.c`; xost's `tests/test_color_outputs.py` | Several targets multisampled (TODO.md) |
 | Resolves of colour and depth, to memory and textures, with a clear | Yes | `xsdk_gpu_resolve*` | `tests/test_render.c`, `test_depth.c` | Clearing eDRAM without a copy (SCOPE.md) |
-| Resolving part of a target into the same texels | Partial | `xsdk_gpu_resolve_texture_rect` (`gpu.h`) | `tests/test_resolve_rect.c`, not yet run on the console | Into another place in the texture; part of the depth; rectangles off the 8-pixel grid (TODO.md) |
+| Resolving part of a target into the same texels | Partial | `xsdk_gpu_resolve_texture_rect` (`gpu.h`) | `tests/test_resolve_rect.c` | Into another place in the texture; part of the depth; rectangles off the 8-pixel grid (TODO.md) |
 | Command buffers recorded once and run many times | Yes | `xsdk_gpu_record_*`, `xsdk_gpu_execute` | `tests/test_replay.c` | Fences and resolves inside a recording; recording on several threads, as the ring takes one at a time |
 | Occlusion queries and GPU timers | No | | | Queries (TODO.md); GPU timing exists only in a probe (`tests/probe_gpu_draw_cost.c`) |
 | Memory export from shaders | No | | | xost doesn't emit it (SCOPE.md) |

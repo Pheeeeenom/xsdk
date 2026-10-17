@@ -128,8 +128,9 @@ work begins.
 - **Resolving part of a target, past vulkan4xenon milestone 27.** `xsdk_gpu_resolve_texture_rect` resolves a
   rectangle on the 8-pixel grid into the same texels. Left: a rectangle into another place in the texture, which
   Direct3D 9 does by moving the destination's address (xenia:src/xenia/gpu/xenos.h:944-955); part of the depth; and
-  hierarchical depth after a part's depth clear, which stays off till the whole is cleared. vulkan4xenon refuses render
-  areas off the grid, which a resolve can't keep to, unless it drew the rest of the target back in first.
+  hierarchical depth after a part's depth clear, which stays off till the whole is cleared; and a rectangle of a target
+  but 0, or of any but 8_8_8_8. vulkan4xenon refuses render areas off the grid, which a resolve can't keep to, unless it
+  drew the rest of the target back in first, and smaller ones but for one 8-bit colour attachment.
 - **Mipped linear textures.** `xsdk_texture_create` returns `STATUS_NOT_IMPLEMENTED` for them. Xenia keeps their rows
   256-byte aligned (texture_util.cc:209-449). Vulkan rarely needs them.
 
