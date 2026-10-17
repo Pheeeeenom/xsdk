@@ -1,0 +1,391 @@
+017c19da20649fa0.frag: ALU 9 -> 5, copies 3 -> 0, co-issued 0 -> 1, fetches 1 -> 1, control flow 4 -> 3, registers 4 -> 3; ok
+01c8b343f41ff9f4.frag: ALU 4 -> 1, copies 4 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
+020233a3aaada7e9.vert: ALU 23 -> 13, copies 15 -> 5, co-issued 0 -> 0, fetches 2 -> 2, control flow 8 -> 6, registers 7 -> 3; ok
+041a85f07c74ec96.frag: ALU 12 -> 6, copies 6 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 3, registers 6 -> 4; ok
+04a469b1240c5698.vert: ALU 23 -> 23, copies 14 -> 14, co-issued 0 -> 0, fetches 2 -> 2, control flow 7 -> 7, registers 6 -> 6; ok
+05716a5bd2aae204.frag: ALU 53 -> 25, copies 23 -> 1, co-issued 0 -> 3, fetches 3 -> 3, control flow 12 -> 7, registers 16 -> 8; ok
+05b63b9d751d5736.frag: ALU 4 -> 1, copies 4 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
+093884ef391dfddc.frag: ALU 48 -> 25, copies 19 -> 2, co-issued 0 -> 2, fetches 2 -> 2, control flow 11 -> 7, registers 14 -> 7; ok
+0963325b37f04df0.vert: ALU 234 -> 143, copies 90 -> 14, co-issued 0 -> 22, fetches 4 -> 4, control flow 43 -> 27, registers 13 -> 11; ok
+09bef7f9a3ac5df7.frag: ALU 4 -> 1, copies 4 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
+0c5faf5ad1250944.frag: ALU 48 -> 25, copies 19 -> 2, co-issued 0 -> 2, fetches 2 -> 2, control flow 11 -> 7, registers 14 -> 7; ok
+0c9a6858fbbe328e.frag: ALU 2 -> 1, copies 2 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
+0f8714b3c758a3b1.frag: ALU 4 -> 1, copies 4 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
+12d30073b6d47043.frag: ALU 21 -> 13, copies 8 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 6 -> 5, registers 6 -> 5; ok
+1510c05add37f2b3.frag: ALU 127 -> 60, copies 40 -> 9, co-issued 0 -> 12, fetches 4 -> 4, control flow 26 -> 14, registers 22 -> 12; ok
+15a57b221b955025.frag: ALU 46 -> 21, copies 20 -> 2, co-issued 0 -> 3, fetches 2 -> 2, control flow 10 -> 6, registers 12 -> 6; ok
+1675a46dea18c182.frag: ALU 14 -> 9, copies 5 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 5 -> 4, registers 5 -> 5; ok
+16a9a335fb71c29a.frag: ALU 4 -> 1, copies 4 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
+172ccfa9a454e318.vert: ALU 21 -> 12, copies 13 -> 4, co-issued 0 -> 0, fetches 2 -> 2, control flow 8 -> 6, registers 7 -> 3; ok
+1ad5c2f8e1cc2653.frag: ALU 11 -> 4, copies 7 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 3, registers 5 -> 2; ok
+1e5db8674ad9d29e.frag: ALU 5 -> 2, copies 5 -> 2, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 3 -> 1; ok
+2013a34320f17698.frag: ALU 4 -> 2, copies 4 -> 2, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
+20a291c66ca7e0fd.vert: ALU 214 -> 133, copies 76 -> 9, co-issued 0 -> 22, fetches 4 -> 4, control flow 40 -> 26, registers 13 -> 10; ok
+22d6a7758d2d5d84.frag: ALU 11 -> 4, copies 7 -> 0, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 2, registers 4 -> 1; ok
+233aa73af10f83bc.frag: ALU 19 -> 9, copies 10 -> 0, co-issued 0 -> 0, fetches 2 -> 2, control flow 6 -> 4, registers 8 -> 5; ok
+246ca2b33bb1fdf4.frag: ALU 14 -> 9, copies 5 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 5 -> 4, registers 5 -> 5; ok
+251e226c8a088a82.vert: ALU 264 -> 160, copies 103 -> 15, co-issued 0 -> 25, fetches 3 -> 3, control flow 48 -> 30, registers 12 -> 9; ok
+29fab4bb2516d607.frag: ALU 45 -> 23, copies 20 -> 5, co-issued 0 -> 5, fetches 3 -> 3, control flow 12 -> 9, registers 12 -> 7; ok
+2a1a218d5688204a.vert: ALU 238 -> 148, copies 83 -> 9, co-issued 0 -> 25, fetches 3 -> 3, control flow 44 -> 28, registers 12 -> 9; ok
+2bc4ebf687f545b6.frag: ALU 2 -> 2, copies 2 -> 2, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 2 -> 2; ok
+2e7f30cdc49bd211.vert: ALU 42 -> 23, copies 28 -> 10, co-issued 0 -> 0, fetches 3 -> 3, control flow 11 -> 7, registers 8 -> 5; ok
+2eefbbd89e53921c.frag: ALU 74 -> 36, copies 29 -> 4, co-issued 0 -> 9, fetches 4 -> 4, control flow 16 -> 11, registers 16 -> 10; ok
+31871ebc6e90765a.vert: ALU 30 -> 17, copies 19 -> 6, co-issued 0 -> 0, fetches 1 -> 1, control flow 9 -> 6, registers 6 -> 3; ok
+32d160ecc3deb658.vert: ALU 22 -> 13, copies 14 -> 5, co-issued 0 -> 0, fetches 2 -> 2, control flow 8 -> 6, registers 7 -> 3; ok
+33d3ad7a449b966c.frag: ALU 12 -> 4, copies 8 -> 0, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 2, registers 5 -> 2; ok
+349b6ed78d720732.frag: ALU 17 -> 8, copies 9 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 5 -> 4, registers 6 -> 5; ok
+350248024002ce37.vert: ALU 244 -> 151, copies 86 -> 10, co-issued 0 -> 25, fetches 4 -> 4, control flow 45 -> 29, registers 13 -> 10; ok
+35fc826ad15e1872.frag: ALU 46 -> 21, copies 20 -> 2, co-issued 0 -> 3, fetches 2 -> 2, control flow 10 -> 6, registers 12 -> 6; ok
+39662e66d545c874.vert: ALU 6 -> 3, copies 4 -> 2, co-issued 0 -> 0, fetches 2 -> 2, control flow 5 -> 5, registers 4 -> 2; ok
+3ba44326990edfeb.vert: ALU 28 -> 15, copies 20 -> 7, co-issued 0 -> 0, fetches 4 -> 4, control flow 9 -> 6, registers 9 -> 5; ok
+3de421fc6f9f3122.frag: ALU 10 -> 7, copies 5 -> 3, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 3, registers 4 -> 4; ok
+407248b726bcb428.vert: ALU 272 -> 164, copies 108 -> 16, co-issued 0 -> 25, fetches 3 -> 3, control flow 50 -> 31, registers 12 -> 9; ok
+412f75e329bbe3a2.vert: ALU 26 -> 14, copies 18 -> 6, co-issued 0 -> 0, fetches 2 -> 2, control flow 9 -> 6, registers 7 -> 3; ok
+46d1eea9e1360669.frag: ALU 44 -> 24, copies 12 -> 1, co-issued 0 -> 6, fetches 3 -> 3, control flow 10 -> 6, registers 11 -> 7; ok
+48cd8f549b507826.frag: ALU 46 -> 24, copies 18 -> 2, co-issued 0 -> 2, fetches 2 -> 2, control flow 11 -> 7, registers 14 -> 7; ok
+4a2fde48317fee5f.frag: ALU 41 -> 30, copies 12 -> 1, co-issued 0 -> 0, fetches 3 -> 3, control flow 9 -> 7, registers 10 -> 7; ok
+4e6272cd5ea024f5.vert: ALU 54 -> 27, copies 37 -> 13, co-issued 0 -> 0, fetches 3 -> 3, control flow 13 -> 8, registers 8 -> 4; ok
+4ee5b3c093bea8ab.frag: ALU 103 -> 57, copies 27 -> 1, co-issued 0 -> 11, fetches 4 -> 4, control flow 20 -> 12, registers 16 -> 10; ok
+4f41862f49358139.frag: ALU 15 -> 8, copies 5 -> 0, co-issued 0 -> 2, fetches 1 -> 1, control flow 5 -> 4, registers 5 -> 3; ok
+4f939ba938f196ae.vert: ALU 260 -> 158, copies 99 -> 15, co-issued 0 -> 25, fetches 3 -> 3, control flow 48 -> 30, registers 12 -> 9; ok
+5264b90e6f50c901.frag: ALU 7 -> 5, copies 1 -> 0, co-issued 0 -> 1, fetches 1 -> 1, control flow 4 -> 3, registers 4 -> 3; ok
+551fb86c6ef59def.frag: ALU 48 -> 25, copies 19 -> 2, co-issued 0 -> 2, fetches 2 -> 2, control flow 11 -> 7, registers 14 -> 7; ok
+556ea181d0d34829.vert: ALU 223 -> 138, copies 82 -> 11, co-issued 0 -> 22, fetches 4 -> 4, control flow 41 -> 26, registers 13 -> 11; ok
+55a0066e2650ed99.vert: ALU 34 -> 18, copies 23 -> 7, co-issued 0 -> 0, fetches 3 -> 3, control flow 10 -> 7, registers 8 -> 4; ok
+58786ba1a7e49515.vert: ALU 43 -> 22, copies 29 -> 10, co-issued 0 -> 0, fetches 3 -> 3, control flow 11 -> 7, registers 8 -> 4; ok
+607a7b7110387a22.frag: ALU 11 -> 4, copies 7 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 3, registers 5 -> 2; ok
+60bcbd6f4104ab13.frag: ALU 44 -> 20, copies 20 -> 1, co-issued 0 -> 2, fetches 3 -> 3, control flow 10 -> 6, registers 15 -> 8; ok
+61cdb76b69b6489b.frag: ALU 14 -> 6, copies 6 -> 0, co-issued 0 -> 2, fetches 1 -> 1, control flow 5 -> 3, registers 5 -> 3; ok
+64f76a18fb37dd48.frag: ALU 3 -> 2, copies 1 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
+66457dda201609ed.frag: ALU 64 -> 38, copies 19 -> 3, co-issued 0 -> 4, fetches 4 -> 4, control flow 14 -> 9, registers 16 -> 10; ok
+676ff8c4689eaf91.frag: ALU 48 -> 23, copies 21 -> 0, co-issued 0 -> 2, fetches 3 -> 3, control flow 10 -> 6, registers 14 -> 8; ok
+68b11762bd80366b.vert: ALU 260 -> 158, copies 99 -> 15, co-issued 0 -> 25, fetches 3 -> 3, control flow 48 -> 30, registers 12 -> 9; ok
+695e15b366c72818.frag: ALU 42 -> 19, copies 19 -> 1, co-issued 0 -> 2, fetches 2 -> 2, control flow 10 -> 6, registers 14 -> 6; ok
+6a05b1f88a016fb2.frag: ALU 4 -> 1, copies 4 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
+6b7ff186cc28cce5.frag: ALU 23 -> 13, copies 10 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 6 -> 5, registers 7 -> 5; ok
+6c429f0c99b0524f.vert: ALU 212 -> 132, copies 74 -> 8, co-issued 0 -> 22, fetches 4 -> 4, control flow 40 -> 25, registers 12 -> 9; ok
+6dd3a70373df59bf.frag: ALU 63 -> 34, copies 21 -> 1, co-issued 0 -> 4, fetches 4 -> 4, control flow 14 -> 8, registers 15 -> 10; ok
+6e690d475f0af5fe.vert: ALU 29 -> 15, copies 21 -> 7, co-issued 0 -> 0, fetches 2 -> 2, control flow 9 -> 6, registers 7 -> 3; ok
+70ee109df12524e4.vert: ALU 190 -> 118, copies 69 -> 9, co-issued 0 -> 19, fetches 3 -> 3, control flow 36 -> 23, registers 12 -> 9; ok
+71ac4a48df92e5b7.vert: ALU 228 -> 140, copies 87 -> 13, co-issued 0 -> 22, fetches 5 -> 5, control flow 42 -> 27, registers 14 -> 12; ok
+72abd6191dcd7bfe.vert: ALU 238 -> 148, copies 83 -> 9, co-issued 0 -> 25, fetches 4 -> 4, control flow 44 -> 28, registers 13 -> 10; ok
+75422301f0e22829.frag: ALU 78 -> 41, copies 24 -> 1, co-issued 0 -> 7, fetches 3 -> 3, control flow 16 -> 9, registers 15 -> 8; ok
+820f98f280587ea8.frag: ALU 59 -> 31, copies 17 -> 4, co-issued 0 -> 11, fetches 2 -> 2, control flow 12 -> 7, registers 11 -> 5; ok
+84e4d80e1fc6e615.frag: ALU 2 -> 1, copies 2 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
+8586b077d3e63bc1.frag: ALU 48 -> 25, copies 19 -> 2, co-issued 0 -> 2, fetches 2 -> 2, control flow 11 -> 7, registers 14 -> 7; ok
+858b7f6b67e42fd6.frag: ALU 31 -> 11, copies 16 -> 0, co-issued 0 -> 2, fetches 1 -> 1, control flow 8 -> 4, registers 12 -> 5; ok
+85ae52ee303f618c.frag: ALU 8 -> 3, copies 6 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 3, registers 4 -> 2; ok
+85c8b022385334bf.frag: ALU 71 -> 36, copies 20 -> 2, co-issued 0 -> 10, fetches 2 -> 2, control flow 15 -> 9, registers 14 -> 6; ok
+88a3de8e328f385a.vert: ALU 19 -> 11, copies 11 -> 3, co-issued 0 -> 0, fetches 1 -> 1, control flow 7 -> 5, registers 6 -> 2; ok
+8b4ce5184129a25a.frag: ALU 8 -> 4, copies 3 -> 1, co-issued 0 -> 0, fetches 2 -> 2, control flow 4 -> 3, registers 4 -> 2; ok
+8e555ecc28e3d240.vert: ALU 26 -> 14, copies 18 -> 6, co-issued 0 -> 0, fetches 3 -> 3, control flow 9 -> 6, registers 8 -> 4; ok
+8ecfa22174a91d18.frag: ALU 12 -> 6, copies 4 -> 0, co-issued 0 -> 2, fetches 1 -> 1, control flow 4 -> 3, registers 5 -> 4; ok
+8f974c0335e452d5.vert: ALU 32 -> 17, copies 21 -> 7, co-issued 0 -> 0, fetches 2 -> 2, control flow 10 -> 6, registers 7 -> 3; ok
+92f6cc89e68fccea.frag: ALU 2 -> 2, copies 2 -> 2, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 1 -> 1; ok
+93d36ce55e3f9bad.vert: ALU 222 -> 200, copies 82 -> 68, co-issued 0 -> 22, fetches 5 -> 5, control flow 41 -> 37, registers 13 -> 14; ok
+946541a3cc485e48.frag: ALU 8 -> 3, copies 6 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 3, registers 4 -> 2; ok
+987a188c27a802e5.frag: ALU 19 -> 8, copies 11 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 6 -> 4, registers 8 -> 4; ok
+9f1eca9bebdc35b6.frag: ALU 11 -> 4, copies 7 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 3, registers 6 -> 3; ok
+a122a58ca77e3270.frag: ALU 6 -> 3, copies 4 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 4 -> 2; ok
+a2beec39ae2b951c.frag: ALU 2 -> 1, copies 2 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
+a35e191254f5ef46.frag: ALU 17 -> 10, copies 7 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 5 -> 4, registers 5 -> 5; ok
+a478595f52157a73.frag: ALU 14 -> 7, copies 7 -> 0, co-issued 0 -> 0, fetches 2 -> 2, control flow 5 -> 4, registers 7 -> 6; ok
+a479ce42ba36b7d8.frag: ALU 35 -> 14, copies 18 -> 2, co-issued 0 -> 2, fetches 1 -> 1, control flow 8 -> 4, registers 11 -> 4; ok
+a48b96d69ff86daf.vert: ALU 2 -> 2, copies 2 -> 2, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 4, registers 1 -> 1; ok
+ad037db0d56a10dd.vert: ALU 56 -> 28, copies 39 -> 14, co-issued 0 -> 0, fetches 3 -> 3, control flow 14 -> 8, registers 8 -> 4; ok
+b331aaa6bee56ee9.frag: ALU 85 -> 48, copies 25 -> 3, co-issued 0 -> 7, fetches 3 -> 3, control flow 17 -> 10, registers 15 -> 9; ok
+b40238367bc2ae70.frag: ALU 53 -> 30, copies 19 -> 2, co-issued 0 -> 2, fetches 4 -> 4, control flow 12 -> 8, registers 16 -> 10; ok
+b4a8c01218dcffe9.frag: ALU 47 -> 24, copies 19 -> 1, co-issued 0 -> 2, fetches 4 -> 4, control flow 11 -> 7, registers 15 -> 10; ok
+b4bd0f33bde7fc52.frag: ALU 23 -> 14, copies 9 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 6 -> 5, registers 7 -> 5; ok
+b624738d17bc5ca0.frag: ALU 13 -> 8, copies 3 -> 0, co-issued 0 -> 2, fetches 1 -> 1, control flow 5 -> 4, registers 5 -> 4; ok
+b72c3e79097987b4.frag: ALU 6 -> 3, copies 2 -> 0, co-issued 0 -> 1, fetches 1 -> 1, control flow 3 -> 3, registers 4 -> 3; ok
+ba930563b1db79f4.frag: ALU 5 -> 2, copies 3 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
+bacc292ad5a86eb3.vert: ALU 107 -> 51, copies 75 -> 27, co-issued 0 -> 0, fetches 2 -> 2, control flow 22 -> 12, registers 7 -> 3; ok
+bde83fec0182df1d.vert: ALU 29 -> 16, copies 21 -> 8, co-issued 0 -> 0, fetches 2 -> 2, control flow 9 -> 6, registers 7 -> 3; ok
+be7931e3ec0bb85e.frag: ALU 15 -> 10, copies 3 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 5 -> 4, registers 5 -> 2; ok
+c0887c56621045a9.vert: ALU 37 -> 19, copies 26 -> 8, co-issued 0 -> 0, fetches 2 -> 2, control flow 10 -> 7, registers 7 -> 3; ok
+c0ddfd4547c71e5a.vert: ALU 246 -> 221, copies 89 -> 73, co-issued 0 -> 25, fetches 4 -> 4, control flow 45 -> 40, registers 12 -> 13; ok
+c165aaa5a5be8de5.frag: ALU 2 -> 1, copies 2 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
+c2679fcd0788b78d.frag: ALU 24 -> 13, copies 11 -> 0, co-issued 0 -> 0, fetches 2 -> 2, control flow 6 -> 5, registers 8 -> 5; ok
+c359885760b8a624.vert: ALU 30 -> 16, copies 22 -> 8, co-issued 0 -> 0, fetches 4 -> 4, control flow 9 -> 6, registers 9 -> 5; ok
+c4bb20c5e14ce9d8.frag: ALU 2 -> 1, copies 2 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
+c8673f02f09b439d.frag: ALU 4 -> 3, copies 2 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 4 -> 2; ok
+c91470b682614340.frag: ALU 2 -> 1, copies 2 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
+c98a0ca2e68f85a1.frag: ALU 14 -> 8, copies 7 -> 1, co-issued 0 -> 0, fetches 3 -> 3, control flow 5 -> 4, registers 6 -> 5; ok
+ca44599827bbdb23.frag: ALU 38 -> 19, copies 17 -> 4, co-issued 0 -> 4, fetches 2 -> 2, control flow 8 -> 5, registers 10 -> 5; ok
+cad12b640d1cfd9c.frag: ALU 31 -> 11, copies 16 -> 0, co-issued 0 -> 2, fetches 1 -> 1, control flow 8 -> 4, registers 11 -> 5; ok
+cbed2c9db6f723a5.frag: ALU 8 -> 3, copies 4 -> 0, co-issued 0 -> 1, fetches 1 -> 1, control flow 4 -> 3, registers 4 -> 3; ok
+ce4bffbb0b973310.frag: ALU 1 -> 1, copies 1 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 1 -> 1; ok
+cefc467138f9dac7.vert: ALU 38 -> 20, copies 27 -> 9, co-issued 0 -> 0, fetches 2 -> 2, control flow 11 -> 7, registers 7 -> 4; ok
+d1441271ff15f72c.frag: ALU 8 -> 4, copies 3 -> 1, co-issued 0 -> 0, fetches 2 -> 2, control flow 4 -> 3, registers 4 -> 2; ok
+d5d99e338acc096e.vert: ALU 24 -> 13, copies 16 -> 5, co-issued 0 -> 0, fetches 2 -> 2, control flow 8 -> 6, registers 7 -> 3; ok
+d8658b0e39305f51.vert: ALU 266 -> 161, copies 102 -> 16, co-issued 0 -> 25, fetches 3 -> 3, control flow 49 -> 30, registers 12 -> 9; ok
+d8d724f61446ecbb.vert: ALU 45 -> 23, copies 31 -> 9, co-issued 0 -> 0, fetches 2 -> 2, control flow 12 -> 7, registers 7 -> 3; ok
+d90889c31c82dbe8.vert: ALU 199 -> 123, copies 75 -> 11, co-issued 0 -> 19, fetches 4 -> 4, control flow 37 -> 24, registers 13 -> 11; ok
+da2593920df168c8.vert: ALU 22 -> 13, copies 14 -> 5, co-issued 0 -> 0, fetches 1 -> 1, control flow 8 -> 6, registers 6 -> 2; ok
+dae9addf7280e276.frag: ALU 11 -> 4, copies 7 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 3, registers 5 -> 2; ok
+dee3af7655c47a63.frag: ALU 48 -> 25, copies 19 -> 2, co-issued 0 -> 2, fetches 2 -> 2, control flow 11 -> 7, registers 14 -> 7; ok
+e09e6878603dc742.frag: ALU 2 -> 1, copies 2 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
+e19f86ee747cb140.frag: ALU 26 -> 12, copies 13 -> 0, co-issued 0 -> 0, fetches 2 -> 2, control flow 7 -> 4, registers 8 -> 5; ok
+e2cfed9f9f80cbf0.frag: ALU 89 -> 50, copies 26 -> 1, co-issued 0 -> 7, fetches 4 -> 4, control flow 17 -> 11, registers 16 -> 10; ok
+e2f1c3a692fdfb84.frag: ALU 10 -> 4, copies 6 -> 0, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 2, registers 5 -> 2; ok
+e3fba406929fde97.frag: ALU 36 -> 24, copies 13 -> 1, co-issued 0 -> 0, fetches 8 -> 8, control flow 9 -> 7, registers 18 -> 16; ok
+e4c0798e6cc9e4ba.frag: ALU 30 -> 11, copies 15 -> 0, co-issued 0 -> 2, fetches 1 -> 1, control flow 7 -> 4, registers 11 -> 5; ok
+e5c535debebde1ed.frag: ALU 5 -> 2, copies 5 -> 2, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 4 -> 1; ok
+e5ea8b62e2ebf4ac.vert: ALU 259 -> 157, copies 101 -> 16, co-issued 0 -> 25, fetches 3 -> 3, control flow 47 -> 30, registers 12 -> 9; ok
+e6ec5aee8cc08f41.frag: ALU 11 -> 4, copies 7 -> 0, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 2, registers 5 -> 2; ok
+e7fe951996d1f40b.frag: ALU 42 -> 19, copies 19 -> 1, co-issued 0 -> 2, fetches 2 -> 2, control flow 10 -> 6, registers 14 -> 6; ok
+e9d14d2c939cffe4.vert: ALU 247 -> 153, copies 89 -> 11, co-issued 0 -> 25, fetches 4 -> 4, control flow 45 -> 29, registers 13 -> 11; ok
+e9e5df17e9c42a02.frag: ALU 30 -> 11, copies 15 -> 0, co-issued 0 -> 2, fetches 1 -> 1, control flow 7 -> 4, registers 12 -> 5; ok
+ece2618e566d8623.frag: ALU 3 -> 2, copies 3 -> 2, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
+ed3667059b5c9028.frag: ALU 36 -> 17, copies 16 -> 2, co-issued 0 -> 2, fetches 2 -> 2, control flow 9 -> 5, registers 13 -> 6; ok
+f12926532ee0b4d0.vert: ALU 87 -> 51, copies 45 -> 13, co-issued 0 -> 4, fetches 4 -> 4, control flow 19 -> 12, registers 11 -> 8; ok
+f1f88472976e4bfb.vert: ALU 214 -> 133, copies 76 -> 9, co-issued 0 -> 22, fetches 4 -> 4, control flow 40 -> 26, registers 13 -> 10; ok
+f2f1d4cd60de5251.frag: ALU 21 -> 12, copies 5 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 6 -> 4, registers 6 -> 2; ok
+f3825523049d31cf.frag: ALU 56 -> 30, copies 23 -> 3, co-issued 0 -> 2, fetches 3 -> 3, control flow 12 -> 8, registers 14 -> 7; ok
+f526e9ffb3616812.frag: ALU 4 -> 2, copies 4 -> 2, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
+f544e71db9210106.frag: ALU 1 -> 1, copies 1 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 2 -> 2; ok
+f5cb41c6eaf01a5f.frag: ALU 43 -> 19, copies 19 -> 0, co-issued 0 -> 3, fetches 2 -> 2, control flow 10 -> 6, registers 14 -> 6; ok
+f6b5e1536572c9a5.frag: ALU 9 -> 7, copies 1 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 4, registers 3 -> 2; ok
+f7c1df6fe6364447.frag: ALU 18 -> 12, copies 6 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 5 -> 4, registers 6 -> 5; ok
+absign.frag.spv: ALU 10 -> 7, copies 2 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 4, registers 7 -> 6; ok
+angles.frag.spv: ALU 3 -> 2, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 5 -> 3; ok
+blend50.frag.spv: ALU 2 -> 2, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 4 -> 3; ok
+blend.frag.spv: ALU 2 -> 2, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 4 -> 3; ok
+bright.frag.spv: ALU 2 -> 2, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 4 -> 3; ok
+cf_if.frag.spv: ALU 2 -> 2, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 4 -> 3; ok
+chainmat.vert.spv: ALU 10 -> 10, copies 2 -> 2, co-issued 0 -> 0, fetches 3 -> 3, control flow 6 -> 6, registers 4 -> 4; ok
+clamprange.frag.spv: ALU 3 -> 3, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 4 -> 3; ok
+cubedir.vert.spv: ALU 5 -> 5, copies 1 -> 1, co-issued 0 -> 0, fetches 3 -> 3, control flow 5 -> 5, registers 2 -> 2; ok
+divide.frag.spv: ALU 8 -> 8, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 4, registers 3 -> 2; ok
+explog.frag.spv: ALU 15 -> 11, copies 2 -> 1, co-issued 0 -> 3, fetches 0 -> 0, control flow 4 -> 3, registers 5 -> 4; ok
+floorabs.frag.spv: ALU 4 -> 4, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 4 -> 3; ok
+frag.spv: ALU 1 -> 1, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 3; ok
+fs_branch_local.frag.spv: ALU 3 -> 3, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 5 -> 4; ok
+fs_cubemap.frag.spv: ALU 4 -> 4, copies 1 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; not simulated: vector kCube
+fs_deriv.frag.spv: ALU 14 -> 8, copies 7 -> 1, co-issued 0 -> 0, fetches 3 -> 3, control flow 6 -> 5, registers 5 -> 5; ok
+fs_discard.frag.spv: ALU 2 -> 2, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 3; ok
+fs_dsolid.frag.spv: ALU 10 -> 6, copies 4 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 5 -> 3; ok
+fs_intdiv.frag.spv: ALU 18 -> 11, copies 4 -> 1, co-issued 0 -> 4, fetches 0 -> 0, control flow 4 -> 3, registers 5 -> 2; ok
+fs_minv.frag.spv: ALU 30 -> 20, copies 8 -> 1, co-issued 0 -> 1, fetches 0 -> 0, control flow 6 -> 5, registers 9 -> 6; ok
+fs_mtest.frag.spv: ALU 24 -> 15, copies 18 -> 9, co-issued 0 -> 0, fetches 0 -> 0, control flow 5 -> 4, registers 7 -> 6; ok
+fs_refract.frag.spv: ALU 24 -> 15, copies 5 -> 2, co-issued 0 -> 2, fetches 0 -> 0, control flow 5 -> 4, registers 7 -> 5; ok
+fs_ternary.frag.spv: ALU 6 -> 3, copies 3 -> 0, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 6 -> 3; ok
+fs_texlod.frag.spv: ALU 1 -> 1, copies 1 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 2 -> 2; ok
+fs_texproj.frag.spv: ALU 5 -> 4, copies 3 -> 2, co-issued 0 -> 1, fetches 1 -> 1, control flow 3 -> 3, registers 5 -> 3; ok
+fs_texscale.frag.spv: ALU 3 -> 2, copies 1 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
+fs_vrelation.frag.spv: ALU 30 -> 15, copies 16 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 6 -> 4, registers 8 -> 3; ok
+gamma.frag.spv: ALU 14 -> 8, copies 5 -> 2, co-issued 0 -> 3, fetches 1 -> 1, control flow 5 -> 4, registers 5 -> 2; ok
+gray.frag.spv: ALU 3 -> 2, copies 2 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
+intbucket.frag.spv: ALU 7 -> 5, copies 3 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 2, registers 3 -> 2; ok
+intmix.frag.spv: ALU 1 -> 1, copies 0 -> 0, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 1 -> 1; ok
+invtrig.frag.spv: ALU 42 -> 24, copies 8 -> 0, co-issued 0 -> 2, fetches 1 -> 1, control flow 9 -> 6, registers 7 -> 4; ok
+lit01.frag.spv: ALU 5 -> 3, copies 5 -> 3, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 4 -> 3; ok
+loop_accum.frag.spv: ALU 9 -> 4, copies 6 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 2, registers 4 -> 2; ok
+loop_array.frag.spv: ALU 3 -> 3, copies 1 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 6 -> 6, registers 3 -> 3; not simulated: control flow '      loop i0, L4'
+loop_break.frag.spv: ALU 5 -> 5, copies 1 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 6 -> 6, registers 4 -> 4; not simulated: control flow '      loop i0, L4'
+loop_cond.frag.spv: ALU 8 -> 7, copies 1 -> 0, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 3, registers 3 -> 2; ok
+loop_nested.frag.spv: ALU 21 -> 10, copies 11 -> 1, co-issued 0 -> 1, fetches 0 -> 0, control flow 5 -> 3, registers 4 -> 3; ok
+loop_stair.frag.spv: ALU 17 -> 11, copies 7 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 4 -> 3, registers 4 -> 3; ok
+loop_uniform.frag.spv: ALU 3 -> 3, copies 1 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 6 -> 6, registers 3 -> 3; not simulated: control flow '      loop i0, L4'
+loop_weight.frag.spv: ALU 12 -> 4, copies 6 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 2, registers 4 -> 2; ok
+loop_while.frag.spv: ALU 9 -> 4, copies 6 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 2, registers 4 -> 2; ok
+mathfns.frag.spv: ALU 22 -> 10, copies 5 -> 0, co-issued 0 -> 5, fetches 1 -> 1, control flow 6 -> 4, registers 7 -> 5; ok
+modcross.frag.spv: ALU 14 -> 5, copies 2 -> 0, co-issued 0 -> 1, fetches 1 -> 1, control flow 5 -> 3, registers 6 -> 3; ok
+modulate.frag.spv: ALU 1 -> 1, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 3; ok
+nested_if.frag.spv: ALU 5 -> 5, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 6 -> 5; ok
+normlen.frag.spv: ALU 8 -> 5, copies 2 -> 1, co-issued 0 -> 1, fetches 0 -> 0, control flow 3 -> 2, registers 5 -> 3; ok
+rounding.frag.spv: ALU 9 -> 8, copies 1 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 4, registers 6 -> 5; ok
+sat.frag.spv: ALU 1 -> 1, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 3; ok
+shuffle2.frag.spv: ALU 4 -> 3, copies 4 -> 3, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 4 -> 3; ok
+spincube.vert.spv: ALU 6 -> 6, copies 2 -> 2, co-issued 0 -> 0, fetches 3 -> 3, control flow 5 -> 5, registers 3 -> 3; ok
+stepsmooth.frag.spv: ALU 18 -> 11, copies 5 -> 0, co-issued 0 -> 2, fetches 1 -> 1, control flow 5 -> 4, registers 7 -> 5; ok
+sw_swizzle.frag.spv: ALU 2 -> 1, copies 1 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 4 -> 3; ok
+tangent.frag.spv: ALU 5 -> 5, copies 0 -> 0, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 5 -> 2; ok
+tint.frag.spv: ALU 3 -> 2, copies 2 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 4 -> 3; ok
+verify_alloc.frag.spv: ALU 34 -> 25, copies 10 -> 4, co-issued 0 -> 3, fetches 0 -> 0, control flow 7 -> 6, registers 6 -> 2; ok
+verify_asin.frag.spv: ALU 17 -> 12, copies 5 -> 1, co-issued 0 -> 1, fetches 0 -> 0, control flow 4 -> 3, registers 5 -> 4; ok
+verify_atan.frag.spv: ALU 16 -> 10, copies 6 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 4 -> 3, registers 4 -> 3; ok
+verify_cross.frag.spv: ALU 8 -> 6, copies 4 -> 3, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 2, registers 4 -> 3; ok
+verify_fract.frag.spv: ALU 5 -> 3, copies 3 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 3 -> 2; ok
+verify_mod.frag.spv: ALU 6 -> 4, copies 3 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 4 -> 2; ok
+verify_nest.frag.spv: ALU 5 -> 4, copies 1 -> 0, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 5 -> 3; ok
+verify_round.frag.spv: ALU 7 -> 4, copies 3 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 2, registers 3 -> 2; ok
+verify_sign.frag.spv: ALU 9 -> 6, copies 3 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 2, registers 4 -> 3; ok
+verify_smooth.frag.spv: ALU 12 -> 8, copies 4 -> 1, co-issued 0 -> 1, fetches 0 -> 0, control flow 3 -> 3, registers 4 -> 3; ok
+verify_sqrt.frag.spv: ALU 4 -> 3, copies 3 -> 2, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 3 -> 2; ok
+verify_trunc.frag.spv: ALU 6 -> 4, copies 3 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 3 -> 2; ok
+vert.spv: ALU 6 -> 6, copies 2 -> 2, co-issued 0 -> 0, fetches 3 -> 3, control flow 5 -> 5, registers 3 -> 3; ok
+vk_block_literals.vert.spv: ALU 5 -> 3, copies 3 -> 2, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 4, registers 3 -> 1; ok
+vk_blocks.vert.spv: ALU 14 -> 9, copies 6 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 6 -> 5, registers 4 -> 2; ok
+vk_clip_distance_literal.vert.spv: not compiled: gl_ClipDistance other than dot(gl_Position, a plane), the plane a whole vec4 of a block at a fixed index, as Xenos's user clip planes take it (v1)
+vk_clip_distance.vert.spv: ALU 3 -> 1, copies 1 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 4, registers 3 -> 1; ok
+vk_clip_distance_world.vert.spv: not compiled: gl_ClipDistance other than dot(gl_Position, a plane), the plane a whole vec4 of a block at a fixed index, as Xenos's user clip planes take it (v1)
+vk_composite_extract.frag.spv: ALU 20 -> 8, copies 11 -> 1, co-issued 0 -> 1, fetches 0 -> 0, control flow 5 -> 3, registers 6 -> 1; ok
+vk_constant_color.frag.spv: ALU 1 -> 1, copies 1 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 1 -> 1; ok
+vk_constant_varying.vert.spv: ALU 2 -> 2, copies 2 -> 2, co-issued 0 -> 0, fetches 1 -> 1, control flow 5 -> 5, registers 1 -> 1; ok
+vk_cube.frag.spv: ALU 4 -> 4, copies 1 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; not simulated: vector kCube
+vk_cube_grad.frag.spv: not compiled: gradients for a cube map or a 3D texture (v1)
+vk_cull_distance.vert.spv: not compiled: gl_CullDistance: Xenos has no cull distances
+vk_dependent_fetch.frag.spv: ALU 8 -> 4, copies 3 -> 1, co-issued 0 -> 0, fetches 2 -> 2, control flow 4 -> 3, registers 4 -> 2; ok
+vk_dependent_read.frag.spv: ALU 3 -> 2, copies 1 -> 1, co-issued 0 -> 0, fetches 2 -> 2, control flow 3 -> 3, registers 3 -> 3; ok
+vk_dot2.frag.spv: ALU 13 -> 7, copies 9 -> 3, co-issued 0 -> 0, fetches 0 -> 0, control flow 4 -> 3, registers 6 -> 2; ok
+vk_dynamic_interpolator.vert.spv: ALU 12 -> 12, copies 8 -> 8, co-issued 0 -> 0, fetches 1 -> 1, control flow 5 -> 5, registers 4 -> 4; ok
+vk_dynamic_matrices.vert.spv: ALU 12 -> 12, copies 5 -> 5, co-issued 0 -> 0, fetches 2 -> 2, control flow 5 -> 5, registers 6 -> 6; ok
+vk_dynamic_rows.vert.spv: ALU 18 -> 17, copies 9 -> 9, co-issued 0 -> 1, fetches 2 -> 2, control flow 7 -> 6, registers 6 -> 6; ok
+vk_five_fetches.vert.spv: ALU 10 -> 7, copies 6 -> 3, co-issued 0 -> 0, fetches 5 -> 5, control flow 6 -> 5, registers 7 -> 5; ok
+vk_four_outputs.frag.spv: ALU 8 -> 6, copies 6 -> 4, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 2, registers 2 -> 1; ok
+vk_frag_coord_depth.frag.spv: not compiled: gl_FragCoord.zw: the pixel parameters hold no depth (v1)
+vk_frag_coord.frag.spv: ALU 6 -> 6, copies 2 -> 2, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 3, registers 4 -> 4; ok
+vk_frag_depth_arms.frag.spv: ALU 6 -> 3, copies 4 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 5 -> 1; ok
+vk_frag_depth_before.frag.spv: ALU 7 -> 3, copies 4 -> 0, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 2, registers 5 -> 2; ok
+vk_frag_depth_branch.frag.spv: not compiled: gl_FragDepth written on one path of an if/else only: the depth export needs every path
+vk_frag_depth.frag.spv: ALU 10 -> 4, copies 6 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 2, registers 4 -> 2; ok
+vk_front_facing_discard.frag.spv: ALU 5 -> 5, copies 1 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 3, registers 4 -> 3; ok
+vk_front_facing.frag.spv: ALU 6 -> 4, copies 2 -> 0, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 3, registers 6 -> 3; ok
+vk_front_facing_if.frag.spv: ALU 8 -> 6, copies 3 -> 2, co-issued 0 -> 1, fetches 0 -> 0, control flow 3 -> 3, registers 5 -> 4; ok
+vk_grad.frag.spv: ALU 6 -> 4, copies 5 -> 3, co-issued 0 -> 0, fetches 3 -> 3, control flow 4 -> 4, registers 4 -> 4; ok
+vk_instance_alone.vert.spv: ALU 7 -> 3, copies 5 -> 2, co-issued 0 -> 0, fetches 1 -> 1, control flow 5 -> 4, registers 4 -> 1; ok
+vk_instance_index.vert.spv: ALU 21 -> 19, copies 8 -> 7, co-issued 0 -> 2, fetches 1 -> 1, control flow 7 -> 7, registers 6 -> 6; ok
+vk_local_branch_reassign.frag.spv: not compiled: local %9 stored more than once where the unroller doesn't rewrite it
+vk_local_chain.frag.spv: ALU 129 -> 64, copies 1 -> 0, co-issued 0 -> 0, fetches 0 -> 0, control flow 23 -> 12, registers 3 -> 2; ok
+vk_local_merged_early.frag.spv: not compiled: local %9 read before the if/else that assigns it ends
+vk_local_partial.frag.spv: ALU 4 -> 2, copies 4 -> 2, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 3 -> 1; ok
+vk_local_reassign.frag.spv: ALU 5 -> 2, copies 2 -> 0, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 4 -> 2; ok
+vk_local_reassign.vert.spv: ALU 2 -> 1, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 4, registers 2 -> 1; ok
+vk_lod.frag.spv: ALU 9 -> 7, copies 7 -> 5, co-issued 0 -> 0, fetches 7 -> 7, control flow 5 -> 5, registers 8 -> 8; ok
+vk_loop_break_data.frag.spv: not compiled: a break on data from a loop counted by a block: LOOP_END breaks when all 64 vertices or pixels agree (xenia:src/xenia/gpu/ucode.h:372-373) (v1)
+vk_loop_count.frag.spv: ALU 4 -> 4, copies 3 -> 3, co-issued 0 -> 0, fetches 0 -> 0, control flow 6 -> 6, registers 3 -> 3; not simulated: control flow '      loop i16, L5'
+vk_loop_count_if.frag.spv: ALU 23 -> 23, copies 10 -> 10, co-issued 0 -> 0, fetches 0 -> 0, control flow 8 -> 8, registers 10 -> 10; not simulated: control flow '      loop i16, L7'
+vk_loop_if_break.frag.spv: not compiled: a break, discard or return inside an if/else on data; real-loop v1: condition must compare local induction var to a uniform
+vk_loop_if.frag.spv: ALU 29 -> 19, copies 14 -> 4, co-issued 0 -> 0, fetches 0 -> 0, control flow 6 -> 5, registers 9 -> 6; ok
+vk_loop_swap.frag.spv: ALU 8 -> 8, copies 5 -> 5, co-issued 0 -> 0, fetches 0 -> 0, control flow 6 -> 6, registers 5 -> 5; not simulated: control flow '      loop i16, L5'
+vk_loop_uniform_if.frag.spv: ALU 34 -> 34, copies 19 -> 19, co-issued 0 -> 0, fetches 0 -> 0, control flow 11 -> 11, registers 5 -> 5; not simulated: scalar kSetpGt
+vk_many_fetches.frag.spv: not compiled: pixel shader needs 367 registers (r0..r366), over the 64 it may use; it would hang the GPU
+vk_many_live.vert.spv: ALU 148 -> 122, copies 8 -> 2, co-issued 0 -> 0, fetches 2 -> 2, control flow 29 -> 25, registers 45 -> 16; ok
+vk_matrices.vert.spv: ALU 30 -> 24, copies 6 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 9 -> 8, registers 6 -> 6; ok
+vk_output_location_4.frag.spv: not compiled: a colour output at location 4, past oC3
+vk_outputs_apart.frag.spv: ALU 5 -> 2, copies 3 -> 0, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 3 -> 1; ok
+vk_outputs_branch.frag.spv: not compiled: the colour output at location 1 stored 2 times
+vk_outputs_selected.frag.spv: ALU 5 -> 4, copies 2 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 4 -> 2; ok
+vk_point_coord.frag.spv: ALU 3 -> 2, copies 3 -> 2, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 2, registers 2 -> 1; ok
+vk_point_sprite.vert.spv: ALU 2 -> 2, copies 1 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 4, registers 1 -> 1; ok
+vk_position_only.vert.spv: ALU 2 -> 1, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 4, registers 2 -> 1; ok
+vk_samplers.frag.spv: ALU 2 -> 1, copies 0 -> 0, co-issued 0 -> 0, fetches 2 -> 2, control flow 3 -> 3, registers 4 -> 3; ok
+vk_shadow_cube.frag.spv: not compiled: depth comparisons other than a sampler2DShadow's unsupported
+vk_shadow.frag.spv: ALU 6 -> 6, copies 1 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 4 -> 2; ok
+vk_six_fetches.vert.spv: ALU 11 -> 9, copies 6 -> 4, co-issued 0 -> 0, fetches 6 -> 6, control flow 6 -> 6, registers 7 -> 6; ok
+vk_texel_dependent.frag.spv: ALU 6 -> 4, copies 1 -> 0, co-issued 0 -> 0, fetches 3 -> 3, control flow 6 -> 6, registers 5 -> 4; ok
+vk_texel_offset_operand.frag.spv: not compiled: image operands 0x8: offsets, a sample index or a minimum LOD (v1)
+vk_texel_offsets.frag.spv: ALU 9 -> 7, copies 2 -> 0, co-issued 0 -> 0, fetches 4 -> 4, control flow 4 -> 4, registers 8 -> 8; ok
+vk_three_inputs.vert.spv: ALU 5 -> 5, copies 5 -> 5, co-issued 0 -> 0, fetches 3 -> 3, control flow 5 -> 5, registers 3 -> 3; ok
+vk_triangle.frag.gl.spv: ALU 1 -> 1, copies 1 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 1 -> 1; ok
+vk_triangle.frag.spv: ALU 1 -> 1, copies 1 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 1 -> 1; ok
+vk_triangle.vert.gl.spv: ALU 2 -> 2, copies 2 -> 2, co-issued 0 -> 0, fetches 2 -> 2, control flow 5 -> 5, registers 2 -> 2; ok
+vk_triangle.vert.spv: ALU 2 -> 2, copies 2 -> 2, co-issued 0 -> 0, fetches 2 -> 2, control flow 5 -> 5, registers 2 -> 2; ok
+vk_vertex_branch.vert.spv: ALU 7 -> 5, copies 2 -> 1, co-issued 0 -> 1, fetches 1 -> 1, control flow 5 -> 5, registers 4 -> 2; ok
+vk_vertex_if.vert.spv: ALU 26 -> 16, copies 14 -> 4, co-issued 0 -> 0, fetches 2 -> 2, control flow 8 -> 7, registers 9 -> 6; ok
+vk_vertex_index.vert.spv: not compiled: integer Load must be a foldable local
+vk_vertex_loop_count.vert.spv: ALU 13 -> 13, copies 10 -> 10, co-issued 0 -> 0, fetches 2 -> 2, control flow 10 -> 10, registers 7 -> 7; not simulated: control flow '      loop i0, L7'
+vk_vertex_texture.vert.spv: ALU 5 -> 4, copies 3 -> 2, co-issued 0 -> 0, fetches 5 -> 5, control flow 6 -> 5, registers 5 -> 4; ok
+vk_vertex_uniform_if.vert.spv: ALU 14 -> 9, copies 8 -> 3, co-issued 0 -> 0, fetches 2 -> 2, control flow 6 -> 6, registers 7 -> 5; ok
+vk_volume.frag.spv: ALU 1 -> 1, copies 1 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 2 -> 2; ok
+vk_volume.vert.spv: ALU 2 -> 2, copies 2 -> 2, co-issued 0 -> 0, fetches 2 -> 2, control flow 5 -> 5, registers 2 -> 2; ok
+vs_lighting.vert.spv: ALU 14 -> 11, copies 5 -> 2, co-issued 0 -> 0, fetches 4 -> 4, control flow 6 -> 6, registers 5 -> 4; ok
+vs_mat2.vert.spv: ALU 8 -> 7, copies 2 -> 1, co-issued 0 -> 0, fetches 3 -> 3, control flow 5 -> 5, registers 4 -> 3; ok
+vs_mat3.vert.spv: ALU 13 -> 10, copies 4 -> 2, co-issued 0 -> 0, fetches 3 -> 3, control flow 6 -> 5, registers 3 -> 3; ok
+vs_matmat.vert.spv: ALU 26 -> 22, copies 6 -> 2, co-issued 0 -> 0, fetches 3 -> 3, control flow 8 -> 8, registers 8 -> 7; ok
+vs_vecmat.vert.spv: ALU 7 -> 6, copies 3 -> 2, co-issued 0 -> 0, fetches 3 -> 3, control flow 5 -> 5, registers 4 -> 4; ok
+vs_wave.vert.spv: ALU 11 -> 9, copies 4 -> 2, co-issued 0 -> 1, fetches 3 -> 3, control flow 6 -> 6, registers 6 -> 5; ok
+vtx_arith.vert.spv: ALU 8 -> 7, copies 2 -> 1, co-issued 0 -> 0, fetches 3 -> 3, control flow 5 -> 5, registers 4 -> 4; ok
+aurora_attr_defaults.frag: ALU 7 -> 3, copies 5 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 3, registers 5 -> 3; ok
+aurora_attr_defaults.vert: ALU 67 -> 27, copies 37 -> 5, co-issued 0 -> 4, fetches 2 -> 2, control flow 15 -> 8, registers 7 -> 4; ok
+aurora_emboss.frag: ALU 7 -> 3, copies 5 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 3, registers 6 -> 3; ok
+aurora_emboss.vert: ALU 84 -> 47, copies 43 -> 13, co-issued 0 -> 5, fetches 5 -> 5, control flow 17 -> 12, registers 11 -> 8; ok
+aurora_texgen_binormal.frag: ALU 7 -> 3, copies 5 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 3, registers 5 -> 3; ok
+aurora_texgen_binormal.vert: ALU 65 -> 31, copies 35 -> 9, co-issued 0 -> 4, fetches 3 -> 3, control flow 14 -> 9, registers 8 -> 5; ok
+aurora_texgen_prior.frag: ALU 8 -> 4, copies 6 -> 2, co-issued 0 -> 0, fetches 2 -> 2, control flow 4 -> 3, registers 6 -> 5; ok
+aurora_texgen_prior.vert: ALU 83 -> 38, copies 45 -> 12, co-issued 0 -> 4, fetches 3 -> 3, control flow 17 -> 10, registers 8 -> 5; ok
+aurora_texgen_prior_inline.frag: ALU 7 -> 3, copies 5 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 3, registers 5 -> 3; ok
+aurora_texgen_prior_inline.vert: ALU 65 -> 31, copies 35 -> 9, co-issued 0 -> 4, fetches 3 -> 3, control flow 14 -> 9, registers 8 -> 5; ok
+aurora_texgen_q_zero.frag: ALU 16 -> 9, copies 8 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 5 -> 4, registers 6 -> 4; ok
+aurora_texgen_q_zero.vert: ALU 76 -> 40, copies 39 -> 10, co-issued 0 -> 4, fetches 3 -> 3, control flow 16 -> 11, registers 8 -> 5; ok
+aurora_texgen_tangent.frag: ALU 7 -> 3, copies 5 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 3, registers 5 -> 3; ok
+aurora_texgen_tangent.vert: ALU 65 -> 31, copies 35 -> 9, co-issued 0 -> 4, fetches 3 -> 3, control flow 14 -> 9, registers 8 -> 5; ok
+aurora_texgen_zero.frag: ALU 16 -> 9, copies 8 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 5 -> 4, registers 6 -> 4; ok
+aurora_texgen_zero.vert: ALU 75 -> 42, copies 34 -> 9, co-issued 0 -> 5, fetches 2 -> 2, control flow 16 -> 11, registers 7 -> 5; ok
+aurora_ztex_add_u24.frag: ALU 40 -> 19, copies 15 -> 1, co-issued 0 -> 1, fetches 1 -> 1, control flow 9 -> 6, registers 9 -> 4; ok
+aurora_ztex_add_u24.vert: ALU 61 -> 31, copies 34 -> 10, co-issued 0 -> 4, fetches 3 -> 3, control flow 14 -> 9, registers 8 -> 5; ok
+aurora_ztex_add_u8.frag: ALU 35 -> 16, copies 13 -> 1, co-issued 0 -> 1, fetches 1 -> 1, control flow 8 -> 5, registers 9 -> 4; ok
+aurora_ztex_add_u8.vert: ALU 61 -> 31, copies 34 -> 10, co-issued 0 -> 4, fetches 3 -> 3, control flow 14 -> 9, registers 8 -> 5; ok
+aurora_ztex_replace_u24.frag: ALU 25 -> 13, copies 9 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 7 -> 5, registers 6 -> 3; ok
+aurora_ztex_replace_u24.vert: ALU 59 -> 28, copies 32 -> 8, co-issued 0 -> 4, fetches 3 -> 3, control flow 13 -> 9, registers 8 -> 5; ok
+aurora_ztex_replace_u8.frag: ALU 20 -> 10, copies 7 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 6 -> 4, registers 6 -> 3; ok
+aurora_ztex_replace_u8.vert: ALU 59 -> 28, copies 32 -> 8, co-issued 0 -> 4, fetches 3 -> 3, control flow 13 -> 9, registers 8 -> 5; ok
+band.frag: ALU 6 -> 6, copies 2 -> 2, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 3, registers 4 -> 4; ok
+branch_data.vert: ALU 29 -> 21, copies 15 -> 7, co-issued 0 -> 0, fetches 2 -> 2, control flow 9 -> 7, registers 7 -> 6; ok
+branch_uniform.vert: ALU 16 -> 8, copies 9 -> 2, co-issued 0 -> 0, fetches 1 -> 1, control flow 7 -> 6, registers 6 -> 4; ok
+clip.vert: ALU 2 -> 1, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 4, registers 2 -> 1; ok
+clip_planes.vert: ALU 3 -> 1, copies 1 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 4, registers 3 -> 1; ok
+coord.vert: ALU 2 -> 2, copies 2 -> 2, co-issued 0 -> 0, fetches 2 -> 2, control flow 5 -> 5, registers 2 -> 2; ok
+cube.frag: ALU 4 -> 4, copies 1 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; not simulated: vector kCube
+depth_before.frag: ALU 6 -> 3, copies 3 -> 0, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 4 -> 2; ok
+depth_if.frag: ALU 5 -> 3, copies 3 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 4 -> 1; ok
+displace.frag: ALU 1 -> 1, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 3; ok
+displace.vert: ALU 9 -> 5, copies 5 -> 2, co-issued 0 -> 0, fetches 7 -> 7, control flow 6 -> 6, registers 7 -> 6; ok
+facing.frag: ALU 4 -> 3, copies 1 -> 0, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 3, registers 4 -> 2; ok
+facing.vert: ALU 3 -> 2, copies 1 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 5 -> 5, registers 2 -> 1; ok
+facing_discard.frag: ALU 5 -> 5, copies 1 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 3, registers 3 -> 3; ok
+format.frag: ALU 2 -> 1, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
+format.vert: ALU 4 -> 2, copies 1 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 5 -> 5, registers 2 -> 1; ok
+four_targets.frag: ALU 5 -> 4, copies 5 -> 4, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 1 -> 1; ok
+instanced.vert: ALU 10 -> 7, copies 5 -> 4, co-issued 0 -> 0, fetches 3 -> 3, control flow 6 -> 5, registers 5 -> 4; ok
+instanced_places.vert: ALU 8 -> 5, copies 3 -> 2, co-issued 0 -> 0, fetches 3 -> 3, control flow 6 -> 5, registers 5 -> 4; ok
+lod_bands.vert: ALU 3 -> 3, copies 3 -> 3, co-issued 0 -> 0, fetches 3 -> 3, control flow 5 -> 5, registers 3 -> 3; ok
+lod_bias.frag: ALU 4 -> 3, copies 2 -> 1, co-issued 0 -> 0, fetches 2 -> 2, control flow 4 -> 4, registers 4 -> 4; ok
+lod_computed.frag: ALU 4 -> 3, copies 2 -> 1, co-issued 0 -> 0, fetches 2 -> 2, control flow 4 -> 4, registers 4 -> 4; ok
+lod_constant.frag: ALU 6 -> 4, copies 3 -> 1, co-issued 0 -> 0, fetches 3 -> 3, control flow 4 -> 4, registers 7 -> 5; ok
+lod_gradients.frag: ALU 11 -> 8, copies 6 -> 4, co-issued 0 -> 2, fetches 3 -> 3, control flow 5 -> 5, registers 5 -> 6; ok
+loop_count.frag: ALU 10 -> 10, copies 9 -> 9, co-issued 0 -> 0, fetches 0 -> 0, control flow 7 -> 7, registers 4 -> 4; not simulated: control flow '      loop i16, L6'
+loop_count.vert: ALU 19 -> 19, copies 15 -> 15, co-issued 0 -> 0, fetches 1 -> 1, control flow 11 -> 11, registers 7 -> 7; not simulated: control flow '      loop i0, L8'
+loop_count_if.frag: ALU 27 -> 27, copies 17 -> 17, co-issued 0 -> 0, fetches 0 -> 0, control flow 9 -> 9, registers 9 -> 9; not simulated: control flow '      loop i16, L8'
+loop_if.frag: ALU 55 -> 36, copies 39 -> 20, co-issued 0 -> 0, fetches 0 -> 0, control flow 11 -> 7, registers 9 -> 7; ok
+loop_uniform_if.frag: ALU 55 -> 55, copies 40 -> 40, co-issued 3 -> 3, fetches 0 -> 0, control flow 14 -> 14, registers 5 -> 5; not simulated: scalar kSetpGt
+many_samplers.frag: ALU 31 -> 31, copies 16 -> 16, co-issued 0 -> 0, fetches 16 -> 16, control flow 10 -> 10, registers 32 -> 32; ok
+many_samplers.vert: ALU 17 -> 16, copies 0 -> 0, co-issued 0 -> 0, fetches 17 -> 17, control flow 8 -> 8, registers 18 -> 18; ok
+many_samplers_15.vert: ALU 16 -> 15, copies 0 -> 0, co-issued 0 -> 0, fetches 16 -> 16, control flow 8 -> 8, registers 17 -> 17; ok
+matrix_index.vert: ALU 18 -> 17, copies 9 -> 9, co-issued 0 -> 1, fetches 2 -> 2, control flow 7 -> 6, registers 6 -> 6; ok
+point.vert: ALU 2 -> 2, copies 1 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 4, registers 1 -> 1; ok
+point_coord.frag: ALU 3 -> 2, copies 3 -> 2, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 2, registers 2 -> 1; ok
+push.frag: ALU 1 -> 1, copies 1 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 1 -> 1; ok
+push.vert: ALU 2 -> 1, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 4, registers 2 -> 1; ok
+scaled.frag: ALU 1 -> 1, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 2 -> 2; ok
+shadow.frag: ALU 6 -> 6, copies 2 -> 2, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 4 -> 2; ok
+texture.frag: ALU 1 -> 1, copies 1 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 2 -> 2; ok
+texture.vert: ALU 2 -> 2, copies 2 -> 2, co-issued 0 -> 0, fetches 2 -> 2, control flow 5 -> 5, registers 2 -> 2; ok
+triangle.frag: ALU 1 -> 1, copies 1 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 1 -> 1; ok
+triangle.vert: ALU 2 -> 2, copies 2 -> 2, co-issued 0 -> 0, fetches 2 -> 2, control flow 5 -> 5, registers 2 -> 2; ok
+uniform.frag: ALU 1 -> 1, copies 0 -> 0, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 1 -> 1; ok
+uniform.vert: ALU 6 -> 5, copies 2 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 5 -> 5, registers 2 -> 2; ok
+vertex_alpha.vert: ALU 6 -> 2, copies 2 -> 0, co-issued 0 -> 0, fetches 2 -> 2, control flow 5 -> 5, registers 3 -> 2; ok
+vertex_format.vert: ALU 5 -> 2, copies 1 -> 0, co-issued 0 -> 0, fetches 2 -> 2, control flow 5 -> 5, registers 3 -> 2; ok
+volume.frag: ALU 1 -> 1, copies 1 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 2 -> 2; ok
+blit.frag: ALU 1 -> 1, copies 1 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 2 -> 2; ok
+blit.vert: ALU 2 -> 2, copies 2 -> 2, co-issued 0 -> 0, fetches 2 -> 2, control flow 5 -> 5, registers 2 -> 2; ok
+blit_region.vert: ALU 5 -> 2, copies 3 -> 1, co-issued 0 -> 0, fetches 2 -> 2, control flow 5 -> 5, registers 4 -> 2; ok
+clear.frag: ALU 1 -> 1, copies 1 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 1 -> 1; ok
+clear_four.frag: ALU 4 -> 4, copies 4 -> 4, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 1 -> 1; ok
+mesh.frag: ALU 1 -> 1, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 2 -> 2; ok
+mesh.vert: ALU 8 -> 5, copies 4 -> 1, co-issued 0 -> 0, fetches 2 -> 2, control flow 6 -> 5, registers 4 -> 3; ok
+mesh_gray.frag: ALU 4 -> 3, copies 2 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 4 -> 2; ok
+mesh_uniform.frag: ALU 1 -> 1, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 2 -> 2; ok
+mesh_uniform.vert: ALU 8 -> 5, copies 4 -> 1, co-issued 0 -> 0, fetches 2 -> 2, control flow 6 -> 5, registers 4 -> 3; ok
+sprite.frag: ALU 1 -> 1, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 3; ok
+sprite.vert: ALU 5 -> 5, copies 5 -> 5, co-issued 0 -> 0, fetches 3 -> 3, control flow 5 -> 5, registers 3 -> 3; ok
+vertex, 122 shaders: ALU 7186 -> 4513 (37.2% fewer); copies 3063 (42.6% of ALU) -> 848 (18.8%); co-issued 0 (0.0%) -> 527 (11.7%); fetches 338 -> 338; control flow 1702 -> 1235; registers 7.0 -> 5.0 a shader, most 45 -> 18
+pixel, 246 shaders: ALU 4098 -> 2322 (43.3% fewer); copies 1673 (40.8% of ALU) -> 399 (17.2%); co-issued 3 (0.1%) -> 199 (8.6%); fetches 277 -> 277; control flow 1275 -> 987; registers 5.9 -> 3.8 a shader, most 32 -> 32
+384 shaders, 0 differ, 15 not simulated, 16 not compiled
+against the baseline, vertex, optimiser off: ALU 7172 -> 7186 (+0.2%), copies 3055 -> 3063 (+0.3%), co-issued 0 -> 0, fetches 337 -> 338 (+0.3%), control flow 1695 -> 1702 (+0.4%), registers 852 -> 856 (+0.5%), most registers 45 -> 45 (+0.0%)
+against the baseline, vertex, optimiser on: ALU 6106 -> 4513 (-26.1%), copies 2417 -> 848 (-64.9%), co-issued 476 -> 527 (+10.7%), fetches 337 -> 338 (+0.3%), control flow 1520 -> 1235 (-18.8%), registers 872 -> 607 (-30.4%), most registers 44 -> 18 (-59.1%)
+against the baseline, pixel, optimiser off: ALU 4098 -> 4098 (+0.0%), copies 1673 -> 1673 (+0.0%), co-issued 3 -> 3 (+0.0%), fetches 277 -> 277 (+0.0%), control flow 1275 -> 1275 (+0.0%), registers 1452 -> 1452 (+0.0%), most registers 32 -> 32 (+0.0%)
+against the baseline, pixel, optimiser on: ALU 2789 -> 2322 (-16.7%), copies 836 -> 399 (-52.3%), co-issued 199 -> 199 (+0.0%), fetches 277 -> 277 (+0.0%), control flow 1053 -> 987 (-6.3%), registers 1243 -> 929 (-25.3%), most registers 32 -> 32 (+0.0%)

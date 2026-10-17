@@ -502,3 +502,73 @@ op there pairs, so more co-issue would need the scalar unit to take work the low
   The two relative vertex shaders take 0.87 and 1.11 ms against 0.13 and 0.14, a pass over the program for each of
   their 22 and 25 pairs; before `join` found its stage's bounds once they took 1.23 and 1.58, and the pack 72.3 ms. At
   that share the console's 1.42 s grows by about 0.01 s.
+
+## a0 lost at an alloc: Dusklight's lighting
+
+`probe_relative_constants` found on the console that a0 doesn't survive a control flow `alloc`: a read at a0 after
+one needs an a0 load after it (`probe_relative_constants.log`, `probe_relative_constants_stress.log`;
+docs/HARDWARE.md, "a0 doesn't survive an alloc"). Built on 2026-10-17 and checked on the PC; the console runs are to
+come.
+
+**Dusklight's lighting.** `93d36ce55e3f9bad.vert` and `c0ddfd4547c71e5a.vert` skin a vertex: they load a0 with
+`maxasf` after the position's alloc and read its matrix, `c[120..122+a0]`, for the position. Its normal matrix,
+`c[152..154+a0]`, they read for the lighting after the interpolators' alloc, at an a0 the console has lost, so their
+skinned characters have been lit from wrong rows, before the milestone and at step 4 alike. What step 4 changed is
+which wrong values. Before it, `can_optimize` left programs reading at a run-time index alone, and the read of
+`c[152+a0]` stood by itself; step 4 let `co_issue` run on them, and in 93d36 that read joined an `rcp`
+(`max r8, c[152+a0], c[152+a0]` with `rcp r7, r6.x`), and 22 scalar ops moved to pair, 221 ALU instructions to 199.
+What a read at a lost a0 gives depends on the instructions and registers around it: case 8 of the probe replays 93d36's
+instructions from its `maxasf` to that read both ways, and neither reads the row, the old span giving `E3E3E3E3`,
+`CACACACA`, `73737373` and `55555555` over its four quads, step 4's `ADD1E4FF`, `F5E3E4FF` and `FFFFE4FF`. So step 4
+moved the lighting from one wrong normal matrix to another, and neither was right.
+
+**What changed.** xost's lowering (`set_a0`, `src/xsc_lower_block.c`) keeps the instruction that loaded a0 and the
+program's alloc count then, which `xsdk_xsc_program_alloc` (`src/xsc_program.c`) counts. A read at the same index with
+an alloc since emits that same `maxa`, `maxas` or `maxasf` again first, in the read's alloc region, right before it;
+an if/else's arms save and restore that with the rest of a0's state, so a load in one arm doesn't stand for the
+pixels that skip it. Every alloc xost emits counts, the position's, the interpolators' and the colours' (it emits no
+memory export), in vertex and pixel shaders. The reload is in the program before the optimiser and the allocator:
+nothing moves past an a0 load, so `co_issue` keeps it between the alloc and the read, and the allocator keeps its
+source, the index or the index times an element's registers, live to it. Over the corpus that cost no register.
+- **Which shaders take one:** Dusklight's 93d36 and c0dd, before their `c[152+a0]`, and testdata's new
+  `vk_dynamic_interpolator.vert`. Dusklight's `04a469b1240c5698.vert` has no interpolators and reads at a0 only after
+  the position's alloc, where it loads a0; vulkan4xenon's `matrix_index.vert` reads its colour after the interpolators'
+  alloc at another index, `i / 3`, which it loads there already. Nothing else in the corpus reads at a0 after an alloc.
+- **The cost:** 93d36 199 to 200 ALU instructions and c0dd 220 to 221, registers 14 and 13 as before; optimiser off,
+  221 to 222 and 245 to 246, an exec more each, registers 13 and 12 as before. In 93d36 the `rcp` step 4 paired with
+  the read pairs with a `dp3` instead, so the co-issued slots stay 22 and 25. The index's register now lives from its
+  fetch to the reload, past the position, and fits within the registers the lighting needs anyway.
+- **aL:** xost reads at the loop index only in `xsdk_xsc_lower_real_loop`'s loop (`src/xsc_lower_loop.c`), before the
+  colours' alloc; over the corpus only testdata's `loop_array.frag` does, there. The probe didn't try aL after an
+  alloc.
+
+It ran as the baseline's line with `--json ../results/2026-10-17-milestone-45/reload.json`; `reload.txt` is what it
+printed. The corpus has 384 shaders now, testdata's `vk_dynamic_interpolator.vert` among them.
+
+**Checks:**
+- `check_optimize.py`: 0 differ, 15 not simulated, 16 not compiled. Against `step4.json`, only 93d36, c0dd and the new
+  shader's counts change; with the optimiser on the corpus has 6835 ALU instructions, 6823 without the new shader's
+  12, against step 4's 6821.
+- Containers: every program of the corpus, optimiser off and on, and the pack's 150 as it builds them, against
+  `4204b4c`'s library built from `git archive` in a scratch directory: all but 93d36's and c0dd's come out byte for
+  byte, containers, literals and resources, 910 of 916. Scanned, each read at a0 in them has a load since its alloc; at
+  `4204b4c` 93d36's and c0dd's three `c[152..154+a0]` didn't.
+- xost's tests, a file at a time in WSL, all pass but `test_xcomb_parity.py`, which runs on Windows.
+  `test_dynamic_index.py` checks, in every testdata shader that reads at a0, optimiser off and on, that each read at a0
+  has a load since its alloc and that a load again comes only where such a read needs it, and that
+  `vk_dynamic_interpolator.vert`'s comes after the interpolators' alloc, right before the first of its two reads
+  there, the same instruction as the position's; the simulator gives each of its 16 indices' position and colour.
+  Broken on purpose, the reload dropped fails it (a read at a0 after alloc 2 with no load since), and a reload before
+  every read after an alloc fails it too (a0 loaded again where it holds that already).
+- xsdk_test's raster test draws `vk_dynamic_interpolator.vert`, compiled on the console, as one draw of 70 by 8 quads
+  10 pixels square, quad i's vertices at index i % 16, and checks every quad's centre against its index's colour in
+  each of 59 frames; its check line counts the wrong quads, the first 8 logged. It adds a draw of 3360 vertices and
+  560 pixel reads to each frame. `tests/xsc_shaders.h`, regenerated with `tools/gen_xsc_shaders.py`, has it as the
+  compiler check's ninth shader; its other 8 containers are the same. For the console to show the check failing
+  without the fix, a copy of xsdk_test was built with the reload off: from a scratch copy of the fix's commit,
+  `set_a0`'s reload replaced by `return true` and `tests/xsc_shaders.h` regenerated with that compiler, so only the
+  ninth container differs, by the reload's instruction, and the compiler check agrees; `make BUILD=build-noreload`.
+- `make clean && make -j32`, then `make -j32 XSC_PACK=/mnt/z/dusklight-xenon/platforms/xenon/glsl_pack.c
+  build/probe_shader_cost.xex build/probe_xsc.xex build/probe_relative_constants.xex`: no warnings.
+- Compile time, the pack's 150 programs on the PC as before: 71.5 ms against `4204b4c`'s 72.2, the slowest 3.71 ms
+  against 3.73; 93d36 and c0dd 0.84 and 1.07 ms against 0.89 and 1.13.
