@@ -310,3 +310,59 @@ Run on 2026-10-17 through the console agent, everything cleaned and built in ful
   runs at 30 fps as before and its 600th frame, captured, shows the ride into Hyrule Field as the baseline's does.
 - **Broken on purpose,** an elementwise op's operands left in their lanes when the allocator moves its result: 34 of
   the probe's 100 pictures differ from the baseline.
+
+## Compile time
+
+Step 2 made compiling Dusklight's pack on the console 2.6 times slower, 1.32 s to 3.39 s; agreed on 2026-10-17 to bring
+it back within the milestone. Built on 2026-10-17 and checked on the PC; the console runs are to come.
+
+**Where the time went.** Each pass of the optimiser's first round makes one change, then the round starts over
+(`first_round`, `src/xsc_optimize.c`), each pass building the flow again. `compute_in_place` was no different, so a
+shader ran the whole round once more for every copy it took. Counted with gprof over the pack's 150 programs, step 3
+ran 4104 rounds against the baseline's 2422: 1682 more, one for each copy taken. `common_subexpressions`, which
+compares each instruction with every one before it, took 55% of the time and building the flow 29%.
+
+**What changed.**
+- `compute_in_place` takes every copy it can before the round starts over. The round runs once more for a program
+  whose copies it took, 125 more over the pack, 2547 in all.
+- After each copy it takes, it scans again from the first instruction, as before, on the flow kept up to date rather
+  than built again: the writers' and the redirected readers' reads and writes are found again, the copy's entry goes,
+  and the index of which instruction writes and reads each key is rebuilt from them (`find_keys`, `drop_op`,
+  `index_flow`). A copy into an export moves its writer down to it, so then the flow is built again: 227 of the 1682.
+
+**The containers.** Each scan sees the flow a rebuild would give, so the pass takes the same copies in the same order.
+What's new is that the round's other passes no longer run between two of them. A copy taken could give them something
+new, such as a computation then in the same lanes as an earlier one for `common_subexpressions`; they see it once the
+pass is done. Over the corpus nothing came of it: every shader, optimiser on and off, compiles byte for byte as step
+3's library (`f9f970e`) compiles it, containers, literals and resources. `tests/xsc_shaders.h`, regenerated with
+`tools/gen_xsc_shaders.py`, is the same, and so are `check_optimize.py`'s counts, shader by shader, `step3.json`'s.
+
+**On the PC,** compiling the pack's 150 programs through `build/host/libxsc.so` with the optimiser on, at xsdk's split,
+in WSL; best of ten compiles of each, and of three such runs. `34e6f58`'s and step 2's libraries were built from `git
+archive` in a scratch directory.
+
+| | `34e6f58` | Step 2 | Step 3 | Now |
+|---|---|---|---|---|
+| 150 programs | 74.3 ms | 170.3 | 174.9 | 77.0 |
+| A program | 0.50 ms | 1.14 | 1.17 | 0.51 |
+| The slowest, `glsl_407248b726bcb428_vert` | 3.76 ms | 10.57 | 10.85 | 3.89 |
+
+Now takes 3.6% more than `34e6f58`. The PC put step 2 at 2.29 times the baseline where the console put it at 2.57.
+Built with gprof's counting, which makes every call dearer, the pack took 605 ms at `34e6f58`, 1577 at step 3, 2.61
+times, near the console's ratio, and 627 now, 1.04 times.
+
+**Checks:**
+- `check_optimize.py`: 0 differ, with the baseline's 24 not simulated and 16 not compiled. It took 87 s against step
+  3's 86: its time is the simulator's.
+- xost's tests, a file at a time in WSL, all pass but `test_xcomb_parity.py`, which runs on Windows. `test_optimize.py`
+  has a case for this: three copies taken in one scan, the last copying the vector the first two put their writers'
+  results in, so it finds those writers only on the flow as it stands after them.
+- A scratch build checked the flow kept up to date against one built afresh after every copy taken, over the corpus:
+  2045 copies, the same each time.
+- Broken on purpose:
+  - the redirected readers' reads left as they were: `test_register_alloc.py`'s `vk_many_live.vert` check fails, and
+    1 shader of the corpus differs;
+  - the writer's left as they were: the new case fails, and 23 shaders differ;
+  - the copy left in the flow: the new case fails, 46 shaders differ, and one more isn't compiled.
+- `make XSC_PACK=/mnt/z/dusklight-xenon/platforms/xenon/glsl_pack.c build/probe_shader_cost.xex build/probe_xsc.xex`
+  builds clean.
