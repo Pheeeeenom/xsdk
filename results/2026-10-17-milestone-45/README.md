@@ -89,5 +89,23 @@ Built outside `all`, from Dusklight's pack:
 make XSC_PACK=/mnt/z/dusklight-xenon/platforms/xenon/glsl_pack.c build/probe_shader_cost.xex
 ```
 
-Its log goes in this folder. Each line's ALU and register counts should equal the `on` counts in `baseline.json`
-for the same shader.
+Run twice on the console on 2026-10-17 through the console agent: `probe_baseline_1.log` and `probe_baseline_2.log`.
+Each run takes about 12 s, 6.7 s of it hashing.
+
+- **Counts:** every line's ALU and register counts equal the `on` counts in `baseline.json` for the same shader.
+- **Pixel shaders, 103:** 77,867 and 78,034 µs for a full-screen draw of each. The cheapest take 267 µs, about 7
+  pixels a clock; above that the time grows with the ALU: `1510c05add37f2b3.frag`'s 70 take 2,760 µs,
+  against 70 × 921,600 / 48 clocks, 2,700 µs, at 48 ALUs a clock.
+- **Vertex shaders, 47:** 16,474 and 16,488 µs for a 65,535-vertex draw of each. The cheapest take 132 µs, a vertex a
+  clock; `c0ddfd4547c71e5a.vert`'s 245 ALU instructions take 704 µs. Each run's query says nothing reached the pixels.
+- **Repeatability:** a shader's time moves 0.46% between the runs on average, 6.2% at most.
+- **Pictures:** 100 of the 103 hash the same in both runs. `1510c05add37f2b3.frag`, `29fab4bb2516d607.frag` and
+  `2eefbbd89e53921c.frag` hash differently in every run, so a step's run is compared on the other 100. All three
+  sample a texture at coordinates offset by another texture's texel times 255 (GX's indirect texturing), coordinates in
+  the thousands. Two other shaders that do the same repeat. Why these three don't isn't known: xost's simulator finds
+  no component they export undefined, and the probe's texture has one level, which xsdk clamps the fetch to.
+
+The probe's first run drew every pixel shader with all 16 interpolators. Every pixel shader up to 45 ALU instructions
+then took about 1,852 µs, 921,600 pixels in as many clocks: interpolating 64 components a pixel held them all to a
+pixel a clock. Each pixel shader is now drawn with as many interpolators as it reads, one past its highest input
+Location.

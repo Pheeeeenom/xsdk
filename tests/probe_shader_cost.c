@@ -11,15 +11,23 @@
 #include "xsdk/xsc.h"
 
 // What xost's code costs the GPU (docs/scope/45-xost-code-quality.md, step 1): each program in Dusklight's pack,
-// compiled here, timed by the GPU's clock; a pixel shader over 1280x720, its picture hashed from fixed inputs, and a
-// vertex shader over vertices all alike, so its triangles have no area and nothing reaches the pixels.
+// compiled here, timed by the GPU's clock; a pixel shader over 1280x720 with the interpolators it reads, its picture
+// hashed from fixed inputs, and a vertex shader over vertices all alike, so its triangles have no area and nothing
+// reaches the pixels.
 
 typedef struct {
 	const char *name;
 	bool pixel;
 	const uint32_t *spirv;
 	size_t spirv_words;
+	// A pixel shader's: one past the highest it reads.
+	uint32_t interpolators;
 } ProbeProgram;
+
+typedef struct {
+	const uint32_t *container;
+	uint32_t bytes;
+} ProbeShader;
 
 #include "probe_shader_cost_programs.h"
 
@@ -32,7 +40,8 @@ enum {
 	DRAW_VERTICES = 65535,
 	QUAD_VERTICES = 6,
 	VERTEX_BYTES = 16,
-	// The probe's own vertex shader reads c0 to c31 (tools/gen_shader_cost_probe.py).
+	// The probe's own vertex shaders export up to 16 interpolators and read c0 to c31 (tools/gen_shader_cost_probe.py).
+	INTERPOLATORS = 16,
 	INTERPOLANT_CONSTANTS = 32,
 	TEXTURE_SIZE = 64,
 	TEXTURE_SLOTS = 32,
@@ -101,7 +110,7 @@ typedef struct {
 	double us;
 } Totals;
 
-static XsdkShader probe_vertex;
+static XsdkShader probe_vertex[INTERPOLATORS];
 static XsdkShader probe_pixel;
 static XsdkTexture texture;
 static XsdkSamplerState sampler;
@@ -177,9 +186,14 @@ static bool make_resources(void)
 		for (uint32_t c = 0; c < 4; c++)
 			constants[r][c] = (float)(1 + (r * 7 + c * 3) % 16) / 16.0f;
 	}
-	return NT_SUCCESS(xsdk_shader_load(&probe_vertex, probe_vertex_shader, sizeof probe_vertex_shader)) &&
-		NT_SUCCESS(xsdk_shader_load(&probe_pixel, probe_pixel_shader, sizeof probe_pixel_shader)) &&
-		NT_SUCCESS(xsdk_shader_set_vertex_layout(&probe_vertex, &position, 1, (const uint32_t[]){ VERTEX_BYTES }));
+	for (uint32_t n = 0; n < INTERPOLATORS; n++) {
+		const ProbeShader *const s = &probe_vertex_shaders[n];
+		if (!NT_SUCCESS(xsdk_shader_load(&probe_vertex[n], s->container, s->bytes)) ||
+			!NT_SUCCESS(
+				xsdk_shader_set_vertex_layout(&probe_vertex[n], &position, 1, (const uint32_t[]){ VERTEX_BYTES })))
+			return false;
+	}
+	return NT_SUCCESS(xsdk_shader_load(&probe_pixel, probe_pixel_shader, sizeof probe_pixel_shader));
 }
 
 static bool is_exec(uint32_t opcode)
@@ -287,7 +301,7 @@ static bool time_pixel_shader(const ProbeProgram *p, const XsdkShader *shader, c
 	xsdk_gpu_set_target(WIDTH, HEIGHT);
 	xsdk_gpu_set_vertex_constants(0, interpolant_constants[0], INTERPOLANT_CONSTANTS);
 	set_inputs(compiled, true);
-	xsdk_gpu_set_shaders(&probe_vertex, shader);
+	xsdk_gpu_set_shaders(&probe_vertex[p->interpolators - 1], shader);
 	xsdk_gpu_set_vertices(0, xsdk_gpu_address(quad_vertices), QUAD_VERTICES * VERTEX_BYTES);
 	uint64_t best = 0;
 	if (!time_draws(QUAD_VERTICES, &best))
@@ -297,8 +311,9 @@ static bool time_pixel_shader(const ProbeProgram *p, const XsdkShader *shader, c
 		return false;
 	const uint32_t alu = alu_count(shader);
 	const uint32_t registers = register_count(shader);
-	xsdk_log_write("shader cost probe: %s: pixel, %u ALU, %u GPRs, %.2f us a draw, image hash %08X", p->name,
-		(unsigned)alu, (unsigned)registers, us_a_draw(best), (unsigned)hash_image());
+	xsdk_log_write("shader cost probe: %s: pixel, %u ALU, %u GPRs, %u interpolators, %.2f us a draw, image hash %08X",
+		p->name, (unsigned)alu, (unsigned)registers, (unsigned)p->interpolators, us_a_draw(best),
+		(unsigned)hash_image());
 	t->timed++;
 	t->alu += alu;
 	t->registers += registers;

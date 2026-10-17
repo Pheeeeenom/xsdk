@@ -1,0 +1,159 @@
+log: game:\probe_shader_cost.log
+log: named after \Device\Harddisk0\Partition1\XSDK\m45\probe_shader_cost.xex
+sbrk: the heap may grow to 473 MB from 0x00070000, the title's free memory
+shader cost probe: 150 programs, xost c73a545ba75f03cf, best of 3 rounds of 4 draws
+shader cost probe: 017c19da20649fa0.frag: pixel, 6 ALU, 4 GPRs, 1 interpolators, 267.63 us a draw, image hash 0B4036F5
+shader cost probe: 01c8b343f41ff9f4.frag: pixel, 1 ALU, 2 GPRs, 1 interpolators, 267.50 us a draw, image hash BFAC59C5
+shader cost probe: 020233a3aaada7e9.vert: vertex, 21 ALU, 7 GPRs, 142.76 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 041a85f07c74ec96.frag: pixel, 10 ALU, 6 GPRs, 2 interpolators, 486.37 us a draw, image hash D2E69DC5
+shader cost probe: 04a469b1240c5698.vert: vertex, 23 ALU, 6 GPRs, 164.68 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 05716a5bd2aae204.frag: pixel, 33 ALU, 12 GPRs, 4 interpolators, 1350.74 us a draw, image hash 99E7DA66
+shader cost probe: 05b63b9d751d5736.frag: pixel, 1 ALU, 2 GPRs, 1 interpolators, 268.88 us a draw, image hash 906B6F9C
+shader cost probe: 093884ef391dfddc.frag: pixel, 30 ALU, 10 GPRs, 3 interpolators, 1286.24 us a draw, image hash 2A523F3F
+shader cost probe: 0963325b37f04df0.vert: vertex, 200 ALU, 14 GPRs, 562.59 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 09bef7f9a3ac5df7.frag: pixel, 1 ALU, 2 GPRs, 1 interpolators, 268.85 us a draw, image hash 530081D9
+shader cost probe: 0c5faf5ad1250944.frag: pixel, 30 ALU, 10 GPRs, 3 interpolators, 1286.24 us a draw, image hash 3DB41DC5
+shader cost probe: 0c9a6858fbbe328e.frag: pixel, 1 ALU, 2 GPRs, 1 interpolators, 267.56 us a draw, image hash 6B4A9DC5
+shader cost probe: 0f8714b3c758a3b1.frag: pixel, 1 ALU, 2 GPRs, 1 interpolators, 267.54 us a draw, image hash 92445475
+shader cost probe: 12d30073b6d47043.frag: pixel, 18 ALU, 6 GPRs, 2 interpolators, 780.93 us a draw, image hash 4381C029
+shader cost probe: 1510c05add37f2b3.frag: pixel, 70 ALU, 14 GPRs, 5 interpolators, 2759.84 us a draw, image hash C046519E
+shader cost probe: 15a57b221b955025.frag: pixel, 25 ALU, 8 GPRs, 2 interpolators, 1041.73 us a draw, image hash C7A6F074
+shader cost probe: 1675a46dea18c182.frag: pixel, 12 ALU, 5 GPRs, 1 interpolators, 579.06 us a draw, image hash B10BC39E
+shader cost probe: 16a9a335fb71c29a.frag: pixel, 1 ALU, 2 GPRs, 1 interpolators, 267.53 us a draw, image hash 738F5E15
+shader cost probe: 172ccfa9a454e318.vert: vertex, 20 ALU, 7 GPRs, 142.76 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 1ad5c2f8e1cc2653.frag: pixel, 8 ALU, 4 GPRs, 1 interpolators, 404.70 us a draw, image hash 151ECDA0
+shader cost probe: 1e5db8674ad9d29e.frag: pixel, 4 ALU, 2 GPRs, 1 interpolators, 267.60 us a draw, image hash 3BAF3DC5
+shader cost probe: 2013a34320f17698.frag: pixel, 3 ALU, 3 GPRs, 1 interpolators, 267.52 us a draw, image hash A658706D
+shader cost probe: 20a291c66ca7e0fd.vert: vertex, 182 ALU, 14 GPRs, 518.12 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 22d6a7758d2d5d84.frag: pixel, 8 ALU, 3 GPRs, 1 interpolators, 339.15 us a draw, image hash 3BAF3DC5
+shader cost probe: 233aa73af10f83bc.frag: pixel, 14 ALU, 8 GPRs, 3 interpolators, 684.92 us a draw, image hash 6B99B02F
+shader cost probe: 246ca2b33bb1fdf4.frag: pixel, 12 ALU, 5 GPRs, 1 interpolators, 579.06 us a draw, image hash EDE88D92
+shader cost probe: 251e226c8a088a82.vert: vertex, 224 ALU, 13 GPRs, 615.46 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 29fab4bb2516d607.frag: pixel, 30 ALU, 9 GPRs, 3 interpolators, 1170.71 us a draw, image hash A78387CF
+shader cost probe: 2a1a218d5688204a.vert: vertex, 202 ALU, 13 GPRs, 570.14 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 2bc4ebf687f545b6.frag: pixel, 2 ALU, 2 GPRs, 1 interpolators, 267.68 us a draw, image hash D8493C72
+shader cost probe: 2e7f30cdc49bd211.vert: vertex, 40 ALU, 8 GPRs, 197.55 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 2eefbbd89e53921c.frag: pixel, 45 ALU, 12 GPRs, 6 interpolators, 1820.79 us a draw, image hash 179775D6
+shader cost probe: 31871ebc6e90765a.vert: vertex, 29 ALU, 6 GPRs, 142.75 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 32d160ecc3deb658.vert: vertex, 22 ALU, 7 GPRs, 142.76 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 33d3ad7a449b966c.frag: pixel, 8 ALU, 4 GPRs, 1 interpolators, 351.01 us a draw, image hash 3BAF3DC5
+shader cost probe: 349b6ed78d720732.frag: pixel, 13 ALU, 6 GPRs, 2 interpolators, 629.30 us a draw, image hash 5E2F9240
+shader cost probe: 350248024002ce37.vert: vertex, 208 ALU, 14 GPRs, 586.64 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 35fc826ad15e1872.frag: pixel, 25 ALU, 8 GPRs, 2 interpolators, 1041.73 us a draw, image hash B34E8C1C
+shader cost probe: 39662e66d545c874.vert: vertex, 4 ALU, 3 GPRs, 131.77 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 3ba44326990edfeb.vert: vertex, 24 ALU, 9 GPRs, 263.23 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 3de421fc6f9f3122.frag: pixel, 8 ALU, 4 GPRs, 1 interpolators, 351.00 us a draw, image hash 061074A5
+shader cost probe: 407248b726bcb428.vert: vertex, 232 ALU, 13 GPRs, 636.87 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 412f75e329bbe3a2.vert: vertex, 23 ALU, 7 GPRs, 143.77 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 46d1eea9e1360669.frag: pixel, 28 ALU, 11 GPRs, 4 interpolators, 1245.38 us a draw, image hash 7CCDA62B
+shader cost probe: 48cd8f549b507826.frag: pixel, 28 ALU, 10 GPRs, 3 interpolators, 1234.68 us a draw, image hash 3DB41DC5
+shader cost probe: 4a2fde48317fee5f.frag: pixel, 32 ALU, 9 GPRs, 2 interpolators, 1359.14 us a draw, image hash AD2B7DC5
+shader cost probe: 4e6272cd5ea024f5.vert: vertex, 47 ALU, 8 GPRs, 197.58 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 4ee5b3c093bea8ab.frag: pixel, 64 ALU, 12 GPRs, 5 interpolators, 2503.77 us a draw, image hash 2C7DA8C0
+shader cost probe: 4f41862f49358139.frag: pixel, 10 ALU, 5 GPRs, 1 interpolators, 476.17 us a draw, image hash F2C249A7
+shader cost probe: 4f939ba938f196ae.vert: vertex, 220 ALU, 13 GPRs, 603.80 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 5264b90e6f50c901.frag: pixel, 6 ALU, 4 GPRs, 1 interpolators, 267.63 us a draw, image hash 0B4036F5
+shader cost probe: 551fb86c6ef59def.frag: pixel, 30 ALU, 10 GPRs, 3 interpolators, 1286.24 us a draw, image hash 2A523F3F
+shader cost probe: 556ea181d0d34829.vert: vertex, 191 ALU, 14 GPRs, 540.09 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 55a0066e2650ed99.vert: vertex, 31 ALU, 8 GPRs, 197.54 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 58786ba1a7e49515.vert: vertex, 38 ALU, 8 GPRs, 197.54 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 607a7b7110387a22.frag: pixel, 8 ALU, 4 GPRs, 1 interpolators, 404.70 us a draw, image hash BF409631
+shader cost probe: 60bcbd6f4104ab13.frag: pixel, 27 ALU, 11 GPRs, 4 interpolators, 1142.38 us a draw, image hash 3AE6B8D4
+shader cost probe: 61cdb76b69b6489b.frag: pixel, 8 ALU, 5 GPRs, 1 interpolators, 409.81 us a draw, image hash 232A0235
+shader cost probe: 64f76a18fb37dd48.frag: pixel, 3 ALU, 3 GPRs, 1 interpolators, 267.54 us a draw, image hash D0AD83E5
+shader cost probe: 66457dda201609ed.frag: pixel, 43 ALU, 14 GPRs, 5 interpolators, 1929.25 us a draw, image hash 3DB41DC5
+shader cost probe: 676ff8c4689eaf91.frag: pixel, 28 ALU, 11 GPRs, 5 interpolators, 1270.31 us a draw, image hash 960352EE
+shader cost probe: 68b11762bd80366b.vert: vertex, 220 ALU, 13 GPRs, 605.26 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 695e15b366c72818.frag: pixel, 25 ALU, 10 GPRs, 3 interpolators, 1061.39 us a draw, image hash 2A523F3F
+shader cost probe: 6a05b1f88a016fb2.frag: pixel, 1 ALU, 2 GPRs, 1 interpolators, 267.56 us a draw, image hash D6A0DDC5
+shader cost probe: 6b7ff186cc28cce5.frag: pixel, 18 ALU, 5 GPRs, 1 interpolators, 759.33 us a draw, image hash E4634022
+shader cost probe: 6c429f0c99b0524f.vert: vertex, 181 ALU, 13 GPRs, 512.70 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 6dd3a70373df59bf.frag: pixel, 40 ALU, 12 GPRs, 5 interpolators, 1637.27 us a draw, image hash 37119FB7
+shader cost probe: 6e690d475f0af5fe.vert: vertex, 25 ALU, 7 GPRs, 145.77 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 70ee109df12524e4.vert: vertex, 162 ALU, 13 GPRs, 460.58 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 71ac4a48df92e5b7.vert: vertex, 194 ALU, 15 GPRs, 549.45 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 72abd6191dcd7bfe.vert: vertex, 202 ALU, 14 GPRs, 572.90 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 75422301f0e22829.frag: pixel, 48 ALU, 11 GPRs, 4 interpolators, 1963.53 us a draw, image hash 50A8C488
+shader cost probe: 820f98f280587ea8.frag: pixel, 36 ALU, 8 GPRs, 3 interpolators, 1389.19 us a draw, image hash 9177ADB8
+shader cost probe: 84e4d80e1fc6e615.frag: pixel, 1 ALU, 2 GPRs, 1 interpolators, 267.54 us a draw, image hash 906B6F9C
+shader cost probe: 8586b077d3e63bc1.frag: pixel, 30 ALU, 10 GPRs, 3 interpolators, 1286.24 us a draw, image hash 3DB41DC5
+shader cost probe: 858b7f6b67e42fd6.frag: pixel, 16 ALU, 8 GPRs, 3 interpolators, 752.55 us a draw, image hash C64DDB76
+shader cost probe: 85ae52ee303f618c.frag: pixel, 6 ALU, 3 GPRs, 1 interpolators, 283.78 us a draw, image hash 81F300D2
+shader cost probe: 85c8b022385334bf.frag: pixel, 41 ALU, 10 GPRs, 3 interpolators, 1672.36 us a draw, image hash F789E301
+shader cost probe: 88a3de8e328f385a.vert: vertex, 19 ALU, 6 GPRs, 142.76 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 8b4ce5184129a25a.frag: pixel, 4 ALU, 3 GPRs, 1 interpolators, 347.70 us a draw, image hash 02875CC5
+shader cost probe: 8e555ecc28e3d240.vert: vertex, 23 ALU, 8 GPRs, 197.53 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 8ecfa22174a91d18.frag: pixel, 8 ALU, 5 GPRs, 1 interpolators, 409.82 us a draw, image hash 8557761D
+shader cost probe: 8f974c0335e452d5.vert: vertex, 29 ALU, 7 GPRs, 142.76 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 92f6cc89e68fccea.frag: pixel, 2 ALU, 1 GPRs, 1 interpolators, 267.58 us a draw, image hash 304A9DC5
+shader cost probe: 93d36ce55e3f9bad.vert: vertex, 221 ALU, 13 GPRs, 638.69 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: 946541a3cc485e48.frag: pixel, 6 ALU, 3 GPRs, 1 interpolators, 283.69 us a draw, image hash 60282200
+shader cost probe: 987a188c27a802e5.frag: pixel, 14 ALU, 6 GPRs, 2 interpolators, 648.59 us a draw, image hash 9C711E10
+shader cost probe: 9f1eca9bebdc35b6.frag: pixel, 8 ALU, 5 GPRs, 2 interpolators, 409.77 us a draw, image hash D10C7955
+shader cost probe: a122a58ca77e3270.frag: pixel, 4 ALU, 3 GPRs, 1 interpolators, 267.63 us a draw, image hash 5DD02B35
+shader cost probe: a2beec39ae2b951c.frag: pixel, 1 ALU, 2 GPRs, 1 interpolators, 267.49 us a draw, image hash BFAC59C5
+shader cost probe: a35e191254f5ef46.frag: pixel, 13 ALU, 5 GPRs, 1 interpolators, 624.11 us a draw, image hash BF409631
+shader cost probe: a478595f52157a73.frag: pixel, 12 ALU, 7 GPRs, 3 interpolators, 539.48 us a draw, image hash E63FB3EC
+shader cost probe: a479ce42ba36b7d8.frag: pixel, 18 ALU, 7 GPRs, 2 interpolators, 694.83 us a draw, image hash 33D8BCA8
+shader cost probe: a48b96d69ff86daf.vert: vertex, 2 ALU, 1 GPRs, 131.76 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: ad037db0d56a10dd.vert: vertex, 48 ALU, 8 GPRs, 197.59 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: b331aaa6bee56ee9.frag: pixel, 54 ALU, 12 GPRs, 4 interpolators, 2179.69 us a draw, image hash 3DB41DC5
+shader cost probe: b40238367bc2ae70.frag: pixel, 36 ALU, 13 GPRs, 5 interpolators, 1659.21 us a draw, image hash 3DB41DC5
+shader cost probe: b4a8c01218dcffe9.frag: pixel, 31 ALU, 12 GPRs, 5 interpolators, 1289.07 us a draw, image hash 8A50C869
+shader cost probe: b4bd0f33bde7fc52.frag: pixel, 18 ALU, 6 GPRs, 2 interpolators, 780.92 us a draw, image hash 5E2F9240
+shader cost probe: b624738d17bc5ca0.frag: pixel, 10 ALU, 5 GPRs, 1 interpolators, 476.17 us a draw, image hash F38A1607
+shader cost probe: b72c3e79097987b4.frag: pixel, 4 ALU, 4 GPRs, 1 interpolators, 267.56 us a draw, image hash 72709835
+shader cost probe: ba930563b1db79f4.frag: pixel, 3 ALU, 3 GPRs, 1 interpolators, 267.50 us a draw, image hash D0AD83E5
+shader cost probe: bacc292ad5a86eb3.vert: vertex, 91 ALU, 7 GPRs, 427.12 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: bde83fec0182df1d.vert: vertex, 26 ALU, 7 GPRs, 142.76 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: be7931e3ec0bb85e.frag: pixel, 12 ALU, 4 GPRs, 1 interpolators, 511.54 us a draw, image hash F185F6EA
+shader cost probe: c0887c56621045a9.vert: vertex, 33 ALU, 7 GPRs, 142.76 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: c0ddfd4547c71e5a.vert: vertex, 245 ALU, 12 GPRs, 704.37 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: c165aaa5a5be8de5.frag: pixel, 1 ALU, 2 GPRs, 1 interpolators, 267.48 us a draw, image hash 92445475
+shader cost probe: c2679fcd0788b78d.frag: pixel, 20 ALU, 7 GPRs, 2 interpolators, 878.79 us a draw, image hash 7E8C2543
+shader cost probe: c359885760b8a624.vert: vertex, 25 ALU, 9 GPRs, 263.23 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: c4bb20c5e14ce9d8.frag: pixel, 1 ALU, 2 GPRs, 1 interpolators, 267.55 us a draw, image hash 530081D9
+shader cost probe: c8673f02f09b439d.frag: pixel, 4 ALU, 4 GPRs, 1 interpolators, 267.66 us a draw, image hash B87C18BD
+shader cost probe: c91470b682614340.frag: pixel, 1 ALU, 2 GPRs, 1 interpolators, 267.52 us a draw, image hash 738F5E15
+shader cost probe: c98a0ca2e68f85a1.frag: pixel, 11 ALU, 6 GPRs, 1 interpolators, 480.68 us a draw, image hash FBF21400
+shader cost probe: ca44599827bbdb23.frag: pixel, 25 ALU, 6 GPRs, 2 interpolators, 965.11 us a draw, image hash CEADA80E
+shader cost probe: cad12b640d1cfd9c.frag: pixel, 16 ALU, 7 GPRs, 2 interpolators, 699.12 us a draw, image hash 3DCD5106
+shader cost probe: cbed2c9db6f723a5.frag: pixel, 4 ALU, 4 GPRs, 1 interpolators, 267.55 us a draw, image hash 72709835
+shader cost probe: ce4bffbb0b973310.frag: pixel, 1 ALU, 1 GPRs, 1 interpolators, 267.48 us a draw, image hash 19B41DC5
+shader cost probe: cefc467138f9dac7.vert: vertex, 34 ALU, 7 GPRs, 142.76 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: d1441271ff15f72c.frag: pixel, 4 ALU, 3 GPRs, 1 interpolators, 347.78 us a draw, image hash 3271ED85
+shader cost probe: d5d99e338acc096e.vert: vertex, 22 ALU, 7 GPRs, 142.76 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: d8658b0e39305f51.vert: vertex, 226 ALU, 13 GPRs, 620.28 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: d8d724f61446ecbb.vert: vertex, 41 ALU, 7 GPRs, 142.78 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: d90889c31c82dbe8.vert: vertex, 171 ALU, 14 GPRs, 489.32 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: da2593920df168c8.vert: vertex, 22 ALU, 6 GPRs, 142.75 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: dae9addf7280e276.frag: pixel, 8 ALU, 5 GPRs, 1 interpolators, 409.81 us a draw, image hash 5D23BD8C
+shader cost probe: dee3af7655c47a63.frag: pixel, 30 ALU, 10 GPRs, 3 interpolators, 1286.24 us a draw, image hash 3DB41DC5
+shader cost probe: e09e6878603dc742.frag: pixel, 1 ALU, 2 GPRs, 1 interpolators, 267.51 us a draw, image hash 3A6209B5
+shader cost probe: e19f86ee747cb140.frag: pixel, 19 ALU, 7 GPRs, 2 interpolators, 850.29 us a draw, image hash 539C0DE3
+shader cost probe: e2cfed9f9f80cbf0.frag: pixel, 57 ALU, 12 GPRs, 5 interpolators, 2247.09 us a draw, image hash 217D8471
+shader cost probe: e2f1c3a692fdfb84.frag: pixel, 8 ALU, 4 GPRs, 1 interpolators, 351.00 us a draw, image hash 6EEF26A9
+shader cost probe: e3fba406929fde97.frag: pixel, 27 ALU, 17 GPRs, 8 interpolators, 1466.44 us a draw, image hash EC8A6B9E
+shader cost probe: e4c0798e6cc9e4ba.frag: pixel, 16 ALU, 7 GPRs, 2 interpolators, 699.12 us a draw, image hash F039202B
+shader cost probe: e5c535debebde1ed.frag: pixel, 4 ALU, 3 GPRs, 1 interpolators, 267.50 us a draw, image hash 061074A5
+shader cost probe: e5ea8b62e2ebf4ac.vert: vertex, 217 ALU, 13 GPRs, 754.60 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: e6ec5aee8cc08f41.frag: pixel, 8 ALU, 4 GPRs, 1 interpolators, 351.00 us a draw, image hash 97671DC5
+shader cost probe: e7fe951996d1f40b.frag: pixel, 25 ALU, 10 GPRs, 3 interpolators, 1061.39 us a draw, image hash CE64BAAB
+shader cost probe: e9d14d2c939cffe4.vert: vertex, 211 ALU, 14 GPRs, 594.87 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: e9e5df17e9c42a02.frag: pixel, 16 ALU, 8 GPRs, 3 interpolators, 752.55 us a draw, image hash 28086D1D
+shader cost probe: ece2618e566d8623.frag: pixel, 3 ALU, 3 GPRs, 1 interpolators, 267.53 us a draw, image hash D8493C72
+shader cost probe: ed3667059b5c9028.frag: pixel, 21 ALU, 9 GPRs, 3 interpolators, 936.70 us a draw, image hash 8518BBAB
+shader cost probe: f12926532ee0b4d0.vert: vertex, 77 ALU, 12 GPRs, 263.41 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: f1f88472976e4bfb.vert: vertex, 182 ALU, 14 GPRs, 518.12 us a draw of 65535 vertices, none reached the pixels
+shader cost probe: f2f1d4cd60de5251.frag: pixel, 15 ALU, 6 GPRs, 1 interpolators, 679.36 us a draw, image hash 0208BD9A
+shader cost probe: f3825523049d31cf.frag: pixel, 35 ALU, 10 GPRs, 3 interpolators, 1453.49 us a draw, image hash 1498F2EA
+shader cost probe: f526e9ffb3616812.frag: pixel, 2 ALU, 2 GPRs, 1 interpolators, 267.67 us a draw, image hash D8493C72
+shader cost probe: f544e71db9210106.frag: pixel, 1 ALU, 2 GPRs, 1 interpolators, 267.54 us a draw, image hash B10BC39E
+shader cost probe: f5cb41c6eaf01a5f.frag: pixel, 26 ALU, 11 GPRs, 4 interpolators, 1219.02 us a draw, image hash B5788858
+shader cost probe: f6b5e1536572c9a5.frag: pixel, 7 ALU, 3 GPRs, 1 interpolators, 316.90 us a draw, image hash D945FC3D
+shader cost probe: f7c1df6fe6364447.frag: pixel, 15 ALU, 6 GPRs, 2 interpolators, 687.13 us a draw, image hash 36759DC5
+shader cost probe: pixel shaders: 103 of 103 timed, 1687 ALU, 6.19 GPRs a shader, 78033.90 us for a draw of each
+shader cost probe: vertex shaders: 47 of 47 timed, 4930 ALU, 9.77 GPRs a shader, 16488.08 us for a draw of each
+shader cost probe: hashing took 6676 ms
+shader cost probe: done in 11846 ms, 103 pixel and 47 vertex shaders timed, xsdk_gpu_close 0x00000000
+exit: status 0
