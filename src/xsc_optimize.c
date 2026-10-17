@@ -908,8 +908,8 @@ static size_t stage_of(const XscProgram *p, const XscOp *op)
 	return SIZE_MAX;
 }
 
-// Whether x joined an earlier op y, searching back from j (optimize.py co_issue's inner loop).
-static bool join_earlier(Optimizer *o, size_t j)
+// Whether x joined an op y before or after it, searching from j (optimize.py co_issue's inner loop, both ways).
+static bool join(Optimizer *o, size_t j, bool later)
 {
 	XscOp *const x = o->ops[j];
 	const bool vector = vector_only(x);
@@ -917,14 +917,16 @@ static bool join_earlier(Optimizer *o, size_t j)
 	temp_reads(x, &x_reads);
 	defs(x, &x_defs);
 	const size_t x_stage = stage_of(o->p, x);
-	for (size_t i = j; i-- > 0;) {
-		XscOp *const y = o->ops[i];
+	const size_t reach = later ? o->count - 1 - j : j;
+	for (size_t n = 1; n <= reach; n++) {
+		XscOp *const y = o->ops[later ? j + n : j - n];
 		if (stage_of(o->p, y) != x_stage)
 			return false;
 		KeySet y_defs, y_reads;
 		defs(y, &y_defs);
-		// Joined, both pipes read before either writes: x mustn't read what y writes.
-		if (intersects(&x_reads, &y_defs))
+		temp_reads(y, &y_reads);
+		// Joined, both pipes read before either writes: the later mustn't read what the earlier writes.
+		if (later ? intersects(&y_reads, &x_defs) : intersects(&x_reads, &y_defs))
 			return false;
 		const bool partner = vector ? scalar_only(y) : vector_only(y);
 		if (partner && !intersects(&x_defs, &y_defs) && merge(y, x)) {
@@ -932,9 +934,9 @@ static bool join_earlier(Optimizer *o, size_t j)
 			remove_ops(o, &doomed, 1);
 			return true;
 		}
-		// Moving x above y: y mustn't read or write what x writes, nor change state.
-		temp_reads(y, &y_reads);
-		if (intersects(&x_defs, &y_reads) || intersects(&x_defs, &y_defs) || (is_alu(y) && fixed(y)))
+		// Moving x past y: neither may read or write what the other writes, nor y change state.
+		if (intersects(&x_reads, &y_defs) || intersects(&x_defs, &y_reads) || intersects(&x_defs, &y_defs) ||
+			(is_alu(y) && fixed(y)))
 			return false;
 	}
 	return false;
@@ -945,13 +947,11 @@ static bool co_issue(Optimizer *o, bool *changed)
 	*changed = false;
 	if (!flatten(o))
 		return false;
-	for (size_t j = 0; j < o->count; j++) {
-		const XscOp *const x = o->ops[j];
-		if (!vector_only(x) && !scalar_only(x))
-			continue;
-		if (join_earlier(o, j)) {
-			*changed = true;
-			return true;
+	// An op joins a later one only where none joins an earlier one, so the pairs found before stay as they were.
+	for (int later = 0; later <= 1 && !*changed; later++) {
+		for (size_t j = 0; j < o->count && !*changed; j++) {
+			const XscOp *const x = o->ops[j];
+			*changed = (vector_only(x) || scalar_only(x)) && join(o, j, later);
 		}
 	}
 	return true;
