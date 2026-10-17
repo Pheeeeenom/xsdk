@@ -357,6 +357,16 @@ void xsdk_gpu_set_scissor(uint32_t x, uint32_t y, uint32_t width, uint32_t heigh
 // Maps clip space to that rectangle in pixels and depth to min_depth..max_depth; xsdk_gpu_set_target covers the target.
 void xsdk_gpu_set_viewport(float x, float y, float width, float height, float min_depth, float max_depth);
 
+enum {
+	// Xenos clips against six planes (xenia:src/xenia/gpu/registers.h:539-544).
+	XSDK_CLIP_PLANES = 6,
+};
+
+// Clips the draws after to where dot(the vertex's clip-space position, plane n) >= 0, for each bit n of mask, plane n
+// planes[n]'s x, y, z and w, as Xenia applies them (xenia:src/xenia/gpu/dxbc_shader_translator.cc:1033-1053); planes
+// may be NULL for a mask of 0. xsdk_gpu_set_target and resolves turn every plane off.
+void xsdk_gpu_set_clip_planes(uint32_t mask, const float planes[][4]);
+
 // Shader constants for the draws after, written from a copy: float constants in whole groups of 4, the boolean and
 // loop words all together, as lone ones hung the GPU (docs/HARDWARE.md).
 enum {

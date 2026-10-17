@@ -13,7 +13,8 @@
 #include "xsdk/shader.h"
 #include "xsdk/thread.h"
 
-// One cell per piece of raster and blend state, each checked by pixel against what the CPU works out.
+// One cell per piece of raster and blend state, each checked by pixel against what the CPU works out; then a row of
+// cells clipped by planes (vulkan4xenon milestone 26).
 
 enum {
 	WIDTH = 1280,
@@ -31,6 +32,15 @@ enum {
 	CELL_HEIGHT = 180,
 	// Blends round once to 8 bits; the CPU's sums may land a step either side.
 	BLEND_TOLERANCE = 2,
+	POINTS = 48,
+	// The clip plane row: cells 200 by 80.
+	CLIP_Y = 320,
+	CLIP_HEIGHT = 80,
+	// The planes' lines: the column the first cell's plane keeps from, and the row and column the second's two keep
+	// above and left of.
+	CLIP_COLUMN = 140,
+	CLIP_QUARTER_ROW = 360,
+	CLIP_QUARTER_COLUMN = 390,
 };
 
 enum {
@@ -114,6 +124,19 @@ static const Draw draws[] = {
 	{ 140, 620, 100, 80, 0xFFE0C020, BLEND_CONSTANT_COLOR, RASTER_PLAIN, false, false, false, false },
 	{ 290, 620, 200, 80, 0xFF40E080, BLEND_NONE, RASTER_PLAIN, false, false, false, false },
 	{ 390, 620, 100, 80, 0xFFC02060, BLEND_CONSTANT_ALPHA, RASTER_PLAIN, false, false, false, false },
+};
+
+// Each quad over its cell, clipped to where the planes its mask names keep; the last is drawn with them all off again.
+typedef struct {
+	uint32_t x;
+	uint32_t argb;
+	uint32_t mask;
+} ClipDraw;
+
+static const ClipDraw clip_draws[] = {
+	{ 40, 0xFFE08040, 1 << 0 },
+	{ 290, 0xFF40C0E0, 1 << 3 | 1 << 5 },
+	{ 540, 0xFFC0E040, 0 },
 };
 
 static const uint32_t scissor_x = 580;
@@ -284,6 +307,51 @@ static uint32_t points_expected(Point *points)
 	return n;
 }
 
+// The clip-space x of a pixel column's left edge and y of a row's top, as set_draw_constants places them.
+static float clip_x(uint32_t column)
+{
+	return (column - 0.5f) / (WIDTH / 2.0f) - 1.0f;
+}
+
+static float clip_y(uint32_t row)
+{
+	return 1.0f - (row - 0.5f) / (HEIGHT / 2.0f);
+}
+
+// Plane 0 keeps the columns from CLIP_COLUMN on; planes 3 and 5 the rows above CLIP_QUARTER_ROW and the columns left
+// of CLIP_QUARTER_COLUMN. dot(position, plane) >= 0 is kept, and the position's w is 1.
+static void clip_planes(float planes[XSDK_CLIP_PLANES][4])
+{
+	const float keep[XSDK_CLIP_PLANES][4] = {
+		[0] = { 1.0f, 0.0f, 0.0f, -clip_x(CLIP_COLUMN) },
+		[3] = { 0.0f, 1.0f, 0.0f, -clip_y(CLIP_QUARTER_ROW) },
+		[5] = { -1.0f, 0.0f, 0.0f, clip_x(CLIP_QUARTER_COLUMN) },
+	};
+	memcpy(planes, keep, sizeof keep);
+}
+
+static uint32_t clip_points_expected(Point *points)
+{
+	const uint32_t first = clip_draws[0].argb;
+	const uint32_t quarter = clip_draws[1].argb;
+	const uint32_t after = clip_draws[2].argb;
+	const uint32_t middle = CLIP_Y + CLIP_HEIGHT / 2;
+	const Point clipped[] = {
+		{ "clip plane 0: the cell's left cut", 100, middle, CLEAR_ARGB, 0 },
+		{ "clip plane 0: just left of its line", CLIP_COLUMN - 4, middle, CLEAR_ARGB, 0 },
+		{ "clip plane 0: just right of its line", CLIP_COLUMN + 4, middle, first, 0 },
+		{ "clip plane 0: the cell's right kept", 200, middle, first, 0 },
+		{ "clip planes 3 and 5: the top left kept", 340, CLIP_QUARTER_ROW - 20, quarter, 0 },
+		{ "clip planes 3 and 5: the top right cut", 440, CLIP_QUARTER_ROW - 20, CLEAR_ARGB, 0 },
+		{ "clip planes 3 and 5: the bottom left cut", 340, CLIP_QUARTER_ROW + 20, CLEAR_ARGB, 0 },
+		{ "clip planes 3 and 5: the bottom right cut", 440, CLIP_QUARTER_ROW + 20, CLEAR_ARGB, 0 },
+		{ "clip planes off: the next cell's top left", 560, CLIP_Y + 10, after, 0 },
+		{ "clip planes off: the next cell's bottom right", 720, CLIP_Y + CLIP_HEIGHT - 10, after, 0 },
+	};
+	memcpy(points, clipped, sizeof clipped);
+	return sizeof clipped / sizeof clipped[0];
+}
+
 // Places the unit square, edges half a pixel early, or over all of clip space for the viewport draw.
 static void set_draw_constants(const Draw *d)
 {
@@ -332,6 +400,24 @@ static void draw_all(const States *states)
 	}
 }
 
+// The clip row, each quad with its planes, then every plane off for what's drawn after.
+static void draw_clipped(const States *states)
+{
+	float planes[XSDK_CLIP_PLANES][4];
+	clip_planes(planes);
+	xsdk_gpu_set_blend(&states->blends[BLEND_NONE]);
+	xsdk_gpu_set_raster(&states->rasters[RASTER_PLAIN]);
+	xsdk_gpu_set_depth_stencil(&states->depth_off);
+	for (uint32_t i = 0; i < sizeof clip_draws / sizeof clip_draws[0]; i++) {
+		const ClipDraw *const c = &clip_draws[i];
+		const Draw d = { c->x, CLIP_Y, CELL_WIDTH, CLIP_HEIGHT, c->argb, BLEND_NONE, RASTER_PLAIN, false, false, false,
+			false };
+		xsdk_gpu_set_clip_planes(c->mask, planes);
+		set_draw_constants(&d);
+		xsdk_gpu_draw(XSDK_PRIMITIVE_TRIANGLE_LIST, QUAD_VERTICES);
+	}
+}
+
 static bool point_holds(volatile const uint32_t *pixels, const Point *p, uint32_t frame, uint32_t *misses)
 {
 	const uint32_t stored = pixels[tiled_index(p->x, p->y, WIDTH)];
@@ -357,10 +443,13 @@ static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint3
 	make_states(&states);
 	// The depth bias cell needs depth cleared to 1.0, which a float rounding once turned into 0.
 	xsdk_gpu_set_depth_clear(1.0f, 0);
-	Point points[32];
+	Point points[POINTS];
 	const uint32_t point_count = points_expected(points);
+	Point clip_points[POINTS];
+	const uint32_t clip_point_count = clip_points_expected(clip_points);
 	uint32_t misses = 0;
 	uint32_t frames_wrong = 0;
+	uint32_t clip_frames_wrong = 0;
 	bool fences_landed = true;
 	bool shown = true;
 	for (uint32_t frame = 0; frame < FRAMES && fences_landed; frame++) {
@@ -370,6 +459,7 @@ static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint3
 		xsdk_gpu_set_shaders(vertex, pixel);
 		xsdk_gpu_set_vertices(0, vertices, sizeof square);
 		draw_all(&states);
+		draw_clipped(&states);
 		xsdk_gpu_resolve(address, WIDTH, HEIGHT, CLEAR_ARGB);
 		fences_landed = NT_SUCCESS(xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS));
 		if (!fences_landed)
@@ -380,16 +470,25 @@ static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint3
 			for (uint32_t i = 0; i < point_count; i++)
 				holds &= point_holds(buffer, &points[i], frame, &misses);
 			frames_wrong += !holds;
+			bool clipped = true;
+			for (uint32_t i = 0; i < clip_point_count; i++)
+				clipped &= point_holds(buffer, &clip_points[i], frame, &misses);
+			clip_frames_wrong += !clipped;
 		}
 		if (has_display)
 			shown = shown && NT_SUCCESS(xsdk_display_show(address, WIDTH));
 		(void)xsdk_thread_sleep(FRAME_MS);
 	}
-	xsdk_log_write("raster: %u points a frame; %u of %u frames checked held a wrong one, %u points wrong",
-		(unsigned)point_count, (unsigned)frames_wrong, (unsigned)(FRAMES - 1), (unsigned)misses);
+	xsdk_log_write(
+		"raster: %u points a frame, %u of the clip planes; %u and %u of %u frames checked held a wrong one, "
+		"%u points wrong",
+		(unsigned)point_count, (unsigned)clip_point_count, (unsigned)frames_wrong, (unsigned)clip_frames_wrong,
+		(unsigned)(FRAMES - 1), (unsigned)misses);
 	check("raster: every frame's fence landed", fences_landed);
 	check("raster: blends, constant blends, write mask, culling, scissor, viewport and depth bias as worked out",
 		fences_landed && frames_wrong == 0);
+	check("raster: clip planes 0, 3 and 5 cut their cells at their lines, and nothing once they're off",
+		fences_landed && clip_frames_wrong == 0);
 	if (has_display) {
 		check("raster: every frame shown", shown);
 		xsdk_log_write("raster: the last frame stays on screen for %u ms for a capture", (unsigned)TEST_SHOW_MS);

@@ -79,6 +79,8 @@ enum {
 	RB_COLOR_CLEAR = 0x231E,
 	RB_COLOR_CLEAR_LO = 0x231F,
 	PA_SU_POLY_OFFSET_FRONT_SCALE = 0x2380,
+	// Then the other five planes' x, y, z and w, floats (xenia:src/xenia/gpu/register_table.inc:623-646).
+	PA_CL_UCP_0_X = 0x2388,
 	SHADER_CONSTANT_000_X = 0x4000,
 	SHADER_CONSTANT_256_X = 0x4400,
 	SHADER_CONSTANT_FETCH_00_0 = 0x4800,

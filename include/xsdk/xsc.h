@@ -49,6 +49,9 @@ typedef enum {
 	// The loop count for loop constant reg, from the 32-bit int offset_bytes into the block block, set and binding
 	// name; the loop runs from aL 0 by 1, as many passes as the int, none below 1.
 	XSDK_XSC_BLOCK_LOOP,
+	// User clip plane regs, 0 to 5, from constant register reg: gl_ClipDistance[regs] = dot(gl_Position, the plane)
+	// (xenos-toolchain/docs/xsc.md, "Interface conventions").
+	XSDK_XSC_CLIP_PLANE,
 } XsdkXscNeedKind;
 
 typedef enum {

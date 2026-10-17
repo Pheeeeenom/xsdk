@@ -126,7 +126,7 @@ which implements what the games it runs need:
 |---|---|---|---|---|
 | Draws, indexed or not: points, lines, line strips, triangle lists, strips and fans; up to 16 vertex streams (`XSDK_VERTEX_STREAMS`); 18 vertex formats, their components picked in any order | Yes | `gpu.h`, `shader.h` | `tests/test_triangle.c`, `test_indexed.c`, `test_vertex.c` | More than 65,535 indices a draw; primitive restart (TODO.md); 10-bit vertex formats |
 | Shader constants, set by the CPU or loaded by the GPU from memory | Yes | `gpu.h` | `tests/test_constants.c` | |
-| Depth, stencil, blending, write masks, culling, depth bias, scissor, viewport | Yes | `gpu.h` | `tests/test_depth.c`, `test_raster.c` | A console run of two-sided stencil, built for vulkan4xenon milestone 26; a constant blend colour; wireframe and point fill (TODO.md) |
+| Depth, stencil, blending, write masks, culling, depth bias, scissor, viewport | Yes | `gpu.h` | `tests/test_depth.c`, `test_raster.c` | A console run of two-sided stencil and clip planes (`xsdk_gpu_set_clip_planes`), built for vulkan4xenon milestone 26; a constant blend colour; wireframe and point fill (TODO.md) |
 | Hierarchical depth | Yes | automatic after a depth clear, at 1 sample | `tests/test_hiz.c` | Multisampled targets |
 | Textures: 24 formats with DXT1, 3 and 5, DXN and DXT5A; signed and gamma reads; linear and tiled; mips; anisotropy; swizzles | Yes | `texture.h` | `tests/test_texture.c`, `test_formats.c`, `test_anisotropy.c` | 32-bit floats in two and four channels, signed DXN and DXT5A (TODO.md); 128-bit textures (SCOPE.md); LOD clamps; mipped linear textures (TODO.md) |
 | Textures sampled in vertex shaders too, both stages' among the 32 fetch constants | Yes | xost (`xenos-toolchain/docs/xsc.md`, "Vertex textures"); `xsdk_shader_move_textures` (`shader.h`) | `tests/test_texture.c` moves a fetch; vulkan4xenon_test draws through it, on the console (vulkan4xenon milestone 22) | |
@@ -144,7 +144,7 @@ which implements what the games it runs need:
 
 | Capability | Status | How | Verified by | Missing |
 |---|---|---|---|---|
-| GLSL to Xenos microcode, offline | Partial | glslang to SPIR-V, then xost (`xenos-toolchain/`) | xost's tests | A subset of GLSL (`xenos-toolchain/docs/xsc.md`): no bitwise operations; `if` on data as selects of both arms, a vertex shader's and one inside a loop too, and on a uniform in execs on the predicate; loops unrolled, or hardware loops where an int in a block counts them, with a break ending a pass on a uniform; no `switch` or `continue` |
+| GLSL to Xenos microcode, offline | Partial | glslang to SPIR-V, then xost (`xenos-toolchain/`) | xost's tests | A subset of GLSL (`xenos-toolchain/docs/xsc.md`): no bitwise operations; `if` on data as selects of both arms, a vertex shader's and one inside a loop too, and on a uniform in execs on the predicate; loops unrolled, or hardware loops where an int in a block counts them, with a break ending a pass on a uniform; no `switch` or `continue`; `gl_ClipDistance` only as `dot(gl_Position, a plane from a block)`, no `gl_CullDistance` |
 | SPIR-V to microcode on the console | Yes | `xsdk_xsc_compile` (`xsc.h`) | `tests/test_xsc.c` | Compiling GLSL on the console (docs/scope/shader-compiling.md) |
 | HLSL | No | | | |
 

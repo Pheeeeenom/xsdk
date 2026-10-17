@@ -1,4 +1,5 @@
-"""vulkan4xenon milestone 26's breaks of xsdk_test, each a small source change that should fail the checks named with it.
+"""vulkan4xenon milestone 26's breaks of xsdk_test, each a small source change that should fail the checks named
+with it.
 
 breaks.py list prints the sets; breaks.py checks <set> the checks it should fail; breaks.py apply <set> <copy> applies
 it to a copy of xsdk. builds.sh builds each set's copy into a .xex of its own. Every other check should pass with each
@@ -8,10 +9,13 @@ import pathlib
 import sys
 
 GPU_DRAW = "src/gpu_draw.c"
+XSC_VERTEX = "src/xsc_lower_vertex.c"
 
 DEPTH_ON = "depth: overlaps, the stencil mask, two-sided stencil and the cleared depth all right with the depth test on"
 DEPTH_OFF = "depth: with the depth test off, the depth checks fail and only they do"
 DEPTH_WORDS = "depth: the overlaps' depth resolved into a D24S8 texture, each word its depth above its stencil"
+CLIP = "raster: clip planes 0, 3 and 5 cut their cells at their lines, and nothing once they're off"
+XSC_CLIP = "xsc: vk_clip_distance.vert compiles into the PC's container, literals and resources"
 
 SETS = {
     # Step 1: backface_enable left clear, so the front's stencil serves both faces.
@@ -27,6 +31,23 @@ SETS = {
         "breaks": [
             (GPU_DRAW, "const uint32_t ref_masks[] = { state->stencil_ref_mask_back, state->stencil_ref_mask };",
              "const uint32_t ref_masks[] = { state->stencil_ref_mask, state->stencil_ref_mask };"),
+        ],
+    },
+    # Step 2: the planes' ucp_ena bits dropped, so nothing is clipped; and xost naming the next plane for each distance.
+    "s2a": {
+        "checks": [CLIP, XSC_CLIP],
+        "breaks": [
+            (GPU_DRAW, "gpu_put_register(&packets, PA_CL_CLIP_CNTL, CLIP_D3D_SPACE | mask);",
+             "gpu_put_register(&packets, PA_CL_CLIP_CNTL, CLIP_D3D_SPACE);"),
+            (XSC_VERTEX, ".regs = (uint32_t)n };", ".regs = (uint32_t)n + 1 };"),
+        ],
+    },
+    # Step 2: the planes written a plane's registers on, so plane n takes plane n - 1's.
+    "s2b": {
+        "checks": [CLIP],
+        "breaks": [
+            (GPU_DRAW, "gpu_put_registers(&packets, PA_CL_UCP_0_X, values,",
+             "gpu_put_registers(&packets, PA_CL_UCP_0_X + 4, values,"),
         ],
     },
 }

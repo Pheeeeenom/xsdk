@@ -54,6 +54,8 @@ enum {
 	RASTER_DWORDS = 2 + 1 + 4,
 	SCISSOR_DWORDS = 1 + 2,
 	VIEWPORT_DWORDS = 1 + 6,
+	CLIP_CONTROL_DWORDS = 2,
+	CLIP_PLANE_DWORDS = 1 + XSDK_CLIP_PLANES * 4,
 	// eDRAM tiles of samples (xenia:src/xenia/gpu/xenos.h:414-416).
 	TILE_WIDTH = 80,
 	TILE_HEIGHT = 16,
@@ -647,6 +649,21 @@ void xsdk_gpu_set_viewport(float x, float y, float width, float height, float mi
 		float_bits(y + height / 2.0f), float_bits(max_depth - min_depth), float_bits(min_depth) };
 	GpuPackets packets = gpu_reserve_packets(VIEWPORT_DWORDS);
 	gpu_put_registers(&packets, PA_CL_VPORT_XSCALE, viewport, 6);
+	gpu_packets_done(&packets);
+}
+
+// PA_CL_CLIP_CNTL's ucp_ena bits beside the clip space xsdk_gpu_set_target sets
+// (xenia:src/xenia/gpu/registers.h:534-562).
+void xsdk_gpu_set_clip_planes(uint32_t mask, const float planes[][4])
+{
+	assert(mask < 1u << XSDK_CLIP_PLANES);
+	uint32_t values[XSDK_CLIP_PLANES * 4] = { 0 };
+	for (uint32_t i = 0; mask && i < XSDK_CLIP_PLANES * 4; i++)
+		values[i] = mask & 1u << i / 4 ? float_bits(planes[i / 4][i % 4]) : 0;
+	GpuPackets packets = gpu_reserve_packets(CLIP_CONTROL_DWORDS + (mask ? CLIP_PLANE_DWORDS : 0));
+	gpu_put_register(&packets, PA_CL_CLIP_CNTL, CLIP_D3D_SPACE | mask);
+	if (mask)
+		gpu_put_registers(&packets, PA_CL_UCP_0_X, values, XSDK_CLIP_PLANES * 4);
 	gpu_packets_done(&packets);
 }
 

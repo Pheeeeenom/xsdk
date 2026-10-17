@@ -79,6 +79,7 @@ came from; that test and its test vectors stay in xost's archived repo (github.c
 | a store into one component of a local or an output, `v.x = …` | an insert into the vector it held (`tests/test_local_stores.py`) |
 | vertex `gl_InstanceIndex`, firstInstance included | a float constant the runtime writes each instance's index into (see Interface conventions); `float()` of it, integer arithmetic on it and a block array's index at it lower as integers do (`tests/test_instance_index.py`). `gl_VertexIndex` is refused |
 | fragment outputs at locations 0 to 3, each stored once outside any `if/else` when there are several | `oC0` to `oC3`, the four colour targets, a float in every component; the record's outputs mask names them (`tests/test_color_outputs.py`) |
+| vertex `gl_ClipDistance[n] = dot(gl_Position, plane)`, n 0 to 5, the plane a whole vec4 of a uniform or push constant block | no instruction: user clip plane n, the manifest's `("clip", n, register)`; any other form, and `gl_CullDistance`, refused (`tests/test_clip_distance.py`) |
 | float / vec literals in FS/VS | constant pool; 0/1 folds (see below) |
 | ternary `cond ? a : b` (OpSelect) | `f + (t−f)·cond` (sub + mad) |
 | vector relational `lessThan`/`greaterThan`/`equal`/`notEqual`/… → bvec | per-component `sgt`/`sge`/`seq`/`sne` (1.0/0.0) |
@@ -144,6 +145,18 @@ came from; that test and its test vectors stay in xost's archived repo (github.c
   SC_OUTPUT_SCREEN_XY, without which x read 0 on the console
   (vulkan4xenon:results/2026-10-12-milestone-11-step-3/). xsdk takes both
   registers from the record as they are.
+- gl_ClipDistance → Xenos's user clip planes, which clip in clip space against
+  the exported position itself, keeping dot(position, plane) >= 0
+  (xenia:src/xenia/gpu/registers.h:539-544, dxbc_shader_translator.cc:1033-1053).
+  So a distance written as `dot(gl_Position, plane)`, either way round, the
+  position read back from gl_Position or the value stored there, through
+  locals too, and the plane a whole vec4 of a block at a fixed index, costs no
+  instruction: `lower_ex`'s manifest gives `("clip", n, register)` for each
+  distance n, and xsdk's need `XSDK_XSC_CLIP_PLANE`, for the host to set plane
+  n from that register (xsdk's `xsdk_gpu_set_clip_planes`). Xenos has six
+  planes and no cull distances. gl_PerVertex's members other than gl_Position
+  are stored through it too; before, the last such store was taken for the
+  position.
 - gl_FragDepth → export 61's x (xenia:src/xenia/gpu/ucode.h:1842,
   dxbc_shader_translator.cc:1591-1594), with SQ_PROGRAM_CNTL's ps_export_mode
   3 in the record, where libxenon's 2 is colour alone: with 2 the console drew
