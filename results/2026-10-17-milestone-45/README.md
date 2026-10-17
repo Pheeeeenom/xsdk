@@ -201,3 +201,92 @@ Run on 2026-10-17 through the console agent, everything cleaned and built in ful
 - **Broken on purpose,** the copy's clamp left off the instruction that takes its place: 12 of the probe's 100
   pictures differ from the baseline. Dusklight's frame doesn't change, so the probe's pictures are the check that
   catches such a fault.
+
+## Step 3: registers packed
+
+Built on 2026-10-17 and checked on the PC; the console runs are to come. In a program the optimiser rewrote, the
+allocator (`pack_registers`, `src/xsc_program.c`) gives each temp's value the components it holds in a register, not a
+register of its own: values whose components don't overlap in time share one register's lanes.
+
+- **Liveness.** Each component of a temp lives from its first write to its last read or write, by the optimiser's own
+  model of what an op reads and writes (`xsdk_xsc_read_keys`, `xsdk_xsc_write_keys`); what a run of fetches reads stays
+  till the run ends, as before. A component a temp never writes but something reads is undefined, as step 2 took it,
+  and takes no lane.
+- **Placement.** Values go, in the order they start, into the lowest register their components fit, in their own lanes
+  if those are free and in others if not. Choosing the fullest register that fits instead gave every shader the same
+  count.
+- **Lanes moved.** A scalar op's result fills any lane it writes (xenia:src/xenia/gpu/shader_interpreter.cc:948-955), a
+  dot product's or `max4`'s is the same in every lane (436-519, 614-618), and an elementwise op's lane takes its
+  operands' same lane, so its operands' swizzles move with it (`xsdk_xsc_move_lanes`, `src/xsc_optimize.c`). Every
+  reader's swizzle follows the value to its lanes. What `cube` and `dst` write keeps its lanes, which mean something,
+  and so does a `mad` or `cnd` beside a scalar op, which reads its third operand in its own lanes.
+- **Registers the hardware fills.** A pixel shader's interpolators arrive in r0 up and its pixel parameters where
+  `SQ_CONTEXT_MISC` says (xenia:src/xenia/gpu/registers.h:159-161), and a vertex shader's index in r0.x, which its last
+  vertex fetch overwrites already (`fetch_inputs`, `src/xsc_lower_vertex.c`). Each stays where it arrives, its
+  components live from the start to their last read; then the register takes other values. Xenia loads them into
+  ordinary registers before the first instruction (xenia:src/xenia/gpu/spirv_shader_translator.cc:1510-1518,
+  2050-2071). A pixel shader writing a register its interpolator arrived in is new on the console: 79 of Dusklight's
+  103 pixel shaders now do. The count still covers every interpolator and the pixel parameters, read or not, as it
+  always has: two of testdata's shaders would otherwise drop to one register under two interpolators.
+- **Fetches as they were.** xost's fetches write all four components (`DEST_XYZW`; the runtime's patch picks a source, 0
+  or 1 for each, `picked_swizzle` in `src/shader.c`), and a fetch's destination is the fetch's alone from the fetch to
+  its result's last read, as before: no other value's write can race the fetch's. Letting the lanes nothing reads go
+  would save 22 registers over the corpus, 1 in each of 22 shaders. A fetch's source keeps its lanes and swizzle;
+  moving it, its swizzle rewritten (xenia:src/xenia/gpu/shader_translator.cc:1034-1037, 1128-1135), would save 4.
+- **Not packed.** Programs the optimiser leaves alone (`can_optimize`): hardware loops, predication and relative
+  addressing, Dusklight's `04a469b1240c5698.vert`, `93d36ce55e3f9bad.vert` and `c0ddfd4547c71e5a.vert` among them. They
+  keep a register a temp, as before, and come out byte for byte the same. A value's components stay in one register,
+  as an operand reads one.
+
+It ran as the baseline's line with `--json ../results/2026-10-17-milestone-45/step3.json`, in 86 s; `step3.txt` is
+what it printed. The optimiser on, registers a shader in the baseline, step 2 and step 3:
+
+| | Vertex, 121 | | | Pixel, 246 | | |
+|---|---|---|---|---|---|---|
+| Average | 7.2 | 6.1 | 5.0 | 5.1 | 5.0 | 3.8 |
+| Most | 44 | 44 | 18 | 32 | 32 | 32 |
+| All shaders | 872 | 741 | 601 | 1243 | 1232 | 928 |
+
+The corpus takes 1529 registers, against step 2's 1973 and the baseline's 2115. ALU instructions, copies, co-issued
+slots, fetches and control flow are step 2's shader by shader: 6887 ALU instructions, 1271 copies, 660 co-issued slots.
+The most a vertex shader takes falls from `vk_many_live.vert`'s 44 to 16, its forty dot products four to a register;
+vulkan4xenon's `many_samplers.vert` is the most now, at 18 as before. Its `many_samplers.frag` keeps 32: sixteen
+fetches whose results are live at once, each in a register of its own.
+
+**Dusklight's shaders:** vertex shaders take 6.3 registers on average (step 2 7.5, baseline 9.8) and 13 at most
+(13, 15): `93d36ce55e3f9bad.vert`, which isn't packed. Pixel shaders take 4.5 (6.2, 6.2) and 16 at most (17, 17):
+`e3fba406929fde97.frag`, eight fetches whose results each keep a register. 115 of the 150 take fewer registers than at
+step 2, 227 in all, and none more. The 19 shaders step 2 left a register or two above the baseline, 14 of them
+Dusklight's, are all below it now but testdata's `fs_mtest.frag`, 6 against 5, with five `vec3` values and its input
+live at once; `85c8b022385334bf.frag` goes from 10 to 12 to 6. With vkbench's: vertex 9.4, 7.2, 6.1; pixel 6.1, 6.1,
+4.4. A rough floor, the most components live at once over four, is about 692 for Dusklight's shaders against the 765
+they take; most of the difference is what stays in place above and the three shaders left alone.
+
+**Checks:**
+- `check_optimize.py`: 0 differ, with the baseline's 24 not simulated and 16 not compiled.
+- xost's tests, a file at a time in WSL, all pass but `test_xcomb_parity.py`, which runs on Windows.
+  `test_register_alloc.py` has 6 checks for the step: `vk_many_live.vert` optimised in 16 registers with the reference's
+  sums, and five hand-built pixel shaders, each against the program built without the optimiser on random inputs, in
+  the registers the packing should give: an interpolator's register reused, a vector moved beside a live scalar, a
+  `dst` and a `mad` beside a scalar op kept in their lanes, a fetch's destination not shared. `tests/xsc_internals.py`'s
+  `pixel_program` builds texture fetches for it.
+- Broken on purpose:
+  - an elementwise op's operands left in their lanes when its result moves: 2 of the step's checks fail, 4 of
+    `test_optimize.py`'s cases, and 101 shaders of the corpus differ;
+  - an input's components free from the start: 5 of the step's checks and 4 of `test_optimize.py`'s fail, and 118
+    shaders differ;
+  - every op's result free to move its lanes: the `dst` and `mad` checks fail, but no shader of the corpus differs, as
+    none it simulates moves such an op (its `cube` shaders aren't simulated);
+  - a fetch's destination free in the lanes nothing reads: the fetch check fails, 3 registers for 4, and no shader
+    differs, as the simulator runs an instruction at a time.
+- Serialization: `exec_entry` serializes by whole register, so a shared register could make an instruction wait for
+  another value's fetch. Over the corpus's optimised programs 27 instructions are serialized at step 2 and step 3, 9 of
+  them Dusklight's.
+- Containers: 120 of the 150 programs in Dusklight's pack change against step 2, 40 vertex and 80 pixel; the other 30,
+  the three left alone among them, come out byte for byte as before.
+- xsdk_test's compiler check: `tools/gen_xsc_shaders.py` run with step 2's library gives the committed
+  `tests/xsc_shaders.h` byte for byte. Regenerated, 3 of its 8 containers change: `vk_texel_offsets.frag`,
+  `vk_vertex_if.vert` and `vk_vertex_uniform_if.vert`. Their SPIR-V, literals and resources are the same.
+- `probe_shader_cost` builds from the pack unchanged.
+- Compile time: the check took 86 s, as step 2's did. Compiling the pack's 150 programs on the PC takes 178 ms against
+  step 2's 174, best of ten, 2.6% more; at that share the console's compile of them grows by about 0.2 s.

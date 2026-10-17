@@ -45,6 +45,9 @@ Each step is built, then verified as below, then the next begins.
    instructions to 6887 and from 3253 copies to 1271, counted in `results/2026-10-17-milestone-45/`.
 3. **Registers packed.** The allocator gives values whose components don't overlap in time components of one
    register, rather than a register each.
+   Built on 2026-10-17, its console runs to come: in the programs the optimiser rewrites, the allocator's
+   `pack_registers` takes the corpus from 1973 registers to 1529, Dusklight's pixel shaders from 6.2 a shader to 4.5
+   and its vertex shaders from 7.5 to 6.3, counted in `results/2026-10-17-milestone-45/`.
 4. **More co-issue.** With the copies gone, more scalar operations stand next to an independent vector one; the
    pairing takes the vector instruction before or after where it sits now when the order allows.
 5. **Constants from the fetch.** A vertex attribute's missing components that the shader fills with 0 or 1 come from
