@@ -6,7 +6,7 @@
 05716a5bd2aae204.frag: ALU 53 -> 33, copies 23 -> 8, co-issued 0 -> 3, fetches 3 -> 3, control flow 12 -> 8, registers 16 -> 12; ok
 05b63b9d751d5736.frag: ALU 4 -> 1, copies 4 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
 093884ef391dfddc.frag: ALU 48 -> 30, copies 19 -> 6, co-issued 0 -> 2, fetches 2 -> 2, control flow 11 -> 7, registers 14 -> 10; ok
-0963325b37f04df0.vert: ALU 234 -> 200, copies 90 -> 71, co-issued 0 -> 22, fetches 4 -> 4, control flow 43 -> 38, registers 13 -> 14; trial 0: export 1.w 0.7421541968137826 became 17.892494670002684
+0963325b37f04df0.vert: ALU 234 -> 200, copies 90 -> 71, co-issued 0 -> 22, fetches 4 -> 4, control flow 43 -> 38, registers 13 -> 14; ok
 09bef7f9a3ac5df7.frag: ALU 4 -> 1, copies 4 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
 0c5faf5ad1250944.frag: ALU 48 -> 30, copies 19 -> 6, co-issued 0 -> 2, fetches 2 -> 2, control flow 11 -> 7, registers 14 -> 10; ok
 0c9a6858fbbe328e.frag: ALU 2 -> 1, copies 2 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
@@ -20,55 +20,55 @@
 1ad5c2f8e1cc2653.frag: ALU 11 -> 8, copies 7 -> 4, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 4, registers 5 -> 4; ok
 1e5db8674ad9d29e.frag: ALU 5 -> 4, copies 5 -> 4, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 3 -> 2; ok
 2013a34320f17698.frag: ALU 4 -> 3, copies 4 -> 3, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 3; ok
-20a291c66ca7e0fd.vert: ALU 214 -> 182, copies 76 -> 58, co-issued 0 -> 22, fetches 4 -> 4, control flow 40 -> 35, registers 13 -> 14; trial 0: export 1.w 0.7421541968137826 became 17.892494670002684
+20a291c66ca7e0fd.vert: ALU 214 -> 182, copies 76 -> 58, co-issued 0 -> 22, fetches 4 -> 4, control flow 40 -> 35, registers 13 -> 14; ok
 22d6a7758d2d5d84.frag: ALU 11 -> 8, copies 7 -> 4, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 3, registers 4 -> 3; ok
 233aa73af10f83bc.frag: ALU 19 -> 14, copies 10 -> 5, co-issued 0 -> 0, fetches 2 -> 2, control flow 6 -> 5, registers 8 -> 8; ok
 246ca2b33bb1fdf4.frag: ALU 14 -> 12, copies 5 -> 4, co-issued 0 -> 0, fetches 1 -> 1, control flow 5 -> 4, registers 5 -> 5; ok
-251e226c8a088a82.vert: ALU 264 -> 224, copies 103 -> 79, co-issued 0 -> 25, fetches 3 -> 3, control flow 48 -> 42, registers 12 -> 13; trial 0: export 3.w 0.7421541968137826 became 17.892494670002684
+251e226c8a088a82.vert: ALU 264 -> 224, copies 103 -> 79, co-issued 0 -> 25, fetches 3 -> 3, control flow 48 -> 42, registers 12 -> 13; ok
 29fab4bb2516d607.frag: ALU 45 -> 30, copies 20 -> 12, co-issued 0 -> 5, fetches 3 -> 3, control flow 12 -> 9, registers 12 -> 9; ok
-2a1a218d5688204a.vert: ALU 238 -> 202, copies 83 -> 63, co-issued 0 -> 25, fetches 3 -> 3, control flow 44 -> 38, registers 12 -> 13; trial 0: export 1.w 0.7421541968137826 became 17.892494670002684
+2a1a218d5688204a.vert: ALU 238 -> 202, copies 83 -> 63, co-issued 0 -> 25, fetches 3 -> 3, control flow 44 -> 38, registers 12 -> 13; ok
 2bc4ebf687f545b6.frag: ALU 2 -> 2, copies 2 -> 2, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 2 -> 2; ok
-2e7f30cdc49bd211.vert: ALU 42 -> 40, copies 28 -> 27, co-issued 0 -> 0, fetches 3 -> 3, control flow 11 -> 11, registers 8 -> 8; trial 0: export 2.w 1.7294338243863039 became 0.7421541968137826
+2e7f30cdc49bd211.vert: ALU 42 -> 40, copies 28 -> 27, co-issued 0 -> 0, fetches 3 -> 3, control flow 11 -> 11, registers 8 -> 8; ok
 2eefbbd89e53921c.frag: ALU 74 -> 45, copies 29 -> 13, co-issued 0 -> 9, fetches 4 -> 4, control flow 16 -> 12, registers 16 -> 12; ok
 31871ebc6e90765a.vert: ALU 30 -> 29, copies 19 -> 18, co-issued 0 -> 0, fetches 1 -> 1, control flow 9 -> 9, registers 6 -> 6; ok
 32d160ecc3deb658.vert: ALU 22 -> 22, copies 14 -> 14, co-issued 0 -> 0, fetches 2 -> 2, control flow 8 -> 8, registers 7 -> 7; ok
 33d3ad7a449b966c.frag: ALU 12 -> 8, copies 8 -> 4, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 3, registers 5 -> 4; ok
 349b6ed78d720732.frag: ALU 17 -> 13, copies 9 -> 5, co-issued 0 -> 0, fetches 1 -> 1, control flow 5 -> 5, registers 6 -> 6; ok
-350248024002ce37.vert: ALU 244 -> 208, copies 86 -> 67, co-issued 0 -> 25, fetches 4 -> 4, control flow 45 -> 39, registers 13 -> 14; trial 0: export 1.w 2.4060703892506323 became 0.7421541968137826
+350248024002ce37.vert: ALU 244 -> 208, copies 86 -> 67, co-issued 0 -> 25, fetches 4 -> 4, control flow 45 -> 39, registers 13 -> 14; ok
 35fc826ad15e1872.frag: ALU 46 -> 25, copies 20 -> 6, co-issued 0 -> 3, fetches 2 -> 2, control flow 10 -> 7, registers 12 -> 8; ok
 39662e66d545c874.vert: ALU 6 -> 4, copies 4 -> 3, co-issued 0 -> 0, fetches 2 -> 2, control flow 5 -> 5, registers 4 -> 3; ok
 3ba44326990edfeb.vert: ALU 28 -> 24, copies 20 -> 16, co-issued 0 -> 0, fetches 4 -> 4, control flow 9 -> 8, registers 9 -> 9; ok
 3de421fc6f9f3122.frag: ALU 10 -> 8, copies 5 -> 4, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 3, registers 4 -> 4; ok
 407248b726bcb428.vert: ALU 272 -> 232, copies 108 -> 84, co-issued 0 -> 25, fetches 3 -> 3, control flow 50 -> 43, registers 12 -> 13; ok
-412f75e329bbe3a2.vert: ALU 26 -> 23, copies 18 -> 15, co-issued 0 -> 0, fetches 2 -> 2, control flow 9 -> 8, registers 7 -> 7; trial 0: export 0.w 0.7421541968137826 became 1.0
+412f75e329bbe3a2.vert: ALU 26 -> 23, copies 18 -> 15, co-issued 0 -> 0, fetches 2 -> 2, control flow 9 -> 8, registers 7 -> 7; ok
 46d1eea9e1360669.frag: ALU 44 -> 28, copies 12 -> 5, co-issued 0 -> 6, fetches 3 -> 3, control flow 10 -> 7, registers 11 -> 11; ok
 48cd8f549b507826.frag: ALU 46 -> 28, copies 18 -> 6, co-issued 0 -> 2, fetches 2 -> 2, control flow 11 -> 7, registers 14 -> 10; ok
 4a2fde48317fee5f.frag: ALU 41 -> 32, copies 12 -> 3, co-issued 0 -> 0, fetches 3 -> 3, control flow 9 -> 8, registers 10 -> 9; ok
-4e6272cd5ea024f5.vert: ALU 54 -> 47, copies 37 -> 33, co-issued 0 -> 0, fetches 3 -> 3, control flow 13 -> 12, registers 8 -> 8; trial 0: export 1.w 1.120993072944724 became 1.0
+4e6272cd5ea024f5.vert: ALU 54 -> 47, copies 37 -> 33, co-issued 0 -> 0, fetches 3 -> 3, control flow 13 -> 12, registers 8 -> 8; ok
 4ee5b3c093bea8ab.frag: ALU 103 -> 64, copies 27 -> 7, co-issued 0 -> 11, fetches 4 -> 4, control flow 20 -> 14, registers 16 -> 12; ok
 4f41862f49358139.frag: ALU 15 -> 10, copies 5 -> 2, co-issued 0 -> 2, fetches 1 -> 1, control flow 5 -> 4, registers 5 -> 5; ok
-4f939ba938f196ae.vert: ALU 260 -> 220, copies 99 -> 77, co-issued 0 -> 25, fetches 3 -> 3, control flow 48 -> 41, registers 12 -> 13; trial 0: export 1.w 1.8951009446387665 became 17.892494670002684
+4f939ba938f196ae.vert: ALU 260 -> 220, copies 99 -> 77, co-issued 0 -> 25, fetches 3 -> 3, control flow 48 -> 41, registers 12 -> 13; ok
 5264b90e6f50c901.frag: ALU 7 -> 6, copies 1 -> 1, co-issued 0 -> 1, fetches 1 -> 1, control flow 4 -> 3, registers 4 -> 4; ok
 551fb86c6ef59def.frag: ALU 48 -> 30, copies 19 -> 6, co-issued 0 -> 2, fetches 2 -> 2, control flow 11 -> 7, registers 14 -> 10; ok
-556ea181d0d34829.vert: ALU 223 -> 191, copies 82 -> 64, co-issued 0 -> 22, fetches 4 -> 4, control flow 41 -> 36, registers 13 -> 14; trial 0: export 1.w 0.7421541968137826 became 17.892494670002684
+556ea181d0d34829.vert: ALU 223 -> 191, copies 82 -> 64, co-issued 0 -> 22, fetches 4 -> 4, control flow 41 -> 36, registers 13 -> 14; ok
 55a0066e2650ed99.vert: ALU 34 -> 31, copies 23 -> 20, co-issued 0 -> 0, fetches 3 -> 3, control flow 10 -> 9, registers 8 -> 8; ok
-58786ba1a7e49515.vert: ALU 43 -> 38, copies 29 -> 26, co-issued 0 -> 0, fetches 3 -> 3, control flow 11 -> 11, registers 8 -> 8; trial 0: export 1.w 1.120993072944724 became 1.0
+58786ba1a7e49515.vert: ALU 43 -> 38, copies 29 -> 26, co-issued 0 -> 0, fetches 3 -> 3, control flow 11 -> 11, registers 8 -> 8; ok
 607a7b7110387a22.frag: ALU 11 -> 8, copies 7 -> 4, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 4, registers 5 -> 4; ok
 60bcbd6f4104ab13.frag: ALU 44 -> 27, copies 20 -> 8, co-issued 0 -> 2, fetches 3 -> 3, control flow 10 -> 7, registers 15 -> 11; ok
 61cdb76b69b6489b.frag: ALU 14 -> 8, copies 6 -> 2, co-issued 0 -> 2, fetches 1 -> 1, control flow 5 -> 4, registers 5 -> 5; ok
 64f76a18fb37dd48.frag: ALU 3 -> 3, copies 1 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 3; ok
 66457dda201609ed.frag: ALU 64 -> 43, copies 19 -> 7, co-issued 0 -> 4, fetches 4 -> 4, control flow 14 -> 10, registers 16 -> 14; ok
 676ff8c4689eaf91.frag: ALU 48 -> 28, copies 21 -> 5, co-issued 0 -> 2, fetches 3 -> 3, control flow 10 -> 7, registers 14 -> 11; ok
-68b11762bd80366b.vert: ALU 260 -> 220, copies 99 -> 77, co-issued 0 -> 25, fetches 3 -> 3, control flow 48 -> 41, registers 12 -> 13; trial 0: export 1.w 2.4060703892506323 became -1.2235254200592416
+68b11762bd80366b.vert: ALU 260 -> 220, copies 99 -> 77, co-issued 0 -> 25, fetches 3 -> 3, control flow 48 -> 41, registers 12 -> 13; ok
 695e15b366c72818.frag: ALU 42 -> 25, copies 19 -> 6, co-issued 0 -> 2, fetches 2 -> 2, control flow 10 -> 7, registers 14 -> 10; ok
 6a05b1f88a016fb2.frag: ALU 4 -> 1, copies 4 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
 6b7ff186cc28cce5.frag: ALU 23 -> 18, copies 10 -> 6, co-issued 0 -> 0, fetches 1 -> 1, control flow 6 -> 5, registers 7 -> 5; ok
-6c429f0c99b0524f.vert: ALU 212 -> 181, copies 74 -> 57, co-issued 0 -> 22, fetches 4 -> 4, control flow 40 -> 34, registers 12 -> 13; trial 0: export 1.w 0.7421541968137826 became 17.892494670002684
+6c429f0c99b0524f.vert: ALU 212 -> 181, copies 74 -> 57, co-issued 0 -> 22, fetches 4 -> 4, control flow 40 -> 34, registers 12 -> 13; ok
 6dd3a70373df59bf.frag: ALU 63 -> 40, copies 21 -> 7, co-issued 0 -> 4, fetches 4 -> 4, control flow 14 -> 9, registers 15 -> 12; ok
-6e690d475f0af5fe.vert: ALU 29 -> 25, copies 21 -> 17, co-issued 0 -> 0, fetches 2 -> 2, control flow 9 -> 8, registers 7 -> 7; trial 0: export 0.w 5.7239806238809905 became 1.0
-70ee109df12524e4.vert: ALU 190 -> 162, copies 69 -> 53, co-issued 0 -> 19, fetches 3 -> 3, control flow 36 -> 31, registers 12 -> 13; trial 0: export 1.w 0.7421541968137826 became 17.892494670002684
-71ac4a48df92e5b7.vert: ALU 228 -> 194, copies 87 -> 67, co-issued 0 -> 22, fetches 5 -> 5, control flow 42 -> 37, registers 14 -> 15; trial 0: export 1.w 0.7421541968137826 became 17.892494670002684
-72abd6191dcd7bfe.vert: ALU 238 -> 202, copies 83 -> 63, co-issued 0 -> 25, fetches 4 -> 4, control flow 44 -> 38, registers 13 -> 14; trial 0: export 1.w 0.7421541968137826 became 17.892494670002684
+6e690d475f0af5fe.vert: ALU 29 -> 25, copies 21 -> 17, co-issued 0 -> 0, fetches 2 -> 2, control flow 9 -> 8, registers 7 -> 7; ok
+70ee109df12524e4.vert: ALU 190 -> 162, copies 69 -> 53, co-issued 0 -> 19, fetches 3 -> 3, control flow 36 -> 31, registers 12 -> 13; ok
+71ac4a48df92e5b7.vert: ALU 228 -> 194, copies 87 -> 67, co-issued 0 -> 22, fetches 5 -> 5, control flow 42 -> 37, registers 14 -> 15; ok
+72abd6191dcd7bfe.vert: ALU 238 -> 202, copies 83 -> 63, co-issued 0 -> 25, fetches 4 -> 4, control flow 44 -> 38, registers 13 -> 14; ok
 75422301f0e22829.frag: ALU 78 -> 48, copies 24 -> 7, co-issued 0 -> 7, fetches 3 -> 3, control flow 16 -> 11, registers 15 -> 11; ok
 820f98f280587ea8.frag: ALU 59 -> 36, copies 17 -> 9, co-issued 0 -> 11, fetches 2 -> 2, control flow 12 -> 8, registers 11 -> 8; ok
 84e4d80e1fc6e615.frag: ALU 2 -> 1, copies 2 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
@@ -80,7 +80,7 @@
 8b4ce5184129a25a.frag: ALU 8 -> 4, copies 3 -> 1, co-issued 0 -> 0, fetches 2 -> 2, control flow 4 -> 3, registers 4 -> 3; ok
 8e555ecc28e3d240.vert: ALU 26 -> 23, copies 18 -> 15, co-issued 0 -> 0, fetches 3 -> 3, control flow 9 -> 8, registers 8 -> 8; ok
 8ecfa22174a91d18.frag: ALU 12 -> 8, copies 4 -> 2, co-issued 0 -> 2, fetches 1 -> 1, control flow 4 -> 4, registers 5 -> 5; ok
-8f974c0335e452d5.vert: ALU 32 -> 29, copies 21 -> 19, co-issued 0 -> 0, fetches 2 -> 2, control flow 10 -> 9, registers 7 -> 7; trial 0: export 0.w 1.120993072944724 became 0.7421541968137826
+8f974c0335e452d5.vert: ALU 32 -> 29, copies 21 -> 19, co-issued 0 -> 0, fetches 2 -> 2, control flow 10 -> 9, registers 7 -> 7; ok
 92f6cc89e68fccea.frag: ALU 2 -> 2, copies 2 -> 2, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 1 -> 1; ok
 93d36ce55e3f9bad.vert: ALU 221 -> 221, copies 82 -> 82, co-issued 0 -> 0, fetches 5 -> 5, control flow 40 -> 40, registers 13 -> 13; not simulated: scalar kMaxAsf
 946541a3cc485e48.frag: ALU 8 -> 6, copies 6 -> 4, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 3, registers 4 -> 3; ok
@@ -92,7 +92,7 @@ a35e191254f5ef46.frag: ALU 17 -> 13, copies 7 -> 4, co-issued 0 -> 0, fetches 1 
 a478595f52157a73.frag: ALU 14 -> 12, copies 7 -> 5, co-issued 0 -> 0, fetches 2 -> 2, control flow 5 -> 4, registers 7 -> 7; ok
 a479ce42ba36b7d8.frag: ALU 35 -> 18, copies 18 -> 6, co-issued 0 -> 2, fetches 1 -> 1, control flow 8 -> 5, registers 11 -> 7; ok
 a48b96d69ff86daf.vert: ALU 2 -> 2, copies 2 -> 2, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 4, registers 1 -> 1; ok
-ad037db0d56a10dd.vert: ALU 56 -> 48, copies 39 -> 34, co-issued 0 -> 0, fetches 3 -> 3, control flow 14 -> 12, registers 8 -> 8; trial 0: export 1.w 1.120993072944724 became 1.0
+ad037db0d56a10dd.vert: ALU 56 -> 48, copies 39 -> 34, co-issued 0 -> 0, fetches 3 -> 3, control flow 14 -> 12, registers 8 -> 8; ok
 b331aaa6bee56ee9.frag: ALU 85 -> 54, copies 25 -> 8, co-issued 0 -> 7, fetches 3 -> 3, control flow 17 -> 12, registers 15 -> 12; ok
 b40238367bc2ae70.frag: ALU 53 -> 36, copies 19 -> 7, co-issued 0 -> 2, fetches 4 -> 4, control flow 12 -> 8, registers 16 -> 13; ok
 b4a8c01218dcffe9.frag: ALU 47 -> 31, copies 19 -> 7, co-issued 0 -> 2, fetches 4 -> 4, control flow 11 -> 8, registers 15 -> 12; ok
@@ -100,10 +100,10 @@ b4bd0f33bde7fc52.frag: ALU 23 -> 18, copies 9 -> 5, co-issued 0 -> 0, fetches 1 
 b624738d17bc5ca0.frag: ALU 13 -> 10, copies 3 -> 2, co-issued 0 -> 2, fetches 1 -> 1, control flow 5 -> 4, registers 5 -> 5; ok
 b72c3e79097987b4.frag: ALU 6 -> 4, copies 2 -> 1, co-issued 0 -> 1, fetches 1 -> 1, control flow 3 -> 3, registers 4 -> 4; ok
 ba930563b1db79f4.frag: ALU 5 -> 3, copies 3 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 3; ok
-bacc292ad5a86eb3.vert: ALU 107 -> 91, copies 75 -> 67, co-issued 0 -> 0, fetches 2 -> 2, control flow 22 -> 19, registers 7 -> 7; trial 0: export 0.w 1.120993072944724 became 5.7239806238809905
-bde83fec0182df1d.vert: ALU 29 -> 26, copies 21 -> 18, co-issued 0 -> 0, fetches 2 -> 2, control flow 9 -> 9, registers 7 -> 7; trial 0: export 1.w 0.7421541968137826 became -1.9660789501453246
+bacc292ad5a86eb3.vert: ALU 107 -> 91, copies 75 -> 67, co-issued 0 -> 0, fetches 2 -> 2, control flow 22 -> 19, registers 7 -> 7; ok
+bde83fec0182df1d.vert: ALU 29 -> 26, copies 21 -> 18, co-issued 0 -> 0, fetches 2 -> 2, control flow 9 -> 9, registers 7 -> 7; ok
 be7931e3ec0bb85e.frag: ALU 15 -> 12, copies 3 -> 2, co-issued 0 -> 0, fetches 1 -> 1, control flow 5 -> 4, registers 5 -> 4; ok
-c0887c56621045a9.vert: ALU 37 -> 33, copies 26 -> 22, co-issued 0 -> 0, fetches 2 -> 2, control flow 10 -> 10, registers 7 -> 7; trial 0: export 0.w 5.7239806238809905 became 1.0
+c0887c56621045a9.vert: ALU 37 -> 33, copies 26 -> 22, co-issued 0 -> 0, fetches 2 -> 2, control flow 10 -> 10, registers 7 -> 7; ok
 c0ddfd4547c71e5a.vert: ALU 245 -> 245, copies 89 -> 89, co-issued 0 -> 0, fetches 4 -> 4, control flow 44 -> 44, registers 12 -> 12; not simulated: scalar kMaxAsf
 c165aaa5a5be8de5.frag: ALU 2 -> 1, copies 2 -> 1, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
 c2679fcd0788b78d.frag: ALU 24 -> 20, copies 11 -> 7, co-issued 0 -> 0, fetches 2 -> 2, control flow 6 -> 6, registers 8 -> 7; ok
@@ -116,12 +116,12 @@ ca44599827bbdb23.frag: ALU 38 -> 25, copies 17 -> 10, co-issued 0 -> 4, fetches 
 cad12b640d1cfd9c.frag: ALU 31 -> 16, copies 16 -> 4, co-issued 0 -> 2, fetches 1 -> 1, control flow 8 -> 5, registers 11 -> 7; ok
 cbed2c9db6f723a5.frag: ALU 8 -> 4, copies 4 -> 1, co-issued 0 -> 1, fetches 1 -> 1, control flow 4 -> 3, registers 4 -> 4; ok
 ce4bffbb0b973310.frag: ALU 1 -> 1, copies 1 -> 1, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 1 -> 1; ok
-cefc467138f9dac7.vert: ALU 38 -> 34, copies 27 -> 23, co-issued 0 -> 0, fetches 2 -> 2, control flow 11 -> 10, registers 7 -> 7; trial 0: export 1.w 1.0598320846134535 became 1.0
+cefc467138f9dac7.vert: ALU 38 -> 34, copies 27 -> 23, co-issued 0 -> 0, fetches 2 -> 2, control flow 11 -> 10, registers 7 -> 7; ok
 d1441271ff15f72c.frag: ALU 8 -> 4, copies 3 -> 1, co-issued 0 -> 0, fetches 2 -> 2, control flow 4 -> 3, registers 4 -> 3; ok
-d5d99e338acc096e.vert: ALU 24 -> 22, copies 16 -> 14, co-issued 0 -> 0, fetches 2 -> 2, control flow 8 -> 8, registers 7 -> 7; trial 0: export 0.w 0.7421541968137826 became 1.0
-d8658b0e39305f51.vert: ALU 266 -> 226, copies 102 -> 81, co-issued 0 -> 25, fetches 3 -> 3, control flow 49 -> 42, registers 12 -> 13; trial 0: export 1.w 2.4060703892506323 became -1.2235254200592416
+d5d99e338acc096e.vert: ALU 24 -> 22, copies 16 -> 14, co-issued 0 -> 0, fetches 2 -> 2, control flow 8 -> 8, registers 7 -> 7; ok
+d8658b0e39305f51.vert: ALU 266 -> 226, copies 102 -> 81, co-issued 0 -> 25, fetches 3 -> 3, control flow 49 -> 42, registers 12 -> 13; ok
 d8d724f61446ecbb.vert: ALU 45 -> 41, copies 31 -> 27, co-issued 0 -> 0, fetches 2 -> 2, control flow 12 -> 11, registers 7 -> 7; ok
-d90889c31c82dbe8.vert: ALU 199 -> 171, copies 75 -> 59, co-issued 0 -> 19, fetches 4 -> 4, control flow 37 -> 33, registers 13 -> 14; trial 0: export 1.w 0.7421541968137826 became 17.892494670002684
+d90889c31c82dbe8.vert: ALU 199 -> 171, copies 75 -> 59, co-issued 0 -> 19, fetches 4 -> 4, control flow 37 -> 33, registers 13 -> 14; ok
 da2593920df168c8.vert: ALU 22 -> 22, copies 14 -> 14, co-issued 0 -> 0, fetches 1 -> 1, control flow 8 -> 8, registers 6 -> 6; ok
 dae9addf7280e276.frag: ALU 11 -> 8, copies 7 -> 4, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 4, registers 5 -> 5; ok
 dee3af7655c47a63.frag: ALU 48 -> 30, copies 19 -> 6, co-issued 0 -> 2, fetches 2 -> 2, control flow 11 -> 7, registers 14 -> 10; ok
@@ -132,15 +132,15 @@ e2f1c3a692fdfb84.frag: ALU 10 -> 8, copies 6 -> 4, co-issued 0 -> 0, fetches 0 -
 e3fba406929fde97.frag: ALU 36 -> 27, copies 13 -> 4, co-issued 0 -> 0, fetches 8 -> 8, control flow 9 -> 8, registers 18 -> 17; ok
 e4c0798e6cc9e4ba.frag: ALU 30 -> 16, copies 15 -> 4, co-issued 0 -> 2, fetches 1 -> 1, control flow 7 -> 5, registers 11 -> 7; ok
 e5c535debebde1ed.frag: ALU 5 -> 4, copies 5 -> 4, co-issued 0 -> 0, fetches 0 -> 0, control flow 2 -> 2, registers 4 -> 3; ok
-e5ea8b62e2ebf4ac.vert: ALU 259 -> 217, copies 101 -> 76, co-issued 0 -> 25, fetches 3 -> 3, control flow 47 -> 40, registers 12 -> 13; trial 0: export 1.w 1.8951009446387665 became 17.892494670002684
+e5ea8b62e2ebf4ac.vert: ALU 259 -> 217, copies 101 -> 76, co-issued 0 -> 25, fetches 3 -> 3, control flow 47 -> 40, registers 12 -> 13; ok
 e6ec5aee8cc08f41.frag: ALU 11 -> 8, copies 7 -> 4, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 3, registers 5 -> 4; ok
 e7fe951996d1f40b.frag: ALU 42 -> 25, copies 19 -> 6, co-issued 0 -> 2, fetches 2 -> 2, control flow 10 -> 7, registers 14 -> 10; ok
-e9d14d2c939cffe4.vert: ALU 247 -> 211, copies 89 -> 69, co-issued 0 -> 25, fetches 4 -> 4, control flow 45 -> 39, registers 13 -> 14; trial 0: export 1.w 0.7421541968137826 became 17.892494670002684
+e9d14d2c939cffe4.vert: ALU 247 -> 211, copies 89 -> 69, co-issued 0 -> 25, fetches 4 -> 4, control flow 45 -> 39, registers 13 -> 14; ok
 e9e5df17e9c42a02.frag: ALU 30 -> 16, copies 15 -> 4, co-issued 0 -> 2, fetches 1 -> 1, control flow 7 -> 5, registers 12 -> 8; ok
 ece2618e566d8623.frag: ALU 3 -> 3, copies 3 -> 3, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 3; ok
 ed3667059b5c9028.frag: ALU 36 -> 21, copies 16 -> 5, co-issued 0 -> 2, fetches 2 -> 2, control flow 9 -> 6, registers 13 -> 9; ok
-f12926532ee0b4d0.vert: ALU 87 -> 77, copies 45 -> 39, co-issued 0 -> 4, fetches 4 -> 4, control flow 19 -> 17, registers 11 -> 12; trial 0: export 1.w 2.4060703892506323 became 0.7421541968137826
-f1f88472976e4bfb.vert: ALU 214 -> 182, copies 76 -> 58, co-issued 0 -> 22, fetches 4 -> 4, control flow 40 -> 35, registers 13 -> 14; trial 0: export 1.w 0.7421541968137826 became 17.892494670002684
+f12926532ee0b4d0.vert: ALU 87 -> 77, copies 45 -> 39, co-issued 0 -> 4, fetches 4 -> 4, control flow 19 -> 17, registers 11 -> 12; ok
+f1f88472976e4bfb.vert: ALU 214 -> 182, copies 76 -> 58, co-issued 0 -> 22, fetches 4 -> 4, control flow 40 -> 35, registers 13 -> 14; ok
 f2f1d4cd60de5251.frag: ALU 21 -> 15, copies 5 -> 4, co-issued 0 -> 0, fetches 1 -> 1, control flow 6 -> 5, registers 6 -> 6; ok
 f3825523049d31cf.frag: ALU 56 -> 35, copies 23 -> 7, co-issued 0 -> 2, fetches 3 -> 3, control flow 12 -> 8, registers 14 -> 10; ok
 f526e9ffb3616812.frag: ALU 4 -> 2, copies 4 -> 2, co-issued 0 -> 0, fetches 1 -> 1, control flow 3 -> 3, registers 3 -> 2; ok
@@ -298,29 +298,29 @@ vs_vecmat.vert.spv: ALU 7 -> 7, copies 3 -> 3, co-issued 0 -> 0, fetches 3 -> 3,
 vs_wave.vert.spv: ALU 11 -> 10, copies 4 -> 3, co-issued 0 -> 0, fetches 3 -> 3, control flow 6 -> 6, registers 6 -> 6; ok
 vtx_arith.vert.spv: ALU 8 -> 8, copies 2 -> 2, co-issued 0 -> 0, fetches 3 -> 3, control flow 5 -> 5, registers 4 -> 4; ok
 aurora_attr_defaults.frag: ALU 7 -> 6, copies 5 -> 4, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 3, registers 5 -> 4; ok
-aurora_attr_defaults.vert: ALU 67 -> 42, copies 37 -> 19, co-issued 0 -> 4, fetches 2 -> 2, control flow 15 -> 11, registers 7 -> 9; trial 0: export 1.w 0.08960081063062483 became -0.9439121545302254
+aurora_attr_defaults.vert: ALU 67 -> 42, copies 37 -> 19, co-issued 0 -> 4, fetches 2 -> 2, control flow 15 -> 11, registers 7 -> 9; ok
 aurora_emboss.frag: ALU 7 -> 6, copies 5 -> 4, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 3, registers 6 -> 5; ok
-aurora_emboss.vert: ALU 84 -> 64, copies 43 -> 29, co-issued 0 -> 5, fetches 5 -> 5, control flow 17 -> 14, registers 11 -> 13; trial 0: export 1.w 0.8819608295782907 became -0.9439121545302254
+aurora_emboss.vert: ALU 84 -> 64, copies 43 -> 29, co-issued 0 -> 5, fetches 5 -> 5, control flow 17 -> 14, registers 11 -> 13; ok
 aurora_texgen_binormal.frag: ALU 7 -> 6, copies 5 -> 4, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 3, registers 5 -> 4; ok
-aurora_texgen_binormal.vert: ALU 65 -> 46, copies 35 -> 23, co-issued 0 -> 4, fetches 3 -> 3, control flow 14 -> 11, registers 8 -> 10; trial 0: export 1.w -0.6881160476776701 became 1.0217674623427988
+aurora_texgen_binormal.vert: ALU 65 -> 46, copies 35 -> 23, co-issued 0 -> 4, fetches 3 -> 3, control flow 14 -> 11, registers 8 -> 10; ok
 aurora_texgen_prior.frag: ALU 8 -> 7, copies 6 -> 5, co-issued 0 -> 0, fetches 2 -> 2, control flow 4 -> 4, registers 6 -> 6; ok
-aurora_texgen_prior.vert: ALU 83 -> 57, copies 45 -> 30, co-issued 0 -> 4, fetches 3 -> 3, control flow 17 -> 13, registers 8 -> 10; trial 0: export 1.w -0.6795176089319481 became 1.0217674623427988
+aurora_texgen_prior.vert: ALU 83 -> 57, copies 45 -> 30, co-issued 0 -> 4, fetches 3 -> 3, control flow 17 -> 13, registers 8 -> 10; ok
 aurora_texgen_prior_inline.frag: ALU 7 -> 6, copies 5 -> 4, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 3, registers 5 -> 4; ok
-aurora_texgen_prior_inline.vert: ALU 65 -> 46, copies 35 -> 23, co-issued 0 -> 4, fetches 3 -> 3, control flow 14 -> 11, registers 8 -> 10; trial 0: export 1.w 0.6659021214231935 became 0.7610063542375435
+aurora_texgen_prior_inline.vert: ALU 65 -> 46, copies 35 -> 23, co-issued 0 -> 4, fetches 3 -> 3, control flow 14 -> 11, registers 8 -> 10; ok
 aurora_texgen_q_zero.frag: ALU 16 -> 12, copies 8 -> 4, co-issued 0 -> 0, fetches 1 -> 1, control flow 5 -> 4, registers 6 -> 5; ok
-aurora_texgen_q_zero.vert: ALU 76 -> 57, copies 39 -> 26, co-issued 0 -> 4, fetches 3 -> 3, control flow 16 -> 13, registers 8 -> 10; trial 0: export 1.w 1.139806632764508 became 1.2796132655290162
+aurora_texgen_q_zero.vert: ALU 76 -> 57, copies 39 -> 26, co-issued 0 -> 4, fetches 3 -> 3, control flow 16 -> 13, registers 8 -> 10; ok
 aurora_texgen_tangent.frag: ALU 7 -> 6, copies 5 -> 4, co-issued 0 -> 0, fetches 1 -> 1, control flow 4 -> 3, registers 5 -> 4; ok
-aurora_texgen_tangent.vert: ALU 65 -> 46, copies 35 -> 23, co-issued 0 -> 4, fetches 3 -> 3, control flow 14 -> 11, registers 8 -> 10; trial 0: export 1.w 0.45639716834850674 became 1.0217674623427988
+aurora_texgen_tangent.vert: ALU 65 -> 46, copies 35 -> 23, co-issued 0 -> 4, fetches 3 -> 3, control flow 14 -> 11, registers 8 -> 10; ok
 aurora_texgen_zero.frag: ALU 16 -> 12, copies 8 -> 4, co-issued 0 -> 0, fetches 1 -> 1, control flow 5 -> 4, registers 6 -> 5; ok
-aurora_texgen_zero.vert: ALU 75 -> 55, copies 34 -> 21, co-issued 0 -> 5, fetches 2 -> 2, control flow 16 -> 13, registers 7 -> 9; trial 0: export 1.w 0.9756687657923603 became 1.1154753985568684
+aurora_texgen_zero.vert: ALU 75 -> 55, copies 34 -> 21, co-issued 0 -> 5, fetches 2 -> 2, control flow 16 -> 13, registers 7 -> 9; ok
 aurora_ztex_add_u24.frag: ALU 40 -> 24, copies 15 -> 5, co-issued 0 -> 1, fetches 1 -> 1, control flow 9 -> 6, registers 9 -> 7; ok
-aurora_ztex_add_u24.vert: ALU 61 -> 43, copies 34 -> 22, co-issued 0 -> 4, fetches 3 -> 3, control flow 14 -> 11, registers 8 -> 10; trial 0: export 1.w 0.751580275525663 became -1.2046732626354808
+aurora_ztex_add_u24.vert: ALU 61 -> 43, copies 34 -> 22, co-issued 0 -> 4, fetches 3 -> 3, control flow 14 -> 11, registers 8 -> 10; ok
 aurora_ztex_add_u8.frag: ALU 35 -> 21, copies 13 -> 5, co-issued 0 -> 1, fetches 1 -> 1, control flow 8 -> 6, registers 9 -> 7; ok
-aurora_ztex_add_u8.vert: ALU 61 -> 43, copies 34 -> 22, co-issued 0 -> 4, fetches 3 -> 3, control flow 14 -> 11, registers 8 -> 10; trial 0: export 1.w 0.751580275525663 became -1.2046732626354808
+aurora_ztex_add_u8.vert: ALU 61 -> 43, copies 34 -> 22, co-issued 0 -> 4, fetches 3 -> 3, control flow 14 -> 11, registers 8 -> 10; ok
 aurora_ztex_replace_u24.frag: ALU 25 -> 17, copies 9 -> 5, co-issued 0 -> 0, fetches 1 -> 1, control flow 7 -> 5, registers 6 -> 5; ok
-aurora_ztex_replace_u24.vert: ALU 59 -> 40, copies 32 -> 19, co-issued 0 -> 4, fetches 3 -> 3, control flow 13 -> 10, registers 8 -> 10; trial 0: export 1.w 0.751580275525663 became -1.2046732626354808
+aurora_ztex_replace_u24.vert: ALU 59 -> 40, copies 32 -> 19, co-issued 0 -> 4, fetches 3 -> 3, control flow 13 -> 10, registers 8 -> 10; ok
 aurora_ztex_replace_u8.frag: ALU 20 -> 14, copies 7 -> 5, co-issued 0 -> 0, fetches 1 -> 1, control flow 6 -> 5, registers 6 -> 5; ok
-aurora_ztex_replace_u8.vert: ALU 59 -> 40, copies 32 -> 19, co-issued 0 -> 4, fetches 3 -> 3, control flow 13 -> 10, registers 8 -> 10; trial 0: export 1.w 0.751580275525663 became -1.2046732626354808
+aurora_ztex_replace_u8.vert: ALU 59 -> 40, copies 32 -> 19, co-issued 0 -> 4, fetches 3 -> 3, control flow 13 -> 10, registers 8 -> 10; ok
 band.frag: ALU 6 -> 6, copies 2 -> 2, co-issued 0 -> 0, fetches 0 -> 0, control flow 3 -> 3, registers 4 -> 4; not simulated: scalar kMaxAsf
 branch_data.vert: ALU 29 -> 25, copies 15 -> 11, co-issued 0 -> 0, fetches 2 -> 2, control flow 9 -> 8, registers 7 -> 7; ok
 branch_uniform.vert: ALU 16 -> 11, copies 9 -> 5, co-issued 0 -> 0, fetches 1 -> 1, control flow 7 -> 6, registers 6 -> 6; ok
@@ -383,4 +383,4 @@ sprite.frag: ALU 1 -> 1, copies 0 -> 0, co-issued 0 -> 0, fetches 1 -> 1, contro
 sprite.vert: ALU 5 -> 5, copies 5 -> 5, co-issued 0 -> 0, fetches 3 -> 3, control flow 5 -> 5, registers 3 -> 3; ok
 vertex, 121 shaders: ALU 7172 -> 6106 (14.9% fewer); copies 3055 (42.6% of ALU) -> 2417 (39.6%); co-issued 0 (0.0%) -> 476 (7.8%); fetches 337 -> 337; control flow 1695 -> 1520; registers 7.0 -> 7.2 a shader, most 45 -> 44
 pixel, 246 shaders: ALU 4098 -> 2789 (31.9% fewer); copies 1673 (40.8% of ALU) -> 836 (30.0%); co-issued 3 (0.1%) -> 199 (7.1%); fetches 277 -> 277; control flow 1275 -> 1053; registers 5.9 -> 5.1 a shader, most 32 -> 32
-383 shaders, 42 differ, 24 not simulated, 16 not compiled
+383 shaders, 0 differ, 24 not simulated, 16 not compiled

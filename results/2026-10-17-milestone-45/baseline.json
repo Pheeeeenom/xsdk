@@ -180,7 +180,7 @@
     "control_flow": 38,
     "registers": 14
    },
-   "result": "trial 0: export 1.w 0.7421541968137826 became 17.892494670002684"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/09bef7f9a3ac5df7.frag": {
    "stage": "pixel",
@@ -460,7 +460,7 @@
     "control_flow": 35,
     "registers": 14
    },
-   "result": "trial 0: export 1.w 0.7421541968137826 became 17.892494670002684"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/22d6a7758d2d5d84.frag": {
    "stage": "pixel",
@@ -540,7 +540,7 @@
     "control_flow": 42,
     "registers": 13
    },
-   "result": "trial 0: export 3.w 0.7421541968137826 became 17.892494670002684"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/29fab4bb2516d607.frag": {
    "stage": "pixel",
@@ -580,7 +580,7 @@
     "control_flow": 38,
     "registers": 13
    },
-   "result": "trial 0: export 1.w 0.7421541968137826 became 17.892494670002684"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/2bc4ebf687f545b6.frag": {
    "stage": "pixel",
@@ -620,7 +620,7 @@
     "control_flow": 11,
     "registers": 8
    },
-   "result": "trial 0: export 2.w 1.7294338243863039 became 0.7421541968137826"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/2eefbbd89e53921c.frag": {
    "stage": "pixel",
@@ -740,7 +740,7 @@
     "control_flow": 39,
     "registers": 14
    },
-   "result": "trial 0: export 1.w 2.4060703892506323 became 0.7421541968137826"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/35fc826ad15e1872.frag": {
    "stage": "pixel",
@@ -860,7 +860,7 @@
     "control_flow": 8,
     "registers": 7
    },
-   "result": "trial 0: export 0.w 0.7421541968137826 became 1.0"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/46d1eea9e1360669.frag": {
    "stage": "pixel",
@@ -940,7 +940,7 @@
     "control_flow": 12,
     "registers": 8
    },
-   "result": "trial 0: export 1.w 1.120993072944724 became 1.0"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/4ee5b3c093bea8ab.frag": {
    "stage": "pixel",
@@ -1000,7 +1000,7 @@
     "control_flow": 41,
     "registers": 13
    },
-   "result": "trial 0: export 1.w 1.8951009446387665 became 17.892494670002684"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/5264b90e6f50c901.frag": {
    "stage": "pixel",
@@ -1060,7 +1060,7 @@
     "control_flow": 36,
     "registers": 14
    },
-   "result": "trial 0: export 1.w 0.7421541968137826 became 17.892494670002684"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/55a0066e2650ed99.vert": {
    "stage": "vertex",
@@ -1100,7 +1100,7 @@
     "control_flow": 11,
     "registers": 8
    },
-   "result": "trial 0: export 1.w 1.120993072944724 became 1.0"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/607a7b7110387a22.frag": {
    "stage": "pixel",
@@ -1240,7 +1240,7 @@
     "control_flow": 41,
     "registers": 13
    },
-   "result": "trial 0: export 1.w 2.4060703892506323 became -1.2235254200592416"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/695e15b366c72818.frag": {
    "stage": "pixel",
@@ -1320,7 +1320,7 @@
     "control_flow": 34,
     "registers": 13
    },
-   "result": "trial 0: export 1.w 0.7421541968137826 became 17.892494670002684"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/6dd3a70373df59bf.frag": {
    "stage": "pixel",
@@ -1360,7 +1360,7 @@
     "control_flow": 8,
     "registers": 7
    },
-   "result": "trial 0: export 0.w 5.7239806238809905 became 1.0"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/70ee109df12524e4.vert": {
    "stage": "vertex",
@@ -1380,7 +1380,7 @@
     "control_flow": 31,
     "registers": 13
    },
-   "result": "trial 0: export 1.w 0.7421541968137826 became 17.892494670002684"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/71ac4a48df92e5b7.vert": {
    "stage": "vertex",
@@ -1400,7 +1400,7 @@
     "control_flow": 37,
     "registers": 15
    },
-   "result": "trial 0: export 1.w 0.7421541968137826 became 17.892494670002684"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/72abd6191dcd7bfe.vert": {
    "stage": "vertex",
@@ -1420,7 +1420,7 @@
     "control_flow": 38,
     "registers": 14
    },
-   "result": "trial 0: export 1.w 0.7421541968137826 became 17.892494670002684"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/75422301f0e22829.frag": {
    "stage": "pixel",
@@ -1660,7 +1660,7 @@
     "control_flow": 9,
     "registers": 7
    },
-   "result": "trial 0: export 0.w 1.120993072944724 became 0.7421541968137826"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/92f6cc89e68fccea.frag": {
    "stage": "pixel",
@@ -1900,7 +1900,7 @@
     "control_flow": 12,
     "registers": 8
    },
-   "result": "trial 0: export 1.w 1.120993072944724 became 1.0"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/b331aaa6bee56ee9.frag": {
    "stage": "pixel",
@@ -2060,7 +2060,7 @@
     "control_flow": 19,
     "registers": 7
    },
-   "result": "trial 0: export 0.w 1.120993072944724 became 5.7239806238809905"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/bde83fec0182df1d.vert": {
    "stage": "vertex",
@@ -2080,7 +2080,7 @@
     "control_flow": 9,
     "registers": 7
    },
-   "result": "trial 0: export 1.w 0.7421541968137826 became -1.9660789501453246"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/be7931e3ec0bb85e.frag": {
    "stage": "pixel",
@@ -2120,7 +2120,7 @@
     "control_flow": 10,
     "registers": 7
    },
-   "result": "trial 0: export 0.w 5.7239806238809905 became 1.0"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/c0ddfd4547c71e5a.vert": {
    "stage": "vertex",
@@ -2380,7 +2380,7 @@
     "control_flow": 10,
     "registers": 7
    },
-   "result": "trial 0: export 1.w 1.0598320846134535 became 1.0"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/d1441271ff15f72c.frag": {
    "stage": "pixel",
@@ -2420,7 +2420,7 @@
     "control_flow": 8,
     "registers": 7
    },
-   "result": "trial 0: export 0.w 0.7421541968137826 became 1.0"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/d8658b0e39305f51.vert": {
    "stage": "vertex",
@@ -2440,7 +2440,7 @@
     "control_flow": 42,
     "registers": 13
    },
-   "result": "trial 0: export 1.w 2.4060703892506323 became -1.2235254200592416"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/d8d724f61446ecbb.vert": {
    "stage": "vertex",
@@ -2480,7 +2480,7 @@
     "control_flow": 33,
     "registers": 14
    },
-   "result": "trial 0: export 1.w 0.7421541968137826 became 17.892494670002684"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/da2593920df168c8.vert": {
    "stage": "vertex",
@@ -2700,7 +2700,7 @@
     "control_flow": 40,
     "registers": 13
    },
-   "result": "trial 0: export 1.w 1.8951009446387665 became 17.892494670002684"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/e6ec5aee8cc08f41.frag": {
    "stage": "pixel",
@@ -2760,7 +2760,7 @@
     "control_flow": 39,
     "registers": 14
    },
-   "result": "trial 0: export 1.w 0.7421541968137826 became 17.892494670002684"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/e9e5df17e9c42a02.frag": {
    "stage": "pixel",
@@ -2840,7 +2840,7 @@
     "control_flow": 17,
     "registers": 12
    },
-   "result": "trial 0: export 1.w 2.4060703892506323 became 0.7421541968137826"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/f1f88472976e4bfb.vert": {
    "stage": "vertex",
@@ -2860,7 +2860,7 @@
     "control_flow": 35,
     "registers": 14
    },
-   "result": "trial 0: export 1.w 0.7421541968137826 became 17.892494670002684"
+   "result": "ok"
   },
   "/mnt/z/dusklight-xenon/platforms/xenon/shaders/f2f1d4cd60de5251.frag": {
    "stage": "pixel",
@@ -5748,7 +5748,7 @@
     "control_flow": 11,
     "registers": 9
    },
-   "result": "trial 0: export 1.w 0.08960081063062483 became -0.9439121545302254"
+   "result": "ok"
   },
   "/mnt/z/vulkan4xenon/tests/shaders/aurora_emboss.frag": {
    "stage": "pixel",
@@ -5788,7 +5788,7 @@
     "control_flow": 14,
     "registers": 13
    },
-   "result": "trial 0: export 1.w 0.8819608295782907 became -0.9439121545302254"
+   "result": "ok"
   },
   "/mnt/z/vulkan4xenon/tests/shaders/aurora_texgen_binormal.frag": {
    "stage": "pixel",
@@ -5828,7 +5828,7 @@
     "control_flow": 11,
     "registers": 10
    },
-   "result": "trial 0: export 1.w -0.6881160476776701 became 1.0217674623427988"
+   "result": "ok"
   },
   "/mnt/z/vulkan4xenon/tests/shaders/aurora_texgen_prior.frag": {
    "stage": "pixel",
@@ -5868,7 +5868,7 @@
     "control_flow": 13,
     "registers": 10
    },
-   "result": "trial 0: export 1.w -0.6795176089319481 became 1.0217674623427988"
+   "result": "ok"
   },
   "/mnt/z/vulkan4xenon/tests/shaders/aurora_texgen_prior_inline.frag": {
    "stage": "pixel",
@@ -5908,7 +5908,7 @@
     "control_flow": 11,
     "registers": 10
    },
-   "result": "trial 0: export 1.w 0.6659021214231935 became 0.7610063542375435"
+   "result": "ok"
   },
   "/mnt/z/vulkan4xenon/tests/shaders/aurora_texgen_q_zero.frag": {
    "stage": "pixel",
@@ -5948,7 +5948,7 @@
     "control_flow": 13,
     "registers": 10
    },
-   "result": "trial 0: export 1.w 1.139806632764508 became 1.2796132655290162"
+   "result": "ok"
   },
   "/mnt/z/vulkan4xenon/tests/shaders/aurora_texgen_tangent.frag": {
    "stage": "pixel",
@@ -5988,7 +5988,7 @@
     "control_flow": 11,
     "registers": 10
    },
-   "result": "trial 0: export 1.w 0.45639716834850674 became 1.0217674623427988"
+   "result": "ok"
   },
   "/mnt/z/vulkan4xenon/tests/shaders/aurora_texgen_zero.frag": {
    "stage": "pixel",
@@ -6028,7 +6028,7 @@
     "control_flow": 13,
     "registers": 9
    },
-   "result": "trial 0: export 1.w 0.9756687657923603 became 1.1154753985568684"
+   "result": "ok"
   },
   "/mnt/z/vulkan4xenon/tests/shaders/aurora_ztex_add_u24.frag": {
    "stage": "pixel",
@@ -6068,7 +6068,7 @@
     "control_flow": 11,
     "registers": 10
    },
-   "result": "trial 0: export 1.w 0.751580275525663 became -1.2046732626354808"
+   "result": "ok"
   },
   "/mnt/z/vulkan4xenon/tests/shaders/aurora_ztex_add_u8.frag": {
    "stage": "pixel",
@@ -6108,7 +6108,7 @@
     "control_flow": 11,
     "registers": 10
    },
-   "result": "trial 0: export 1.w 0.751580275525663 became -1.2046732626354808"
+   "result": "ok"
   },
   "/mnt/z/vulkan4xenon/tests/shaders/aurora_ztex_replace_u24.frag": {
    "stage": "pixel",
@@ -6148,7 +6148,7 @@
     "control_flow": 10,
     "registers": 10
    },
-   "result": "trial 0: export 1.w 0.751580275525663 became -1.2046732626354808"
+   "result": "ok"
   },
   "/mnt/z/vulkan4xenon/tests/shaders/aurora_ztex_replace_u8.frag": {
    "stage": "pixel",
@@ -6188,7 +6188,7 @@
     "control_flow": 10,
     "registers": 10
    },
-   "result": "trial 0: export 1.w 0.751580275525663 became -1.2046732626354808"
+   "result": "ok"
   },
   "/mnt/z/vulkan4xenon/tests/shaders/band.frag": {
    "stage": "pixel",

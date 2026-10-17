@@ -74,12 +74,11 @@ distances it doesn't lower, a cube's gradients, `gl_FragCoord.zw`, depth written
 unroller doesn't take, a shadow cube, texel offsets, an integer load it can't fold (`vk_vertex_index.vert`), a colour
 output past oC3, one stored twice, and `vk_many_fetches.frag`, which needs 383 registers.
 
-**Differ, 42, so the run exits 1:** 30 of Dusklight's vertex shaders and 12 of vulkan4xenon's `aurora_*.vert`. Each
-stops at its first difference, the w of an interpolator whose GLSL output is a `vec2` or `vec3`: a component no
-GLSL writes, which the unoptimised program happens to export and the optimised one exports differently. The check
-counts a component as defined when the first program writes it, so these show as differences; and as it stops at the
-first, what comes after it in those 42 shaders isn't compared. The scope's "exports match with the optimiser on and
-off" needs the check to compare only the components the GLSL defines.
+**Differ, none.** The check compares only the components each output's GLSL type has, read from the SPIR-V. Counting
+every component the unoptimised program writes, 42 vertex shaders differed, 30 of Dusklight's and 12 of vulkan4xenon's
+`aurora_*.vert`, each first at the w of a `vec2` or `vec3` interpolator: a component no GLSL writes and no pixel
+shader reads, which the two programs export differently. With an export component of the optimised run moved by 1
+on purpose, the check reports a component the output's type has and passes one past it.
 
 ## On the console
 

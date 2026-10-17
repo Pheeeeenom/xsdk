@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """check_optimize.py <shader or folder>...: compiles each GLSL shader, or SPIR-V file, with and without the compiler's
 optimiser (xsdk:src/xsc_optimize.c), at xsdk's register split, and checks the two programs' microcode gives the same
-exports, run on random inputs and constants by xdis/equivalence.py, on the export components the first defines. Counts
-each program as xdis disassembles it: ALU instructions; copies, a vector max of one source with itself and no scalar
+exports, run on random inputs and constants by xdis/equivalence.py, on the export components the first defines and
+the output's GLSL type has. Counts each program as xdis disassembles it: ALU instructions; copies, a vector max of one source with itself and no scalar
 operation beside it; co-issued slots, a vector and a scalar operation in one instruction; texture and vertex fetches;
 control flow instructions but cnop; and registers. Prints each shader's counts off and on, then the totals per stage;
 exits 1 if any exports differ. A shader the compiler refuses is listed and left out. --json writes every count and
@@ -103,8 +103,22 @@ def differs(want, got, defined=None):
     return None
 
 
-def compare(plain, optimized, manifest, manifest_opt, trials, seed):
-    """What differed between the two programs' exports, if anything."""
+def output_widths(m):
+    """Each Location output's component count: the compiler exports Location n to export register n
+    (xsdk:src/xsc_resolve.c, interp_out and color_out), and a component past the GLSL type's is one nothing writes."""
+    location = {target: args[0] for target, decos in m.decorations.items() for deco, args in decos if deco == 30}
+    widths = {}
+    for ins in m.instrs:
+        if ins.opcode != 59 or ins.operands[0] != 3 or ins.result_id not in location:  # OpVariable, Output
+            continue
+        pointee = m.by_result[m.by_result[ins.result_type].operands[1]]
+        if pointee.opcode in (21, 22, 23):  # OpTypeInt, OpTypeFloat, OpTypeVector
+            widths[location[ins.result_id]] = pointee.operands[1] if pointee.opcode == 23 else 1
+    return widths
+
+
+def compare(plain, optimized, manifest, manifest_opt, widths, trials, seed):
+    """What differed between the two programs' exports, if anything, on the components each output's type has."""
     if manifest != manifest_opt:
         return "the literal constants differ"
     rng = random.Random(seed)
@@ -115,7 +129,10 @@ def compare(plain, optimized, manifest, manifest_opt, trials, seed):
             if len(entry) == 2 and isinstance(entry[0], int):
                 constants[entry[0]] = list(entry[1])
         try:
-            problem = differs(simulate.run(plain, registers, constants), simulate.run(optimized, registers, constants))
+            want = simulate.run(plain, registers, constants)
+            defined = {reg: [v if i < widths.get(reg, 4) else None for i, v in enumerate(values)]
+                       for reg, values in want.items()}
+            problem = differs(want, simulate.run(optimized, registers, constants), defined)
         except simulate.Unsupported as e:
             return f"not simulated: {e}"
         if problem:
@@ -125,9 +142,10 @@ def compare(plain, optimized, manifest, manifest_opt, trials, seed):
 
 def check(spv_bytes, trials, seed):
     """(stage, counts off, counts on, problem): each program's counts, and what differed, if anything."""
-    plain, manifest = lower_ex(spirv.Module.parse(spv_bytes), XSDK_REGISTERS)
+    module = spirv.Module.parse(spv_bytes)
+    plain, manifest = lower_ex(module, XSDK_REGISTERS)
     optimized, manifest_opt = lower_ex(spirv.Module.parse(spv_bytes), XSDK_REGISTERS, optimize=True)
-    problem = compare(plain, optimized, manifest, manifest_opt, trials, seed)
+    problem = compare(plain, optimized, manifest, manifest_opt, output_widths(module), trials, seed)
     return container.Container(plain).shader_type, counts(plain), counts(optimized), problem
 
 
