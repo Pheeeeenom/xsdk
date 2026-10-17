@@ -2,9 +2,9 @@
 """Generate vulkan4xenon milestone 25's pixel shader for four colour targets at once: c0 to c3 written to oC0 to oC3,
 exports 0 to 3, the pixel shader's colour targets (xenia:src/xenia/gpu/ucode.h:1836-1839), under one alloc colors.
 
-Its record's outputs name all four colours (XenosRecomp:XenosRecomp/shader.h:80-92); its SQ_PROGRAM_CNTL keeps
-ps_export_mode 2, colour alone, as Xenia never reads the mode (xenia:src/xenia/gpu/registers.h:145) and nothing public
-says whether it counts the colours exported.
+Its record's outputs name all four colours (XenosRecomp:XenosRecomp/shader.h:80-92); its SQ_PROGRAM_CNTL's
+ps_export_mode counts them from bit 1, 8, as R600's SQ_PGM_EXPORTS_PS does (radeonhd:src/r600_exa.c:164, one colour
+2). Xenia never reads the mode (xenia:src/xenia/gpu/registers.h:145).
 
 Packed as in tools/gen_triangle_shaders.py, from Xenia's instruction definitions through xost's encoders and container
 emitter, and checked against xost's text assembler. Prints a C header with the container, then its disassembly on
@@ -23,6 +23,8 @@ TARGETS = 4
 FIRST_EXPORT_SLOT = 1
 # XenosRecomp's PIXEL_SHADER_OUTPUT_COLOR0 to COLOR3.
 OUTPUTS_FOUR_COLORS = 0xF
+# ps_export_mode's count of colours exported, from bit 1.
+PS_EXPORT_MODE_FOUR_COLORS = TARGETS << 1
 PIXEL_SHADER_TEXT = """
 alloc colors
 exece
@@ -44,7 +46,7 @@ def pixel_shader():
         sys.exit("gen_target_shaders: the pixel shader differs from xost's assembly of it")
     return ce.build_container(
         "pixel", ucode, constants=[],
-        program_control=tri.program_control(ps_num_reg=0, ps_export_mode=tri.PS_EXPORT_MODE_COLOR),
+        program_control=tri.program_control(ps_num_reg=0, ps_export_mode=PS_EXPORT_MODE_FOUR_COLORS),
         context_misc=tri.CONTEXT_MISC_CENTROIDS_AND_CENTERS,
         interpolators=[ce.Interpolator(tri.EXPORT_INTERPOLATOR_0, ce.USAGE_COLOR, 0)],
         ps_field18=tri.PS_INTERPOLATOR_WORD, ps_outputs=OUTPUTS_FOUR_COLORS, creator=tri.CREATOR)

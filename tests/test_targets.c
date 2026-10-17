@@ -120,12 +120,14 @@ static const FourTarget four[XSDK_COLOR_TARGETS] = {
 			XSDK_WRITE_ALL },
 		{ { 1.0f, 0.8f, 0.4f, 1.0f }, { 0.4f, 0.6f, 1.0f, 0.8f }, { 0.8f, 0.6f, 0.0f, 1.0f },
 			{ 0.2f, 0.4f, 0.6f, 0.8f } } },
+	// The second draw's alpha is one 2 bits hold, as the console rounds the source to the target's bits before it
+	// blends (docs/HARDWARE.md, "Float, 10-bit and 64-bit targets and four at once").
 	{ "2_10_10_10, oC1 blended by its alpha, red, green and blue alone", XSDK_TARGET_2_10_10_10,
 		XSDK_FORMAT_A2B10G10R10, { KIND_10_10_10_2, 4, 1.5f / 1023 }, { 0.2f, 0.4f, 0.6f, 1.0f / 3 },
-		{ 0.8f, 0.6f, 0.4f, 1.0f }, { 0.0f, 1.0f, 0.2f, 0.25f },
+		{ 0.8f, 0.6f, 0.4f, 1.0f }, { 0.0f, 1.0f, 0.2f, 1.0f / 3 },
 		{ XSDK_BLEND_SRC_ALPHA, XSDK_BLEND_ONE_MINUS_SRC_ALPHA, XSDK_BLEND_OP_ADD, XSDK_BLEND_ONE, XSDK_BLEND_ZERO,
 			XSDK_BLEND_OP_ADD, XSDK_WRITE_RED | XSDK_WRITE_GREEN | XSDK_WRITE_BLUE },
-		{ { 0.6f, 0.7f, 0.35f, 1.0f }, { 0.15f, 0.55f, 0.5f, 1.0f / 3 }, { 0.8f, 0.6f, 0.4f, 1.0f },
+		{ { 1.6f / 3, 2.2f / 3, 1.0f / 3, 1.0f }, { 0.4f / 3, 0.6f, 1.4f / 3, 1.0f / 3 }, { 0.8f, 0.6f, 0.4f, 1.0f },
 			{ 0.2f, 0.4f, 0.6f, 1.0f / 3 } } },
 	{ "16_16_16_16_FLOAT, oC2 past 1, red and alpha alone", XSDK_TARGET_16_16_16_16_FLOAT, XSDK_FORMAT_R16G16B16A16F,
 		{ KIND_HALVES, 4, 0.0f }, { 0.25f, 0.5f, 0.75f, 1.0f }, { 1.5f, 2.25f, 3.0f, 4.0f }, { 6.0f, 7.0f, 8.0f, 9.0f },
@@ -193,8 +195,9 @@ static float texel_channel(const Holding *holding, uint32_t x, uint32_t y, uint3
 
 static bool texel_near(const Holding *holding, uint32_t x, uint32_t y, const float *want)
 {
+	// Written so a NaN, which a float target can hold, is never near.
 	for (uint32_t c = 0; c < holding->channels; c++) {
-		if (fabsf(texel_channel(holding, x, y, c) - want[c]) > holding->tolerance)
+		if (!(fabsf(texel_channel(holding, x, y, c) - want[c]) <= holding->tolerance))
 			return false;
 	}
 	return true;

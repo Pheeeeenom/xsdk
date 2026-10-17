@@ -3504,3 +3504,35 @@ its own:
   sharing a vertex, drew the lines over the split and its last two, their ends clipped past clip space.
 - **Broken on purpose,** instance streams fetched at their real stride, the index never written, an odd step, pieces
   sharing nothing and the first piece alone each failed the checks they aim at.
+
+## Float, 10-bit and 64-bit targets and four at once, vulkan4xenon milestone 25 (2026-10-16)
+
+xsdk_test on the zero-fuse console (`results/2026-10-16-vulkan4xenon-milestone-25/`), each target resolved into a
+texture of the format it converts to and every texel read back by value. The first run failed eight checks
+(`xsdk_test_mode_2.log`), which settled two of the milestone's questions:
+- **`ps_export_mode` counts the colours a pixel shader exports,** from bit 1, depth in bit 0, as R600's
+  `SQ_PGM_EXPORTS_PS` does (radeonhd:src/r600_exa.c:164, one colour 2). A shader exporting `oC0` to `oC3` at
+  libxenon's 2 left targets 1 to 3 at their clears, and target 0 held 1 1 0.2 0.25 where both draws should have left
+  1 0.8 0.4 1. At 8, each target took its own export. Xenia never reads the mode (xenia:src/xenia/gpu/registers.h:145).
+  xost now writes the count from `oC0` to the highest output, so one colour stays 2 and one with depth 3, as before.
+- **A 64-bit target's clear takes its red and green from `RB_COLOR_CLEAR_LO`** and its blue and alpha from
+  `RB_COLOR_CLEAR`, the other way round from Xenia (xenia:src/xenia/gpu/draw_util.h:565-567): 16_16_16_16 and
+  16_16_16_16_FLOAT cleared to 0.25 0.5 0.75 1 read back 0.75 1 0.25 0.5.
+
+With both fixed (`xsdk_test_alpha_quarter.log`, then `xsdk_test.log`):
+- **Every format held its clear and a quad's colour,** each channel in place: 2_10_10_10, its 7e3 float, 16_16_16_16
+  with its sign, 16_16_FLOAT, 16_16_16_16_FLOAT and 32_FLOAT, past 1 and below 0, resolved into A2B10G10R10, R16G16F,
+  R32F or R16G16B16A16F with `RB_COPY_DEST_INFO`'s float number format for the floats.
+- **Which targets blend,** a quad added onto itself: 2_10_10_10, 7e3 and 16_16_16_16 doubled every texel.
+  16_16_FLOAT and 16_16_16_16_FLOAT doubled none, 1.5 and 1000 coming out 65536 and 131008, and 32_FLOAT gave NaN,
+  so the float targets don't blend.
+- **A 2_10_10_10 target rounds the source to its own bits before it blends:** `oC1` at alpha 0.25 blended by its
+  alpha came out 0.533 0.733 0.333 where 0.6 0.7 0.35 was worked out, which is the blend at 1/3, 0.25 in 2 bits. The
+  check now blends at 1/3, which 2 bits hold.
+- **Four targets at once:** 8_8_8_8, 2_10_10_10, 16_16_16_16_FLOAT and 32_FLOAT, set in `RB_COLOR_INFO` and
+  `RB_COLOR1_INFO` to `RB_COLOR3_INFO` in one packet, a 64-bit target taking twice a 32-bit one's tiles, each blended
+  by its own `RB_BLENDCONTROL` and masked by its own four bits of `RB_COLOR_MASK`, and each resolved by pointing
+  `RB_COLOR_INFO` at it.
+- **Broken on purpose,** each of the five sets failed the checks `xsdk_test_breaks.py` names for it and only those
+  (`xsdk_test_broken_a.log` to `_e`). xsdk_test passed 359 of 359, a button pressed. Its texel compare had taken a NaN
+  as near, so 32_FLOAT's blend line counted every texel doubled; it no longer does.

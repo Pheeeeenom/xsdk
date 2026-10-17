@@ -109,9 +109,12 @@ came from; that test and its test vectors stay in xost's archived repo (github.c
   → oC*N*, colour target *N* (xenia:src/xenia/gpu/ucode.h:1836-1839), under
   the one `alloc colors`; past 3 is refused. The container's outputs word is
   the mask of them, bit *N* for oC*N* (XenosRecomp:XenosRecomp/shader.h:80-92),
-  and SQ_PROGRAM_CNTL's ps_export_mode stays 2, or 3 with depth, however many
-  there are: Xenia never reads the mode (registers.h:145), and whether the
-  console counts colours in it isn't known (vulkan4xenon milestone 25).
+  and SQ_PROGRAM_CNTL's ps_export_mode counts the colours from oC0 to the
+  highest from its bit 1, depth in bit 0, as R600's SQ_PGM_EXPORTS_PS does
+  (radeonhd:src/r600_exa.c:164): 2 for one, 8 for four, 3 for one with depth.
+  At 2, the console left targets 1 to 3 as they were; Xenia never reads the
+  mode (registers.h:145; xsdk:docs/HARDWARE.md, "Float, 10-bit and 64-bit
+  targets and four at once").
 - Bare uniforms → constant registers by Location; scalars read the register's
   `.x`.
 - Uniform and push constant blocks → the block's raw std140 bytes in

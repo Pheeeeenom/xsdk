@@ -185,8 +185,9 @@ static uint32_t float_7e3_bits(float value)
 }
 
 // RB_COLOR_CLEAR and RB_COLOR_CLEAR_LO as the target's samples hold the clear, red in the low bits
-// (xenia:src/xenia/gpu/shaders/pixel_formats.xesli:113-121); a 64-bit sample's first word, red and green, from the
-// first (xenia:src/xenia/gpu/draw_util.h:565-567; shaders/resolve_clear_64bpp.xesli:44-45; resolve.xesli:388-396).
+// (xenia:src/xenia/gpu/shaders/pixel_formats.xesli:113-121); a 64-bit sample's red and green from RB_COLOR_CLEAR_LO
+// and its blue and alpha from RB_COLOR_CLEAR on the console, the other way round from Xenia
+// (xenia:src/xenia/gpu/draw_util.h:565-567; docs/HARDWARE.md, "Float, 10-bit and 64-bit targets and four at once").
 static void clear_words(uint32_t format, const float rgba[4], uint32_t words[2])
 {
 	switch (format) {
@@ -201,16 +202,16 @@ static void clear_words(uint32_t format, const float rgba[4], uint32_t words[2])
 		words[1] = words[0];
 		break;
 	case XSDK_TARGET_16_16_16_16:
-		words[0] = fixed_16(rgba[0]) | fixed_16(rgba[1]) << 16;
-		words[1] = fixed_16(rgba[2]) | fixed_16(rgba[3]) << 16;
+		words[0] = fixed_16(rgba[2]) | fixed_16(rgba[3]) << 16;
+		words[1] = fixed_16(rgba[0]) | fixed_16(rgba[1]) << 16;
 		break;
 	case XSDK_TARGET_16_16_FLOAT:
 		words[0] = half_bits(rgba[0]) | half_bits(rgba[1]) << 16;
 		words[1] = words[0];
 		break;
 	case XSDK_TARGET_16_16_16_16_FLOAT:
-		words[0] = half_bits(rgba[0]) | half_bits(rgba[1]) << 16;
-		words[1] = half_bits(rgba[2]) | half_bits(rgba[3]) << 16;
+		words[0] = half_bits(rgba[2]) | half_bits(rgba[3]) << 16;
+		words[1] = half_bits(rgba[0]) | half_bits(rgba[1]) << 16;
 		break;
 	case XSDK_TARGET_32_FLOAT:
 		words[0] = float_bits(rgba[0]);

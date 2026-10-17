@@ -14,11 +14,12 @@ enum {
 	VERTEX_ALLOCATE_PAST = 64,
 	// The pixel parameters' register is an interpolator's index (xenia:src/xenia/gpu/registers.h:159-161).
 	MAX_INTERPOLATORS = 16,
-	// SQ_PROGRAM_CNTL's ps_export_mode 2 exports a colour (libxenon:drivers/xenos/xe.c:419), 3 depth too
-	// (docs/HARDWARE.md).
+	// SQ_PROGRAM_CNTL's ps_export_mode: depth in bit 0 and the colours exported counted from bit 1, as R600's
+	// SQ_PGM_EXPORTS_PS has them (radeonhd:src/r600_exa.c:164, one colour 2). One colour is libxenon's 2
+	// (libxenon:drivers/xenos/xe.c:419), with depth 3 (docs/HARDWARE.md).
 	PS_EXPORT_MODE_SHIFT = 27,
-	PS_EXPORT_COLOR = 2,
-	PS_EXPORT_COLOR_AND_DEPTH = 3,
+	PS_EXPORT_DEPTH = 1,
+	PS_EXPORT_COLORS_SHIFT = 1,
 	USAGE_NIBBLE_TEXCOORD = 0x3,
 	USAGE_NIBBLE_COLOR = 0xF,
 	MAX_DEFS = 2,
@@ -1050,7 +1051,11 @@ bool xsdk_xsc_program_finish(Xsc *x, XscProgram *p, const XscConstant *constants
 	// The parameters' xy are the pixel's only with SC_OUTPUT_SCREEN_XY too
 	// (vulkan4xenon:results/2026-10-12-milestone-11-step-3/vulkan4xenon_diag.log, D2 and D4).
 	const bool params = p->param_gen != XSC_NONE;
-	const uint32_t export_mode = p->exports_depth ? PS_EXPORT_COLOR_AND_DEPTH : PS_EXPORT_COLOR;
+	// oC0 to the highest colour output, as targets from 0 take them.
+	uint32_t colors = 0;
+	while (p->color_outputs >> colors)
+		colors++;
+	const uint32_t export_mode = colors << PS_EXPORT_COLORS_SHIFT | (p->exports_depth ? PS_EXPORT_DEPTH : 0);
 	parts.program_control = (uint32_t)p->max_reg << 8 | export_mode << PS_EXPORT_MODE_SHIFT | (params ? 1u << 18 : 0);
 	parts.context_misc = 0x8 | (params ? (uint32_t)p->param_gen << 8 | 0x2 : 0);
 	parts.field10 = 0x20000;

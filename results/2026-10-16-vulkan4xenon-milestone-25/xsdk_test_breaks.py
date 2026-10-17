@@ -21,10 +21,10 @@ SETS = {
         ("src/gpu_draw.c", "return tile | color->format << COLOR_FORMAT_SHIFT;",
          "return tile | (color->format == XSDK_TARGET_2_10_10_10_FLOAT ? XSDK_TARGET_2_10_10_10 : color->format) "
          "<< COLOR_FORMAT_SHIFT;"),
-        ("src/gpu_resolve.c", "\t\twords[0] = fixed_16(rgba[0]) | fixed_16(rgba[1]) << 16;\n"
-         "\t\twords[1] = fixed_16(rgba[2]) | fixed_16(rgba[3]) << 16;\n",
-         "\t\twords[1] = fixed_16(rgba[0]) | fixed_16(rgba[1]) << 16;\n"
-         "\t\twords[0] = fixed_16(rgba[2]) | fixed_16(rgba[3]) << 16;\n"),
+        ("src/gpu_resolve.c", "\t\twords[0] = fixed_16(rgba[2]) | fixed_16(rgba[3]) << 16;\n"
+         "\t\twords[1] = fixed_16(rgba[0]) | fixed_16(rgba[1]) << 16;\n",
+         "\t\twords[1] = fixed_16(rgba[2]) | fixed_16(rgba[3]) << 16;\n"
+         "\t\twords[0] = fixed_16(rgba[0]) | fixed_16(rgba[1]) << 16;\n"),
         ("src/gpu_resolve.c", "COPY_DEST_16_16_FLOAT = 31 << COPY_DEST_FORMAT_SHIFT | COPY_DEST_NUMBER_FLOAT | "
          "COPY_DEST_ENDIAN_8IN16,",
          "COPY_DEST_16_16_FLOAT = 31 << COPY_DEST_FORMAT_SHIFT | COPY_DEST_NUMBER_FLOAT | COPY_DEST_ENDIAN_8IN32,"),

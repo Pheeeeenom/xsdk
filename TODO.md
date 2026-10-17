@@ -76,13 +76,13 @@ work begins.
 
 - **Several targets at once, multisampled.** vulkan4xenon milestone 25 drew up to four colour targets at once at one
   sample, each blended and masked on its own (`xsdk_gpu_set_targets`, `xsdk_gpu_set_blends`), and xost exports
-  fragment outputs at locations 1 to 3 to oC1 to oC3, keeping ps_export_mode 2 (xenos-toolchain/docs/xsc.md). Left:
-  several targets at 2 or 4 samples (vulkan4xenon milestone 17).
+  fragment outputs at locations 1 to 3 to oC1 to oC3, ps_export_mode counting them (docs/HARDWARE.md, "Float, 10-bit
+  and 64-bit targets and four at once"). Left: several targets at 2 or 4 samples (vulkan4xenon milestone 17).
 - **More target formats.** vulkan4xenon milestone 25 added 2_10_10_10, its 7e3 float, 16_16_16_16 and the 16- and
   32-bit floats at one sample, each resolved into a texture of the format it converts to (`xsdk_gpu_set_targets`,
   `xsdk_gpu_resolve_target`). Left: 16_16, 32_32_FLOAT, 8_8_8_8_GAMMA and the two AS_ formats
-  (xenia:src/xenia/gpu/xenos.h:299-313); any of them but 8_8_8_8 at 2 or 4 samples (vulkan4xenon milestone 17); and
-  whether the float formats, 7e3 and 16_16_16_16 blend, which xsdk_test logs (tests/test_targets.c).
+  (xenia:src/xenia/gpu/xenos.h:299-313); and any of them but 8_8_8_8 at 2 or 4 samples (vulkan4xenon milestone 17).
+  7e3 and 16_16_16_16 blend; the 16- and 32-bit floats don't (docs/HARDWARE.md).
 - **Predicated tiling,** for targets larger than eDRAM.
 - **Cube and 3D textures, the rest.** vulkan4xenon milestone 23 brought tiled cubes with their mips and tiled 3D
   textures of one level (include/xsdk/texture.h), right on the console (docs/HARDWARE.md). Left: linear cubes and

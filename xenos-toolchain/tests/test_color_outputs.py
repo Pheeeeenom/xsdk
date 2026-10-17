@@ -10,7 +10,9 @@ output at its location (xenia:src/xenia/gpu/ucode.h:1836-1839).
 - vk_outputs_apart.frag writes locations 3 and 1 alone, declared in that order, the second a float: each lands at its
   location, the float in every component, and the mask names those two.
 - vk_outputs_selected.frag has an if/else assign a local both outputs read.
-- vk_frag_depth.frag, with one output, keeps its mask of oC0 alone, and its ps_export_mode 3; the others keep 2.
+- vk_frag_depth.frag, with one output, keeps its mask of oC0 alone, and its ps_export_mode 3; the others count their
+  colours from oC0 to the highest from the mode's bit 1, 8 for four, as R600's SQ_PGM_EXPORTS_PS does
+  (radeonhd:src/r600_exa.c:164).
 - vk_outputs_branch.frag assigns its second output in an if/else, and vk_output_location_4.frag has an output past
   oC3: each is refused.
 """
@@ -73,11 +75,12 @@ def main():
         3: [a + b for a, b in zip(A, B)],
     })
     check_word("vk_four_outputs.frag, its outputs mask", outputs_mask(blob), 0xF)
-    check_word("vk_four_outputs.frag, its ps_export_mode", export_mode(blob), 2)
+    check_word("vk_four_outputs.frag, its ps_export_mode", export_mode(blob), 8)
 
     blob, exports = lowered("vk_outputs_apart.frag", [A, B])
     check_exports("vk_outputs_apart.frag", exports, {1: [B[2] + UV[0]] * 4, 3: [a * UV[1] for a in A]})
     check_word("vk_outputs_apart.frag, its outputs mask", outputs_mask(blob), 0xA)
+    check_word("vk_outputs_apart.frag, its ps_export_mode", export_mode(blob), 8)
 
     blob, exports = lowered("vk_outputs_selected.frag", [A, B])
     chosen = A if UV[0] > 0.5 else B

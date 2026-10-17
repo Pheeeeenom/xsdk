@@ -27,7 +27,7 @@ static const uint32_t four_targets_pixel_shader[] = {
 	0x73646B00,
 	0x00000000,
 	0x0000003C,
-	0x10000000,
+	0x40000000,
 	0x00000008,
 	0x00000000,
 	0x00002023,
