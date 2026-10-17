@@ -191,16 +191,21 @@ Run on 2026-10-17 through the console agent, everything cleaned and built in ful
   shaders 16,472 → 14,054 µs (−14.7%), against the better of the two baseline runs; the same 100 pictures as the
   baseline, and no vertex draw reaching the pixels. The run took 13.8 s against 11.8 s, the hashing the same: compiling
   the 150 programs on the console takes about 2 s more, as the step's pass starts its scan over after each copy it
-  takes out.
+  takes out. `probe_xsc`, built from the pack as the step's xost makes it, times the same compiles: 3.39 s in all
+  against 1.32 s before the milestone, 22.6 ms a program against 8.8, the slowest 228 ms against 76; all 150 come out
+  as the PC makes them.
 - **vulkan4xenon_test:** its committed shaders are compiled without the optimiser, so the step changes none of them.
   Built with its 84 shaders (tests, the layer's and vkbench's) compiled with `--optimize`, by main's xost and by the
   step's, which differ in 681 lines of `tests/shaders.c`: 426 passed with main's, and 426 in each of two runs with the
   step's.
-- **Dusklight,** its pack built with the step's xost: the title scene's 600th frame matches the baseline's, 0 of
-  921,600 pixels different.
+- **Dusklight,** its pack built with the step's xost, runs the title scene as before. Its frames aren't a check yet:
+  the runs first recorded here as matching the baseline fetched a capture an earlier run had left, as Dusklight hadn't
+  reached the title scene's 600th frame before the run ended. Given the time, two runs of one build capture the same
+  frame but for the sky's top 40 rows, which move with the clock (25,545 pixels); a build whose shaders cost less
+  reaches its 600th frame at another point of the ride, so the step's frame and the baseline's differ in almost every
+  pixel.
 - **Broken on purpose,** the copy's clamp left off the instruction that takes its place: 12 of the probe's 100
-  pictures differ from the baseline. Dusklight's frame doesn't change, so the probe's pictures are the check that
-  catches such a fault.
+  pictures differ from the baseline, so the probe's pictures catch such a fault.
 
 ## Step 3: registers packed
 
