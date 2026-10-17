@@ -41,6 +41,8 @@ Each step is built, then verified as below, then the next begins.
 2. **Values computed into place.** Where a copy moves a computed component into another register's component, and
    nothing between the computation and the copy reads or writes either place, the computation writes there and the
    copy goes. This covers vectors built a component at a time and exports assembled from parts.
+   Built on 2026-10-17, its console runs to come: the optimiser's `compute_in_place` takes the corpus from 8895 ALU
+   instructions to 6887 and from 3253 copies to 1271, counted in `results/2026-10-17-milestone-45/`.
 3. **Registers packed.** The allocator gives values whose components don't overlap in time components of one
    register, rather than a register each.
 4. **More co-issue.** With the copies gone, more scalar operations stand next to an independent vector one; the

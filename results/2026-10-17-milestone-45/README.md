@@ -109,3 +109,75 @@ The probe's first run drew every pixel shader with all 16 interpolators. Every p
 then took about 1,852 µs, 921,600 pixels in as many clocks: interpolating 64 components a pixel held them all to a
 pixel a clock. Each pixel shader is now drawn with as many interpolators as it reads, one past its highest input
 Location.
+
+## Step 2: values computed into place
+
+Built on 2026-10-17 and checked on the PC; the console runs are to come. The optimiser's last pass in its first round,
+`compute_in_place` (`src/xsc_optimize.c`), takes a copy's place for what the copy copies: where a copy moves a computed
+component into another temp's or an export's, the instruction that computes it writes there and the copy goes.
+
+- **What moves.** A vector op, or a scalar op into a temp, when nothing between it and the copy reads or writes the
+  copy's lanes and it doesn't read them itself. An elementwise op's sources are swizzled to the copy's lanes. A dot
+  product's or `max4`'s result is the same in every lane (xenia:src/xenia/gpu/shader_interpreter.cc:436-519, 614-618),
+  as a scalar op's is (948-955); any other op keeps its own lanes.
+- **Other readers.** A dot product or scalar op often fills two lanes, one copied and one read elsewhere. That reader
+  then reads the copy's place, if nothing writes that lane in between. An elementwise result whose other lanes are
+  read elsewhere stays.
+- **Clamps.** A `max_sat` copy becomes its writer's clamp when nothing else reads the writer's result. Xenia saturates
+  an op's result after the op, whatever the op (shader_interpreter.cc:902-909), and a `max` of a value with itself
+  gives that value (347-354), so the clamped op and the `max_sat` of the op give the same bits. The lowering already
+  clamps adds and multiplies, and fusing gives `mad_sat`; a clamp on another vector op, or on a scalar op (`exp_sat` in
+  `05716a5bd2aae204.frag`), is new to the console.
+- **Exports.** Only a vector op exports, as the lowering's do (`xsdk_xsc_emit_construct`'s masked exports,
+  `mat_vec_ops`' `dp4 oPos.x`), and only from the stage after the same alloc. It moves down to where the copy was, so
+  each export stays where xost put it before, next to its register's other writes; nothing between may write what it
+  reads. Xenia takes a scalar result to an export too (xenia:src/xenia/gpu/ucode.h:2041-2060), but xost has never
+  exported one, so the step doesn't. A lane of the copy that nothing writes, such as a `vec3` interpolator's w, takes a
+  computed lane's value, so the export is still written whole.
+
+It ran as the baseline's line with `--json ../results/2026-10-17-milestone-45/step2.json`, in 86 s; `step2.txt` is
+what it printed. The optimiser on, the baseline then step 2:
+
+| | Vertex, 121 | | Pixel, 246 | |
+|---|---|---|---|---|
+| ALU | 6106 | 4561 | 2789 | 2326 |
+| Copies | 2417, 39.6% | 872, 19.1% | 836, 30.0% | 399, 17.2% |
+| Co-issued | 476, 7.8% | 465, 10.2% | 199, 7.1% | 195, 8.4% |
+| Fetches | 337 | 337 | 277 | 277 |
+| Control flow | 1520 | 1240 | 1053 | 988 |
+| Registers a shader, most | 7.2, 44 | 6.1, 44 | 5.1, 32 | 5.0, 32 |
+
+The corpus has 6887 ALU instructions, 22.6% fewer than 8895, and 1271 copies, 18.5% of them, against the milestone's
+6671 and 5%.
+
+**Dusklight's and vkbench's shaders:** ALU 6641 to 4956, 25.4% fewer; copies 2397 to 733, 14.8%: moves between
+registers 1725 to 480, `max_sat` clamps 342 to 24, and copies into exports 330 to 220, with 9 clamped ones from
+`max_sat` copies of constants and inputs now exported. Co-issued slots stay 583. What's left, counted at the
+optimiser's end:
+- 185 are in the three vertex shaders it leaves alone for their relative constant addressing (`can_optimize`):
+  `04a469b1240c5698.vert`, `93d36ce55e3f9bad.vert` and `c0ddfd4547c71e5a.vert`.
+- 282 copy a constant, 4 of them exports' constant-0 fills, and 5 a pixel shader's input: nothing computes them.
+- 170 copy a fetched value. A fetch can't write an export (78 of them); into a temp it would take the fetch's
+  destination swizzle, step 5's work.
+- 91 copy a computed value that can't move: 25 an elementwise result whose other lane another instruction reads, 19 a
+  result another instruction reads in one operand with another writer's lanes, 25 a vertex shader's clip-space zw
+  exported as an interpolator, computed before the interpolators' alloc and read by `oPos` too, 20 other exports whose
+  writer's result is read elsewhere, and 2 clamps whose writer's result is read unclamped.
+
+Dusklight's vertex shaders take 7.5 registers on average (9.8 before), its pixel shaders 6.2 (6.2). An export's writer
+moved down keeps its sources live longer: 19 pixel shaders take a register more, `85c8b022385334bf.frag` two, while the
+corpus's total falls from 2115 to 1973. Exporting from where the writer was would cost 4 shaders a register instead,
+but would split a register's exports with other instructions, which xost's optimised code never does.
+
+**Checks:**
+- `check_optimize.py`: 0 differ, with the baseline's 24 not simulated and 16 not compiled.
+- xost's tests, a file at a time in WSL, all pass but `test_xcomb_parity.py`, which runs on Windows.
+  `test_optimize.py` has 8 cases for the step. Broken on purpose, each way fails both them and `check_optimize.py`
+  on Dusklight's shaders: sources left unswizzled (3 differ), the clamp dropped (81), other readers left as they were
+  (3).
+- Containers: 125 of the 150 programs in Dusklight's pack change, 43 vertex and 82 pixel, the ones the step moves a
+  copy in; the other 25 come out byte for byte as before.
+- xsdk_test's compiler check: `tests/xsc_shaders.h`, regenerated with `tools/gen_xsc_shaders.py`, has 4 of its 8
+  containers changed: `vk_block_literals.vert`, `vk_vertex_if.vert`, `vk_vertex_uniform_if.vert` and
+  `vk_clip_distance.vert`. Their SPIR-V, literals and resources are the same.
+- `probe_shader_cost` builds from the pack unchanged.
