@@ -78,7 +78,7 @@ work begins.
 - **Float render targets and multisampling.**
 - **Predicated tiling,** for targets larger than eDRAM.
 - **Cube and 3D textures, the rest.** vulkan4xenon milestone 23 brought tiled cubes with their mips and tiled 3D
-  textures of one level (include/xsdk/texture.h), unproven on the console till its checks run. Left: linear cubes and
+  textures of one level (include/xsdk/texture.h), right on the console (docs/HARDWARE.md). Left: linear cubes and
   3D textures; a 3D texture's mips, which Xenia sizes by the base's depth at every level
   (xenia:src/xenia/gpu/texture_util.cc:347-350) and packs along z once they're small (texture_util.cc:190-198); and
   resolving into a face or slice (vulkan4xenon milestone 25).
@@ -113,10 +113,9 @@ work begins.
 - **Draws of more than 65535 indices.** The draw initiator's count is 16 bits (registers.h:327), so a layer would split
   them.
 - **Wireframe and point fill.** `PA_SU_SC_MODE_CNTL`'s `poly_mode` and polygon types (registers.h:463-468).
-- **The YCbCr borders.** vulkan4xenon milestone 23 brought `ClampMode` 3 to 7 and the black and white borders
-  (include/xsdk/texture.h), unproven till xsdk_test's sampling check runs on the console, which also tells whether the
-  black border's alpha is 0 or 1 (xenos.h:150-156). The two blacks for YCbCr data, whose colours Xenia guesses
-  (xenos.h:156-161), aren't offered.
+- **The YCbCr borders.** vulkan4xenon milestone 23 brought `ClampMode` 3 to 7 and the black and white borders, the
+  black's alpha 0 on the console (docs/HARDWARE.md, "Cube and 3D textures and the rest of addressing, vulkan4xenon
+  milestone 23"). The two blacks for YCbCr data, whose colours Xenia guesses (xenos.h:156-161), aren't offered.
 - **Image views of some of a texture's levels.** vulkan4xenon refuses a view that doesn't cover every level
   (vulkan4xenon:src/image.c). The sampler's lowest level and count of levels (include/xsdk/texture.h), which took
   Vulkan's `minLod` and `maxLod` in vulkan4xenon milestone 18's step 2, could take a view's range too.

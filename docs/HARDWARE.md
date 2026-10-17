@@ -3468,3 +3468,22 @@ vulkan4xenon:results/2026-10-16-milestone-22/), each drawn over an image whose l
   from the slots after the fragment shader's.
 - **One launch froze the console** before the title opened its log, the run before it clean; three runs after a
   reboot passed, so it's not known to be the title's.
+
+## Cube and 3D textures and the rest of addressing, vulkan4xenon milestone 23 (2026-10-16)
+
+xsdk_test on the zero-fuse console (`results/2026-10-16-vulkan4xenon-milestone-23/`), its draws through shaders xost
+compiled, so its cube lowering and 3D fetch with them:
+- **Cube textures,** laid out as Xenia has them (xenia:src/xenia/gpu/texture_util.cc:209-449): a level's six faces
+  in turn, each a page apart, the mips after the base's six faces, each face's packed tail its own. A 32x32 cube at
+  levels 0 and 1 and an 8x8 one at levels 0 and 2, from each face's packed tail, showed each face where Vulkan's
+  directions point, +x, -x, +y, -y, +z then -z, through xost's cube op, its 1/|ma| and its 1.5 bias.
+- **3D textures,** tiled 32 by 32 by 4 slices, the bank flipping every 4 slices: a 32x32x8 texture showed its eight
+  slices at their w, and an 8x8x3 one its three from its packed tail. Along w it wrapped, clamped, and filtered
+  linearly halfway between two slices, the volume filters set in the fetch constant's dword 4.
+- **Every face and slice read back** as uploaded, a slice at a time.
+- **ClampMode 3 to 7** worked as worked out: mirror once, the halfway modes, and the border, black or white; the
+  black border's alpha is 0, as Xenia's backends take it (xenia:src/xenia/gpu/vulkan/vulkan_texture_cache.cc:817-824).
+- **Broken on purpose,** a face's stride worked out for seven faces, 3D's bank never flipped, the border colour left
+  out, downloads always from slice 0, the volume filters nearest, every border white and w's addressing dropped each
+  failed the checks they aim at (`xsdk_test_broken_a.log` to `_c`). xsdk_test passed 343 of 345, the two left the
+  controller's, no button pressed.
