@@ -366,3 +366,12 @@ times, near the console's ratio, and 627 now, 1.04 times.
   - the copy left in the flow: the new case fails, 46 shaders differ, and one more isn't compiled.
 - `make XSC_PACK=/mnt/z/dusklight-xenon/platforms/xenon/glsl_pack.c build/probe_shader_cost.xex build/probe_xsc.xex`
   builds clean.
+
+### Compile time on the console
+
+Run on 2026-10-17 through the console agent, everything cleaned and built in full. `probe_xsc`
+(`probe_xsc_compile_time.log`), built from Dusklight's pack as this xost makes it, byte for byte step 3's: all 150
+programs compile on the console as on the PC, in 1.42 s, 9.5 ms a program, the slowest 81 ms, the same to 0.1% in two
+runs; before the milestone 1.32 s, 8.8 ms and 76 ms, at step 2 3.39 s, 22.6 ms and 228 ms. xsdk_test passed 380, the
+controller checks failing with no controller connected; vulkan4xenon_test 426; `probe_shader_cost` the same 100
+pictures and times as step 3, its run back to 11.8 s.
