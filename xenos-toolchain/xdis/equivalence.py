@@ -31,7 +31,7 @@ UNDEFINED = [None] * 4
 
 
 class Unsupported(Exception):
-    """The program does something this runner doesn't model (loops, predication, relative addressing, ...)."""
+    """The program does something this runner doesn't model (loops, predication, relative temps, ...)."""
 
 
 # ---- the operations ----
@@ -172,8 +172,17 @@ _SCALAR = {
     S.kSqrt: lambda a, b: _sqrt(a),
     S.kSin: lambda a, b: _trig(math.sin, a),
     S.kCos: lambda a, b: _trig(math.cos, a),
+    S.kMaxAs: lambda a, b: a if a >= b else b,
+    S.kMaxAsf: lambda a, b: a if a >= b else b,
 }
-_TWO_COMPONENT = {S.kAdds, S.kMuls, S.kMaxs, S.kMins, S.kSubs}
+_TWO_COMPONENT = {S.kAdds, S.kMuls, S.kMaxs, S.kMins, S.kSubs, S.kMaxAs, S.kMaxAsf}
+
+
+def _address(sop, a):
+    """The a0 that maxas (rounded) or maxasf (floored) loads from a (shader_interpreter.cc:808-822)."""
+    if a is None or math.isnan(a):
+        return None
+    return int(math.floor(min(max(a, -256.0), 255.0) + (0.5 if sop == S.kMaxAs else 0.0)))
 
 
 # ---- views of an instruction, from its microcode or from xasm's fields ----
@@ -202,9 +211,22 @@ class _State:
         self.constants = constants
         self.exports = {}
         self.previous = None
+        self.address = None
 
     def reg(self, r):
         return self.temps.setdefault(r, list(UNDEFINED))
+
+
+def _constant(ins, n, state):
+    """A constant operand, a0 past its register if it's addressed, 0 below c0 (shader_interpreter.cc:260-286)."""
+    index = ins.src_reg(n)
+    if ins.src_const_is_addressed(n):
+        if not ins.is_const_address_register_relative():
+            raise Unsupported("a loop-relative constant")
+        if state.address is None:
+            return list(UNDEFINED)
+        index += state.address
+    return [0.0] * 4 if index < 0 else list(state.constants.get(index, UNDEFINED))
 
 
 def _operand(ins, n, state):
@@ -214,9 +236,7 @@ def _operand(ins, n, state):
         if absolute:
             value = [None if x is None else abs(x) for x in value]
     else:
-        if ins.src_const_is_addressed(n):
-            raise Unsupported("a relative constant")
-        value = list(state.constants.get(ins.src_reg(n), UNDEFINED))
+        value = _constant(ins, n, state)
     swizzle = ins.src_swizzle(n)
     value = [value[xu.AluInstruction.GetSwizzledComponentIndex(swizzle, i)] for i in range(4)]
     return [None if x is None else -x for x in value] if ins.src_negate(n) else value
@@ -228,7 +248,7 @@ def _execute_alu(ins, state):
     vop, sop = ins.vector_opcode(), ins.scalar_opcode()
     vmask, smask = ins.GetVectorOpResultWriteMask(), ins.GetScalarOpResultWriteMask()
     result = list(UNDEFINED)
-    if vmask or vop in (V.kKillEq, V.kKillGt, V.kKillGe, V.kKillNe):
+    if vmask or vop in (V.kKillEq, V.kKillGt, V.kKillGe, V.kKillNe, V.kMaxA):
         if vop in (V.kMaxA, V.kSetpEqPush, V.kSetpNePush, V.kSetpGtPush, V.kSetpGePush, V.kCube):
             raise Unsupported(f"vector {vop.name}")
         count = _OPERANDS.get(vop, 2)
@@ -240,6 +260,8 @@ def _execute_alu(ins, state):
         src = _operand(ins, 3, state)
         a, b = src[3], src[0]
         state.previous = None if a is None or (sop in _TWO_COMPONENT and b is None) else f(a, b)
+        if sop in (S.kMaxAs, S.kMaxAsf):
+            state.address = _address(sop, a)
     if ins.vector_clamp():
         result = [None if x is None else _saturate(x) for x in result]
     scalar = state.previous
