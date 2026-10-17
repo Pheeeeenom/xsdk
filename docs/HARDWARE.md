@@ -3662,6 +3662,8 @@ plain pixel shader, one of 120 ALU instructions before its export, and that with
 - **Not tried:** reads at the loop index, aL, after an alloc. xost reads at aL only in `xsdk_xsc_lower_real_loop`'s
   loop (`src/xsc_lower_loop.c`), before the colours' alloc, so nothing it compiles does.
 
-The fix is to be run on the console: xsdk_test's raster test draws xost's `vk_dynamic_interpolator.vert`, compiled
-there, over a grid of 560 quads in one draw, each its own index of 16, the colour read at a0 past the interpolators'
-alloc.
+On the console on 2026-10-17, xsdk_test's raster test draws xost's `vk_dynamic_interpolator.vert`, compiled there,
+over a grid of 560 quads in one draw, each its own index of 16, the colour read at a0 past the interpolators' alloc:
+0 of 33,040 quads wrong over 59 frames, in each of two runs; with the reload off, 33,040 of 33,040. Dusklight's
+skinned models, read at `c[152..154+a0]` past the interpolators' alloc, are lit from their own rows for the first
+time.

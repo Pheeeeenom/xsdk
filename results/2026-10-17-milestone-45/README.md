@@ -112,7 +112,7 @@ Location.
 
 ## Step 2: values computed into place
 
-Built on 2026-10-17 and checked on the PC; the console runs are to come. The optimiser's last pass in its first round,
+Built on 2026-10-17 and checked on the PC, then on the console. The optimiser's last pass in its first round,
 `compute_in_place` (`src/xsc_optimize.c`), takes a copy's place for what the copy copies: where a copy moves a computed
 component into another temp's or an export's, the instruction that computes it writes there and the copy goes.
 
@@ -209,7 +209,7 @@ Run on 2026-10-17 through the console agent, everything cleaned and built in ful
 
 ## Step 3: registers packed
 
-Built on 2026-10-17 and checked on the PC; the console runs are to come. In a program the optimiser rewrote, the
+Built on 2026-10-17 and checked on the PC, then on the console. In a program the optimiser rewrote, the
 allocator (`pack_registers`, `src/xsc_program.c`) gives each temp's value the components it holds in a register, not a
 register of its own: values whose components don't overlap in time share one register's lanes.
 
@@ -314,7 +314,7 @@ Run on 2026-10-17 through the console agent, everything cleaned and built in ful
 ## Compile time
 
 Step 2 made compiling Dusklight's pack on the console 2.6 times slower, 1.32 s to 3.39 s; agreed on 2026-10-17 to bring
-it back within the milestone. Built on 2026-10-17 and checked on the PC; the console runs are to come.
+it back within the milestone. Built on 2026-10-17 and checked on the PC, then on the console.
 
 **Where the time went.** Each pass of the optimiser's first round makes one change, then the round starts over
 (`first_round`, `src/xsc_optimize.c`), each pass building the flow again. `compute_in_place` was no different, so a
@@ -378,7 +378,7 @@ pictures and times as step 3, its run back to 11.8 s.
 
 ## Step 4: more co-issue
 
-Built on 2026-10-17 and checked on the PC; the console runs are to come. Every ALU instruction has a vector and a
+Built on 2026-10-17 and checked on the PC, then on the console. Every ALU instruction has a vector and a
 scalar slot (xenia:src/xenia/gpu/ucode.h:1854-2095). The optimiser's last pass, `co_issue` (`src/xsc_optimize.c`), puts
 a scalar op alone into an instruction holding a vector op alone, or the other way, moving one of the two past the ops
 between.
@@ -572,3 +572,29 @@ printed. The corpus has 384 shaders now, testdata's `vk_dynamic_interpolator.ver
   build/probe_shader_cost.xex build/probe_xsc.xex build/probe_relative_constants.xex`: no warnings.
 - Compile time, the pack's 150 programs on the PC as before: 71.5 ms against `4204b4c`'s 72.2, the slowest 3.71 ms
   against 3.73; 93d36 and c0dd 0.84 and 1.07 ms against 0.89 and 1.13.
+
+### Step 4 and the a0 reload on the console
+
+Run on 2026-10-17 through the console agent, everything cleaned and built in full.
+
+Step 4:
+- **xsdk_test:** 380 passed; the controller checks failed with 0x48F, no controller connected.
+- **`probe_shader_cost`** (`probe_step4.log`): vertex shaders 13,916 µs for a draw of each, against step 3's 14,056 and
+  the baseline's 16,472 (−15.5%). Dusklight's `93d36ce55e3f9bad.vert` 638.7 → 578.4 µs and `c0ddfd4547c71e5a.vert`
+  704.4 → 635.9 µs. The same 100 pictures.
+- **`probe_xsc`,** from the pack as the step's xost makes it: 150 of 150 as on the PC, in 1.45 s.
+- **vulkan4xenon_test:** 426 as committed. With its shaders compiled with `--optimize` by the step's xost, 248 lines of
+  `tests/shaders.c` different from step 3's, 426 in each of two runs.
+- **Dusklight:** runs at 30 fps. Captured every 150th title frame against a build from before the milestone, it lights
+  Link and Epona differently. That led to `probe_relative_constants`: both builds read the light's rows at a0 past
+  the interpolators' alloc, which a0 doesn't survive (docs/HARDWARE.md, "a0 doesn't survive an alloc").
+
+The a0 reload (`probe_reload.log` for the probe):
+- **xsdk_test:** 383 passed, the two controller checks failing as above. The grid of 560 quads read at a0 past the
+  interpolators' alloc had 0 of 33,040 wrong, in each of two runs. With the reload off, 33,040 of 33,040 were wrong,
+  and that check alone failed.
+- **`probe_xsc`,** from the pack as this xost makes it: 150 of 150, in 1.43 s.
+- **`probe_shader_cost`:** the same 100 pictures; vertex shaders 13,935 µs.
+- **vulkan4xenon_test:** 426.
+- **Dusklight,** built against this xsdk with its pack from this xost: Link and Epona lit from the light's own rows,
+  the chestnut coat and white mane in the sunset light.
