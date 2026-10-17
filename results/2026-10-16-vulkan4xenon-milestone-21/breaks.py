@@ -49,8 +49,10 @@ BREAKS = {
 # with the break in and comparing.
 CHECK = "xsc: {} compiles into the PC's container, literals and resources"
 FAILS = {
-    "select_swap": ["vk_vertex_if.vert", "vk_loop_count_if.frag"],
-    "predicate_inverted": ["vk_vertex_uniform_if.vert"],
+    "select_swap": ["vk_vertex_if.vert", "vk_vertex_uniform_if.vert", "vk_loop_count_if.frag"],
+    # No xsdk_test shader has arms in execs on the predicate, as vertex shaders keep selects (docs/HARDWARE.md,
+    # "Branches, vulkan4xenon milestone 21"); vulkan4xenon_test's pixel shader in a loop does.
+    "predicate_inverted": [],
     "counter_stuck": ["vk_loop_count_if.frag"],
     "carried_kept": ["vk_loop_count_if.frag"],
     "pixel_loops_at_0": ["vk_loop_count_if.frag"],

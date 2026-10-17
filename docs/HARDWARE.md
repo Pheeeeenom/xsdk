@@ -3430,3 +3430,21 @@ vulkan4xenon:results/2026-10-16-milestone-20/):
   texels. The cause isn't known. Untried: the formats Xenos has for filtering at more precision,
   `k_2_10_10_10_AS_16_16_16_16` and `k_16_EXPAND` to `k_16_16_16_16_EXPAND` (xenia:src/xenia/gpu/xenos.h:503-505, 530).
   vulkan4xenon samples them nearest (TODO.md).
+
+## Branches, vulkan4xenon milestone 21 (2026-10-16)
+
+xost's milestone 21 lowering on the zero-fuse console (`results/2026-10-16-vulkan4xenon-milestone-21/`;
+vulkan4xenon:results/2026-10-16-milestone-21/):
+- **An if/else on data merged by selects** drew right in vertex shaders, nested and with an `&&`, in an unrolled loop's
+  body, and around `gl_FragDepth`, compiled on the PC and on the console.
+- **Execs on the predicate hung the GPU in a vertex shader.** An if/else on a push constant, its arms in a `setp`'s
+  `(p0)` and `(!p0)` execs as Xenia describes them (xenia:src/xenia/gpu/ucode.h:114-130), placed its first frame's
+  quads wrong and then the GPU didn't go idle (0xC00000B5); every check after failed, and the title hung as it ended
+  (`vulkan4xenon_test_vertex_predicate_hang.log`). The same lowering in a pixel shader, an if/else on a push constant
+  inside an unrolled loop's body, drew right. Xenia gives no difference between the stages, so the cause isn't known;
+  xost keeps a vertex shader's if/else on a uniform as selects, as on data.
+- **Hardware loops a block counts:** a pixel shader's loop counted by a push constant ran 0, 1, 3 and 6 passes, 300
+  as 255 and -5 as none, clamped by vulkan4xenon; one counted by a uniform buffer broke where its if/else on data
+  said; a vertex shader's counted by a dynamic uniform buffer ran its count at each draw's offset; and a vertex and a
+  pixel shader each ran their own count at once, the vertex shader's loop constant 0 and the pixel shader's 16.
+  Writing all 40 boolean and loop words between draws, where a count changed, didn't hang.

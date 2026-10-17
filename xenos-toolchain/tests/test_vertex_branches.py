@@ -9,10 +9,9 @@ comparison branched on. The simulator gives what the GLSL says for each arm:
 - vk_vertex_branch.vert scales its output by a ?: of calls, which glslang makes an if/else storing a local in each arm.
 - vk_vertex_if.vert stores a component of a local and an output in each arm, one arm with an if of its own, and an &&
   glslang makes a Phi of; each vertex below takes a different set of arms.
-- vk_vertex_uniform_if.vert branches on a push constant, both values of it. Every vertex takes the same arm, so its
-  arms go in execs on the predicate a setp sets, every instruction in them predicated as its exec is
-  (xenia:src/xenia/gpu/ucode.h:114-124), and the arm not taken is skipped; the simulator follows the control flow.
-  vk_vertex_if.vert's branches are on data and stay selects, with no predicated exec.
+- vk_vertex_uniform_if.vert branches on a push constant, both values of it. Every vertex takes the same arm, but its
+  arms stay selects, as vk_vertex_if.vert's on data do, with no predicated exec: a vertex shader's arms in execs on
+  the predicate hung the GPU on the console (xsdk:docs/HARDWARE.md, "Branches, vulkan4xenon milestone 21").
 """
 import sys
 from pathlib import Path
@@ -66,18 +65,11 @@ def predication(name):
 
 
 def check_layout():
-    execs, setp = predication("vk_vertex_uniform_if.vert")
-    conditions = [c for c, _ in execs]
-    if not setp or True not in conditions or False not in conditions or conditions[-1] is not None:
-        raise SystemExit(f"  FAIL vk_vertex_uniform_if.vert: execs {conditions}, a setp {setp}")
-    if not all(ok for _, ok in execs):
-        raise SystemExit("  FAIL vk_vertex_uniform_if.vert: an instruction not predicated as its exec is")
-    print(f"  PASS vk_vertex_uniform_if.vert: a setp, then execs on {conditions}, each instruction predicated as its "
-          f"exec is")
-    execs, setp = predication("vk_vertex_if.vert")
-    if setp or any(c is not None for c, _ in execs):
-        raise SystemExit("  FAIL vk_vertex_if.vert: a branch on data went into predicated execs")
-    print("  PASS vk_vertex_if.vert: its branches on data stay selects")
+    for name in ("vk_vertex_uniform_if.vert", "vk_vertex_if.vert"):
+        execs, setp = predication(name)
+        if setp or any(c is not None for c, _ in execs):
+            raise SystemExit(f"  FAIL {name}: a vertex shader's branch went into predicated execs")
+        print(f"  PASS {name}: its branches stay selects")
 
 
 def vertex_if(position, color):

@@ -244,10 +244,13 @@ static bool emit_cnd(XscLower *l, const XscInstr *ins, XscTypeKind kind, int64_t
 // On a condition every vertex or pixel shares, the arm not taken runs for none of them, as an exec on the predicate
 // runs only where one of 64 needs it (xenia:src/xenia/gpu/ucode.h:114-124); on data both arms run where they're
 // split, as selects run them, so selects stay. An arm inside one of these stays selects, as there's one predicate.
+// Pixel shaders alone: a vertex shader's arms in execs on the predicate hung the GPU on the console
+// (docs/HARDWARE.md, "Branches, vulkan4xenon milestone 21").
 static bool predicated(const XscLower *l, uint32_t branch)
 {
 	const XscBranch *const b = &l->m->branches[branch];
-	return b->work && !l->in_arm && l->varies && b->condition < l->m->id_limit && !l->varies[b->condition];
+	return l->si->pixel && b->work && !l->in_arm && l->varies && b->condition < l->m->id_limit &&
+		!l->varies[b->condition];
 }
 
 // What an arm leaves the lowering's caches, put back for the other arm and after both: a value an arm works out

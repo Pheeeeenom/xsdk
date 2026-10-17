@@ -60,7 +60,7 @@ came from; that test and its test vectors stay in xost's archived repo (github.c
 | `clamp(x, lo, hi)` arbitrary | `min(max(x,lo),hi)`, lo/hi pooled literals |
 | **`if/else`**, incl. **nested**, assigning the output | branch-free chained `cndgt`/`cndge`/`cndeq` selects |
 | **`if/else` assigning a Function-local** later read by the output | branch-free `cnd*` select into a temp registered as that local's merged value (pixel shaders) |
-| `if/else`, or a `?:` glslang branches for, in a **vertex** shader, nested, `&&`/`\|\|` (a Phi) | the unroller runs both arms and merges each local and output they leave apart with a select: a `cnd*` on the comparison branched on, or on a condition every vertex shares, the arms in execs on the predicate (see Control flow; `tests/test_vertex_branches.py`) |
+| `if/else`, or a `?:` glslang branches for, in a **vertex** shader, nested, `&&`/`\|\|` (a Phi) | the unroller runs both arms and merges each local and output they leave apart with a select: a `cnd*` on the comparison branched on, on a condition every vertex shares too, as execs on the predicate hung the GPU (see Control flow; `tests/test_vertex_branches.py`) |
 | **`discard` / `OpKill` inside `if(cond)`** | `kill_gt`/`kill_ge`/`kill_eq`/`kill_ne` ALU side effect; oracle-valid, pending console verification in `glslgallery` G26 |
 | **`for`/`while`** with a compile-time trip count, incl. **nested** | unrolled to branch-free SSA; induction variable constant-folded (see below) |
 | uniform-bound loop `sum += const` | real `LOOP_START/END` (G28 pending) |
@@ -317,8 +317,8 @@ the condition and the two values, and each Phi there (glslang's `&&` and `||`)
 the same. Outputs are kept as locals are and stored once at the end. The
 lowering (`xsdk:src/xsc_lower_flow.c`) then picks, for each if/else:
 
-- **Execs on the predicate,** where every vertex or pixel takes the same arm, as
-  its condition reads only constants (uniforms, push constants, literals), and
+- **Execs on the predicate,** in a pixel shader where every pixel takes the same
+  arm, as its condition reads only constants (uniforms, push constants, literals), and
   an arm works anything out of its own beyond picking values or a bool: a
   `setp_*` on `a - b`, or on the bool's 0.0 or 1.0 not being 0, sets p0
   (xenia:src/xenia/gpu/ucode.h:1162-1204); the true arm's values go in `(p0)`
@@ -329,6 +329,9 @@ lowering (`xsdk:src/xsc_lower_flow.c`) then picks, for each if/else:
   the branch is lowered before the `setp`, an earlier if/else's arms with it.
   An exec on the predicate runs for none of a group of 64 that all fail it, so
   the arm not taken costs its execs' control flow and no instructions.
+  A vertex shader keeps selects: its arms in execs on the predicate hung the GPU
+  on the console (xsdk:docs/HARDWARE.md, "Branches, vulkan4xenon milestone
+  21").
 - **Selects** otherwise: each a `cnd*` on the comparison branched on, `a - b`
   worked out once a branch, as a pixel shader's if/else has lowered since v1; a
   condition that isn't a float comparison is its 0.0 or 1.0, which `cndgt`

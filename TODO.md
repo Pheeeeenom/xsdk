@@ -178,6 +178,10 @@ it removes.
 - **Point mip filtering exactly halfway between two levels:** the nearer level, or the one below. Milestone 15
   avoided it.
 - **Linear filtering's precision.** Milestone 15 bounds it only by its tolerance of 3 per channel.
+- **Execs on the predicate in vertex shaders.** An if/else on a push constant, its arms in a `setp`'s `(p0)` and
+  `(!p0)` execs, hung the GPU in a vertex shader and drew right in a pixel shader (docs/HARDWARE.md, "Branches,
+  vulkan4xenon milestone 21"), so xost keeps a vertex shader's as selects. Why is unknown: a probe of a vertex
+  shader's lone predicated exec, then of the PredicateClean bit on the `setp`'s exec, would narrow it.
 - **An if/else on data in execs on the predicate.** xost makes one selects, both arms running, as an exec on the
   predicate runs for a whole group of 64 vertices or pixels when any of them needs it (xenia:src/xenia/gpu/ucode.h:114-124);
   only an if/else every vertex or pixel agrees on goes in such execs (xenos-toolchain/docs/xsc.md, "Control flow").
