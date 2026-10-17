@@ -23,6 +23,9 @@ enum {
 	COHER_SIZE_HOST = 0x0A2F,
 	COHER_BASE_HOST = 0x0A30,
 	COHER_STATUS_HOST = 0x0A31,
+	// A visibility query's bit, ids 0 to 31, then 32 to 63 (xenia:src/xenia/gpu/command_processor.cc:1622-1630).
+	PA_SC_VIZ_QUERY_STATUS_0 = 0x0C44,
+	PA_SC_VIZ_QUERY_STATUS_1 = 0x0C45,
 	PA_CL_ENHANCE = 0x0C85,
 	SQ_GPR_MANAGEMENT = 0x0D00,
 	SQ_FLOW_CONTROL = 0x0D01,
@@ -66,6 +69,7 @@ enum {
 	RB_BLENDCONTROL1 = 0x2209,
 	PA_SU_POINT_SIZE = 0x2280,
 	PA_SU_POINT_MINMAX = 0x2281,
+	PA_SC_VIZ_QUERY = 0x2293,
 	PA_SC_AA_CONFIG = 0x2301,
 	PA_SU_VTX_CNTL = 0x2302,
 	SQ_VS_CONST = 0x2307,
@@ -94,6 +98,7 @@ enum {
 enum {
 	PM4_REG_RMW = 0x21,
 	PM4_DRAW_INDX = 0x22,
+	PM4_VIZ_QUERY = 0x23,
 	PM4_IM_LOAD = 0x27,
 	PM4_IM_LOAD_IMMEDIATE = 0x2B,
 	PM4_LOAD_ALU_CONSTANT = 0x2F,
@@ -121,6 +126,8 @@ enum {
 	// A type-0 header's bit 15 sends every value to the same register (libxenon:drivers/xenos/xe.c:25-31).
 	TYPE0_ONE_REGISTER = 1 << 15,
 	WAIT_3D_IDLE_CLEAN = 1 << 17,
+	// An address's low bits pick a byte swap; 2 swaps each dword's bytes (xenia:src/xenia/gpu/xenos.h:193-197).
+	SWAP_8IN32 = 2,
 	SHADER_TYPE_VERTEX = 0,
 	SHADER_TYPE_PIXEL = 1,
 	// COHER_STATUS_HOST's vc_action_ena and tc_action_ena (xenia:src/xenia/gpu/registers.h:84-85).

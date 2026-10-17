@@ -71,6 +71,21 @@ uint64_t xsdk_gpu_clock_value(volatile const uint32_t *words);
 // The clock now, as the CPU reads it.
 uint64_t xsdk_gpu_clock(void);
 
+// Visibility queries, D3D's: the draws between a query's begin and end set bit id % 32 of a status word if any of them
+// got past rasterizing and the coarse hierarchical depth test. A draw hidden behind others sets it too, so it tells
+// whether draws could show, not whether a sample passed the depth test (docs/HARDWARE.md, "Occlusion queries,
+// vulkan4xenon milestone 28"). Unverified: whether an id begun again around draws that rasterize nothing comes back
+// clear, as Xenia has the end write the bit back (xenia:src/xenia/gpu/command_processor.cc:1622-1630).
+enum {
+	XSDK_VISIBILITY_IDS = 64,
+};
+
+// Queues beginning query id, 0 to XSDK_VISIBILITY_IDS - 1, for the draws after; one query at a time.
+void xsdk_gpu_begin_visibility(uint32_t id);
+// Queues ending query id, then, once the GPU is idle, copying the status word holding its bit, ids 0 to 31's or 32 to
+// 63's, to the word at address, as the CPU reads it; copied sooner, the word held the bits from before.
+void xsdk_gpu_end_visibility(uint32_t id, uint32_t address);
+
 // What the GPU layer has sent since xsdk_gpu_open, to measure a title by.
 typedef struct {
 	// Written into the command stream, which the ring runs a segment at a time.

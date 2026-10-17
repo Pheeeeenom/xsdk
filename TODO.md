@@ -89,14 +89,16 @@ work begins.
   3D textures; a 3D texture's mips, which Xenia sizes by the base's depth at every level
   (xenia:src/xenia/gpu/texture_util.cc:347-350) and packs along z once they're small (texture_util.cc:190-198); and
   resolving into a face or slice (vulkan4xenon milestone 25).
-- **Occlusion queries,** put off after vulkan4xenon milestone 28. Every `ZPASS_DONE` sent, by milestone 19's six
-  runs and milestone 28's fourteen tries, hung the GPU at its first event without writing the counts: with
+- **Occlusion queries' sample counts,** put off after vulkan4xenon milestone 28. Every `ZPASS_DONE` sent, by milestone
+  19's six runs and milestone 28's fourteen tries, hung the GPU at its first event without writing the counts: with
   `RB_SAMPLE_COUNT_CTL`'s RESET, the `RST_PIX_CNT` event, a cache flush or a resolve after it, the sample counters
   disabled, and the set-up's registers put back as the dashboard leaves them, all at once or a group at a time
   (docs/HARDWARE.md, "Occlusion queries, vulkan4xenon milestone 28"). Yamato's counter registers hold the same values
-  across draws, and D3D's visibility query answers whether a draw got past rasterizing and the coarse hierarchical
-  test, a quad hidden behind another too, not whether a sample passed the depth test. Nothing public is left to try;
-  vulkan4xenon refuses occlusion query pools.
+  across draws. Nothing public is left to try. What's taken instead is D3D's visibility query,
+  `xsdk_gpu_begin_visibility` and `xsdk_gpu_end_visibility` (include/xsdk/gpu.h): it answers whether a draw got past
+  rasterizing and the coarse hierarchical test, a quad hidden behind another too, not whether a sample passed the
+  depth test, so vulkan4xenon's occlusion queries are conservative, without `occlusionQueryPrecise`. Whether an id
+  begun again around draws that rasterize nothing comes back clear waits for the console (tests/test_visibility.c).
 - **Filtering 10-10-10-2 and 16-bit float textures.** The console filtered them wrong halfway between two texels,
   nearest sampling right (docs/HARDWARE.md, "Texture and vertex formats, vulkan4xenon milestone 20"); vulkan4xenon
   samples them nearest. To try: `k_2_10_10_10_AS_16_16_16_16` and the `_EXPAND` formats

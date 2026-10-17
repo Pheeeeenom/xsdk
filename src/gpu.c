@@ -91,8 +91,6 @@ enum {
 enum {
 	// The cache-flush events wedge the GPU before render state is set; this one lands (docs/HARDWARE.md).
 	PS_DONE_TS = 3,
-	// An address's low bits pick a byte swap; 2 swaps each dword's bytes (xenia:src/xenia/gpu/xenos.h:193-197).
-	SWAP_8IN32 = 2,
 };
 
 // Volatile, so every store stays 32 bits: a merged 64-bit one can fault here (docs/HARDWARE.md).

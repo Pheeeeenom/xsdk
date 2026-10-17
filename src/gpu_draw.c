@@ -56,6 +56,9 @@ enum {
 	VIEWPORT_DWORDS = 1 + 6,
 	CLIP_CONTROL_DWORDS = 2,
 	CLIP_PLANE_DWORDS = 1 + XSDK_CLIP_PLANES * 4,
+	// A visibility query's begin: its register and packet; its end: the packet, the register, the wait and the copy.
+	VISIBILITY_BEGIN_DWORDS = 2 + 2,
+	VISIBILITY_END_DWORDS = 2 + 2 + 2 + 3,
 	// eDRAM tiles of samples (xenia:src/xenia/gpu/xenos.h:414-416).
 	TILE_WIDTH = 80,
 	TILE_HEIGHT = 16,
@@ -151,6 +154,12 @@ enum {
 	// The slope scale register counts 1/16-pixel subpixels (xenia:src/xenia/gpu/xenos.h:404-407).
 	SUBPIXELS_PER_PIXEL = 16,
 	SCISSOR_Y_SHIFT = 16,
+	// PA_SC_VIZ_QUERY's fields (xenia:src/xenia/gpu/registers.h:517-531), and VIZ_QUERY's end of a query
+	// (command_processor.cc:1601-1633).
+	VIZ_QUERY_ENA = 1,
+	VIZ_QUERY_ID_SHIFT = 1,
+	VIZ_QUERY_END = 0x100,
+	VISIBILITY_IDS_PER_WORD = 32,
 };
 
 static uint32_t float_bits(float value)
@@ -696,5 +705,30 @@ void xsdk_gpu_draw_indexed(uint32_t primitive_type, uint32_t index_address, uint
 		&packets, primitive_type | index_count << VERTEX_COUNT_SHIFT | (uint32_t)indices_32_bit << INDEX_32_BIT_SHIFT);
 	gpu_put(&packets, index_address);
 	gpu_put(&packets, (index_count | DMA_SWAP_8IN16) << indices_32_bit);
+	gpu_packets_done(&packets);
+}
+
+// D3D's (xenia:src/xenia/gpu/registers.h:516), as tests/probe_occlusion.c ran it on the console (docs/HARDWARE.md).
+void xsdk_gpu_begin_visibility(uint32_t id)
+{
+	assert(id < XSDK_VISIBILITY_IDS);
+	GpuPackets packets = gpu_reserve_packets(VISIBILITY_BEGIN_DWORDS);
+	gpu_put_register(&packets, PA_SC_VIZ_QUERY, VIZ_QUERY_ENA | id << VIZ_QUERY_ID_SHIFT);
+	gpu_put_type3(&packets, PM4_VIZ_QUERY, 1);
+	gpu_put(&packets, id);
+	gpu_packets_done(&packets);
+}
+
+void xsdk_gpu_end_visibility(uint32_t id, uint32_t address)
+{
+	assert(id < XSDK_VISIBILITY_IDS && address % 4 == 0);
+	GpuPackets packets = gpu_reserve_packets(VISIBILITY_END_DWORDS);
+	gpu_put_type3(&packets, PM4_VIZ_QUERY, 1);
+	gpu_put(&packets, id | VIZ_QUERY_END);
+	gpu_put_register(&packets, PA_SC_VIZ_QUERY, 0);
+	gpu_put_register(&packets, WAIT_UNTIL, WAIT_3D_IDLE_CLEAN);
+	gpu_put_type3(&packets, PM4_REG_TO_MEM, 2);
+	gpu_put(&packets, id < VISIBILITY_IDS_PER_WORD ? PA_SC_VIZ_QUERY_STATUS_0 : PA_SC_VIZ_QUERY_STATUS_1);
+	gpu_put(&packets, address | SWAP_8IN32);
 	gpu_packets_done(&packets);
 }

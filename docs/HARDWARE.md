@@ -3586,7 +3586,8 @@ counting around each. None got sample counts:
   `PA_SC_VIZ_QUERY_STATUS_0` for the quad, for the quad hidden behind it too, and for one with the register's
   `KILL_PIX_POST_HI_Z`, which then drew nothing, and left it clear for an empty query. So it answers whether a draw got
   past rasterizing and the coarse hierarchical test, not whether a sample passed the depth test, and Vulkan's occlusion
-  query can't take it as a count. It didn't hang the GPU.
+  query can't take it as a count. It didn't hang the GPU. The command processor's copy of the status word at the
+  query's end held the bits from before it, and its copy once the GPU was idle the query's.
 - **Every try that sent `ZPASS_DONE` hung at its first one,** its own fence landing and the wait for idle never ending,
   `RBBM_STATUS` E004450C, as the six runs before (see "Queries and events"): `RB_SAMPLE_COUNT_CTL`'s RESET at a first
   event, alone or with COPY at each; the `RST_PIX_CNT` event first; the resolve's cache flush or a whole resolve after
@@ -3594,4 +3595,6 @@ counting around each. None got sample counts:
   xsdk's set-up writes put back as the dashboard leaves them before each event, all of them and each of seven groups,
   of which only `CP_PERFMON_CNTL` differed, 0 against xsdk's 1.
 
-So occlusion queries stay off: vulkan4xenon refuses occlusion query pools, and nothing public is left to try.
+So sample counts stay out of reach, and nothing public is left to try. The user took the visibility query for
+vulkan4xenon's occlusion queries all the same, a deviation without `occlusionQueryPrecise`: a query answers 1 if its
+draws rasterized anything (`xsdk_gpu_begin_visibility`; vulkan4xenon:docs/SUPPORT.md, Queries).
