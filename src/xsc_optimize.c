@@ -872,12 +872,22 @@ static bool scalar_only(const XscOp *op)
 		op->alu.scalar_write_mask != 0;
 }
 
+// Whether an op reads a constant at a run-time index, a0 past its register.
+static bool addresses_constants(const XscAlu *f)
+{
+	return f->is_const_0_addressed || f->is_const_1_addressed || f->is_const_address_register_relative ||
+		f->src_const_rel[0] || f->src_const_rel[1] || f->src_const_rel[2];
+}
+
 // Puts x's working pipe into y, which keeps its own (optimize.py merge).
 static bool merge(XscOp *y, const XscOp *x)
 {
 	const bool x_vector = vector_only(x);
 	const XscOp *const vec = x_vector ? x : y;
 	const XscOp *const sca = x_vector ? y : x;
+	// A scalar op's constant could take the vector op's index (xenia:src/xenia/gpu/ucode.h:1945-1964).
+	if (addresses_constants(&sca->alu) || (!sca->alu.src_is_temp[2] && addresses_constants(&vec->alu)))
+		return false;
 	XscAlu merged = vec->alu;
 	merged.scalar_opcode = sca->alu.scalar_opcode;
 	merged.scalar_dest = sca->alu.scalar_dest;
@@ -1299,23 +1309,10 @@ static bool compute_in_place(Optimizer *o, bool *changed)
 	return true;
 }
 
-static const bool *refused_flags(const XscAlu *f, bool flags[9])
+// Programs the passes leave alone (optimize.py can_optimize); indexed if one reads a constant at a run-time index.
+static bool can_optimize(const XscProgram *p, bool *indexed)
 {
-	flags[0] = f->is_vector_dest_relative;
-	flags[1] = f->is_const_0_addressed;
-	flags[2] = f->is_const_1_addressed;
-	flags[3] = f->is_const_address_register_relative;
-	flags[4] = f->src_const_rel[0];
-	flags[5] = f->src_const_rel[1];
-	flags[6] = f->src_const_rel[2];
-	flags[7] = f->is_predicated;
-	flags[8] = f->abs_constants;
-	return flags;
-}
-
-// Programs the passes leave alone (optimize.py can_optimize).
-static bool can_optimize(const XscProgram *p)
-{
+	*indexed = false;
 	if (!p->whole_sources || p->loop_count)
 		return false;
 	for (size_t si = 0; si < p->stage_count; si++) {
@@ -1327,12 +1324,9 @@ static bool can_optimize(const XscProgram *p)
 				continue;
 			}
 			const XscAlu *const f = &op->alu;
-			bool flags[9];
-			refused_flags(f, flags);
-			for (int k = 0; k < 9; k++) {
-				if (flags[k])
-					return false;
-			}
+			if (f->is_vector_dest_relative || f->is_predicated || f->abs_constants)
+				return false;
+			*indexed = *indexed || addresses_constants(f);
 			int64_t scalar_mask = f->scalar_write_mask;
 			if (f->is_export)
 				scalar_mask &= ~f->vector_write_mask;
@@ -1360,14 +1354,16 @@ static bool first_round(Optimizer *o, bool *changed)
 
 bool xsdk_xsc_optimize(Xsc *x, XscProgram *p, bool *ran)
 {
-	*ran = can_optimize(p);
-	if (!*ran)
+	bool indexed;
+	*ran = false;
+	if (!can_optimize(p, &indexed))
 		return true;
 	Optimizer o = { .x = x, .p = p, .key_count = (p->max_reg + 2) * 4 };
 	o.live = xsdk_xsc_alloc(x, (size_t)o.key_count + 1);
 	if (!o.live)
 		return false;
-	bool changed = true;
+	// Only co_issue takes a constant read at a run-time index: it moves nothing past the op that sets a0.
+	bool changed = !indexed;
 	while (changed) {
 		if (!first_round(&o, &changed))
 			return false;
@@ -1377,7 +1373,8 @@ bool xsdk_xsc_optimize(Xsc *x, XscProgram *p, bool *ran)
 		if (!co_issue(&o, &changed))
 			return false;
 	}
-	return remove_dead(&o, &changed);
+	*ran = !indexed;
+	return indexed || remove_dead(&o, &changed);
 }
 
 // ---- what the allocator needs to pack values into components (xsc_program.c) ----

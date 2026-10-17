@@ -71,6 +71,16 @@ def export(src):
     return alu(V.kMax, 0, 0xF, src, src, export=True)
 
 
+def indexed(dest, reg):
+    """A copy of the constant a0 past reg, as xsc's block lowering builds one (xsdk_xsc_block_register)."""
+    return dict(move(dest, c(reg)), is_const_address_register_relative=True, src1_const_rel=True, src2_const_rel=True)
+
+
+def set_a0(src):
+    """a0 from src's x, floored, as xsc's set_a0 loads it."""
+    return scalar(S.kMaxAsf, 0, src, 0)
+
+
 def build(body, exports, optimize):
     return pixel_program(INPUTS, ce.USAGE_TEXCOORD, body, exports, XSDK_REGISTERS.pixel, optimize)
 
@@ -163,6 +173,17 @@ CASES = [
      [alu(V.kMul, 6, 0xF, r(0), c(2)), scalar(S.kRcp, 3, r(6, "xyzw"), 0x1), alu(V.kMad, 6, 0xF, r(1), c(0), r(1)),
       alu(V.kMul, 4, 0xF, r(6), c(1)), alu(V.kMul, 5, 0xF, r(4), r(3, "xxxx"))],
      [export(r(5))], 6),
+    ("where a constant is read at a0, a scalar op still joins an independent vector op, and nothing else changes",
+     [set_a0(r(0, "xxxx")), indexed(2, 4), scalar(S.kRcp, 3, r(1, "xyzw"), 0x1),
+      alu(V.kMul, 4, 0xF, r(2), r(3, "xxxx"))],
+     [export(r(4))], 4),
+    ("a scalar op reading a constant doesn't join a vector op reading one at a0, though their registers match",
+     [set_a0(r(0, "xxxx")), indexed(2, 4), scalar(S.kRcp, 3, c(4), 0x1), alu(V.kMul, 4, 0xF, r(2), r(3, "xxxx"))],
+     [export(r(4))], 5),
+    ("nothing moves past the op that loads a0",
+     [set_a0(r(0, "xxxx")), scalar(S.kRcp, 3, r(1, "xyzw"), 0x1), set_a0(r(0, "yyyy")), indexed(2, 4),
+      alu(V.kMul, 4, 0xF, r(2), r(3, "xxxx"))],
+     [export(r(4))], 6),
     ("a third constant isn't folded into an instruction holding two",
      [move(2, c(2)), alu(V.kMad, 3, 0xF, c(0), c(1), r(2))],
      [export(r(3))], 3),

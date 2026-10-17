@@ -758,7 +758,8 @@ bool xsdk_xsc_program_finish(Xsc *x, XscProgram *p, const XscConstant *constants
 	uint8_t **container, size_t *container_bytes);
 // Whether an ALU op writes the predicate (program.py _modifies_predicate).
 bool xsdk_xsc_modifies_predicate(const XscOp *op);
-// Rewrites the program's instructions; false through ran if it leaves them alone (xasm/optimize.py).
+// Rewrites the program's instructions; false through ran if it leaves them alone, or only co-issues them, as it does
+// where a constant is read at a run-time index (xasm/optimize.py).
 bool xsdk_xsc_optimize(Xsc *x, XscProgram *p, bool *ran);
 
 enum {
