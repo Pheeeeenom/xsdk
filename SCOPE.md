@@ -964,6 +964,9 @@ gap that something running on xsdk meets becomes a milestone; the rest wait (aft
 42. **Render target formats.** Proposed on 2026-10-15, not yet agreed: docs/scope/42-target-formats.md, the first
     of three toward HDR and deferred rendering, before multiple render targets (43) and predicated tiling (44).
 
+45. **xost's code quality.** Agreed on 2026-10-17: docs/scope/45-xost-code-quality.md. Fewer
+    instructions and registers in every shader, the arithmetic unchanged, verified through the console agent.
+
 **Networking**, a scope of its own rather than a numbered milestone: sockets, and TLS 1.2 in the title's own code.
 Agreed and done on 2026-10-14: docs/scope/networking.md.
 
