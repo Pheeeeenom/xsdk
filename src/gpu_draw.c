@@ -138,6 +138,12 @@ enum {
 	CULL_FRONT = 1 << 0,
 	CULL_BACK = 1 << 1,
 	FACE_CLOCKWISE = 1 << 2,
+	// poly_mode's dual mode draws each face as its polygon type, lines 1 and points 0 (xenos.h:846-859).
+	POLY_MODE_DUAL = 1 << 3,
+	POLYMODE_FRONT_PTYPE_SHIFT = 5,
+	POLYMODE_BACK_PTYPE_SHIFT = 8,
+	POLYGON_TYPE_POINTS = 0,
+	POLYGON_TYPE_LINES = 1,
 	POLY_OFFSET_FRONT_ENABLE = 1 << 11,
 	POLY_OFFSET_BACK_ENABLE = 1 << 12,
 	MSAA_ENABLE = 1 << 15,
@@ -611,12 +617,23 @@ void xsdk_gpu_set_blend_constants(const float rgba[4])
 	gpu_packets_done(&packets);
 }
 
+// Both faces take the fill's polygon type; Xenia reads them so
+// (xenia:src/xenia/gpu/vulkan/vulkan_pipeline_cache.cc:590-623).
+static uint32_t fill_control(uint32_t fill)
+{
+	assert(fill <= XSDK_FILL_POINTS);
+	if (fill == XSDK_FILL_SOLID)
+		return 0;
+	const uint32_t type = fill == XSDK_FILL_WIREFRAME ? POLYGON_TYPE_LINES : POLYGON_TYPE_POINTS;
+	return POLY_MODE_DUAL | type << POLYMODE_FRONT_PTYPE_SHIFT | type << POLYMODE_BACK_PTYPE_SHIFT;
+}
+
 void xsdk_gpu_raster_state(XsdkRasterState *state, const XsdkRaster *setting)
 {
 	const bool biased = setting->depth_bias != 0.0f || setting->depth_bias_slope != 0.0f;
 	state->mode_control = VTX_WINDOW_OFFSET_ENABLE | (setting->front_clockwise ? FACE_CLOCKWISE : 0) |
 		(setting->cull == XSDK_CULL_FRONT ? CULL_FRONT : 0) | (setting->cull == XSDK_CULL_BACK ? CULL_BACK : 0) |
-		(biased ? POLY_OFFSET_FRONT_ENABLE | POLY_OFFSET_BACK_ENABLE : 0);
+		(biased ? POLY_OFFSET_FRONT_ENABLE | POLY_OFFSET_BACK_ENABLE : 0) | fill_control(setting->fill);
 	const uint32_t scale = float_bits(setting->depth_bias_slope * SUBPIXELS_PER_PIXEL);
 	const uint32_t offset = float_bits(setting->depth_bias);
 	state->polygon_offset[0] = scale;

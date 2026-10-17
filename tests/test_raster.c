@@ -15,8 +15,9 @@
 #include "xsdk/thread.h"
 #include "xsdk/xsc.h"
 
-// One cell per piece of raster and blend state, each checked by pixel against what the CPU works out; then a row of
-// cells clipped by planes, and point sprites from xost's shaders compiled on the console (vulkan4xenon milestone 26).
+// One cell per piece of raster and blend state, each checked by pixel against what the CPU works out; then, for
+// vulkan4xenon milestone 26, a row of quads drawn as their edges and their corners, a row of cells clipped by planes,
+// and point sprites from xost's shaders compiled on the console.
 
 enum {
 	WIDTH = 1280,
@@ -47,6 +48,11 @@ enum {
 	// bit of the smaller one's, as where in a pixel the hardware takes them isn't known.
 	SPRITE_Y = 360,
 	SPRITE_TOLERANCE = 24,
+	// The fill mode row: quads 200 by 80, their corners on pixels' centres, and how far a line or point may land.
+	FILL_Y = 20,
+	FILL_WIDTH = 200,
+	FILL_HEIGHT = 80,
+	FILL_SLACK = 1,
 };
 
 // Point sprites, each centred on a pixel's corner, as wide as its size, from vk_point_sprite.vert.
@@ -79,6 +85,8 @@ enum {
 	RASTER_CULL_BACK,
 	RASTER_CULL_FRONT,
 	RASTER_BIAS,
+	RASTER_WIREFRAME,
+	RASTER_POINTS,
 	RASTERS,
 };
 
@@ -153,6 +161,27 @@ static const ClipDraw clip_draws[] = {
 	{ 540, 0xFFC0E040, 0 },
 };
 
+// The fill mode row: a quad as its triangles' edges, then one as their corners.
+typedef struct {
+	uint32_t x;
+	uint32_t argb;
+	uint32_t raster;
+} FillDraw;
+
+static const FillDraw fill_draws[] = {
+	{ 40, 0xFFE0E040, RASTER_WIREFRAME },
+	{ 290, 0xFF40E0E0, RASTER_POINTS },
+};
+
+// A pixel near which a line or point should or shouldn't be: any pixel within the slack holds the colour, or none.
+typedef struct {
+	const char *what;
+	uint32_t x;
+	uint32_t y;
+	uint32_t argb;
+	bool absent;
+} FillPoint;
+
 static const uint32_t scissor_x = 580;
 static const uint32_t scissor_y = 450;
 static const uint32_t scissor_size = 120;
@@ -206,10 +235,12 @@ static void make_states(States *states)
 			XSDK_BLEND_ONE, XSDK_BLEND_ZERO, XSDK_BLEND_OP_ADD, XSDK_WRITE_ALL },
 	};
 	const XsdkRaster rasters[RASTERS] = {
-		[RASTER_PLAIN] = { XSDK_CULL_NONE, true, 0.0f, 0.0f },
-		[RASTER_CULL_BACK] = { XSDK_CULL_BACK, true, 0.0f, 0.0f },
-		[RASTER_CULL_FRONT] = { XSDK_CULL_FRONT, true, 0.0f, 0.0f },
-		[RASTER_BIAS] = { XSDK_CULL_NONE, true, depth_bias, 0.0f },
+		[RASTER_PLAIN] = { XSDK_CULL_NONE, true, 0.0f, 0.0f, XSDK_FILL_SOLID },
+		[RASTER_CULL_BACK] = { XSDK_CULL_BACK, true, 0.0f, 0.0f, XSDK_FILL_SOLID },
+		[RASTER_CULL_FRONT] = { XSDK_CULL_FRONT, true, 0.0f, 0.0f, XSDK_FILL_SOLID },
+		[RASTER_BIAS] = { XSDK_CULL_NONE, true, depth_bias, 0.0f, XSDK_FILL_SOLID },
+		[RASTER_WIREFRAME] = { XSDK_CULL_NONE, true, 0.0f, 0.0f, XSDK_FILL_WIREFRAME },
+		[RASTER_POINTS] = { XSDK_CULL_NONE, true, 0.0f, 0.0f, XSDK_FILL_POINTS },
 	};
 	for (uint32_t i = 0; i < BLENDS; i++)
 		xsdk_gpu_blend_state(&states->blends[i], &blends[i]);
@@ -398,6 +429,34 @@ static uint32_t sprite_points_expected(Point *points)
 	return n;
 }
 
+// The square's first triangle is its top left, top right and bottom left, so the triangles share the diagonal from the
+// bottom left to the top right, which crosses the quad's centre.
+static uint32_t fill_points_expected(FillPoint *points)
+{
+	const uint32_t wire = fill_draws[0].argb;
+	const uint32_t dots = fill_draws[1].argb;
+	const uint32_t left = fill_draws[0].x;
+	const uint32_t corner = fill_draws[1].x;
+	const uint32_t bottom = FILL_Y + FILL_HEIGHT;
+	const FillPoint fills[] = {
+		{ "wireframe: the top edge", left + FILL_WIDTH / 2, FILL_Y, wire, false },
+		{ "wireframe: the bottom edge", left + FILL_WIDTH / 2, bottom, wire, false },
+		{ "wireframe: the left edge", left, FILL_Y + FILL_HEIGHT / 2, wire, false },
+		{ "wireframe: the right edge", left + FILL_WIDTH, FILL_Y + FILL_HEIGHT / 2, wire, false },
+		{ "wireframe: the diagonal", left + FILL_WIDTH / 2, FILL_Y + FILL_HEIGHT / 2, wire, false },
+		{ "wireframe: inside, above the diagonal", left + 30, FILL_Y + 15, wire, true },
+		{ "wireframe: inside, below the diagonal", left + FILL_WIDTH - 30, FILL_Y + FILL_HEIGHT - 15, wire, true },
+		{ "point fill: the top left corner", corner, FILL_Y, dots, false },
+		{ "point fill: the top right corner", corner + FILL_WIDTH, FILL_Y, dots, false },
+		{ "point fill: the bottom left corner", corner, bottom, dots, false },
+		{ "point fill: the bottom right corner", corner + FILL_WIDTH, bottom, dots, false },
+		{ "point fill: nothing along the top edge", corner + FILL_WIDTH / 2, FILL_Y, dots, true },
+		{ "point fill: nothing on the diagonal", corner + FILL_WIDTH / 2, FILL_Y + FILL_HEIGHT / 2, dots, true },
+	};
+	memcpy(points, fills, sizeof fills);
+	return sizeof fills / sizeof fills[0];
+}
+
 // Places the unit square, edges half a pixel early, or over all of clip space for the viewport draw.
 static void set_draw_constants(const Draw *d)
 {
@@ -444,6 +503,54 @@ static void draw_all(const States *states)
 		if (d->viewport)
 			xsdk_gpu_set_viewport(0.0f, 0.0f, WIDTH, HEIGHT, 0.0f, 1.0f);
 	}
+}
+
+// The fill mode row, each quad's corners on pixels' centres, so its lines and points land on whole pixels.
+static void draw_fills(const States *states)
+{
+	xsdk_gpu_set_blend(&states->blends[BLEND_NONE]);
+	xsdk_gpu_set_depth_stencil(&states->depth_off);
+	for (uint32_t i = 0; i < sizeof fill_draws / sizeof fill_draws[0]; i++) {
+		const FillDraw *const f = &fill_draws[i];
+		const float left = clip_x(f->x) + 0.5f / (WIDTH / 2.0f);
+		const float top = clip_y(FILL_Y) - 0.5f / (HEIGHT / 2.0f);
+		const float vertex[3][4] = {
+			{ FILL_WIDTH / (WIDTH / 2.0f), -FILL_HEIGHT / (HEIGHT / 2.0f), 1.0f, 1.0f },
+			{ left, top, 0.5f, 0.0f },
+			{ channel(f->argb, 16), channel(f->argb, 8), channel(f->argb, 0), 1.0f },
+		};
+		xsdk_gpu_set_raster(&states->rasters[f->raster]);
+		xsdk_gpu_set_vertex_constants(0, &vertex[0][0], 3);
+		xsdk_gpu_draw(XSDK_PRIMITIVE_TRIANGLE_LIST, QUAD_VERTICES);
+	}
+}
+
+// Whether a resolved pixel, its bytes B, G, R and A, is within a step or two of the colour.
+static bool colour_near(uint32_t stored, uint32_t argb)
+{
+	const uint32_t want = __builtin_bswap32(argb);
+	bool near = true;
+	for (uint32_t shift = 8; shift <= 24; shift += 8) {
+		const uint32_t got = stored >> shift & 0xFF;
+		const uint32_t wanted = want >> shift & 0xFF;
+		near &= (got > wanted ? got - wanted : wanted - got) <= BLEND_TOLERANCE;
+	}
+	return near;
+}
+
+static bool fill_holds(volatile const uint32_t *pixels, const FillPoint *p, uint32_t frame, uint32_t *misses)
+{
+	bool found = false;
+	for (uint32_t y = p->y - FILL_SLACK; y <= p->y + FILL_SLACK; y++) {
+		for (uint32_t x = p->x - FILL_SLACK; x <= p->x + FILL_SLACK; x++)
+			found |= colour_near(pixels[tiled_index(x, y, WIDTH)], p->argb);
+	}
+	const bool holds = found != p->absent;
+	if (!holds && *misses < MAX_MISSES_LOGGED)
+		xsdk_log_write("raster: frame %u: %s at (%u, %u)%s", (unsigned)frame, p->what, (unsigned)p->x, (unsigned)p->y,
+			p->absent ? ": drawn" : ": not drawn");
+	*misses += !holds;
+	return holds;
 }
 
 // The clip row, each quad with its planes, then every plane off for what's drawn after.
@@ -538,10 +645,13 @@ static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint3
 	const uint32_t clip_point_count = clip_points_expected(clip_points);
 	Point sprite_points[POINTS];
 	const uint32_t sprite_point_count = sprite_points_expected(sprite_points);
+	FillPoint fill_points[POINTS];
+	const uint32_t fill_point_count = fill_points_expected(fill_points);
 	uint32_t misses = 0;
 	uint32_t frames_wrong = 0;
 	uint32_t clip_frames_wrong = 0;
 	uint32_t sprite_frames_wrong = 0;
+	uint32_t fill_frames_wrong = 0;
 	bool fences_landed = true;
 	bool shown = true;
 	for (uint32_t frame = 0; frame < FRAMES && fences_landed; frame++) {
@@ -551,6 +661,7 @@ static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint3
 		xsdk_gpu_set_shaders(vertex, pixel);
 		xsdk_gpu_set_vertices(0, vertices, sizeof square);
 		draw_all(&states);
+		draw_fills(&states);
 		draw_clipped(&states);
 		if (s)
 			draw_sprites(s);
@@ -572,6 +683,10 @@ static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint3
 			for (uint32_t i = 0; s && i < sprite_point_count; i++)
 				sprited &= point_holds(buffer, &sprite_points[i], frame, &misses);
 			sprite_frames_wrong += !sprited;
+			bool filled = true;
+			for (uint32_t i = 0; i < fill_point_count; i++)
+				filled &= fill_holds(buffer, &fill_points[i], frame, &misses);
+			fill_frames_wrong += !filled;
 		}
 		if (has_display)
 			shown = shown && NT_SUCCESS(xsdk_display_show(address, WIDTH));
@@ -585,6 +700,9 @@ static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint3
 	check("raster: every frame's fence landed", fences_landed);
 	check("raster: blends, constant blends, write mask, culling, scissor, viewport and depth bias as worked out",
 		fences_landed && frames_wrong == 0);
+	check(
+		"raster: a wireframe quad draws its triangles' edges and nothing inside, a point-filled one its corners alone",
+		fences_landed && fill_frames_wrong == 0);
 	check("raster: clip planes 0, 3 and 5 cut their cells at their lines, and nothing once they're off",
 		fences_landed && clip_frames_wrong == 0);
 	check(

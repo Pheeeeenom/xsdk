@@ -22,6 +22,7 @@ SPRITES = ("raster: point sprites from xost's shaders compiled on the console as
            "pixels, gl_PointCoord across them from the top left")
 XSC_POINT_SIZE = "xsc: vk_point_sprite.vert compiles into the PC's container, literals and resources"
 XSC_POINT_COORD = "xsc: vk_point_coord.frag compiles into the PC's container, literals and resources"
+FILLS = "raster: a wireframe quad draws its triangles' edges and nothing inside, a point-filled one its corners alone"
 
 SETS = {
     # Step 1: backface_enable left clear, so the front's stencil serves both faces.
@@ -76,6 +77,21 @@ SETS = {
         "checks": [XSC_POINT_SIZE],
         "breaks": [
             (XSC_VERTEX, "\tl->p->exports_point_size = true;\n", ""),
+        ],
+    },
+    # Step 4: poly_mode's dual mode dropped, so every quad draws filled.
+    "s4a": {
+        "checks": [FILLS],
+        "breaks": [
+            (GPU_DRAW, "POLY_MODE_DUAL = 1 << 3,", "POLY_MODE_DUAL = 0,"),
+        ],
+    },
+    # Step 4: the polygon types swapped, lines for points and points for lines.
+    "s4b": {
+        "checks": [FILLS],
+        "breaks": [
+            (GPU_DRAW, "fill == XSDK_FILL_WIREFRAME ? POLYGON_TYPE_LINES : POLYGON_TYPE_POINTS",
+             "fill == XSDK_FILL_WIREFRAME ? POLYGON_TYPE_POINTS : POLYGON_TYPE_LINES"),
         ],
     },
 }

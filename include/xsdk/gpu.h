@@ -335,12 +335,22 @@ enum {
 	XSDK_CULL_BACK,
 };
 
-// Which faces draw, and a depth bias: a constant in depth units, plus slope times the polygon's depth slope per pixel.
+// How triangles that aren't culled draw: filled, as their edges' lines, or as their corners' points, 1 pixel each
+// (xenia:src/xenia/gpu/registers.h:463-469; xenos.h:846-859).
+enum {
+	XSDK_FILL_SOLID,
+	XSDK_FILL_WIREFRAME,
+	XSDK_FILL_POINTS,
+};
+
+// Which faces draw and how, and a depth bias: a constant in depth units, plus slope times the polygon's depth slope per
+// pixel.
 typedef struct {
 	uint32_t cull;
 	bool front_clockwise;
 	float depth_bias;
 	float depth_bias_slope;
+	uint32_t fill;
 } XsdkRaster;
 
 typedef struct {
