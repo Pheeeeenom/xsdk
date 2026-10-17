@@ -233,6 +233,19 @@ def cases():
         ("9 one after a c230 read", after_alloc([plain(), f(), read(n)])),
         ("9 right after a read of c230 twice", after_alloc([plain(twice=True), read(n)])),
         ("10 right after a c[140+a0] read", after_alloc([read(OTHER_ROW, dest=SCRATCH), read(n)])),
+        ("11 maxasf again after alloc interpolators", after_alloc([maxasf(), read(n)])),
+        ("11 maxasf again after alloc interpolators, one between", after_alloc([maxasf(), f(), read(n)])),
+        ("12 the read twice after alloc interpolators", after_alloc([read(n), read(n)])),
+        # An alloc between the a0 load and the read, no export.
+        ("13 maxasf before alloc position, read after it",
+         [[maxasf()], ALLOC_POSITION, [read(g)], [POSITION_EXPORT], ALLOC_INTERPOLATORS, [RESULT_EXPORT]]),
+        # The position export between the a0 load and the read, no alloc.
+        ("14 read after the position export, before alloc interpolators",
+         [ALLOC_POSITION, [maxasf(), POSITION_EXPORT], [read(g)], ALLOC_INTERPOLATORS, [RESULT_EXPORT]]),
+        # Throwaway reads that write nothing, before the one that counts.
+        ("15 after a throwaway c[152+a0] read, mask 0", after_alloc([read(n, vector_write_mask=0), read(n)])),
+        ("15 after a throwaway c[140+a0] read, mask 0", after_alloc([read(OTHER_ROW, vector_write_mask=0), read(n)])),
+        ("15 after a throwaway c[0+a0] read, mask 0", after_alloc([read(0, vector_write_mask=0), read(n)])),
     ]
     spans = [
         ("8 old span", *span("old")),

@@ -1,0 +1,86 @@
+log: game:\probe_relconst3.log
+log: named after \Device\Harddisk0\Partition1\XSDK\m45\probe_relconst3.xex
+sbrk: the heap may grow to 474 MB from 0x00070000, the title's free memory
+relative constants probe: 39 cases; c[n] draws as red n, green 255 - n, blue n ^ 0x5A
+relative constants probe: [uniform]: the columns' a0 5 5 5 5
+relative constants probe: [varying]: the columns' a0 3 7 12 18
+relative constants probe: 1 right after maxasf [uniform]: model reads c125 c125 c125 c125, GPU read c125 c125 c125 c125, PASS, pixels 27827DFF 27827DFF 27827DFF 27827DFF
+relative constants probe: 1 right after maxasf [varying]: model reads c123 c127 c132 c138, GPU read c123 c127 c132 c138, PASS, pixels 21847BFF 25807FFF DE7B84FF D0758AFF
+relative constants probe: 2 one after maxasf [uniform]: model reads c125 c125 c125 c125, GPU read c125 c125 c125 c125, PASS, pixels 27827DFF 27827DFF 27827DFF 27827DFF
+relative constants probe: 2 one after maxasf [varying]: model reads c123 c127 c132 c138, GPU read c123 c127 c132 c138, PASS, pixels 21847BFF 25807FFF DE7B84FF D0758AFF
+relative constants probe: 2 two after maxasf [uniform]: model reads c125 c125 c125 c125, GPU read c125 c125 c125 c125, PASS, pixels 27827DFF 27827DFF 27827DFF 27827DFF
+relative constants probe: 2 two after maxasf [varying]: model reads c123 c127 c132 c138, GPU read c123 c127 c132 c138, PASS, pixels 21847BFF 25807FFF DE7B84FF D0758AFF
+relative constants probe: 2 four after maxasf [uniform]: model reads c125 c125 c125 c125, GPU read c125 c125 c125 c125, PASS, pixels 27827DFF 27827DFF 27827DFF 27827DFF
+relative constants probe: 2 four after maxasf [varying]: model reads c123 c127 c132 c138, GPU read c123 c127 c132 c138, PASS, pixels 21847BFF 25807FFF DE7B84FF D0758AFF
+relative constants probe: 2 eight after maxasf, an exec on [uniform]: model reads c125 c125 c125 c125, GPU read c125 c125 c125 c125, PASS, pixels 27827DFF 27827DFF 27827DFF 27827DFF
+relative constants probe: 2 eight after maxasf, an exec on [varying]: model reads c123 c127 c132 c138, GPU read c123 c127 c132 c138, PASS, pixels 21847BFF 25807FFF DE7B84FF D0758AFF
+relative constants probe: 3 an exec on [uniform]: model reads c125 c125 c125 c125, GPU read c125 c125 c125 c125, PASS, pixels 27827DFF 27827DFF 27827DFF 27827DFF
+relative constants probe: 3 an exec on [varying]: model reads c123 c127 c132 c138, GPU read c123 c127 c132 c138, PASS, pixels 21847BFF 25807FFF DE7B84FF D0758AFF
+relative constants probe: 3 three execs on [uniform]: model reads c125 c125 c125 c125, GPU read c125 c125 c125 c125, PASS, pixels 27827DFF 27827DFF 27827DFF 27827DFF
+relative constants probe: 3 three execs on [varying]: model reads c123 c127 c132 c138, GPU read c123 c127 c132 c138, PASS, pixels 21847BFF 25807FFF DE7B84FF D0758AFF
+relative constants probe: 4 after alloc interpolators [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 4 after alloc interpolators [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 4 maxasf before alloc position [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 4 maxasf before alloc position [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 5 co-issued with rcp of a temp [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 5 co-issued with rcp of a temp [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 6 src3 temp r1 [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 6 src3 temp r1 [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 6 src3 c0 [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 6 src3 c0 [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 6 src3 c152 [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 6 src3 c152 [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 7 c[152+a0] * c230.w [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 7 c[152+a0] * c230.w [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 7 c230.w * c[152+a0] [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 7 c230.w * c[152+a0] [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 7 c[152+a0] * r0.w [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 7 c[152+a0] * r0.w [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 7 r0.w * c[152+a0] [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 7 r0.w * c[152+a0] [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 8 old span [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels E3E3E3E3 CACACACA 73737373 55555555
+relative constants probe: 8 old span [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels E0E0E0E0 69696969 46464646 31313131
+relative constants probe: 8 old span, 14 registers [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels E3E3E3E3 CACACACA 73737373 55555555
+relative constants probe: 8 old span, 14 registers [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels E0E0E0E0 69696969 46464646 31313131
+relative constants probe: 8 step 4 span [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels ADD1E4FF F5E3E4FF FFFFE4FF FFFFE4FF
+relative constants probe: 8 step 4 span [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels B4D5E4FF FFFFE4FF FFFFE4FF FFFFE4FF
+relative constants probe: 8 step 4 span, 13 registers [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels ADD1E4FF F5E3E4FF FFFFE4FF FFFFE4FF
+relative constants probe: 8 step 4 span, 13 registers [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels B4D5E4FF FFFFE4FF FFFFE4FF FFFFE4FF
+relative constants probe: 8 old span, light code as fillers [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 8 old span, light code as fillers [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 8 step 4 span, light code as fillers [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels DFDFDFDF CFCFCFCF FFFFFFFF FFFFFFFF
+relative constants probe: 8 step 4 span, light code as fillers [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels B2B2B5FF F2F2F3FF FFFFFFFF FFFFFFFF
+relative constants probe: 9 right after a c230 read [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels D5D5D5D5 FFFFFFFF FFFFFFFF FFFFFFFF
+relative constants probe: 9 right after a c230 read [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels EDDFFFFF F1CFFFFF FFFFFFFF FFFFFFFF
+relative constants probe: 9 right after a c230 read, co-issued [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels B5B5B3FF FFFFF2FF FFFFFFFF FFFFFFFF
+relative constants probe: 9 right after a c230 read, co-issued [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 9 right after a c230 read, co-issued with rcp of what that wrote [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels D1D1D1D1 E3E3E3E3 FFFFFFFF FFFFFFFF
+relative constants probe: 9 right after a c230 read, co-issued with rcp of what that wrote [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 9 right after a c230 read, src3 what that wrote [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
+relative constants probe: 9 right after a c230 read, src3 what that wrote [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 9 right after a c230 read, before alloc interpolators [uniform]: model reads c125 c125 c125 c125, GPU read c125 c125 c125 c125, PASS, pixels 27827DFF 27827DFF 27827DFF 27827DFF
+relative constants probe: 9 right after a c230 read, before alloc interpolators [varying]: model reads c123 c127 c132 c138, GPU read c123 c127 c132 c138, PASS, pixels 21847BFF 25807FFF DE7B84FF D0758AFF
+relative constants probe: 9 one after a c230 read [uniform]: model reads c157 c157 c157 c157, GPU read c125 c129 c134 c140, DIFFERS, pixels 27827DFF DB7E81FF DC7986FF D6738CFF
+relative constants probe: 9 one after a c230 read [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 9 right after a read of c230 twice [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 9 right after a read of c230 twice [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 10 right after a c[140+a0] read [uniform]: model reads c157 c157 c157 c157, GPU read c157 c157 c157 c157, PASS, pixels C7629DFF C7629DFF C7629DFF C7629DFF
+relative constants probe: 10 right after a c[140+a0] read [varying]: model reads c155 c159 c164 c170, GPU read c155 c159 c164 c170, PASS, pixels C1649BFF C5609FFF FE5BA4FF F055AAFF
+relative constants probe: 11 maxasf again after alloc interpolators [uniform]: model reads c157 c157 c157 c157, GPU read c157 c157 c157 c157, PASS, pixels C7629DFF C7629DFF C7629DFF C7629DFF
+relative constants probe: 11 maxasf again after alloc interpolators [varying]: model reads c155 c159 c164 c170, GPU read c155 c159 c164 c170, PASS, pixels C1649BFF C5609FFF FE5BA4FF F055AAFF
+relative constants probe: 11 maxasf again after alloc interpolators, one between [uniform]: model reads c157 c157 c157 c157, GPU read c157 c157 c157 c157, PASS, pixels C7629DFF C7629DFF C7629DFF C7629DFF
+relative constants probe: 11 maxasf again after alloc interpolators, one between [varying]: model reads c155 c159 c164 c170, GPU read c155 c159 c164 c170, PASS, pixels C1649BFF C5609FFF FE5BA4FF F055AAFF
+relative constants probe: 12 the read twice after alloc interpolators [uniform]: model reads c157 c157 c157 c157, GPU read c157 c157 c157 c157, PASS, pixels C7629DFF C7629DFF C7629DFF C7629DFF
+relative constants probe: 12 the read twice after alloc interpolators [varying]: model reads c155 c159 c164 c170, GPU read c155 c159 c164 c170, PASS, pixels C1649BFF C5609FFF FE5BA4FF F055AAFF
+relative constants probe: 13 maxasf before alloc position, read after it [uniform]: model reads c125 c125 c125 c125, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 13 maxasf before alloc position, read after it [varying]: model reads c123 c127 c132 c138, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 14 read after the position export, before alloc interpolators [uniform]: model reads c125 c125 c125 c125, GPU read c125 c125 c125 c125, PASS, pixels 27827DFF 27827DFF 27827DFF 27827DFF
+relative constants probe: 14 read after the position export, before alloc interpolators [varying]: model reads c123 c127 c132 c138, GPU read c123 c127 c132 c138, PASS, pixels 21847BFF 25807FFF DE7B84FF D0758AFF
+relative constants probe: 15 after a throwaway c[152+a0] read, mask 0 [uniform]: model reads c157 c157 c157 c157, GPU read c157 c157 c157 c157, PASS, pixels C7629DFF C7629DFF C7629DFF C7629DFF
+relative constants probe: 15 after a throwaway c[152+a0] read, mask 0 [varying]: model reads c155 c159 c164 c170, GPU read c155 c159 c164 c170, PASS, pixels C1649BFF C5609FFF FE5BA4FF F055AAFF
+relative constants probe: 15 after a throwaway c[140+a0] read, mask 0 [uniform]: model reads c157 c157 c157 c157, GPU read c157 c157 c157 c157, PASS, pixels C7629DFF C7629DFF C7629DFF C7629DFF
+relative constants probe: 15 after a throwaway c[140+a0] read, mask 0 [varying]: model reads c155 c159 c164 c170, GPU read c155 c159 c164 c170, PASS, pixels C1649BFF C5609FFF FE5BA4FF F055AAFF
+relative constants probe: 15 after a throwaway c[0+a0] read, mask 0 [uniform]: model reads c157 c157 c157 c157, GPU read c157 c157 c157 c157, PASS, pixels C7629DFF C7629DFF C7629DFF C7629DFF
+relative constants probe: 15 after a throwaway c[0+a0] read, mask 0 [varying]: model reads c155 c159 c164 c170, GPU read c155 c159 c164 c170, PASS, pixels C1649BFF C5609FFF FE5BA4FF F055AAFF
+relative constants probe: done, 78 draws: 32 PASS, 46 DIFFERS; xsdk_gpu_close 0x00000000
+exit: status 0
