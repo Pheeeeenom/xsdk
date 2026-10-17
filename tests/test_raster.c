@@ -576,6 +576,8 @@ static void draw_clipped(const States *states)
 typedef struct {
 	XsdkShader vertex;
 	XsdkShader pixel;
+	XsdkXscShader vertex_compiled;
+	XsdkXscShader pixel_compiled;
 	const XsdkXscNeed *vertex_needs;
 	size_t vertex_need_count;
 	const XsdkXscNeed *pixel_needs;
@@ -727,21 +729,18 @@ static const XscTestShader *xsc_shader(const char *name)
 }
 
 // xost's compiler on the console, as the layer compiles what its bundle lacks (tests/test_xsc.c).
-static bool compile_shader(const char *name, XsdkShader *shader, const XsdkXscNeed **needs, size_t *need_count)
+static bool compile_shader(
+	const char *name, XsdkShader *shader, XsdkXscShader *compiled, const XsdkXscNeed **needs, size_t *need_count)
 {
 	const XscTestShader *const source = xsc_shader(name);
 	XsdkXscOptions options;
 	xsdk_xsc_default_options(&options);
 	options.optimize = true;
-	XsdkXscShader compiled;
-	if (!source || xsdk_xsc_compile(source->spirv, source->spirv_words, &options, &compiled) != XSDK_XSC_OK)
+	if (!source || xsdk_xsc_compile(source->spirv, source->spirv_words, &options, compiled) != XSDK_XSC_OK)
 		return false;
-	const bool loaded =
-		NT_SUCCESS(xsdk_shader_load(shader, (const uint32_t *)compiled.container, compiled.container_bytes));
-	xsdk_xsc_free(&compiled);
 	*needs = source->needs;
 	*need_count = source->need_count;
-	return loaded;
+	return NT_SUCCESS(xsdk_shader_load(shader, (const uint32_t *)compiled->container, compiled->container_bytes));
 }
 
 // The sprites' shaders and the point they draw, moved by their constants; false, the sprites undrawn, on a failure.
@@ -749,8 +748,9 @@ static bool make_sprites(Sprites *s)
 {
 	static const float point[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	const XsdkVertexElement position = { .usage = XSDK_USAGE_POSITION, .format = XSDK_VERTEX_FLOAT4 };
-	if (!compile_shader("vk_point_sprite.vert", &s->vertex, &s->vertex_needs, &s->vertex_need_count) ||
-		!compile_shader("vk_point_coord.frag", &s->pixel, &s->pixel_needs, &s->pixel_need_count) ||
+	if (!compile_shader(
+			"vk_point_sprite.vert", &s->vertex, &s->vertex_compiled, &s->vertex_needs, &s->vertex_need_count) ||
+		!compile_shader("vk_point_coord.frag", &s->pixel, &s->pixel_compiled, &s->pixel_needs, &s->pixel_need_count) ||
 		!NT_SUCCESS(xsdk_shader_set_vertex_layout(&s->vertex, &position, 1, (const uint32_t[]){ sizeof point })))
 		return false;
 	s->memory = xsdk_gpu_alloc(sizeof point);
@@ -818,6 +818,9 @@ void test_raster(void)
 		xsdk_shader_free(&sprite_state.pixel);
 	if (sprite_state.vertex.microcode)
 		xsdk_shader_free(&sprite_state.vertex);
+	// The shaders' fetch patch records point into the containers (src/shader.c), so they go last.
+	xsdk_xsc_free(&sprite_state.pixel_compiled);
+	xsdk_xsc_free(&sprite_state.vertex_compiled);
 	for (uint32_t i = 0; i < BUFFERS; i++)
 		xsdk_gpu_free(buffers[i]);
 	xsdk_gpu_free(vertices);
