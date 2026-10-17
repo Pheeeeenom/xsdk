@@ -177,6 +177,14 @@ $(BUILD)/probe/probe_shader_cost_programs.h: $(XSC_PACK) tools/gen_shader_cost_p
 $(BUILD)/tests/probe_shader_cost.o: CFLAGS += -I$(BUILD)/probe
 $(BUILD)/tests/probe_shader_cost.o: $(BUILD)/probe/probe_shader_cost_programs.h
 
+# Milestone 45 step 4's probe of which reads of constants at a0 the GPU gets wrong; outside all, for one question.
+$(BUILD)/probe/probe_relative_constant_cases.h: tools/gen_relative_constant_probe.py tools/gen_xsc_probe.py \
+	tools/gen_triangle_shaders.py
+	$(PYTHON) tools/gen_relative_constant_probe.py $@
+
+$(BUILD)/tests/probe_relative_constants.o: CFLAGS += -I$(BUILD)/probe
+$(BUILD)/tests/probe_relative_constants.o: $(BUILD)/probe/probe_relative_constant_cases.h
+
 $(BUILD)/host/libxsc.so: $(XSC_SOURCES:src/%.c=$(BUILD)/host/%.o)
 	$(HOST_CC) -shared -o $@ $^
 
