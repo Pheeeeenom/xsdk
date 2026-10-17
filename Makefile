@@ -157,7 +157,7 @@ $(BUILD)/host/xsc_compile.o: HOST_CFLAGS += -DXSDK_XSC_SOURCE_HASH='"$(XSC_VERSI
 # outside all, as the pack is Dusklight's. probe_xsc_break has the fetch layout off, so it must fail.
 XSC_PACK ?= ../dusklight-xenon/platforms/xenon/glsl_pack.c
 XSC_REFUSED := xenos-toolchain/xsc/testdata/vk_frag_coord_depth.frag.spv \
-	xenos-toolchain/xsc/testdata/vk_local_partial.frag.spv
+	xenos-toolchain/xsc/testdata/vk_frag_depth_branch.frag.spv
 
 $(BUILD)/probe/probe_xsc_programs.h: $(XSC_PACK) tools/gen_xsc_probe.py $(BUILD)/host/libxsc.so
 	$(PYTHON) tools/gen_xsc_probe.py $(XSC_PACK) $@ $(XSC_REFUSED)
