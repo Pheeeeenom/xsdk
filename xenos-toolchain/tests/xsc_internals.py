@@ -71,6 +71,7 @@ def library():
         "xsdk_xsc_program_init": ([x, p, BOOL, ctypes.c_uint32], BOOL),
         "xsdk_xsc_program_input": ([x, p, I64, ctypes.c_uint32], BOOL),
         "xsdk_xsc_program_alu": ([x, p, ctypes.POINTER(Alu)], ctypes.c_void_p),
+        "xsdk_xsc_program_tfetch": ([x, p, ctypes.POINTER(Fetch)], ctypes.c_void_p),
         "xsdk_xsc_program_alloc": ([x, p, I64], BOOL),
         "xsdk_xsc_program_finish": ([x, p, ctypes.c_void_p, ctypes.c_size_t,
                                      ctypes.POINTER(ctypes.POINTER(ctypes.c_uint8)), ctypes.POINTER(ctypes.c_size_t)],
@@ -102,9 +103,18 @@ def alu_struct(fields: dict) -> Alu:
     return a
 
 
+def fetch_struct(fields: dict) -> Fetch:
+    """A fetch's fields as xasm.encode.build_tfetch names them, as the C's structure."""
+    f = Fetch()
+    for name, kind in FETCH_FIELDS:
+        setattr(f, name, float(fields.get(name, 0)) if kind is DOUBLE else int(fields.get(name, 0)))
+    return f
+
+
 def pixel_program(inputs: int, usage: int, body, exports, registers: int, optimize: bool) -> bytes:
-    """A pixel shader the C builds from ALU fields as the compiler would, temps whole till it packs them: inputs
-    interpolators, the body, the colors' alloc, the exports. Raises CompileError where it refuses."""
+    """A pixel shader the C builds from ALU fields, or a texture fetch's (those with a dimension), as the compiler
+    would, temps whole till it packs them: inputs interpolators, the body, the colors' alloc, the exports. Raises
+    CompileError where it refuses."""
     x, p = Xsc(), Program()
     container = ctypes.POINTER(ctypes.c_uint8)()
     size = ctypes.c_size_t()
@@ -115,6 +125,10 @@ def pixel_program(inputs: int, usage: int, body, exports, registers: int, optimi
         for r in range(inputs):
             ok = ok and LIB.xsdk_xsc_program_input(ctypes.byref(x), ctypes.byref(p), r, usage)
         for f in body:
+            if "dimension" in f:
+                ok = ok and bool(LIB.xsdk_xsc_program_tfetch(ctypes.byref(x), ctypes.byref(p),
+                                                             ctypes.byref(fetch_struct(f))))
+                continue
             ok = ok and bool(LIB.xsdk_xsc_program_alu(ctypes.byref(x), ctypes.byref(p), ctypes.byref(alu_struct(f))))
         ok = ok and LIB.xsdk_xsc_program_alloc(ctypes.byref(x), ctypes.byref(p), ALLOC_COLORS)
         for f in exports:

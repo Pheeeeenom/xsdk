@@ -909,6 +909,245 @@ static bool assign_registers(Xsc *x, Ranges *r, int64_t *temps, size_t temp_coun
 	return true;
 }
 
+// Whether the hardware fills a register before the program writes it: an interpolator, the pixel parameters, or the
+// vertex index a vertex shader's fetches read.
+static bool is_input(const Ranges *r, int64_t reg, int64_t never)
+{
+	const bool read_unwritten = r->last_use[reg] != XSC_NONE && r->first_def[reg] == XSC_NONE;
+	const int64_t first_def = r->first_def[reg] == XSC_NONE ? never : r->first_def[reg];
+	return read_unwritten || (r->fetch_read[reg] != XSC_NONE && r->fetch_read[reg] < first_def);
+}
+
+// Each temp a register of its own while it lives, the inputs kept where they are throughout.
+static bool assign_whole(
+	Xsc *x, const XscProgram *p, Ranges *r, int64_t never, int64_t npinned, int64_t **mapping, int64_t *most)
+{
+	int64_t *const temps = xsdk_xsc_alloc(x, (size_t)(r->limit + 1) * sizeof *temps);
+	r->start = filled(x, r->limit, 0);
+	r->end = filled(x, r->limit, 0);
+	if (!temps || !r->start || !r->end)
+		return false;
+	size_t temp_count = 0;
+	for (int64_t reg = 0; reg < r->limit; reg++) {
+		if (r->first_def[reg] == XSC_NONE || is_input(r, reg, never))
+			continue;
+		temps[temp_count++] = reg;
+		r->start[reg] = r->first_def[reg];
+		r->end[reg] = r->last_use[reg];
+	}
+	stretch_over_loops(p, r, temps, temp_count);
+	if (!assign_registers(x, r, temps, temp_count, npinned, mapping))
+		return false;
+	*most = npinned - 1;
+	for (size_t t = 0; t < temp_count; t++)
+		*most = highest(*most, (*mapping)[temps[t]]);
+	return true;
+}
+
+// ---- values packed into components, in programs the optimiser rewrote ----
+
+// A temp's value: each component it holds, live from its first write, or the program's start for an input, to its last
+// read or write; where the allocator puts it, and the next value put in that register.
+typedef struct {
+	int64_t reg;
+	bool input;
+	// It keeps its components' lanes.
+	bool fixed;
+	uint8_t held;
+	int64_t start[4];
+	int64_t end[4];
+	int64_t first;
+	int64_t last;
+	int64_t phys;
+	uint8_t lanes[4];
+	int64_t next;
+} Value;
+
+enum { REG_FIXED = 1, REG_WHOLE = 2 };
+
+// The lanes a value's components may take, its own first.
+static const uint8_t PERMUTATIONS[24][4] = { { 0, 1, 2, 3 }, { 0, 1, 3, 2 }, { 0, 2, 1, 3 }, { 0, 2, 3, 1 },
+	{ 0, 3, 1, 2 }, { 0, 3, 2, 1 }, { 1, 0, 2, 3 }, { 1, 0, 3, 2 }, { 1, 2, 0, 3 }, { 1, 2, 3, 0 }, { 1, 3, 0, 2 },
+	{ 1, 3, 2, 0 }, { 2, 0, 1, 3 }, { 2, 0, 3, 1 }, { 2, 1, 0, 3 }, { 2, 1, 3, 0 }, { 2, 3, 0, 1 }, { 2, 3, 1, 0 },
+	{ 3, 0, 1, 2 }, { 3, 0, 2, 1 }, { 3, 1, 0, 2 }, { 3, 1, 2, 0 }, { 3, 2, 0, 1 }, { 3, 2, 1, 0 } };
+
+// Each component's first write and last read or write, by key, a run of fetches keeping what it reads till the run
+// ends, as live_ranges keeps registers.
+static bool component_ranges(Xsc *x, const XscProgram *p, XscOp *const *ops, size_t count, const size_t *stage_of,
+	int64_t limit, int64_t **written, int64_t **last)
+{
+	*written = filled(x, limit * 4, XSC_NONE);
+	*last = filled(x, limit * 4, XSC_NONE);
+	if (!*written || !*last)
+		return false;
+	size_t run_end = 0;
+	for (size_t idx = count; idx-- > 0;) {
+		const size_t next = idx + 1;
+		const bool runs_on =
+			ops[idx]->is_fetch && next < count && ops[next]->is_fetch && stage_of[next] == stage_of[idx];
+		run_end = runs_on ? run_end : idx;
+		int64_t keys[XSC_MAX_KEYS];
+		const int64_t until = (int64_t)(ops[idx]->is_fetch && p->clauses ? run_end : idx);
+		const size_t reads = xsdk_xsc_read_keys(ops[idx], keys);
+		for (size_t k = 0; k < reads; k++)
+			(*last)[keys[k]] = highest((*last)[keys[k]], until);
+		const size_t writes = xsdk_xsc_write_keys(ops[idx], keys);
+		for (size_t k = 0; k < writes; k++) {
+			(*written)[keys[k]] = (int64_t)idx;
+			(*last)[keys[k]] = highest((*last)[keys[k]], (int64_t)idx);
+		}
+	}
+	return true;
+}
+
+// Which registers keep their lanes and which a fetch writes whole: a fetch's result and source stay as they are, and
+// so does what an op that can't move its lanes writes.
+static uint8_t *register_kinds(Xsc *x, XscOp *const *ops, size_t count, int64_t limit)
+{
+	uint8_t *const kinds = xsdk_xsc_alloc(x, (size_t)limit + 1);
+	for (size_t idx = 0; kinds && idx < count; idx++) {
+		const XscOp *const op = ops[idx];
+		int64_t keys[XSC_MAX_KEYS];
+		if (op->is_fetch) {
+			kinds[op->fetch.src] |= REG_FIXED;
+			if (xsdk_xsc_write_keys(op, keys))
+				kinds[op->fetch.dest] |= REG_FIXED | REG_WHOLE;
+		} else if (xsdk_xsc_lanes_fixed(op)) {
+			kinds[op->alu.vector_dest] |= REG_FIXED;
+		}
+	}
+	return kinds;
+}
+
+// A register's value, false if it holds none: a fetch's from its first write to its last read in all four components,
+// an input's from the start in its own register.
+static bool value_of(
+	const Ranges *r, int64_t never, const int64_t *written, const int64_t *last, uint8_t kind, int64_t reg, Value *v)
+{
+	const bool input = is_input(r, reg, never);
+	*v = (Value){ .reg = reg,
+		.input = input,
+		.fixed = input || (kind & REG_FIXED),
+		.phys = XSC_NONE,
+		.lanes = { 0, 1, 2, 3 },
+		.first = INT64_MAX,
+		.last = -1,
+		.next = XSC_NONE };
+	for (int c = 0; c < 4; c++) {
+		const int64_t key = reg * 4 + c;
+		if (input ? last[key] == XSC_NONE : written[key] == XSC_NONE)
+			continue;
+		v->held |= (uint8_t)(1 << c);
+		v->start[c] = input ? -1 : written[key];
+		v->end[c] = last[key];
+		v->first = v->start[c] < v->first ? v->start[c] : v->first;
+		v->last = highest(v->last, v->end[c]);
+	}
+	if (v->held && (kind & REG_WHOLE)) {
+		v->held = 0xF;
+		for (int c = 0; c < 4; c++) {
+			v->start[c] = v->first;
+			v->end[c] = v->last;
+		}
+	}
+	return v->held != 0;
+}
+
+static bool overlap(const Value *a, int ca, const Value *b, int cb)
+{
+	return a->start[ca] <= b->end[cb] && b->start[cb] <= a->end[ca];
+}
+
+// Whether value v fits register phys beside the values already there, giving the lanes its components take.
+static bool fits(const Value *values, const int64_t *heads, const Value *v, int64_t phys, uint8_t lanes[4])
+{
+	bool taken[4][4] = { { false } };
+	for (int64_t w = heads[phys]; w != XSC_NONE; w = values[w].next) {
+		for (int d = 0; d < 4; d++) {
+			for (int c = 0; (values[w].held >> d & 1) && c < 4; c++)
+				taken[c][values[w].lanes[d]] |= (v->held >> c & 1) && overlap(v, c, &values[w], d);
+		}
+	}
+	for (size_t i = 0; i < (v->fixed ? 1 : 24); i++) {
+		bool free = true;
+		for (int c = 0; c < 4; c++)
+			free = free && !((v->held >> c & 1) && taken[c][PERMUTATIONS[i][c]]);
+		if (free) {
+			memcpy(lanes, PERMUTATIONS[i], 4);
+			return true;
+		}
+	}
+	return false;
+}
+
+static bool value_before(const Value *a, const Value *b)
+{
+	if (a->first != b->first)
+		return a->first < b->first;
+	if (a->last != b->last)
+		return a->last < b->last;
+	return a->reg < b->reg;
+}
+
+// Puts each value, in the order they start, in the lowest register it fits, an input in its own.
+static bool place_values(Xsc *x, Value *values, size_t value_count, int64_t limit)
+{
+	for (size_t i = 1; i < value_count; i++) {
+		const Value moving = values[i];
+		size_t j = i;
+		for (; j > 0 && value_before(&moving, &values[j - 1]); j--)
+			values[j] = values[j - 1];
+		values[j] = moving;
+	}
+	int64_t *const heads = filled(x, limit + (int64_t)value_count, XSC_NONE);
+	if (!heads)
+		return false;
+	for (size_t i = 0; i < value_count; i++) {
+		Value *const v = &values[i];
+		v->phys = v->input ? v->reg : 0;
+		while (!v->input && !fits(values, heads, v, v->phys, v->lanes))
+			v->phys++;
+		v->next = heads[v->phys];
+		heads[v->phys] = (int64_t)i;
+	}
+	return true;
+}
+
+// Packs values whose components don't overlap in time into one register's components, moving a value's components to
+// other lanes where its writers and readers allow, and maps each register to where its value went.
+static bool pack_registers(Xsc *x, const XscProgram *p, XscOp *const *ops, size_t count, const size_t *stage_of,
+	const Ranges *r, int64_t npinned, int64_t **mapping, int64_t *most)
+{
+	const int64_t never = (int64_t)count;
+	int64_t *written, *last;
+	uint8_t *const kinds = register_kinds(x, ops, count, r->limit);
+	Value *const values = xsdk_xsc_alloc(x, (size_t)(r->limit + 1) * sizeof *values);
+	uint8_t (*const lanes)[4] = xsdk_xsc_alloc(x, (size_t)(r->limit + 1) * sizeof *lanes);
+	*mapping = filled(x, r->limit, XSC_NONE);
+	if (!kinds || !values || !lanes || !*mapping ||
+		!component_ranges(x, p, ops, count, stage_of, r->limit, &written, &last))
+		return false;
+	size_t value_count = 0;
+	for (int64_t reg = 0; reg < r->limit; reg++)
+		value_count += value_of(r, never, written, last, kinds[reg], reg, &values[value_count]);
+	if (!place_values(x, values, value_count, r->limit))
+		return false;
+	// Covers every interpolator and the pixel parameters, which arrive read or not, as the count always has.
+	*most = highest(npinned - 1, p->pixel ? highest((int64_t)p->interpolator_count - 1, p->param_gen) : -1);
+	for (int64_t reg = 0; reg < r->limit; reg++)
+		memcpy(lanes[reg], PERMUTATIONS[0], 4);
+	for (size_t i = 0; i < value_count; i++) {
+		if (values[i].input)
+			continue;
+		(*mapping)[values[i].reg] = values[i].phys;
+		memcpy(lanes[values[i].reg], values[i].lanes, 4);
+		*most = highest(*most, values[i].phys);
+	}
+	for (size_t idx = 0; idx < count; idx++)
+		xsdk_xsc_move_lanes(ops[idx], lanes, r->limit);
+	return true;
+}
+
 static bool check_registers(Xsc *x, const XscProgram *p);
 
 static bool allocate_registers(Xsc *x, XscProgram *p)
@@ -922,35 +1161,14 @@ static bool allocate_registers(Xsc *x, XscProgram *p)
 	const int64_t never = (int64_t)count;
 	int64_t npinned = 0;
 	for (int64_t reg = 0; reg < r.limit; reg++) {
-		const bool read_unwritten = r.last_use[reg] != XSC_NONE && r.first_def[reg] == XSC_NONE;
-		const int64_t first_def = r.first_def[reg] == XSC_NONE ? never : r.first_def[reg];
-		const bool fetched_first = r.fetch_read[reg] != XSC_NONE && r.fetch_read[reg] < first_def;
-		if (read_unwritten || fetched_first)
+		if (is_input(&r, reg, never))
 			npinned = reg + 1;
 	}
-	int64_t *const temps = xsdk_xsc_alloc(x, (size_t)(r.limit + 1) * sizeof *temps);
-	r.start = filled(x, r.limit, 0);
-	r.end = filled(x, r.limit, 0);
-	if (!temps || !r.start || !r.end)
-		return false;
-	size_t temp_count = 0;
-	for (int64_t reg = 0; reg < r.limit; reg++) {
-		const bool read_unwritten = r.last_use[reg] != XSC_NONE && r.first_def[reg] == XSC_NONE;
-		const int64_t first_def = r.first_def[reg] == XSC_NONE ? never : r.first_def[reg];
-		const bool fetched_first = r.fetch_read[reg] != XSC_NONE && r.fetch_read[reg] < first_def;
-		if (r.first_def[reg] == XSC_NONE || read_unwritten || fetched_first)
-			continue;
-		temps[temp_count++] = reg;
-		r.start[reg] = r.first_def[reg];
-		r.end[reg] = r.last_use[reg];
-	}
-	stretch_over_loops(p, &r, temps, temp_count);
 	int64_t *mapping;
-	if (!assign_registers(x, &r, temps, temp_count, npinned, &mapping))
+	int64_t most;
+	if (p->optimized ? !pack_registers(x, p, ops, count, stage_of, &r, npinned, &mapping, &most)
+					 : !assign_whole(x, p, &r, never, npinned, &mapping, &most))
 		return false;
-	int64_t most = npinned - 1;
-	for (size_t t = 0; t < temp_count; t++)
-		most = highest(most, mapping[temps[t]]);
 	// Past the budget, refused as such before an instruction is encoded with a register it can't name.
 	if (most + 1 > p->registers || most + 1 > ENCODABLE_REGS) {
 		p->max_reg = most;
@@ -992,6 +1210,7 @@ static bool optimize(Xsc *x, XscProgram *p)
 	bool ran;
 	if (!xsdk_xsc_optimize(x, p, &ran))
 		return false;
+	p->optimized = ran;
 	for (size_t si = 0; ran && si < p->stage_count; si++) {
 		for (size_t i = 0; i < p->stages[si].count; i++) {
 			XscOp *const op = p->stages[si].ops[i];

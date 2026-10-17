@@ -737,6 +737,8 @@ typedef struct {
 	// The colours a pixel shader exports, bit n for oCn.
 	uint32_t color_outputs;
 	bool exports_point_size;
+	// The optimiser rewrote it, so the allocator packs its values into components.
+	bool optimized;
 } XscProgram;
 
 bool xsdk_xsc_program_init(Xsc *x, XscProgram *p, bool pixel, uint32_t registers);
@@ -758,5 +760,17 @@ bool xsdk_xsc_program_finish(Xsc *x, XscProgram *p, const XscConstant *constants
 bool xsdk_xsc_modifies_predicate(const XscOp *op);
 // Rewrites the program's instructions; false through ran if it leaves them alone (xasm/optimize.py).
 bool xsdk_xsc_optimize(Xsc *x, XscProgram *p, bool *ran);
+
+enum {
+	XSC_MAX_KEYS = 12,
+};
+
+// The temps' components an op reads and writes, as register * 4 + component keys; returns the count.
+size_t xsdk_xsc_read_keys(const XscOp *op, int64_t keys[XSC_MAX_KEYS]);
+size_t xsdk_xsc_write_keys(const XscOp *op, int64_t keys[XSC_MAX_KEYS]);
+// Whether an ALU op's vector result into a temp must stay in its lanes.
+bool xsdk_xsc_lanes_fixed(const XscOp *op);
+// Moves component c of each temp r below count that an ALU op names to lane lanes[r][c].
+void xsdk_xsc_move_lanes(XscOp *op, const uint8_t (*lanes)[4], int64_t count);
 
 #endif

@@ -11,7 +11,7 @@ enum {
 	OUTSIDE = -1,
 	// At most this many different constants in an instruction (optimize.py MAX_CONSTANTS).
 	MAX_CONSTANTS = 2,
-	MAX_READ_KEYS = 12,
+	MAX_READ_KEYS = XSC_MAX_KEYS,
 	MAX_DEF_KEYS = 8,
 };
 
@@ -1344,4 +1344,68 @@ bool xsdk_xsc_optimize(Xsc *x, XscProgram *p, bool *ran)
 			return false;
 	}
 	return remove_dead(&o, &changed);
+}
+
+// ---- what the allocator needs to pack values into components (xsc_program.c) ----
+
+size_t xsdk_xsc_read_keys(const XscOp *op, int64_t keys[XSC_MAX_KEYS])
+{
+	KeySet set;
+	temp_reads(op, &set);
+	memcpy(keys, set.keys, set.count * sizeof *keys);
+	return set.count;
+}
+
+size_t xsdk_xsc_write_keys(const XscOp *op, int64_t keys[XSC_MAX_KEYS])
+{
+	KeySet set;
+	defs(op, &set);
+	memcpy(keys, set.keys, set.count * sizeof *keys);
+	return set.count;
+}
+
+bool xsdk_xsc_lanes_fixed(const XscOp *op)
+{
+	if (!is_alu(op) || op->alu.is_export || !op->alu.vector_write_mask || replicates(op->alu.vector_opcode))
+		return false;
+	// An elementwise op's operands move with its lanes, but a scalar op beside it reads operand 3 in its own.
+	int table[3];
+	return !elementwise(op->alu.vector_opcode) ||
+		(scalar_active(op) && vector_reads_table(op->alu.vector_opcode, table) == 3);
+}
+
+static int64_t moved_mask(int64_t mask, const uint8_t lanes[4])
+{
+	int64_t moved = 0;
+	for (int c = 0; c < 4; c++) {
+		if (mask >> c & 1)
+			moved |= (int64_t)1 << lanes[c];
+	}
+	return moved;
+}
+
+void xsdk_xsc_move_lanes(XscOp *op, const uint8_t (*lanes)[4], int64_t count)
+{
+	if (!is_alu(op))
+		return;
+	XscAlu *const f = &op->alu;
+	static const uint8_t same[4] = { 0, 1, 2, 3 };
+	const bool vector_temp = !f->is_export && f->vector_write_mask && f->vector_dest < count;
+	const uint8_t *const to = vector_temp ? lanes[f->vector_dest] : same;
+	int table[3];
+	const int operands = elementwise(f->vector_opcode) ? vector_reads_table(f->vector_opcode, table) : 0;
+	for (int n = 1; n <= 3; n++) {
+		const Source s = source(op, n);
+		Source moved = s;
+		// An elementwise result's lane takes its operands' same lane.
+		for (int lane = 0; n <= operands && lane < 4; lane++)
+			moved.components[to[lane]] = s.components[lane];
+		for (int lane = 0; moved.temp && moved.reg < count && lane < 4; lane++)
+			moved.components[lane] = lanes[moved.reg][moved.components[lane]];
+		set_source(op, n, &moved);
+	}
+	if (vector_temp)
+		f->vector_write_mask = moved_mask(f->vector_write_mask, to);
+	if (!f->is_export && f->scalar_write_mask && f->scalar_dest < count)
+		f->scalar_write_mask = moved_mask(f->scalar_write_mask, lanes[f->scalar_dest]);
 }

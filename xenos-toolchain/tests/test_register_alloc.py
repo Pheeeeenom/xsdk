@@ -10,6 +10,13 @@ lighting, fog and indirect texturing (xsdk:src/xsc_program.c, xasm/program.py fo
   simulation samples the image at the offset coordinates.
 - A pixel shader whose hardware loop reads a value from before the loop: the allocator keeps that value's register
   through the loop, as each pass reads it again.
+- In a program the optimiser rewrote, the allocator packs values whose components don't overlap in time into one
+  register's components (milestone 45, step 3). vk_many_live.vert's forty dot products take 16 registers, not 45, and
+  give the same sums. Hand-built pixel shaders, each run against the program built without the optimiser on random
+  inputs (test_optimize.compare), take the registers the packing should give them: a value takes an interpolator's
+  register once nothing reads it; a vector moves to the lanes a live scalar leaves, its operands' lanes moved with it;
+  a dst, whose lanes mean something, and a mad beside a scalar op that reads its third operand keep their lanes; and a
+  fetch's destination is the fetch's alone till its last read.
 """
 import struct
 import sys
@@ -26,7 +33,9 @@ import xdis.xenos_ucode as xu  # noqa: E402
 import xsc.spirv as spirv  # noqa: E402
 from xasm.program import PixelProgram, XSDK_REGISTERS  # noqa: E402
 from xsc.lower import _templates, lower_ex  # noqa: E402
+import test_optimize as opt  # noqa: E402
 from test_xsc_lower import TD, oracle_hlsl  # noqa: E402
+from xsc_internals import pixel_program  # noqa: E402
 
 V = xu.AluVectorOpcode
 VERTEX = 7.0                         # the vertex index in r0
@@ -185,8 +194,71 @@ def check_loop():
     return []
 
 
+def registers(blob):
+    c = container.Container(blob)
+    return (c.program_control >> 8 if c.shader_type == "pixel" else c.program_control) % 64 + 1
+
+
+def check_packed_many_live():
+    """The forty dot products, optimised, packed four to a register."""
+    blob, manifest = lower_ex(spirv.Module.parse((TD / "vk_many_live.vert.spv").read_bytes()), XSDK_REGISTERS,
+                              optimize=True)
+    d = [sum(w[k] * POSITION[k] for k in range(4)) for w in WEIGHTS]
+    want = [sum(reversed(d)) * SCALE[0], sum(x if i % 2 == 0 else -x for i, x in enumerate(d)), d[0], d[39] * SCALE[1]]
+    got, position = many_live_sums(blob, manifest)
+    if got is None or not close(got, want) or not close(position or [], POSITION) or registers(blob) != 16:
+        return [f"vk_many_live.vert packed: v_sum {got}, position {position}, {registers(blob)} registers; want "
+                f"{want}, {POSITION}, 16"]
+    print("  PASS vk_many_live.vert packed: 16 registers, the reference's sums")
+    return []
+
+
+r, c = opt.r, opt.c
+# Each case: its interpolators, body and exports, and the registers the packing gives it; built without the optimiser,
+# the old allocator gives it the first count.
+PACKING = [
+    ("a value takes an interpolator's register once nothing reads it", 2,
+     [opt.alu(V.kDp4, 2, 0x1, r(0), c(0)), opt.alu(V.kDp4, 3, 0x1, r(1), c(1)),
+      opt.alu(V.kAdd, 4, 0xF, r(2, "xxxx"), r(3, "xxxx")), opt.alu(V.kMul, 5, 0xF, r(4), c(2))],
+     [opt.export(r(5))], 5, 3),
+    ("a vector takes the lanes a live scalar leaves, its operands' lanes moved with it", 1,
+     [opt.alu(V.kDp4, 1, 0x1, r(0), c(0)), opt.alu(V.kAdd, 2, 0x7, r(0, "wzyx"), c(1, "yzwx")),
+      opt.alu(V.kMul, 3, 0x7, r(2), r(1, "xxxx"))],
+     [opt.export(r(3))], 4, 2),
+    ("a dst keeps its lanes beside a scalar in one of them", 1,
+     [opt.alu(V.kAdd, 1, 0x2, r(0, "yyyy"), c(0)), opt.alu(V.kDst, 2, 0x6, r(0), c(1)),
+      opt.alu(V.kMul, 3, 0xF, r(2, "yzyz"), r(1, "yyyy")), opt.alu(V.kAdd, 4, 0xF, r(3), r(0))],
+     [opt.export(r(4))], 4, 4),
+    ("a mad beside a scalar op reading its third operand keeps its lanes", 2,
+     [opt.alu(V.kAdd, 2, 0x6, r(0), c(0)),
+      opt.alu(V.kMad, 3, 0x2, r(0), c(1), r(1), sop=opt.S.kAdds, sdest=4, smask=0x1),
+      opt.alu(V.kMad, 5, 0xF, r(3, "yyyy"), r(4, "xxxx"), r(2, "yzyz")), opt.alu(V.kAdd, 6, 0xF, r(5), r(0)),
+      opt.alu(V.kAdd, 7, 0xF, r(6), r(1))],
+     [opt.export(r(7))], 6, 5),
+    ("a fetch's destination isn't shared while its result lives", 2,
+     [dict(opt.T["tf"], dest=2, src=0), opt.alu(V.kDp4, 3, 0x1, r(1), c(0)),
+      opt.alu(V.kMul, 4, 0xF, r(2, "xxxx"), r(3, "xxxx")), opt.alu(V.kAdd, 5, 0xF, r(4), r(0))],
+     [opt.export(r(5))], 5, 4),
+]
+
+
+def check_packing():
+    failures = []
+    for name, inputs, body, exports, whole, packed in PACKING:
+        plain = pixel_program(inputs, ce.USAGE_TEXCOORD, body, exports, XSDK_REGISTERS.pixel, False)
+        optimized = pixel_program(inputs, ce.USAGE_TEXCOORD, body, exports, XSDK_REGISTERS.pixel, True)
+        problem = opt.compare(plain, optimized)
+        got = (registers(plain), registers(optimized))
+        if problem or got != (whole, packed):
+            failures.append(f"{name}: {problem or 'same exports'}, registers {got[0]} -> {got[1]}; want {whole} -> "
+                            f"{packed}")
+            continue
+        print(f"  PASS {name}: {whole} -> {packed} registers, the same exports")
+    return failures
+
+
 def main():
-    failures = check_many_live() + check_dependent_read() + check_loop()
+    failures = check_many_live() + check_dependent_read() + check_loop() + check_packed_many_live() + check_packing()
     for failure in failures:
         print(f"  FAIL {failure}")
     if failures:
