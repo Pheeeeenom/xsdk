@@ -75,6 +75,8 @@ enum {
 	SPV_TRANSPOSE = 84,
 	SPV_IMAGE_SAMPLE_IMPLICIT_LOD = 87,
 	SPV_IMAGE_SAMPLE_EXPLICIT_LOD = 88,
+	SPV_IMAGE_SAMPLE_DREF_IMPLICIT_LOD = 89,
+	SPV_IMAGE_SAMPLE_DREF_EXPLICIT_LOD = 90,
 	SPV_IMAGE_SAMPLE_PROJ_IMPLICIT_LOD = 91,
 	SPV_IMAGE_SAMPLE_PROJ_EXPLICIT_LOD = 92,
 	SPV_CONVERT_F_TO_S = 110,
@@ -284,6 +286,8 @@ typedef struct {
 	uint32_t storage_class;
 	// -1 where Python's is None.
 	int64_t dim;
+	// An image of depth, which a sample compares against (SPIR-V's Depth 1).
+	bool depth;
 } XscType;
 
 enum {
@@ -317,8 +321,8 @@ typedef enum {
 	XSC_ROLE_ARRAY,
 } XscRoleKind;
 
-// A sampler's a and b are its slot and dim; a constant's its register and count; an array's its register, count and
-// registers an element; a block's its index.
+// A sampler's a and b are its slot and dim, and c the register its comparison's weights take, or XSC_NONE; a constant's
+// its register and count; an array's its register, count and registers an element; a block's its index.
 typedef struct {
 	XscRoleKind kind;
 	int64_t a;
@@ -375,6 +379,9 @@ typedef struct {
 	size_t sampler_dim_count;
 	XscRole *roles;
 	uint32_t role_limit;
+	// The samplers of depth images, which compare: (var, the register of their compare op's weights, slot).
+	XscVarUse *comparisons;
+	size_t comparison_count;
 } XscInterface;
 
 XscType *xsdk_xsc_resolve_types(Xsc *x, const XscModule *m);
@@ -479,6 +486,7 @@ enum {
 	XSC_FETCH_SET_GRADIENTS_VERT = 26,
 	XSC_FILTER_USE_FETCH_CONST = 3,
 	XSC_DIMENSION_2D = 1,
+	XSC_DIMENSION_3D = 2,
 	XSC_DIMENSION_CUBE = 3,
 	XSC_EXPORT_POSITION = 62,
 	XSC_CF_EXEC = 1,

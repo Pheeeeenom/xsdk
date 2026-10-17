@@ -222,6 +222,7 @@ static bool gather_value(Fragment *f, uint32_t ssa)
 	if (op == SPV_DPDX || op == SPV_DPDY || op == SPV_FWIDTH)
 		return gather_derivative(f, ssa, ins);
 	if (op == SPV_IMAGE_SAMPLE_IMPLICIT_LOD || op == SPV_IMAGE_SAMPLE_EXPLICIT_LOD ||
+		op == SPV_IMAGE_SAMPLE_DREF_IMPLICIT_LOD || op == SPV_IMAGE_SAMPLE_DREF_EXPLICIT_LOD ||
 		op == SPV_IMAGE_SAMPLE_PROJ_IMPLICIT_LOD || op == SPV_IMAGE_SAMPLE_PROJ_EXPLICIT_LOD)
 		return gather_sample(f, ssa, ins);
 	const uint32_t base = xsdk_xsc_operand(ins, 0);

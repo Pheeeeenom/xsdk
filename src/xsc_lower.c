@@ -1382,6 +1382,12 @@ static XscOperand regs_by_id(XscLower *l, const int64_t *regs, uint32_t ssa, con
 	return xsc_reg(regs[ssa]);
 }
 
+// A depth comparison's sample, a float in every component (xsc_lower_fragment.c, compare_depth).
+static bool is_comparison(uint32_t op)
+{
+	return op == SPV_IMAGE_SAMPLE_DREF_IMPLICIT_LOD || op == SPV_IMAGE_SAMPLE_DREF_EXPLICIT_LOD;
+}
+
 static XscOperand operand_of(XscLower *l, uint32_t ssa, const XscInstr *ins)
 {
 	const uint32_t op = ins->opcode;
@@ -1411,7 +1417,7 @@ static XscOperand operand_of(XscLower *l, uint32_t ssa, const XscInstr *ins)
 	}
 	if (op == SPV_LOAD)
 		return load_operand(l, ssa, ins);
-	if (op == SPV_IMAGE_SAMPLE_IMPLICIT_LOD || op == SPV_IMAGE_SAMPLE_EXPLICIT_LOD ||
+	if (op == SPV_IMAGE_SAMPLE_IMPLICIT_LOD || op == SPV_IMAGE_SAMPLE_EXPLICIT_LOD || is_comparison(op) ||
 		op == SPV_IMAGE_SAMPLE_PROJ_IMPLICIT_LOD || op == SPV_IMAGE_SAMPLE_PROJ_EXPLICIT_LOD)
 		return regs_by_id(l, l->sample_reg, ssa, "ImageSample was not gathered before lowering");
 	if (op == SPV_COMPOSITE_INSERT)
@@ -1508,7 +1514,7 @@ static XscOrigin scalar_origin_of(XscLower *l, uint32_t ssa)
 	}
 	const bool broadcast = op == SPV_DOT || op == SPV_CONSTANT || op == SPV_CONSTANT_TRUE || op == SPV_CONSTANT_FALSE ||
 		op == SPV_F_ADD || op == SPV_F_SUB || op == SPV_F_MUL || op == SPV_F_DIV || op == SPV_F_MOD ||
-		op == SPV_EXT_INST || boolean_op(op);
+		op == SPV_EXT_INST || boolean_op(op) || is_comparison(op);
 	if (broadcast)
 		return origin(xsdk_xsc_lower_operand(l, ssa), XSC_BROADCAST);
 	xsdk_xsc_lower_refuse(l, "cannot resolve scalar %%%u", (unsigned)ssa);

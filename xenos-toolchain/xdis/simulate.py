@@ -7,7 +7,7 @@ the caller gives says, from aL 0 by 1, a predicated LOOP_END breaking when p0 is
 constants each loop's body runs once. The ALU's vector and scalar ops are as Xenia's ucode.h describes them
 (xenia:src/xenia/gpu/ucode.h, AluScalarOpcode and AluVectorOpcode), with a temp's absolute-value bit, a constant's,
 negation, swizzles, write masks, clamps, a0- and aL-relative constants (MOVA's maxas and maxasf), the predicate and
-kills; every value written is rounded to a single, as the GPU keeps it. Exports land in their export registers.
+kills, and the cube op as Xenia runs it; every value written is rounded to a single, as the GPU keeps it. Exports land in their export registers.
 Vertex and texture fetches come from functions the caller gives; setTexLOD and the gradients' setters keep the state
 the texture fetches after them read.
 """
@@ -60,6 +60,17 @@ def _trunc(x):
     return float(math.trunc(x)) if math.isfinite(x) else x
 
 
+def _cube(s1):
+    """The cube op's T, S, twice the major axis and the face, from src1 read .z_xy, as Xenia runs it
+    (xenia:src/xenia/gpu/spirv_shader_translator_alu.cc:521-686)."""
+    x, y, z = s1[2], s1[3], s1[0]
+    if abs(z) >= abs(x) and abs(z) >= abs(y):
+        return [-y, -x if z < 0.0 else x, 2.0 * z, 5.0 if z < 0.0 else 4.0]
+    if abs(y) >= abs(x):
+        return [-z if y < 0.0 else z, x, 2.0 * y, 3.0 if y < 0.0 else 2.0]
+    return [-y, z if x < 0.0 else -z, 2.0 * x, 1.0 if x < 0.0 else 0.0]
+
+
 def _vector(op, s1, s2, s3):
     """A vector op's result, and whether it kills."""
     vo = op.vector_opcode()
@@ -102,6 +113,8 @@ def _vector(op, s1, s2, s3):
         return [s1[0] * s2[0] + s1[1] * s2[1] + s3[0]] * 4, False
     if vo == V.kMax4:
         return [max(s1)] * 4, False
+    if vo == V.kCube:
+        return _cube(s1), False
     if vo in (V.kKillEq, V.kKillGt, V.kKillGe, V.kKillNe):
         test = {V.kKillEq: lambda a, b: a == b, V.kKillGt: lambda a, b: a > b,
                 V.kKillGe: lambda a, b: a >= b, V.kKillNe: lambda a, b: a != b}[vo]

@@ -82,6 +82,8 @@ class ShaderInterface:
     constant_end: int = 0
     # fetch_slot -> SPIR-V Dim
     sampler_dims: dict = field(default_factory=dict)
+    # a depth image's sampler: (Var, the register of its compare op's weights, fetch_slot)
+    comparisons: list = field(default_factory=list)
 
 
 def resolve_interface(m: spirv.Module) -> ShaderInterface:
@@ -113,7 +115,8 @@ def resolve_interface(m: spirv.Module) -> ShaderInterface:
         blocks=[Block(kind, var(v), var(v).descriptor_set, var(v).binding, struct, reg, regs)
                 for kind, v, struct, reg, regs in r["blocks"]],
         constant_end=r["constant_end"],
-        sampler_dims=r["sampler_dims"])
+        sampler_dims=r["sampler_dims"],
+        comparisons=[(var(v), a, b) for v, a, b in r["comparisons"]])
 
 
 def main():

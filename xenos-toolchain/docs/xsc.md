@@ -19,7 +19,8 @@ Get the SPIR-V with: `glslang -G --target-env opengl shader.frag -o out.spv`,
 or Vulkan's with `glslang -V shader.frag -o out.spv`: vertex inputs, varyings
 and outputs lower the same either way (`tests/test_vulkan_spirv.py`).
 Vulkan's uniform blocks, push constants and samplers land as "Interface
-conventions" says; `resolve_interface(module).blocks` and `.samplers` give where.
+conventions" says; `resolve_interface(module).blocks`, `.samplers` and
+`.comparisons` give where.
 
 Instruction templates (the field skeletons the lowering fills in) come from
 Xenia's definitions, `xsc/templates.py`. Before xost joined xsdk,
@@ -37,7 +38,9 @@ came from; that test and its test vectors stay in xost's archived repo (github.c
 | vertex `+` `-` `*`, `vec * scalar`, `dot()`, swizzled temps | same ALU lowering subset as fragment, feeding position or interpolator exports |
 | passthrough varyings | interpolator exports (max o*N*) |
 | `texture()` (ImageSampleImplicitLod) | `tfetch2D` |
-| samplerCube `texture()` | cube swizzles + rcp/bias + `tfetchCube .yxw` |
+| samplerCube `texture()` | cube swizzles + rcp/bias + `tfetchCube .yxw`; each face and its s and t as Vulkan picks them, on the simulator with the cube op as Xenia runs it (`tests/test_cube_and_3d.py`) |
+| sampler3D `texture()` | `tfetch3D` at the coordinate's `.xyz` |
+| sampler2DShadow `texture()` (OpImageSampleDref) | `tfetch2D`, then the reference clamped to 0-1 (`max_sat`), `sgt`/`seq`/`sgt` for the reference below, equal to and above the depth, and `dp3` with the comparison's register (see Interface conventions; `tests/test_shadow_compare.py`); samplerCubeShadow refused, and textureProj's comparison not lowered |
 | `*` `+` `-` (FMul/FAdd/FSub) | mul / add / add-neg |
 | `/` (FDiv) | `a · rcp(b)`; scalar-pipe `rcp` per component (scalar divisor: once + broadcast) |
 | `mod()` (OpFMod) | `a − b·floor(a/b)` |
@@ -132,6 +135,16 @@ came from; that test and its test vectors stay in xost's archived repo (github.c
 - Samplers (UniformConstant) → with a DescriptorSet decoration (Vulkan), fetch
   constants from 0 in (DescriptorSet, Binding) order; without (OpenGL), fetch
   constant = Binding.
+- A sampler2DShadow's comparison → a register past the blocks, before the
+  literals, named `_compare<slot>`, its resource `comparison` (the C's
+  `XSDK_XSC_COMPARISON`). A Vulkan shader takes its compare op from the
+  sampler bound at run time, so the runtime writes the op's weights there:
+  1 or 0 for the reference below the depth, equal to it and above it, then 0,
+  VkCompareOp's bits 0 to 2. The comparison runs in the ALU after the fetch,
+  which works whatever the hardware does: whether Xenos compares in the fetch
+  hasn't been checked on the console (vulkan4xenon:docs/ROADMAP.md, milestone
+  23). It compares the filtered depth, so a linear filter blends depths, not
+  results.
 - An ALU instruction reads one constant register; a second goes through a temp.
 
 ## Literal constant pool (the host-upload contract)

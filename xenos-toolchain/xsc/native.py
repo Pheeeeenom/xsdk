@@ -12,7 +12,7 @@ LIBRARY = Path(__file__).resolve().parents[2] / "build" / "host" / "libxsc.so"
 OK, REFUSED, REGISTERS, BAD_VALUE, MALFORMED, OUT_OF_MEMORY = range(6)
 STATUS_NAMES = ("ok", "refused", "registers", "bad value", "malformed", "out of memory")
 LITERAL, ARRAY, LOOP, BLOCK_LOOP = range(4)
-RESOURCE_KINDS = ("push", "uniform", "sampler")
+RESOURCE_KINDS = ("push", "uniform", "sampler", "comparison")
 MESSAGE_BYTES = 512
 
 
@@ -77,7 +77,8 @@ class _Interface(ctypes.Structure):
                 ("blocks", ctypes.POINTER(_Block)), ("block_count", ctypes.c_size_t),
                 ("constant_end", ctypes.c_uint32),
                 ("sampler_dims", ctypes.POINTER(ctypes.c_int64)), ("sampler_dim_count", ctypes.c_size_t),
-                ("roles", ctypes.c_void_p), ("role_limit", ctypes.c_uint32)]
+                ("roles", ctypes.c_void_p), ("role_limit", ctypes.c_uint32),
+                ("comparisons", ctypes.POINTER(_VarUse)), ("comparison_count", ctypes.c_size_t)]
 
 
 # Room for xsc_private.h's XscModule, which only the C reads.
@@ -167,7 +168,8 @@ def resolve_spirv(spirv: bytes):
                     for b in (si.blocks[i] for i in range(si.block_count))],
             constant_end=si.constant_end,
             sampler_dims={si.sampler_dims[2 * i]: _optional(si.sampler_dims[2 * i + 1])
-                          for i in range(si.sampler_dim_count)})
+                          for i in range(si.sampler_dim_count)},
+            comparisons=uses(si.comparisons, si.comparison_count, False))
     finally:
         library.xsdk_xsc_release(ctypes.byref(x))
 
@@ -187,7 +189,7 @@ def compile_spirv(spirv: bytes, pixel_registers: int, vertex_registers: int, opt
     """(container, manifest, resources) as lower.py's lower_ex gives the first two and build_shaders.py the last:
     the manifest [(register, (f0, f1, f2, f3))], with ("array", reg, regs, name) and ("loop", id, name) for a
     hardware loop a bare uniform counts, and ("block_loop", id, kind, set, binding, offset_bytes) for one an int in a
-    block counts; the resources [(kind, set, binding, register, registers)], blocks then samplers."""
+    block counts; the resources [(kind, set, binding, register, registers)], blocks, samplers, then comparisons."""
     library = _load()
     words = (ctypes.c_uint32 * (len(spirv) // 4)).from_buffer_copy(spirv[:len(spirv) // 4 * 4])
     options = Options(pixel_registers, vertex_registers, optimize, group_fetches)

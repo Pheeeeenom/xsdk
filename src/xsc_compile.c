@@ -72,10 +72,11 @@ static uint32_t or_zero(int64_t value)
 	return value == XSC_NONE ? 0 : (uint32_t)value;
 }
 
-// Where each block's registers and each sampler's fetch constant landed: blocks first, then samplers.
+// Where each block's registers, each sampler's fetch constant and each comparison's register landed: blocks first, then
+// samplers, then comparisons.
 static XsdkXscResource *resources(const XscInterface *si, size_t *count)
 {
-	*count = si->block_count + si->sampler_count;
+	*count = si->block_count + si->sampler_count + si->comparison_count;
 	XsdkXscResource *const out = calloc(*count ? *count : 1, sizeof *out);
 	if (!out)
 		return NULL;
@@ -88,6 +89,11 @@ static XsdkXscResource *resources(const XscInterface *si, size_t *count)
 		const XscVarUse *const s = &si->samplers[i];
 		out[si->block_count + i] =
 			(XsdkXscResource){ XSDK_XSC_SAMPLER, or_zero(s->var->descriptor_set), or_zero(s->var->binding), s->a, 1 };
+	}
+	for (size_t i = 0; i < si->comparison_count; i++) {
+		const XscVarUse *const c = &si->comparisons[i];
+		out[si->block_count + si->sampler_count + i] = (XsdkXscResource){ XSDK_XSC_COMPARISON,
+			or_zero(c->var->descriptor_set), or_zero(c->var->binding), c->a, 1 };
 	}
 	return out;
 }

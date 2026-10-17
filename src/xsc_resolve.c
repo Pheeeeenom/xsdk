@@ -70,6 +70,7 @@ XscType *xsdk_xsc_resolve_types(Xsc *x, const XscModule *m)
 			t.kind = XSC_TYPE_IMAGE;
 			t.comp = xsdk_xsc_operand(ins, 0);
 			t.dim = xsdk_xsc_operand(ins, 1);
+			t.depth = xsdk_xsc_operand(ins, 2) == 1;
 			break;
 		case SPV_TYPE_SAMPLER:
 			t.kind = XSC_TYPE_SAMPLER;
@@ -231,6 +232,7 @@ typedef struct {
 	size_t sampler_dims;
 	size_t pending;
 	size_t vulkan_samplers;
+	size_t comparisons;
 } ListCapacities;
 
 typedef struct {
@@ -404,10 +406,16 @@ static bool resolve_output(
 	return set_role(x, si, v->vid, (XscRole){ XSC_ROLE_COLOR, loc, 0, 0 });
 }
 
-static int64_t image_dim(const XscModule *m, const XscType *types, const XscType *st)
+static const XscType *image_of(const XscModule *m, const XscType *types, const XscType *st)
 {
 	const XscType *const img = st->kind == XSC_TYPE_SAMPLED_IMAGE ? xsdk_xsc_type(m, types, st->comp) : st;
-	return img && img->kind == XSC_TYPE_IMAGE ? img->dim : XSC_NONE;
+	return img && img->kind == XSC_TYPE_IMAGE ? img : NULL;
+}
+
+static int64_t image_dim(const XscModule *m, const XscType *types, const XscType *st)
+{
+	const XscType *const img = image_of(m, types, st);
+	return img ? img->dim : XSC_NONE;
 }
 
 static bool resolve_uniform_constant(Xsc *x, const XscModule *m, const XscType *types, XscInterface *si,
@@ -431,7 +439,7 @@ static bool resolve_uniform_constant(Xsc *x, const XscModule *m, const XscType *
 			return false;
 		if (!add_sampler_dim(x, si, &capacity->sampler_dims, slot, dim))
 			return false;
-		return set_role(x, si, v->vid, (XscRole){ XSC_ROLE_SAMPLER, slot, dim, 0 });
+		return set_role(x, si, v->vid, (XscRole){ XSC_ROLE_SAMPLER, slot, dim, XSC_NONE });
 	}
 	if (st->kind != XSC_TYPE_MATRIX && st->kind != XSC_TYPE_VECTOR && st->kind != XSC_TYPE_FLOAT &&
 		st->kind != XSC_TYPE_ARRAY)
@@ -505,8 +513,32 @@ static bool add_vulkan_samplers(Xsc *x, const XscModule *m, const XscType *types
 			return false;
 		if (!add_sampler_dim(x, si, &capacity->sampler_dims, (int64_t)slot, dim))
 			return false;
-		if (!set_role(x, si, v->vid, (XscRole){ XSC_ROLE_SAMPLER, (int64_t)slot, dim, 0 }))
+		if (!set_role(x, si, v->vid, (XscRole){ XSC_ROLE_SAMPLER, (int64_t)slot, dim, XSC_NONE }))
 			return false;
+	}
+	return true;
+}
+
+// A register past the blocks for each sampler of a depth image, holding its compare op's weights, which the runtime
+// writes from the sampler it binds: the comparison runs after the fetch.
+static bool assign_comparisons(
+	Xsc *x, const XscModule *m, const XscType *types, XscInterface *si, ListCapacities *capacity)
+{
+	for (size_t i = 0; i < si->sampler_count; i++) {
+		const XscVarUse *const use = &si->samplers[i];
+		const XscType *const st = xsdk_xsc_type(m, types, (uint64_t)use->var->pointee);
+		const XscType *const img = st ? image_of(m, types, st) : NULL;
+		if (!img || !img->depth)
+			continue;
+		const uint32_t reg = si->constant_end++;
+		char text[NAME_BYTES];
+		const int length = snprintf(text, sizeof text, "_compare%u", (unsigned)use->a);
+		const char *const name = xsdk_xsc_copy_text(x, text, (size_t)length);
+		if (!name || !add_constant(x, si, &capacity->constants, (XscConstantSlot){ name, reg, 1, -1 }) ||
+			!add_use(x, &si->comparisons, &si->comparison_count, &capacity->comparisons,
+				(XscVarUse){ use->var, reg, use->a }))
+			return false;
+		si->roles[use->var->vid].c = reg;
 	}
 	return true;
 }
@@ -558,7 +590,8 @@ bool xsdk_xsc_resolve_interface(Xsc *x, const XscModule *m, XscInterface *si)
 	if (!assign_blocks(x, m, types, si, pending, pending_count, next_const, &capacity, &end))
 		return false;
 	si->constant_end = (uint32_t)end;
-	if (!add_vulkan_samplers(x, m, types, si, vulkan_samplers, vulkan_count, &capacity))
+	if (!add_vulkan_samplers(x, m, types, si, vulkan_samplers, vulkan_count, &capacity) ||
+		!assign_comparisons(x, m, types, si, &capacity))
 		return false;
 	sort_uses(si->vfetch, si->vfetch_count, true);
 	sort_uses(si->interp_in, si->interp_in_count, false);
