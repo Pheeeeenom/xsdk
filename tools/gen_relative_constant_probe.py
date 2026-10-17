@@ -7,6 +7,10 @@ cases replay Dusklight's 93d36ce55e3f9bad.vert as xost compiled it before the mi
 (6e13c75), from its maxasf through its c[152+a0] read. The generator stops unless xost's simulator
 (xenos-toolchain/xdis/simulate.py) runs each case to a whole constant in every cell; that constant is the one the
 probe expects.
+
+Then the stress mode's cases, each read at a0 in a shape of its own and drawn over a grid of cells with an a0 each,
+while a pixel shader that adds BUSY_INSTRUCTIONS times keeps the pixel side busy; the generator gives each case's row k
+and stops unless the simulator reads c[k+a0] at a few a0, and the busy shader writes its interpolator unchanged.
 """
 import struct
 import sys
@@ -54,6 +58,15 @@ ALLOC_INTERPOLATORS = "alloc interpolators"
 WWWW = 0x1B
 SCALAR_XX = 0x6C
 SCALAR_X = 0x40
+# xost's throwaway before vk_dynamic_interpolator.vert's c[4+a0] read, as b6b9004 compiles it (tests/xsc_shaders.h,
+# xsc_container_8).
+XOST_THROWAWAY_ROW = 4
+XOST_THROWAWAY = (0xC8000000, 0xE0000000, 0x22040400)
+# The stress grid's cell i reads at a0 A0_FIRST + i % A0_COUNT; 97 is a prime above the 96 cells in nine 64-vertex
+# vectors, so a register a recent vertex left seldom holds the constant a cell wants.
+A0_FIRST, A0_COUNT = 2, 97
+# The busy pixel shader's adds, in execs of EXEC_MOST.
+BUSY_INSTRUCTIONS = 120
 
 # Slots 25 to 70 of 93d36ce55e3f9bad.vert as xost at 34e6f58 compiles it: maxasf at 25, c[120..122+a0] at 26, 30 and
 # 32, the position export at 47, the interpolators' alloc after it, c230 read at 66 and c[152+a0] into r6 at 67.
@@ -122,6 +135,11 @@ def read(row, dest=RESULT, **fields):
     return enc.build_alu(**{"vector_dest": dest, "vector_write_mask": 0xF, "is_const_0_addressed": True,
                             "is_const_1_addressed": True, "is_const_address_register_relative": True,
                             "src1_reg": row, "src1_is_temp": False, "src2_reg": row, "src2_is_temp": False, **fields})
+
+
+def throwaway(row):
+    """xost's throwaway, max r0._, c[row+a0], c[row+a0], src3 r0 (src/xsc_program.c, insert_throwaway)."""
+    return read(row, dest=0, vector_write_mask=0)
 
 
 def coissued(row, src3_reg=INDEX_REGISTER):
@@ -263,6 +281,25 @@ def own(named):
     return [(name, blocks, FETCHES, REGISTERS) for name, blocks in named]
 
 
+def stress_cases():
+    """The stress mode's cases: each one's name, blocks and the row it reads at a0, in the order they run."""
+    g, n, f, t = GEOMETRY_ROW, NORMAL_ROW, filler, throwaway(NORMAL_ROW)
+    return [
+        ("1 in the a0 load's alloc region", before_alloc([maxasf(), read(g)]), g),
+        ("2 after alloc interpolators, no remedy", after_alloc([read(n)]), n),
+        ("3 after xost's throwaway", after_alloc([t, read(n)]), n),
+        ("4 after two throwaways", after_alloc([t, t, read(n)]), n),
+        ("5 maxasf again right after the alloc", after_alloc([maxasf(), read(n)]), n),
+        ("6 maxasf again in the read's exec, an exec of three before it",
+         after_alloc([f(), f(), f()], [maxasf(), read(n)]), n),
+        ("7 the read twice", after_alloc([read(n), read(n)]), n),
+        ("8 the read before the alloc, after the position export",
+         [ALLOC_POSITION, [maxasf(), POSITION_EXPORT, read(n)], ALLOC_INTERPOLATORS, [RESULT_EXPORT]], n),
+        ("9 after four throwaways", after_alloc([t, t, t, t, read(n)]), n),
+        ("10 maxasf again, then a throwaway", after_alloc([maxasf(), t, read(n)]), n),
+    ]
+
+
 def vertex_shader(blocks, fetches, registers):
     """The fetch exec, then blocks: allocs and execs, the last exec ending the program."""
     control_flow_count = 1 + len(blocks)
@@ -294,6 +331,34 @@ def vertex_shader(blocks, fetches, registers):
         vertex_elements=elements, creator=tri.CREATOR)
 
 
+def busy_pixel_shader():
+    """Copies the interpolator into r1 and adds it there, BUSY_INSTRUCTIONS in all, then writes the interpolator."""
+    work = [enc.build_alu(vector_dest=1, vector_write_mask=0xF)]
+    work += [enc.build_alu(vector_opcode=V.kAdd, vector_dest=1, vector_write_mask=0xF, src1_reg=1)] * \
+        (BUSY_INSTRUCTIONS - 1)
+    execs = [work[i:i + EXEC_MOST] for i in range(0, len(work), EXEC_MOST)]
+    address = (len(execs) + 3) // 2
+    control_flow = []
+    for block in execs:
+        control_flow.append(tri.execute(address, len(block)))
+        address += len(block)
+    control_flow += [enc.build_cf_alloc(alloc_type=tri.ALLOC_COLORS), tri.execute(address, 1, end=True)]
+    dwords = tri.pack(control_flow, work + [tri.export(tri.EXPORT_COLOR_0, 0)])
+    return ce.build_container(
+        "pixel", struct.pack(f">{len(dwords)}I", *dwords), constants=[],
+        program_control=tri.program_control(ps_num_reg=1, ps_export_mode=tri.PS_EXPORT_MODE_COLOR),
+        context_misc=tri.CONTEXT_MISC_CENTROIDS_AND_CENTERS,
+        interpolators=[ce.Interpolator(tri.EXPORT_INTERPOLATOR_0, ce.USAGE_COLOR, 0)],
+        ps_field18=tri.PS_INTERPOLATOR_WORD, creator=tri.CREATOR)
+
+
+def check_busy(blob):
+    """Stops unless the busy pixel shader writes its interpolator as it came."""
+    color = fill(NORMAL_ROW)
+    if simulate.run(blob, {0: color}).exports.get(tri.EXPORT_COLOR_0) != color:
+        sys.exit("gen_relative_constant_probe: the busy pixel shader doesn't write its interpolator unchanged")
+
+
 def register_read(name, blob, fetches, index):
     """The constant Xenia's model has the case export for a0 index; stops unless it exports the position and one whole
     constant."""
@@ -312,11 +377,12 @@ def register_read(name, blob, fetches, index):
 
 
 def check_encodings():
-    """Stops unless the builders write xost's words: maxasf, the old read and step 4's co-issued one."""
+    """Stops unless the builders write xost's words: maxasf, the old read, step 4's co-issued one and the throwaway."""
     old, step4 = SPANS["old"], SPANS["step 4"]
     if maxasf() != OLD_SPAN[0] or read(NORMAL_ROW, dest=old[5]) != OLD_SPAN[old[4]] or \
             read(NORMAL_ROW, dest=step4[5], scalar_opcode=S.kRcp, scalar_dest=7, scalar_write_mask=0xF, src3_reg=6,
-                 src3_swizzle=SCALAR_X) != STEP4_SPAN[step4[4]]:
+                 src3_swizzle=SCALAR_X) != STEP4_SPAN[step4[4]] or \
+            throwaway(XOST_THROWAWAY_ROW) != XOST_THROWAWAY:
         sys.exit("gen_relative_constant_probe: the builders don't write xost's words")
 
 
@@ -342,6 +408,20 @@ def main():
         rows = ", ".join("{ " + ", ".join(str(r) for r in row) + " }" for row in expected)
         table.append(f"\t{{ \"{name}\", probe_case_{i}, sizeof probe_case_{i}, {{ {rows} }} }},")
     lines += ["static const ProbeCase probe_cases[] = {"] + table + ["};", ""]
+    lines += [f"enum {{ PROBE_A0_FIRST = {A0_FIRST}, PROBE_A0_COUNT = {A0_COUNT}, "
+              f"PROBE_BUSY_INSTRUCTIONS = {BUSY_INSTRUCTIONS} }};", ""]
+    table = []
+    for i, (name, blocks, row) in enumerate(stress_cases()):
+        blob = vertex_shader(blocks, FETCHES, REGISTERS)
+        for index in (A0_FIRST, A0_FIRST + A0_COUNT // 2, A0_FIRST + A0_COUNT - 1):
+            if register_read(name, blob, FETCHES, index) != row + index:
+                sys.exit(f"gen_relative_constant_probe: stress {name}: a0 {index} doesn't read c[{row}+a0]")
+        lines += [f"static const uint32_t stress_case_{i}[] = {{", pack.word_lines(words_of(blob)), "};", ""]
+        table.append(f"\t{{ \"{name}\", stress_case_{i}, sizeof stress_case_{i}, {row} }},")
+    lines += ["static const StressCase stress_cases[] = {"] + table + ["};", ""]
+    busy = busy_pixel_shader()
+    check_busy(busy)
+    lines += ["static const uint32_t probe_busy_pixel_shader[] = {", pack.word_lines(words_of(busy)), "};", ""]
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text("\n".join(lines), encoding="utf-8")
 
