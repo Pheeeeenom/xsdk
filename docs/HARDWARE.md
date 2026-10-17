@@ -3487,3 +3487,20 @@ compiled, so its cube lowering and 3D fetch with them:
   out, downloads always from slice 0, the volume filters nearest, every border white and w's addressing dropped each
   failed the checks they aim at (`xsdk_test_broken_a.log` to `_c`). xsdk_test passed 343 of 345, the two left the
   controller's, no button pressed.
+
+## Instances and long strips, vulkan4xenon milestone 24 (2026-10-16)
+
+vulkan4xenon_test on the zero-fuse console (vulkan4xenon:results/2026-10-16-milestone-24/), each instance a draw of
+its own:
+- **A vertex fetch with a stride of 0** read the same element for every vertex: attributes at the instance's rate,
+  their stream pointed at the instance's element before each draw, coloured and placed every instance of `vkCmdDraw`,
+  `vkCmdDrawIndexed` and both indirect draws, `firstInstance` included.
+- **Fetch constants and float constants written between back-to-back draws** took effect on the next draw: each
+  instance took its own element and its own `gl_InstanceIndex`, the float constant xost lowers it to, and a shader
+  without it was placed by its attributes alone, so no vertex shader's results carried over from the draw before.
+- **Triangle strips wind as Vulkan's do,** and a strip's parity starts again with each draw packet: a strip of 70,000
+  vertices, back faces culled, drawn in pieces of 65,534 sharing their last two vertices, the pieces an even number
+  on, showed its first quad, the quad over the split and its last; from 32-bit indices too. A line strip's pieces,
+  sharing a vertex, drew the lines over the split and its last two, their ends clipped past clip space.
+- **Broken on purpose,** instance streams fetched at their real stride, the index never written, an odd step, pieces
+  sharing nothing and the first piece alone each failed the checks they aim at.
