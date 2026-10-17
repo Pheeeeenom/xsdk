@@ -74,6 +74,8 @@ came from; that test and its test vectors stay in xost's archived repo (github.c
 | block matrix (column-major, std140) `M * v` / `v * M` / `A * B` | `mul`+`mad` over columns / 4x `dp4` with columns / columns of A times each column of B |
 | block array at a run-time index, `rows[int(f) + k]`, `m[i]` | `movasf` (`int(f)`) or `movas` sets a0, then `c[a0 + base + k]` is copied into a temp; reads at one index share the `movas` (`tests/test_dynamic_index.py`) |
 | fragment `gl_FragCoord.xy`, `gl_FrontFacing` | the pixel parameters in the register past the interpolators, `\|r.xy\| + 0.5`, `.zw` refused; facing from x's sign (see Facing) |
+| fragment `gl_PointCoord` | the same parameters' `\|r.zw\|`, a point sprite's coordinates (`tests/test_point_sprite.py`) |
+| vertex `gl_PointSize` | `oPts.x___`, the point's width in pixels, and the record's vs_export_mode 2 (`tests/test_point_sprite.py`) |
 | fragment `gl_FragDepth`, stored once outside any `if/else` | `oDepth.x___` after the colour, the record's ps_export_mode 3 (`tests/test_frag_depth.py`) |
 | fragment `gl_FragDepth` stored in both arms of an `if/else`, or before one and again in an arm | merged by a select as a vertex shader's outputs are, exported once; stored on one path alone, refused (see Control flow) |
 | a store into one component of a local or an output, `v.x = …` | an insert into the vector it held (`tests/test_local_stores.py`) |
@@ -145,6 +147,16 @@ came from; that test and its test vectors stay in xost's archived repo (github.c
   SC_OUTPUT_SCREEN_XY, without which x read 0 on the console
   (vulkan4xenon:results/2026-10-12-milestone-11-step-3/). xsdk takes both
   registers from the record as they are.
+- gl_PointSize → oPts (export 63)'s x, the point's full width in pixels, its
+  y and z, the edge and kill flags, unwritten
+  (xenia:src/xenia/gpu/ucode.h:1813-1834), with SQ_PROGRAM_CNTL's
+  vs_export_mode 2, a sprite's second position vector, in the record
+  (xenia:src/xenia/gpu/registers.h:144, xenos.h:790-800). Without it, the
+  record's mode stays 0 and points are PA_SU_POINT_SIZE's.
+- gl_PointCoord → the pixel parameters' |zw|, which hold a point sprite's
+  coordinates, 0 to 1 from its top left (xenia:src/xenia/gpu/registers.h:184-212,
+  dxbc_shader_translator.cc:735-748); gl_FragCoord, gl_FrontFacing and
+  gl_PointCoord share the register.
 - gl_ClipDistance → Xenos's user clip planes, which clip in clip space against
   the exported position itself, keeping dot(position, plane) >= 0
   (xenia:src/xenia/gpu/registers.h:539-544, dxbc_shader_translator.cc:1033-1053).

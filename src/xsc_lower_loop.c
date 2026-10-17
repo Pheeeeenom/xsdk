@@ -565,8 +565,8 @@ bool xsdk_xsc_lower_real_loop(Xsc *x, const XscModule *m, uint32_t registers, Xs
 		return xsdk_xsc_fail(x, XSDK_XSC_REFUSED, "real-loop lowering is pixel-only");
 	if (si->color_out_count != 1)
 		return xsdk_xsc_fail(x, XSDK_XSC_REFUSED, "real-loop path expects one color output");
-	if (si->frag_coord)
-		return xsdk_xsc_fail(x, XSDK_XSC_REFUSED, "gl_FragCoord in a hardware loop (v1)");
+	if (si->frag_coord || si->point_coord)
+		return xsdk_xsc_fail(x, XSDK_XSC_REFUSED, "gl_FragCoord or gl_PointCoord in a hardware loop (v1)");
 	Loop lp = { .x = x, .m = m, .si = si };
 	XscProgram p;
 	XscConstants constants = { 0 };

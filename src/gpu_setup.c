@@ -47,6 +47,11 @@ enum {
 	VTX_WINDOW_OFFSET_ENABLE = 1 << 16,
 	VTE_XY_Z_ALREADY_TRANSFORMED = 0x300,
 	PIX_CENTER_D3D = 4,
+	// PA_SU_POINT_SIZE's half a pixel, so a point is 1 pixel wide and high, and PA_SU_POINT_MINMAX's radii from 0 to
+	// 0xFFFF, which a vertex shader's point size is clamped to: all 12.4 fixed point
+	// (xenia:src/xenia/gpu/registers.h:433-453).
+	POINT_SIZE_ONE_PIXEL = 0x00080008,
+	POINT_RADIUS_ANY = 0xFFFF0000,
 	EDRAM_MODE_COLOR_DEPTH = 4,
 	SCREEN_SCISSOR_8192 = 8192 | 8192 << 16,
 	// A stage's first constant, then its count less one from bit 12 (xenia:src/xenia/gpu/registers.h:256-281).
@@ -138,6 +143,7 @@ static const uint32_t saved_registers[] = {
 	PA_CL_VTE_CNTL,
 	RB_MODECONTROL,
 	PA_SU_POINT_SIZE,
+	PA_SU_POINT_MINMAX,
 	PA_SU_VTX_CNTL,
 	SQ_VS_CONST,
 	SQ_PS_CONST,
@@ -260,6 +266,7 @@ static void put_draw_state(GpuPackets *packets)
 	const uint32_t program[] = { 0x1000000E, 0 };
 	const uint32_t indices[] = { 0xFFFF, 0, 0 };
 	const uint32_t clip[] = { CLIP_DISABLE, VTX_WINDOW_OFFSET_ENABLE, VTE_XY_Z_ALREADY_TRANSFORMED };
+	const uint32_t points[] = { POINT_SIZE_ONE_PIXEL, POINT_RADIUS_ANY };
 	gpu_put_type3(packets, PM4_INVALIDATE_STATE, 1);
 	gpu_put(packets, INVALIDATE_SHADERS);
 	put_shader(packets, SHADER_TYPE_VERTEX, setup_vertex_shader, sizeof setup_vertex_shader / 4);
@@ -273,7 +280,8 @@ static void put_draw_state(GpuPackets *packets)
 	gpu_put_register(packets, RB_HIZCONTROL, 0);
 	gpu_put_register(packets, RB_MODECONTROL, EDRAM_MODE_COLOR_DEPTH);
 	gpu_put_register(packets, RB_COLOR_MASK, 0);
-	gpu_put_register(packets, PA_SU_POINT_SIZE, 0x00080008);
+	// The point size libxenon sets, and no clamp of the size a vertex shader gives, as Vulkan's largePoints wants.
+	gpu_put_registers(packets, PA_SU_POINT_SIZE, points, 2);
 	gpu_put_register(packets, PA_SU_VTX_CNTL, PIX_CENTER_D3D);
 	xsdk_gpu_put_window(packets, 16, 16);
 }

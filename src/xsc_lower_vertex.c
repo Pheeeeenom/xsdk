@@ -10,6 +10,7 @@ enum {
 	// The parameter type xost's containers give a sampler.
 	SAMPLER_PARAMETER = 0xC,
 	// gl_PerVertex's members by their BuiltIn decoration, and outputs' storage class (SPIR-V 1.0's enums).
+	BUILTIN_POINT_SIZE = 1,
 	BUILTIN_CLIP_DISTANCE = 3,
 	BUILTIN_CULL_DISTANCE = 4,
 	STORAGE_OUTPUT = 3,
@@ -20,6 +21,7 @@ enum {
 // Where gl_PerVertex's members are, XSC_NONE for those the block lacks or a gl_Position of its own.
 typedef struct {
 	int64_t position;
+	int64_t point_size;
 	int64_t clip_distance;
 	int64_t cull_distance;
 } PerVertex;
@@ -62,11 +64,12 @@ static int64_t builtin_member(const XscModule *m, uint32_t block_type, int64_t b
 
 static PerVertex per_vertex(const XscModule *m, const XscType *types, const XscInterface *si)
 {
-	PerVertex pv = { xsdk_xsc_role(si, si->position_out)->a, XSC_NONE, XSC_NONE };
+	PerVertex pv = { xsdk_xsc_role(si, si->position_out)->a, XSC_NONE, XSC_NONE, XSC_NONE };
 	const XscInstr *const var = xsdk_xsc_by_result(m, si->position_out);
 	const XscType *const pointer = var ? xsdk_xsc_type(m, types, var->result_type) : NULL;
 	if (pv.position == XSC_NONE || !pointer)
 		return pv;
+	pv.point_size = builtin_member(m, pointer->comp, BUILTIN_POINT_SIZE);
 	pv.clip_distance = builtin_member(m, pointer->comp, BUILTIN_CLIP_DISTANCE);
 	pv.cull_distance = builtin_member(m, pointer->comp, BUILTIN_CULL_DISTANCE);
 	return pv;
@@ -98,6 +101,25 @@ static uint32_t position_value(XscLower *l, const PerVertex *pv, const XscStores
 			value = stores->value[stores->targets[i]];
 	}
 	return value;
+}
+
+// gl_PointSize to oPts.x, the point's full width in pixels (xenia:src/xenia/gpu/ucode.h:1813-1834), and the record's
+// export mode to the sprite's; its edge and kill flags are left unwritten. Without it, points are PA_SU_POINT_SIZE's.
+static bool export_point_size(XscLower *l, const PerVertex *pv, const XscStores *stores)
+{
+	uint32_t value = 0;
+	for (size_t i = 0; i < stores->target_count && pv->point_size != XSC_NONE; i++) {
+		if (member_of(l, stores->targets[i]) == pv->point_size)
+			value = stores->value[stores->targets[i]];
+	}
+	if (!value)
+		return !xsc_failed(l);
+	const XscOrigin origin = xsdk_xsc_scalar_origin(l, value);
+	if (xsc_failed(l))
+		return false;
+	const int64_t swizzle = origin.comp == XSC_BROADCAST ? 0 : xsdk_xsc_bsw(origin.comp);
+	l->p->exports_point_size = true;
+	return xsdk_xsc_emit_copy(l, origin.o, XSC_EXPORT_POINT_SIZE, true, false, swizzle, 0x1, false) != XSC_NONE;
 }
 
 static bool export_interpolators(XscLower *l, const XscInterface *si, const XscStores *stores)
@@ -173,8 +195,10 @@ static bool add_constants(XscLower *l, const XscInterface *si, const bool used[F
 	return xsdk_xsc_literal_constants(l, constants);
 }
 
-// The position, then the interpolators; without any, they're allocated first, as xsdk's resolve shader is.
-static bool lower_body(XscLower *l, const XscInterface *si, const XscStores *stores, uint32_t position)
+// The position and the point's size, then the interpolators; without any, they're allocated first, as xsdk's resolve
+// shader is.
+static bool lower_body(
+	XscLower *l, const XscInterface *si, const PerVertex *pv, const XscStores *stores, uint32_t position)
 {
 	if (!si->interp_out_count && !xsdk_xsc_program_alloc_interpolators(l->x, l->p))
 		return false;
@@ -182,7 +206,7 @@ static bool lower_body(XscLower *l, const XscInterface *si, const XscStores *sto
 		return false;
 	if (!position)
 		return xsdk_xsc_lower_refuse(l, "no write to gl_Position");
-	if (!xsdk_xsc_emit_value(l, position, XSC_EXPORT_POSITION, true, true))
+	if (!xsdk_xsc_emit_value(l, position, XSC_EXPORT_POSITION, true, true) || !export_point_size(l, pv, stores))
 		return false;
 	if (si->interp_out_count && !xsdk_xsc_program_alloc_interpolators(l->x, l->p))
 		return false;
@@ -275,8 +299,9 @@ static bool check_lone_outputs(Xsc *x, const XscModule *m)
 			continue;
 		const int64_t builtin =
 			xsdk_xsc_decoration_arg(xsdk_xsc_decoration(m, ins->result_id, SPV_DEC_BUILTIN), XSC_NONE);
-		if (builtin == BUILTIN_CLIP_DISTANCE || builtin == BUILTIN_CULL_DISTANCE)
-			return xsdk_xsc_fail(x, XSDK_XSC_REFUSED, "gl_ClipDistance or gl_CullDistance outside gl_PerVertex (v1)");
+		if (builtin == BUILTIN_POINT_SIZE || builtin == BUILTIN_CLIP_DISTANCE || builtin == BUILTIN_CULL_DISTANCE)
+			return xsdk_xsc_fail(
+				x, XSDK_XSC_REFUSED, "gl_PointSize, gl_ClipDistance or gl_CullDistance outside gl_PerVertex (v1)");
 	}
 	return true;
 }
@@ -312,7 +337,7 @@ bool xsdk_xsc_lower_vertex(Xsc *x, const XscModule *m, const XsdkXscOptions *opt
 	XscConstants constants = { 0 };
 	const PerVertex pv = per_vertex(m, types, si);
 	const uint32_t position = position_value(&l, &pv, &stores);
-	return !xsc_failed(&l) && sample_all(&l, used) && lower_body(&l, si, &stores, position) &&
+	return !xsc_failed(&l) && sample_all(&l, used) && lower_body(&l, si, &pv, &stores, position) &&
 		add_constants(&l, si, used, &constants) &&
 		xsdk_xsc_program_finish(x, &p, constants.items, constants.count, &out->container, &out->container_bytes) &&
 		xsdk_xsc_literal_needs(&l, out) && xsdk_xsc_loop_needs(&l, out) && clip_planes(&l, &pv, &stores, position, out);

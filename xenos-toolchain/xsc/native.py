@@ -78,7 +78,8 @@ class _Interface(ctypes.Structure):
                 ("constant_end", ctypes.c_uint32),
                 ("sampler_dims", ctypes.POINTER(ctypes.c_int64)), ("sampler_dim_count", ctypes.c_size_t),
                 ("roles", ctypes.c_void_p), ("role_limit", ctypes.c_uint32),
-                ("comparisons", ctypes.POINTER(_VarUse)), ("comparison_count", ctypes.c_size_t)]
+                ("comparisons", ctypes.POINTER(_VarUse)), ("comparison_count", ctypes.c_size_t),
+                ("point_coord", ctypes.POINTER(_Var))]
 
 
 # Room for xsc_private.h's XscModule, which only the C reads.
@@ -162,6 +163,7 @@ def resolve_spirv(spirv: bytes):
             position_out=si.position_out or None,
             frag_coord=var(si.frag_coord),
             front_facing=var(si.front_facing),
+            point_coord=var(si.point_coord),
             constants=[(_text(c.name), c.reg, c.regs, c.member)
                        for c in (si.constants[i] for i in range(si.constant_count))],
             blocks=[("push" if b.push else "uniform", var(b.var), b.struct_type, b.reg, b.regs)

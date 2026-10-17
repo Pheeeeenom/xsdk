@@ -20,6 +20,10 @@ enum {
 	PS_EXPORT_MODE_SHIFT = 27,
 	PS_EXPORT_DEPTH = 1,
 	PS_EXPORT_COLORS_SHIFT = 1,
+	// Its vs_export_mode for a second position vector, a point's size (xenia:src/xenia/gpu/registers.h:144;
+	// xenos.h:790-800).
+	VS_EXPORT_MODE_SHIFT = 24,
+	VS_EXPORT_SPRITE = 2,
 	USAGE_NIBBLE_TEXCOORD = 0x3,
 	USAGE_NIBBLE_COLOR = 0xF,
 	MAX_DEFS = 2,
@@ -1000,8 +1004,9 @@ static bool optimize(Xsc *x, XscProgram *p)
 
 static bool finish_vertex(Xsc *x, XscProgram *p, XscContainerParts *parts)
 {
-	parts->program_control =
-		(uint32_t)p->max_reg | 1u << 16 | (uint32_t)(p->interpolator_count ? p->interpolator_count - 1 : 0) << 20;
+	parts->program_control = (uint32_t)p->max_reg | 1u << 16 |
+		(uint32_t)(p->interpolator_count ? p->interpolator_count - 1 : 0) << 20 |
+		(p->exports_point_size ? (uint32_t)VS_EXPORT_SPRITE << VS_EXPORT_MODE_SHIFT : 0);
 	for (size_t si = 0; si < p->stage_count; si++) {
 		for (size_t i = 0; i < p->stages[si].count; i++) {
 			const XscOp *const op = p->stages[si].ops[i];

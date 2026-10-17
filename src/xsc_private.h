@@ -321,6 +321,7 @@ typedef enum {
 	XSC_ROLE_ARRAY,
 	// A vertex shader's gl_InstanceIndex, a float constant the runtime writes each instance's index into.
 	XSC_ROLE_INSTANCE_INDEX,
+	XSC_ROLE_POINT_COORD,
 } XscRoleKind;
 
 // A sampler's a and b are its slot and dim, and c the register its comparison's weights take, or XSC_NONE; a constant's
@@ -385,6 +386,7 @@ typedef struct {
 	// The samplers of depth images, which compare: (var, the register of their compare op's weights, slot).
 	XscVarUse *comparisons;
 	size_t comparison_count;
+	const XscVar *point_coord;
 } XscInterface;
 
 XscType *xsdk_xsc_resolve_types(Xsc *x, const XscModule *m);
@@ -494,6 +496,8 @@ enum {
 	XSC_DIMENSION_3D = 2,
 	XSC_DIMENSION_CUBE = 3,
 	XSC_EXPORT_POSITION = 62,
+	// x is the point's size, y and z the edge and kill flags (xenia:src/xenia/gpu/ucode.h:1813-1834).
+	XSC_EXPORT_POINT_SIZE = 63,
 	XSC_CF_EXEC = 1,
 	XSC_CF_EXEC_END = 2,
 	XSC_CF_COND_EXEC_PRED = 5,
@@ -732,6 +736,7 @@ typedef struct {
 	bool exports_depth;
 	// The colours a pixel shader exports, bit n for oCn.
 	uint32_t color_outputs;
+	bool exports_point_size;
 } XscProgram;
 
 bool xsdk_xsc_program_init(Xsc *x, XscProgram *p, bool pixel, uint32_t registers);

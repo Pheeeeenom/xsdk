@@ -138,6 +138,19 @@ static bool front_facing_register(XscLower *l, const XscInterface *si, int64_t p
 	return true;
 }
 
+// Vulkan's gl_PointCoord is the parameters' |zw|, 0 to 1 across a point sprite from its top left, as Xenia fills them
+// for a point list (xenia:src/xenia/gpu/dxbc_shader_translator.cc:735-748, d3d12/pipeline_cache.cc:923-928).
+static bool point_coord_register(XscLower *l, const XscInterface *si, int64_t param_reg)
+{
+	const int64_t coord = xsdk_xsc_fresh(l);
+	const int64_t zw[2] = { 2, 3 };
+	const XscSrc params = xsc_src(xsc_reg(param_reg | XSC_ABS_SOURCE), false, xsdk_xsc_swz(zw, 2));
+	if (!xsc_emit2(l, XSC_VECTOR_MAX, params, params, coord, false, 0x3))
+		return false;
+	l->inputs[si->point_coord->vid] = coord;
+	return true;
+}
+
 static bool gather(Fragment *f, uint32_t ssa);
 
 static bool gather_derivative(Fragment *f, uint32_t ssa, const XscInstr *ins)
@@ -704,8 +717,8 @@ static bool find_outputs(Fragment *f)
 	return true;
 }
 
-// The interpolators from r0, then the pixel parameters past them for gl_FragCoord and gl_FrontFacing; the highest
-// register they take.
+// The interpolators from r0, then the pixel parameters past them for gl_FragCoord, gl_FrontFacing and gl_PointCoord;
+// the highest register they take.
 static bool declare_inputs(Xsc *x, const XscModule *m, const XscType *types, XscProgram *p, const XscInterface *si,
 	int64_t *highest, int64_t *param_reg)
 {
@@ -718,7 +731,7 @@ static bool declare_inputs(Xsc *x, const XscModule *m, const XscType *types, Xsc
 		if ((int64_t)use->a > *highest)
 			*highest = use->a;
 	}
-	if (!si->frag_coord && !si->front_facing)
+	if (!si->frag_coord && !si->front_facing && !si->point_coord)
 		return true;
 	bool depth = false;
 	if (si->frag_coord && !reads_depth(x, m, types, si->frag_coord->vid, &depth))
@@ -739,6 +752,8 @@ static bool lower_body(Fragment *f, int64_t param_reg, XscConstants *constants, 
 	if (si->frag_coord && !frag_coord_register(l, si, param_reg))
 		return false;
 	if (si->front_facing && !front_facing_register(l, si, param_reg))
+		return false;
+	if (si->point_coord && !point_coord_register(l, si, param_reg))
 		return false;
 	if (!find_outputs(f))
 		return false;

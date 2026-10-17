@@ -10,12 +10,18 @@ import sys
 
 GPU_DRAW = "src/gpu_draw.c"
 XSC_VERTEX = "src/xsc_lower_vertex.c"
+XSC_FRAGMENT = "src/xsc_lower_fragment.c"
+GPU_SETUP = "src/gpu_setup.c"
 
 DEPTH_ON = "depth: overlaps, the stencil mask, two-sided stencil and the cleared depth all right with the depth test on"
 DEPTH_OFF = "depth: with the depth test off, the depth checks fail and only they do"
 DEPTH_WORDS = "depth: the overlaps' depth resolved into a D24S8 texture, each word its depth above its stencil"
 CLIP = "raster: clip planes 0, 3 and 5 cut their cells at their lines, and nothing once they're off"
 XSC_CLIP = "xsc: vk_clip_distance.vert compiles into the PC's container, literals and resources"
+SPRITES = ("raster: point sprites from xost's shaders compiled on the console as wide as their gl_PointSize, 24 and 64 "
+           "pixels, gl_PointCoord across them from the top left")
+XSC_POINT_SIZE = "xsc: vk_point_sprite.vert compiles into the PC's container, literals and resources"
+XSC_POINT_COORD = "xsc: vk_point_coord.frag compiles into the PC's container, literals and resources"
 
 SETS = {
     # Step 1: backface_enable left clear, so the front's stencil serves both faces.
@@ -48,6 +54,28 @@ SETS = {
         "breaks": [
             (GPU_DRAW, "gpu_put_registers(&packets, PA_CL_UCP_0_X, values,",
              "gpu_put_registers(&packets, PA_CL_UCP_0_X + 4, values,"),
+        ],
+    },
+    # Step 3: a vertex shader's point size clamped to 1 pixel by PA_SU_POINT_MINMAX.
+    "s3a": {
+        "checks": [SPRITES],
+        "breaks": [
+            (GPU_SETUP, "POINT_RADIUS_ANY = 0xFFFF0000,", "POINT_RADIUS_ANY = 0x00080000,"),
+        ],
+    },
+    # Step 3: xost's gl_PointCoord read from the parameters' |xy|, the pixel's column and row.
+    "s3b": {
+        "checks": [SPRITES, XSC_POINT_COORD],
+        "breaks": [
+            (XSC_FRAGMENT, "const int64_t zw[2] = { 2, 3 };", "const int64_t zw[2] = { 0, 1 };"),
+        ],
+    },
+    # Step 3: xost's vs_export_mode left 0 for a shader exporting a size. The compiler check fails; the sprite check
+    # fails too if the console needs the mode, which Xenia doesn't read.
+    "s3c": {
+        "checks": [XSC_POINT_SIZE],
+        "breaks": [
+            (XSC_VERTEX, "\tl->p->exports_point_size = true;\n", ""),
         ],
     },
 }

@@ -6,15 +6,17 @@
 #include "tests.h"
 #include "tiled_index.h"
 #include "triangle_shaders.h"
+#include "xsc_shaders.h"
 #include "xsdk/display.h"
 #include "xsdk/gpu.h"
 #include "xsdk/kernel.h"
 #include "xsdk/log.h"
 #include "xsdk/shader.h"
 #include "xsdk/thread.h"
+#include "xsdk/xsc.h"
 
 // One cell per piece of raster and blend state, each checked by pixel against what the CPU works out; then a row of
-// cells clipped by planes (vulkan4xenon milestone 26).
+// cells clipped by planes, and point sprites from xost's shaders compiled on the console (vulkan4xenon milestone 26).
 
 enum {
 	WIDTH = 1280,
@@ -41,7 +43,19 @@ enum {
 	CLIP_COLUMN = 140,
 	CLIP_QUARTER_ROW = 360,
 	CLIP_QUARTER_COLUMN = 390,
+	// The point sprites' row, and how far a sprite's colour may land from what its coordinates give: two pixels and a
+	// bit of the smaller one's, as where in a pixel the hardware takes them isn't known.
+	SPRITE_Y = 360,
+	SPRITE_TOLERANCE = 24,
 };
+
+// Point sprites, each centred on a pixel's corner, as wide as its size, from vk_point_sprite.vert.
+typedef struct {
+	uint32_t x;
+	float size;
+} Sprite;
+
+static const Sprite sprites[] = { { 820, 24.0f }, { 900, 64.0f } };
 
 enum {
 	BLEND_NONE,
@@ -352,6 +366,38 @@ static uint32_t clip_points_expected(Point *points)
 	return sizeof clipped / sizeof clipped[0];
 }
 
+// gl_PointCoord's colour at a pixel of a sprite centred on the corner at (x - 0.5, SPRITE_Y - 0.5): from 0 at its left
+// and top edges to 1 at its right and bottom, at the pixel's centre.
+static uint32_t sprite_argb(const Sprite *s, int32_t dx, int32_t dy)
+{
+	const float u = (dx + 0.5f + s->size / 2.0f) / s->size;
+	const float v = (dy + 0.5f + s->size / 2.0f) / s->size;
+	return 0xFF000000 | to_byte(u) << 16 | to_byte(v) << 8;
+}
+
+static uint32_t sprite_points_expected(Point *points)
+{
+	uint32_t n = 0;
+	for (uint32_t i = 0; i < sizeof sprites / sizeof sprites[0]; i++) {
+		const Sprite *const s = &sprites[i];
+		const int32_t in = (int32_t)(s->size / 2.0f) - 4;
+		const int32_t out = (int32_t)(s->size / 2.0f) + 3;
+		const Point sprite[] = {
+			{ "point sprite: its top left", s->x - in, SPRITE_Y - in, sprite_argb(s, -in, -in), SPRITE_TOLERANCE },
+			{ "point sprite: its top right", s->x + in, SPRITE_Y - in, sprite_argb(s, in, -in), SPRITE_TOLERANCE },
+			{ "point sprite: its bottom left", s->x - in, SPRITE_Y + in, sprite_argb(s, -in, in), SPRITE_TOLERANCE },
+			{ "point sprite: its bottom right", s->x + in, SPRITE_Y + in, sprite_argb(s, in, in), SPRITE_TOLERANCE },
+			{ "point sprite: left of it", s->x - out, SPRITE_Y, CLEAR_ARGB, 0 },
+			{ "point sprite: right of it", s->x + out, SPRITE_Y, CLEAR_ARGB, 0 },
+			{ "point sprite: above it", s->x, SPRITE_Y - out, CLEAR_ARGB, 0 },
+			{ "point sprite: below it", s->x, SPRITE_Y + out, CLEAR_ARGB, 0 },
+		};
+		memcpy(points + n, sprite, sizeof sprite);
+		n += sizeof sprite / sizeof sprite[0];
+	}
+	return n;
+}
+
 // Places the unit square, edges half a pixel early, or over all of clip space for the viewport draw.
 static void set_draw_constants(const Draw *d)
 {
@@ -418,6 +464,49 @@ static void draw_clipped(const States *states)
 	}
 }
 
+// What vk_point_sprite.vert and vk_point_coord.frag draw with: their shaders, and the point's vertex.
+typedef struct {
+	XsdkShader vertex;
+	XsdkShader pixel;
+	const XsdkXscNeed *vertex_needs;
+	size_t vertex_need_count;
+	const XsdkXscNeed *pixel_needs;
+	size_t pixel_need_count;
+	volatile uint32_t *memory;
+	uint32_t point;
+} Sprites;
+
+static void set_literals(const XsdkXscNeed *needs, size_t count, bool vertex)
+{
+	for (size_t i = 0; i < count; i++) {
+		const float values[4] = { (float)needs[i].value[0], (float)needs[i].value[1], (float)needs[i].value[2],
+			(float)needs[i].value[3] };
+		if (needs[i].kind != XSDK_XSC_LITERAL)
+			continue;
+		if (vertex)
+			xsdk_gpu_set_vertex_constants(needs[i].reg, values, 1);
+		else
+			xsdk_gpu_set_pixel_constants(needs[i].reg, values, 1);
+	}
+}
+
+// Each sprite's place, its centre on a pixel's corner, in c0, and its size in c1.x, the push block's registers.
+static void draw_sprites(const Sprites *s)
+{
+	xsdk_gpu_set_shaders(&s->vertex, &s->pixel);
+	xsdk_gpu_set_vertices(0, s->point, 4 * sizeof(float));
+	set_literals(s->vertex_needs, s->vertex_need_count, true);
+	set_literals(s->pixel_needs, s->pixel_need_count, false);
+	for (uint32_t i = 0; i < sizeof sprites / sizeof sprites[0]; i++) {
+		const float constants[2][4] = {
+			{ clip_x(sprites[i].x), clip_y(SPRITE_Y), 0.0f, 0.0f },
+			{ sprites[i].size, 0.0f, 0.0f, 0.0f },
+		};
+		xsdk_gpu_set_vertex_constants(0, &constants[0][0], 2);
+		xsdk_gpu_draw(XSDK_PRIMITIVE_POINT_LIST, 1);
+	}
+}
+
 static bool point_holds(volatile const uint32_t *pixels, const Point *p, uint32_t frame, uint32_t *misses)
 {
 	const uint32_t stored = pixels[tiled_index(p->x, p->y, WIDTH)];
@@ -437,7 +526,7 @@ static bool point_holds(volatile const uint32_t *pixels, const Point *p, uint32_
 
 // Each frame draws every cell into eDRAM, resolves into the buffer not on screen, and shows it.
 static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint32_t vertices,
-	volatile uint32_t *const *buffers, bool has_display)
+	volatile uint32_t *const *buffers, bool has_display, const Sprites *s)
 {
 	States states;
 	make_states(&states);
@@ -447,9 +536,12 @@ static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint3
 	const uint32_t point_count = points_expected(points);
 	Point clip_points[POINTS];
 	const uint32_t clip_point_count = clip_points_expected(clip_points);
+	Point sprite_points[POINTS];
+	const uint32_t sprite_point_count = sprite_points_expected(sprite_points);
 	uint32_t misses = 0;
 	uint32_t frames_wrong = 0;
 	uint32_t clip_frames_wrong = 0;
+	uint32_t sprite_frames_wrong = 0;
 	bool fences_landed = true;
 	bool shown = true;
 	for (uint32_t frame = 0; frame < FRAMES && fences_landed; frame++) {
@@ -460,6 +552,8 @@ static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint3
 		xsdk_gpu_set_vertices(0, vertices, sizeof square);
 		draw_all(&states);
 		draw_clipped(&states);
+		if (s)
+			draw_sprites(s);
 		xsdk_gpu_resolve(address, WIDTH, HEIGHT, CLEAR_ARGB);
 		fences_landed = NT_SUCCESS(xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS));
 		if (!fences_landed)
@@ -474,6 +568,10 @@ static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint3
 			for (uint32_t i = 0; i < clip_point_count; i++)
 				clipped &= point_holds(buffer, &clip_points[i], frame, &misses);
 			clip_frames_wrong += !clipped;
+			bool sprited = s != NULL;
+			for (uint32_t i = 0; s && i < sprite_point_count; i++)
+				sprited &= point_holds(buffer, &sprite_points[i], frame, &misses);
+			sprite_frames_wrong += !sprited;
 		}
 		if (has_display)
 			shown = shown && NT_SUCCESS(xsdk_display_show(address, WIDTH));
@@ -489,11 +587,64 @@ static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint3
 		fences_landed && frames_wrong == 0);
 	check("raster: clip planes 0, 3 and 5 cut their cells at their lines, and nothing once they're off",
 		fences_landed && clip_frames_wrong == 0);
+	check(
+		"raster: point sprites from xost's shaders compiled on the console as wide as their gl_PointSize, 24 and 64 "
+		"pixels, gl_PointCoord across them from the top left",
+		fences_landed && sprite_frames_wrong == 0);
 	if (has_display) {
 		check("raster: every frame shown", shown);
 		xsdk_log_write("raster: the last frame stays on screen for %u ms for a capture", (unsigned)TEST_SHOW_MS);
 		(void)xsdk_thread_sleep(TEST_SHOW_MS);
 	}
+}
+
+static const XscTestShader *xsc_shader(const char *name)
+{
+	for (size_t i = 0; i < sizeof xsc_test_shaders / sizeof xsc_test_shaders[0]; i++) {
+		if (!strcmp(xsc_test_shaders[i].name, name))
+			return &xsc_test_shaders[i];
+	}
+	return NULL;
+}
+
+// xost's compiler on the console, as the layer compiles what its bundle lacks (tests/test_xsc.c).
+static bool compile_shader(const char *name, XsdkShader *shader, const XsdkXscNeed **needs, size_t *need_count)
+{
+	const XscTestShader *const source = xsc_shader(name);
+	XsdkXscOptions options;
+	xsdk_xsc_default_options(&options);
+	options.optimize = true;
+	XsdkXscShader compiled;
+	if (!source || xsdk_xsc_compile(source->spirv, source->spirv_words, &options, &compiled) != XSDK_XSC_OK)
+		return false;
+	const bool loaded =
+		NT_SUCCESS(xsdk_shader_load(shader, (const uint32_t *)compiled.container, compiled.container_bytes));
+	xsdk_xsc_free(&compiled);
+	*needs = source->needs;
+	*need_count = source->need_count;
+	return loaded;
+}
+
+// The sprites' shaders and the point they draw, moved by their constants; false, the sprites undrawn, on a failure.
+static bool make_sprites(Sprites *s)
+{
+	static const float point[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	const XsdkVertexElement position = { .usage = XSDK_USAGE_POSITION, .format = XSDK_VERTEX_FLOAT4 };
+	if (!compile_shader("vk_point_sprite.vert", &s->vertex, &s->vertex_needs, &s->vertex_need_count) ||
+		!compile_shader("vk_point_coord.frag", &s->pixel, &s->pixel_needs, &s->pixel_need_count) ||
+		!NT_SUCCESS(xsdk_shader_set_vertex_layout(&s->vertex, &position, 1, (const uint32_t[]){ sizeof point })))
+		return false;
+	s->memory = xsdk_gpu_alloc(sizeof point);
+	if (!s->memory)
+		return false;
+	uint32_t words[4];
+	memcpy(words, point, sizeof point);
+	for (uint32_t i = 0; i < 4; i++)
+		s->memory[i] = words[i];
+	__asm__ volatile("sync" ::: "memory");
+	s->point = xsdk_gpu_address(s->memory);
+	xsdk_gpu_invalidate(s->point, sizeof point);
+	return true;
 }
 
 static volatile uint32_t *upload_square(void)
@@ -534,10 +685,20 @@ void test_raster(void)
 	const uint32_t buffer_bytes = xsdk_gpu_resolve_bytes(WIDTH, HEIGHT);
 	volatile uint32_t *const buffers[BUFFERS] = { xsdk_gpu_alloc(buffer_bytes), xsdk_gpu_alloc(buffer_bytes) };
 	check("raster: vertex and front buffers", vertices && buffers[0] && buffers[1]);
+	Sprites sprite_state = { .vertex = { .microcode = NULL }, .pixel = { .microcode = NULL } };
+	const bool sprites_made = make_sprites(&sprite_state);
+	check("raster: xost compiles and xsdk loads the point sprite shaders on the console", sprites_made);
 	// Without a display, as in Xenia, the frames still draw and are checked.
 	if (patched && vertices && buffers[0] && buffers[1])
-		draw_frames(&vertex, &pixel, xsdk_gpu_address(vertices), buffers, has_display);
+		draw_frames(
+			&vertex, &pixel, xsdk_gpu_address(vertices), buffers, has_display, sprites_made ? &sprite_state : NULL);
 	xsdk_display_close();
+	if (sprite_state.memory)
+		xsdk_gpu_free(sprite_state.memory);
+	if (sprite_state.pixel.microcode)
+		xsdk_shader_free(&sprite_state.pixel);
+	if (sprite_state.vertex.microcode)
+		xsdk_shader_free(&sprite_state.vertex);
 	for (uint32_t i = 0; i < BUFFERS; i++)
 		xsdk_gpu_free(buffers[i]);
 	xsdk_gpu_free(vertices);

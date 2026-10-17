@@ -15,6 +15,7 @@ enum {
 	BUILTIN_VERTEX_ID = 5,
 	BUILTIN_INSTANCE_ID = 6,
 	BUILTIN_FRAG_COORD = 15,
+	BUILTIN_POINT_COORD = 16,
 	BUILTIN_FRONT_FACING = 17,
 	BUILTIN_FRAG_DEPTH = 22,
 	// The console loads float constants from memory in whole groups of 4 (docs/HARDWARE.md, "Constants loaded from
@@ -359,6 +360,11 @@ static bool resolve_input(
 	if (v->builtin == BUILTIN_FRONT_FACING) {
 		si->front_facing = v;
 		return set_role(x, si, v->vid, (XscRole){ XSC_ROLE_FRONT_FACING, 0, 0, 0 });
+	}
+	// gl_PointCoord shares gl_FragCoord's pixel parameters (xsc_lower_fragment.c).
+	if (v->builtin == BUILTIN_POINT_COORD) {
+		si->point_coord = v;
+		return set_role(x, si, v->vid, (XscRole){ XSC_ROLE_POINT_COORD, 0, 0, 0 });
 	}
 	const uint32_t r = location_or_zero(v);
 	if (!add_use(x, &si->interp_in, &si->interp_in_count, &capacity->interp_in,

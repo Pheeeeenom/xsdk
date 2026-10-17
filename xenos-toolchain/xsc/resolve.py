@@ -74,6 +74,7 @@ class ShaderInterface:
     position_out: int | None = None                   # gl_Position var id
     frag_coord: Var | None = None                     # a pixel shader's gl_FragCoord
     front_facing: Var | None = None                   # and its gl_FrontFacing
+    point_coord: Var | None = None                    # and its gl_PointCoord
     color_out: list = field(default_factory=list)     # (Var, oC index)
     constants: list = field(default_factory=list)     # ConstantSlot
     samplers: list = field(default_factory=list)      # (Var, fetch_slot)
@@ -109,6 +110,7 @@ def resolve_interface(m: spirv.Module) -> ShaderInterface:
         position_out=r["position_out"],
         frag_coord=var(r["frag_coord"]),
         front_facing=var(r["front_facing"]),
+        point_coord=var(r["point_coord"]),
         color_out=[(var(v), a) for v, a in r["color_out"]],
         constants=[ConstantSlot(*c) for c in r["constants"]],
         samplers=[(var(v), a) for v, a in r["samplers"]],
