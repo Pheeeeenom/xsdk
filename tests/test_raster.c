@@ -514,8 +514,9 @@ static void draw_fills(const States *states)
 		const FillDraw *const f = &fill_draws[i];
 		const float left = clip_x(f->x) + 0.5f / (WIDTH / 2.0f);
 		const float top = clip_y(FILL_Y) - 0.5f / (HEIGHT / 2.0f);
+		// Negated as a float: CLEAR_ARGB is past INT_MAX, so the enum's constants are unsigned.
 		const float vertex[3][4] = {
-			{ FILL_WIDTH / (WIDTH / 2.0f), -FILL_HEIGHT / (HEIGHT / 2.0f), 1.0f, 1.0f },
+			{ FILL_WIDTH / (WIDTH / 2.0f), -(FILL_HEIGHT / (HEIGHT / 2.0f)), 1.0f, 1.0f },
 			{ left, top, 0.5f, 0.0f },
 			{ channel(f->argb, 16), channel(f->argb, 8), channel(f->argb, 0), 1.0f },
 		};

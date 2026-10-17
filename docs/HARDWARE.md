@@ -3536,3 +3536,25 @@ With both fixed (`xsdk_test_alpha_quarter.log`, then `xsdk_test.log`):
 - **Broken on purpose,** each of the five sets failed the checks `xsdk_test_breaks.py` names for it and only those
   (`xsdk_test_broken_a.log` to `_e`). xsdk_test passed 359 of 359, a button pressed. Its texel compare had taken a NaN
   as near, so 32_FLOAT's blend line counted every texel doubled; it no longer does.
+
+## Raster state, vulkan4xenon milestone 26 (2026-10-16)
+
+xsdk_test on the zero-fuse console (`results/2026-10-16-vulkan4xenon-milestone-26/`):
+- **Two-sided stencil works as Xenia reads it** (xenia:src/xenia/gpu/registers.h:799-834): with `backface_enable` set,
+  back faces took `RB_DEPTHCONTROL`'s `_bf` fields and `RB_STENCILREFMASK_BF`, the two-sided cell's resolved words
+  holding 0x11 for the front face's mark and 0x22 for the back's.
+- **User clip planes clip in clip space,** keeping where dot(the exported position, plane) >= 0, as Xenia applies them
+  (dxbc_shader_translator.cc:1033-1053): `PA_CL_CLIP_CNTL`'s `ucp_ena` bits and `PA_CL_UCP_0_X` to `PA_CL_UCP_5_W`
+  cut planes 0, 3 and 5's cells at their lines, and a target set left nothing cut after.
+- **A point's size is its full width in pixels from `oPts.x`,** sprites of 24 and 64 pixels as wide as that, with
+  `PA_SU_POINT_MINMAX` at radii 0 to 0xFFFF; `gl_PointCoord`, the pixel parameters' |zw|, ran 0 to 1 from the
+  sprite's top left. **The console needs `vs_export_mode` 2 for it:** the break leaving the mode 0 failed the sprite
+  check as well as the compiler's (`xsdk_test_broken_s3c.log`), which Xenia, not reading the mode, couldn't show.
+- **Wireframe and point fill:** dual mode with both polygon types lines, or points, drew a quad as its triangles'
+  edges, or its corners, and nothing inside. The first run failed it (`xsdk_test_fill_unsigned.log`): the test placed
+  the quad with `-FILL_HEIGHT`, an enum constant made unsigned by `CLEAR_ARGB` past `INT_MAX`, so its bottom corners
+  went far off screen and only the top edge and corners drew (`xsdk_test_fill_constants.log` logs the constant,
+  0x4B360B61 for about -0.22), found against a throwaway probe that drew the same quad right in each state the test
+  sets. With `-(FILL_HEIGHT / (HEIGHT / 2.0f))` the check passes.
+- **Broken on purpose,** each of the nine sets failed the checks `breaks.py` names for it (`xsdk_test_broken_s1a.log`
+  to `_s4b`). xsdk_test passed 364 of 366, the two left the controller's, no button pressed.

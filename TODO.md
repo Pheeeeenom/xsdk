@@ -103,11 +103,6 @@ work begins.
 
 ## GPU gaps the milestones left
 
-- **Two-sided stencil, built and not yet run on the console** (vulkan4xenon milestone 26's step 1).
-  `XsdkDepthStencil`'s `two_sided` and `back` set `backface_enable` and the `_bf` fields of `RB_DEPTHCONTROL`, and
-  `RB_STENCILREFMASK_BF` (xenia:src/xenia/gpu/registers.h:799-834); tests/test_depth.c's two-sided cell checks it,
-  broken on purpose by results/2026-10-16-vulkan4xenon-milestone-26/breaks.py. What the run settles goes in
-  docs/HARDWARE.md.
 - **Destination alpha,** vulkan4xenon milestone 18's step 4, put off (vulkan4xenon:docs/ROADMAP.md). Aurora's backend
   refuses a pipeline with `GXSetDstAlpha` on and skips its draws, logging `vulkan4xenon can't draw destination alpha`
   (aurora-melee:lib/vulkan4xenon/pipeline.cpp, `unsupported`). Dawn's backend writes the constant as alpha through a
@@ -121,10 +116,6 @@ work begins.
   `multi_prim_ib_ena` (registers.h:480).
 - **Draws of more than 65535 indices.** The draw initiator's count is 16 bits (registers.h:327), so a layer would split
   them.
-- **Wireframe and point fill, built and not yet run on the console** (vulkan4xenon milestone 26's step 4).
-  `XsdkRaster`'s `fill` sets `PA_SU_SC_MODE_CNTL`'s `poly_mode` to dual mode and both faces' polygon types to lines or
-  points (registers.h:463-469, xenos.h:846-859); tests/test_raster.c's fill row checks it, broken on purpose by
-  results/2026-10-16-vulkan4xenon-milestone-26/breaks.py. What the run settles goes in docs/HARDWARE.md.
 - **The YCbCr borders.** vulkan4xenon milestone 23 brought `ClampMode` 3 to 7 and the black and white borders, the
   black's alpha 0 on the console (docs/HARDWARE.md, "Cube and 3D textures and the rest of addressing, vulkan4xenon
   milestone 23"). The two blacks for YCbCr data, whose colours Xenia guesses (xenos.h:156-161), aren't offered.

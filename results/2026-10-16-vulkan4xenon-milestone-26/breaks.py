@@ -71,10 +71,10 @@ SETS = {
             (XSC_FRAGMENT, "const int64_t zw[2] = { 2, 3 };", "const int64_t zw[2] = { 0, 1 };"),
         ],
     },
-    # Step 3: xost's vs_export_mode left 0 for a shader exporting a size. The compiler check fails; the sprite check
-    # fails too if the console needs the mode, which Xenia doesn't read.
+    # Step 3: xost's vs_export_mode left 0 for a shader exporting a size. The compiler check fails, and the sprite
+    # check with it, as the console needs the mode, which Xenia doesn't read (docs/HARDWARE.md).
     "s3c": {
-        "checks": [XSC_POINT_SIZE],
+        "checks": [SPRITES, XSC_POINT_SIZE],
         "breaks": [
             (XSC_VERTEX, "\tl->p->exports_point_size = true;\n", ""),
         ],
