@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
-"""check_optimize.py <shader or folder>...: compiles each GLSL shader with and without the compiler's optimiser
-(xsdk:src/xsc_optimize.c), at xsdk's register split, and checks the two programs' microcode gives the same exports, run
-on random inputs and constants by xdis/equivalence.py, on the export components the first defines. Prints each
-shader's ALU instructions and registers before and after, and the totals; exits 1 if any differ. Runs in WSL, as the
-compiler does, with xost's Windows glslang.
+"""check_optimize.py <shader or folder>...: compiles each GLSL shader, or SPIR-V file, with and without the compiler's
+optimiser (xsdk:src/xsc_optimize.c), at xsdk's register split, and checks the two programs' microcode gives the same
+exports, run on random inputs and constants by xdis/equivalence.py, on the export components the first defines. Counts
+each program as xdis disassembles it: ALU instructions; copies, a vector max of one source with itself and no scalar
+operation beside it; co-issued slots, a vector and a scalar operation in one instruction; texture and vertex fetches;
+control flow instructions but cnop; and registers. Prints each shader's counts off and on, then the totals per stage;
+exits 1 if any exports differ. A shader the compiler refuses is listed and left out. --json writes every count and
+the totals, and --baseline prints how each total moved from such a file. Runs in WSL, as the compiler does, with xost's
+Windows glslang.
 
-    python3 tools/check_optimize.py ../local/m11-xenia-record/shaders --trials 20
+    python3 tools/check_optimize.py ../local/m11-xenia-record/shaders --trials 20 --json counts.json
 """
 import argparse
+import json
 import math
 import random
 import subprocess
@@ -23,10 +28,11 @@ import xdis.equivalence as simulate  # noqa: E402
 import xdis.xenos_ucode as xu  # noqa: E402
 import xsc.spirv as spirv  # noqa: E402
 from xasm.program import XSDK_REGISTERS  # noqa: E402
-from xsc.lower import lower_ex  # noqa: E402
+from xsc.lower import LowerError, lower_ex  # noqa: E402
 
 GLSLANG = ROOT / "tools" / "glslang" / "bin" / "glslang.exe"
-
+NAMES = {"alu": "ALU", "copies": "copies", "co_issued": "co-issued", "fetches": "fetches",
+         "control_flow": "control flow", "registers": "registers"}
 
 
 def host_path(path) -> str:
@@ -56,11 +62,25 @@ def inputs(blob):
 
 
 def counts(blob):
+    """The program's counts, each instruction as the disassembly shows it: an operation it leaves out as a default nop
+    isn't there."""
     c = container.Container(blob)
-    records = xu._decode_program(c.ucode_dwords, c.shader_type)[0]
-    alu = sum(1 for r in records if r.kind == "alu")
+    n = dict.fromkeys(NAMES, 0)
+    for rec in xu._decode_program(c.ucode_dwords, c.shader_type)[0]:
+        if rec.kind == "alu":
+            alu = rec.detail
+            vector, scalar = not alu.IsVectorOpDefaultNop(), not alu.IsScalarOpDefaultNop()
+            n["alu"] += 1
+            n["co_issued"] += vector and scalar
+            n["copies"] += (vector and not scalar and alu.vector_opcode == xu.AluVectorOpcode.kMax
+                            and alu.vector_operands[0] == alu.vector_operands[1])
+        elif rec.kind in ("tfetch", "vfetch"):
+            n["fetches"] += 1
+        elif rec.kind == "cf" and rec.opcode != "cnop":
+            n["control_flow"] += 1
     regs = c.program_control & 0x3F if c.shader_type == "vertex" else (c.program_control >> 8) & 0x3F
-    return alu, regs + 1
+    n["registers"] = regs + 1
+    return n
 
 
 def same(a, b):
@@ -83,12 +103,10 @@ def differs(want, got, defined=None):
     return None
 
 
-def check(spv_bytes, trials, seed):
-    """(before, after, problem): the ALU and register counts each way, and what differed, if anything."""
-    plain, manifest = lower_ex(spirv.Module.parse(spv_bytes), XSDK_REGISTERS)
-    optimized, manifest_opt = lower_ex(spirv.Module.parse(spv_bytes), XSDK_REGISTERS, optimize=True)
+def compare(plain, optimized, manifest, manifest_opt, trials, seed):
+    """What differed between the two programs' exports, if anything."""
     if manifest != manifest_opt:
-        return counts(plain), counts(optimized), "the literal constants differ"
+        return "the literal constants differ"
     rng = random.Random(seed)
     for trial in range(trials):
         registers = {r: [rng.uniform(-2.0, 2.0) for _ in range(4)] for r in inputs(plain)}
@@ -99,10 +117,62 @@ def check(spv_bytes, trials, seed):
         try:
             problem = differs(simulate.run(plain, registers, constants), simulate.run(optimized, registers, constants))
         except simulate.Unsupported as e:
-            return counts(plain), counts(optimized), f"not simulated: {e}"
+            return f"not simulated: {e}"
         if problem:
-            return counts(plain), counts(optimized), f"trial {trial}: {problem}"
-    return counts(plain), counts(optimized), None
+            return f"trial {trial}: {problem}"
+    return None
+
+
+def check(spv_bytes, trials, seed):
+    """(stage, counts off, counts on, problem): each program's counts, and what differed, if anything."""
+    plain, manifest = lower_ex(spirv.Module.parse(spv_bytes), XSDK_REGISTERS)
+    optimized, manifest_opt = lower_ex(spirv.Module.parse(spv_bytes), XSDK_REGISTERS, optimize=True)
+    problem = compare(plain, optimized, manifest, manifest_opt, trials, seed)
+    return container.Container(plain).shader_type, counts(plain), counts(optimized), problem
+
+
+def spirv_of(source, work):
+    if source.suffix == ".spv":
+        return source.read_bytes()
+    out = Path(work) / (source.name + ".spv")
+    subprocess.run([str(GLSLANG), "-V", host_path(source), "-o", host_path(out)], check=True, capture_output=True)
+    return out.read_bytes()
+
+
+def total(shaders, stage):
+    """A stage's totals: each count summed over its shaders, and the most registers one takes."""
+    mine = [s for s in shaders.values() if s.get("stage") == stage]
+    result = {"shaders": len(mine)}
+    for program in ("off", "on"):
+        result[program] = {k: sum(s[program][k] for s in mine) for k in NAMES}
+        result[program]["registers_most"] = max((s[program]["registers"] for s in mine), default=0)
+    return result
+
+
+def share(part, whole):
+    return f"{100.0 * part / whole:.1f}%" if whole else "-"
+
+
+def print_total(stage, t):
+    off, on, count = t["off"], t["on"], t["shaders"]
+    print(f"{stage}, {count} shaders: ALU {off['alu']} -> {on['alu']} ({share(off['alu'] - on['alu'], off['alu'])} "
+          f"fewer); copies {off['copies']} ({share(off['copies'], off['alu'])} of ALU) -> {on['copies']} "
+          f"({share(on['copies'], on['alu'])}); co-issued {off['co_issued']} ({share(off['co_issued'], off['alu'])}) "
+          f"-> {on['co_issued']} ({share(on['co_issued'], on['alu'])}); fetches {off['fetches']} -> {on['fetches']}; "
+          f"control flow {off['control_flow']} -> {on['control_flow']}; registers {off['registers'] / count:.1f} -> "
+          f"{on['registers'] / count:.1f} a shader, most {off['registers_most']} -> {on['registers_most']}")
+
+
+def print_baseline(totals, baseline):
+    """Each total against the baseline's, the optimiser off and on."""
+    for stage, t in totals.items():
+        if stage not in baseline["totals"]:
+            continue
+        for program in ("off", "on"):
+            was, now = baseline["totals"][stage][program], t[program]
+            moves = ", ".join(f"{NAMES.get(k, 'most registers')} {was[k]} -> {now[k]}"
+                              + (f" ({100.0 * (now[k] - was[k]) / was[k]:+.1f}%)" if was[k] else "") for k in now)
+            print(f"against the baseline, {stage}, optimiser {program}: {moves}")
 
 
 def main():
@@ -110,32 +180,42 @@ def main():
     ap.add_argument("paths", nargs="+")
     ap.add_argument("--trials", type=int, default=20)
     ap.add_argument("--seed", type=int, default=1)
+    ap.add_argument("--json", help="write every shader's counts and the totals to this file")
+    ap.add_argument("--baseline", help="a file --json wrote, whose totals these are compared with")
     args = ap.parse_args()
     sources = []
     for p in map(Path, args.paths):
         sources += sorted(q for q in p.iterdir() if q.suffix in (".vert", ".frag")) if p.is_dir() else [p]
-    totals = {"vert": [0, 0], "frag": [0, 0]}
+    shaders = {}
     failed = 0
     skipped = 0
+    refused = 0
     with tempfile.TemporaryDirectory() as work:
         for source in sources:
-            out = Path(work) / (source.name + ".spv")
-            subprocess.run([str(GLSLANG), "-V", host_path(source), "-o", host_path(out)], check=True,
-                           capture_output=True)
-            before, after, problem = check(out.read_bytes(), args.trials, args.seed)
-            kind = source.suffix[1:]
-            totals[kind][0] += before[0]
-            totals[kind][1] += after[0]
+            try:
+                stage, before, after, problem = check(spirv_of(source, work), args.trials, args.seed)
+            except (LowerError, ValueError) as e:
+                refused += 1
+                shaders[str(source)] = {"result": f"not compiled: {e}"}
+                print(f"{source.name}: not compiled: {e}")
+                continue
             if problem and problem.startswith("not simulated"):
                 skipped += 1
             elif problem:
                 failed += 1
-            print(f"{source.name}: {before[0]} -> {after[0]} ALU, {before[1]} -> {after[1]} registers; "
-                  f"{problem or 'ok'}")
-    for kind, (b, a) in totals.items():
-        if b:
-            print(f"{kind}: {b} -> {a} ALU instructions ({100.0 * (b - a) / b:.1f}% fewer)")
-    print(f"{len(sources)} shaders, {failed} differ, {skipped} not simulated")
+            shaders[str(source)] = {"stage": stage, "off": before, "on": after, "result": problem or "ok"}
+            print(f"{source.name}: " + ", ".join(f"{NAMES[k]} {before[k]} -> {after[k]}" for k in NAMES)
+                  + f"; {problem or 'ok'}")
+    totals = {stage: total(shaders, stage) for stage in ("vertex", "pixel")}
+    totals = {stage: t for stage, t in totals.items() if t["shaders"]}
+    for stage, t in totals.items():
+        print_total(stage, t)
+    print(f"{len(sources)} shaders, {failed} differ, {skipped} not simulated, {refused} not compiled")
+    if args.baseline:
+        print_baseline(totals, json.loads(Path(args.baseline).read_text()))
+    if args.json:
+        Path(args.json).write_text(json.dumps({"trials": args.trials, "seed": args.seed, "shaders": shaders,
+                                               "totals": totals}, indent=1) + "\n")
     return 1 if failed else 0
 
 
