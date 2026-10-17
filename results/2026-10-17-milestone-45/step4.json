@@ -1,0 +1,7438 @@
+{
+ "trials": 100,
+ "seed": 1,
+ "shaders": {
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/017c19da20649fa0.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 9,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 4
+   },
+   "on": {
+    "alu": 5,
+    "copies": 0,
+    "co_issued": 1,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/01c8b343f41ff9f4.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 4,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/020233a3aaada7e9.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 23,
+    "copies": 15,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 8,
+    "registers": 7
+   },
+   "on": {
+    "alu": 13,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 6,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/041a85f07c74ec96.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 12,
+    "copies": 6,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 6
+   },
+   "on": {
+    "alu": 6,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/04a469b1240c5698.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 23,
+    "copies": 14,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 7,
+    "registers": 6
+   },
+   "on": {
+    "alu": 23,
+    "copies": 14,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 7,
+    "registers": 6
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/05716a5bd2aae204.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 53,
+    "copies": 23,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 12,
+    "registers": 16
+   },
+   "on": {
+    "alu": 25,
+    "copies": 1,
+    "co_issued": 3,
+    "fetches": 3,
+    "control_flow": 7,
+    "registers": 8
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/05b63b9d751d5736.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 4,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/093884ef391dfddc.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 48,
+    "copies": 19,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 11,
+    "registers": 14
+   },
+   "on": {
+    "alu": 25,
+    "copies": 2,
+    "co_issued": 2,
+    "fetches": 2,
+    "control_flow": 7,
+    "registers": 7
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/0963325b37f04df0.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 234,
+    "copies": 90,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 43,
+    "registers": 13
+   },
+   "on": {
+    "alu": 143,
+    "copies": 14,
+    "co_issued": 22,
+    "fetches": 4,
+    "control_flow": 27,
+    "registers": 11
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/09bef7f9a3ac5df7.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 4,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/0c5faf5ad1250944.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 48,
+    "copies": 19,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 11,
+    "registers": 14
+   },
+   "on": {
+    "alu": 25,
+    "copies": 2,
+    "co_issued": 2,
+    "fetches": 2,
+    "control_flow": 7,
+    "registers": 7
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/0c9a6858fbbe328e.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/0f8714b3c758a3b1.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 4,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/12d30073b6d47043.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 21,
+    "copies": 8,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 6,
+    "registers": 6
+   },
+   "on": {
+    "alu": 13,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/1510c05add37f2b3.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 127,
+    "copies": 40,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 26,
+    "registers": 22
+   },
+   "on": {
+    "alu": 60,
+    "copies": 9,
+    "co_issued": 12,
+    "fetches": 4,
+    "control_flow": 14,
+    "registers": 12
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/15a57b221b955025.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 46,
+    "copies": 20,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 10,
+    "registers": 12
+   },
+   "on": {
+    "alu": 21,
+    "copies": 2,
+    "co_issued": 3,
+    "fetches": 2,
+    "control_flow": 6,
+    "registers": 6
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/1675a46dea18c182.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 14,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 5
+   },
+   "on": {
+    "alu": 9,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/16a9a335fb71c29a.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 4,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/172ccfa9a454e318.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 21,
+    "copies": 13,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 8,
+    "registers": 7
+   },
+   "on": {
+    "alu": 12,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 6,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/1ad5c2f8e1cc2653.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 11,
+    "copies": 7,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "on": {
+    "alu": 4,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/1e5db8674ad9d29e.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 5,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 3
+   },
+   "on": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/2013a34320f17698.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 4,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/20a291c66ca7e0fd.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 214,
+    "copies": 76,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 40,
+    "registers": 13
+   },
+   "on": {
+    "alu": 133,
+    "copies": 9,
+    "co_issued": 22,
+    "fetches": 4,
+    "control_flow": 26,
+    "registers": 10
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/22d6a7758d2d5d84.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 11,
+    "copies": 7,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 4,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/233aa73af10f83bc.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 19,
+    "copies": 10,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 6,
+    "registers": 8
+   },
+   "on": {
+    "alu": 9,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/246ca2b33bb1fdf4.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 14,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 5
+   },
+   "on": {
+    "alu": 9,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/251e226c8a088a82.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 264,
+    "copies": 103,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 48,
+    "registers": 12
+   },
+   "on": {
+    "alu": 160,
+    "copies": 15,
+    "co_issued": 25,
+    "fetches": 3,
+    "control_flow": 30,
+    "registers": 9
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/29fab4bb2516d607.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 45,
+    "copies": 20,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 12,
+    "registers": 12
+   },
+   "on": {
+    "alu": 23,
+    "copies": 5,
+    "co_issued": 5,
+    "fetches": 3,
+    "control_flow": 9,
+    "registers": 7
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/2a1a218d5688204a.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 238,
+    "copies": 83,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 44,
+    "registers": 12
+   },
+   "on": {
+    "alu": 148,
+    "copies": 9,
+    "co_issued": 25,
+    "fetches": 3,
+    "control_flow": 28,
+    "registers": 9
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/2bc4ebf687f545b6.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "on": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/2e7f30cdc49bd211.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 42,
+    "copies": 28,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 11,
+    "registers": 8
+   },
+   "on": {
+    "alu": 23,
+    "copies": 10,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 7,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/2eefbbd89e53921c.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 74,
+    "copies": 29,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 16,
+    "registers": 16
+   },
+   "on": {
+    "alu": 36,
+    "copies": 4,
+    "co_issued": 9,
+    "fetches": 4,
+    "control_flow": 11,
+    "registers": 10
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/31871ebc6e90765a.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 30,
+    "copies": 19,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 9,
+    "registers": 6
+   },
+   "on": {
+    "alu": 17,
+    "copies": 6,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 6,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/32d160ecc3deb658.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 22,
+    "copies": 14,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 8,
+    "registers": 7
+   },
+   "on": {
+    "alu": 13,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 6,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/33d3ad7a449b966c.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 12,
+    "copies": 8,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 5
+   },
+   "on": {
+    "alu": 4,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/349b6ed78d720732.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 17,
+    "copies": 9,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 6
+   },
+   "on": {
+    "alu": 8,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/350248024002ce37.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 244,
+    "copies": 86,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 45,
+    "registers": 13
+   },
+   "on": {
+    "alu": 151,
+    "copies": 10,
+    "co_issued": 25,
+    "fetches": 4,
+    "control_flow": 29,
+    "registers": 10
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/35fc826ad15e1872.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 46,
+    "copies": 20,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 10,
+    "registers": 12
+   },
+   "on": {
+    "alu": 21,
+    "copies": 2,
+    "co_issued": 3,
+    "fetches": 2,
+    "control_flow": 6,
+    "registers": 6
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/39662e66d545c874.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 6,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 4
+   },
+   "on": {
+    "alu": 3,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/3ba44326990edfeb.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 28,
+    "copies": 20,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 9,
+    "registers": 9
+   },
+   "on": {
+    "alu": 15,
+    "copies": 7,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 6,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/3de421fc6f9f3122.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 10,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 7,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/407248b726bcb428.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 272,
+    "copies": 108,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 50,
+    "registers": 12
+   },
+   "on": {
+    "alu": 164,
+    "copies": 16,
+    "co_issued": 25,
+    "fetches": 3,
+    "control_flow": 31,
+    "registers": 9
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/412f75e329bbe3a2.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 26,
+    "copies": 18,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 9,
+    "registers": 7
+   },
+   "on": {
+    "alu": 14,
+    "copies": 6,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 6,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/46d1eea9e1360669.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 44,
+    "copies": 12,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 10,
+    "registers": 11
+   },
+   "on": {
+    "alu": 24,
+    "copies": 1,
+    "co_issued": 6,
+    "fetches": 3,
+    "control_flow": 6,
+    "registers": 7
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/48cd8f549b507826.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 46,
+    "copies": 18,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 11,
+    "registers": 14
+   },
+   "on": {
+    "alu": 24,
+    "copies": 2,
+    "co_issued": 2,
+    "fetches": 2,
+    "control_flow": 7,
+    "registers": 7
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/4a2fde48317fee5f.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 41,
+    "copies": 12,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 9,
+    "registers": 10
+   },
+   "on": {
+    "alu": 30,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 7,
+    "registers": 7
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/4e6272cd5ea024f5.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 54,
+    "copies": 37,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 13,
+    "registers": 8
+   },
+   "on": {
+    "alu": 27,
+    "copies": 13,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 8,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/4ee5b3c093bea8ab.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 103,
+    "copies": 27,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 20,
+    "registers": 16
+   },
+   "on": {
+    "alu": 57,
+    "copies": 1,
+    "co_issued": 11,
+    "fetches": 4,
+    "control_flow": 12,
+    "registers": 10
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/4f41862f49358139.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 15,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 5
+   },
+   "on": {
+    "alu": 8,
+    "copies": 0,
+    "co_issued": 2,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/4f939ba938f196ae.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 260,
+    "copies": 99,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 48,
+    "registers": 12
+   },
+   "on": {
+    "alu": 158,
+    "copies": 15,
+    "co_issued": 25,
+    "fetches": 3,
+    "control_flow": 30,
+    "registers": 9
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/5264b90e6f50c901.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 7,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 4
+   },
+   "on": {
+    "alu": 5,
+    "copies": 0,
+    "co_issued": 1,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/551fb86c6ef59def.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 48,
+    "copies": 19,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 11,
+    "registers": 14
+   },
+   "on": {
+    "alu": 25,
+    "copies": 2,
+    "co_issued": 2,
+    "fetches": 2,
+    "control_flow": 7,
+    "registers": 7
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/556ea181d0d34829.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 223,
+    "copies": 82,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 41,
+    "registers": 13
+   },
+   "on": {
+    "alu": 138,
+    "copies": 11,
+    "co_issued": 22,
+    "fetches": 4,
+    "control_flow": 26,
+    "registers": 11
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/55a0066e2650ed99.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 34,
+    "copies": 23,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 10,
+    "registers": 8
+   },
+   "on": {
+    "alu": 18,
+    "copies": 7,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 7,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/58786ba1a7e49515.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 43,
+    "copies": 29,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 11,
+    "registers": 8
+   },
+   "on": {
+    "alu": 22,
+    "copies": 10,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 7,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/607a7b7110387a22.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 11,
+    "copies": 7,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "on": {
+    "alu": 4,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/60bcbd6f4104ab13.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 44,
+    "copies": 20,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 10,
+    "registers": 15
+   },
+   "on": {
+    "alu": 20,
+    "copies": 1,
+    "co_issued": 2,
+    "fetches": 3,
+    "control_flow": 6,
+    "registers": 8
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/61cdb76b69b6489b.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 14,
+    "copies": 6,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 5
+   },
+   "on": {
+    "alu": 6,
+    "copies": 0,
+    "co_issued": 2,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/64f76a18fb37dd48.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 2,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/66457dda201609ed.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 64,
+    "copies": 19,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 14,
+    "registers": 16
+   },
+   "on": {
+    "alu": 38,
+    "copies": 3,
+    "co_issued": 4,
+    "fetches": 4,
+    "control_flow": 9,
+    "registers": 10
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/676ff8c4689eaf91.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 48,
+    "copies": 21,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 10,
+    "registers": 14
+   },
+   "on": {
+    "alu": 23,
+    "copies": 0,
+    "co_issued": 2,
+    "fetches": 3,
+    "control_flow": 6,
+    "registers": 8
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/68b11762bd80366b.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 260,
+    "copies": 99,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 48,
+    "registers": 12
+   },
+   "on": {
+    "alu": 158,
+    "copies": 15,
+    "co_issued": 25,
+    "fetches": 3,
+    "control_flow": 30,
+    "registers": 9
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/695e15b366c72818.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 42,
+    "copies": 19,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 10,
+    "registers": 14
+   },
+   "on": {
+    "alu": 19,
+    "copies": 1,
+    "co_issued": 2,
+    "fetches": 2,
+    "control_flow": 6,
+    "registers": 6
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/6a05b1f88a016fb2.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 4,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/6b7ff186cc28cce5.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 23,
+    "copies": 10,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 6,
+    "registers": 7
+   },
+   "on": {
+    "alu": 13,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/6c429f0c99b0524f.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 212,
+    "copies": 74,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 40,
+    "registers": 12
+   },
+   "on": {
+    "alu": 132,
+    "copies": 8,
+    "co_issued": 22,
+    "fetches": 4,
+    "control_flow": 25,
+    "registers": 9
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/6dd3a70373df59bf.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 63,
+    "copies": 21,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 14,
+    "registers": 15
+   },
+   "on": {
+    "alu": 34,
+    "copies": 1,
+    "co_issued": 4,
+    "fetches": 4,
+    "control_flow": 8,
+    "registers": 10
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/6e690d475f0af5fe.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 29,
+    "copies": 21,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 9,
+    "registers": 7
+   },
+   "on": {
+    "alu": 15,
+    "copies": 7,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 6,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/70ee109df12524e4.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 190,
+    "copies": 69,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 36,
+    "registers": 12
+   },
+   "on": {
+    "alu": 118,
+    "copies": 9,
+    "co_issued": 19,
+    "fetches": 3,
+    "control_flow": 23,
+    "registers": 9
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/71ac4a48df92e5b7.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 228,
+    "copies": 87,
+    "co_issued": 0,
+    "fetches": 5,
+    "control_flow": 42,
+    "registers": 14
+   },
+   "on": {
+    "alu": 140,
+    "copies": 13,
+    "co_issued": 22,
+    "fetches": 5,
+    "control_flow": 27,
+    "registers": 12
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/72abd6191dcd7bfe.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 238,
+    "copies": 83,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 44,
+    "registers": 13
+   },
+   "on": {
+    "alu": 148,
+    "copies": 9,
+    "co_issued": 25,
+    "fetches": 4,
+    "control_flow": 28,
+    "registers": 10
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/75422301f0e22829.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 78,
+    "copies": 24,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 16,
+    "registers": 15
+   },
+   "on": {
+    "alu": 41,
+    "copies": 1,
+    "co_issued": 7,
+    "fetches": 3,
+    "control_flow": 9,
+    "registers": 8
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/820f98f280587ea8.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 59,
+    "copies": 17,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 12,
+    "registers": 11
+   },
+   "on": {
+    "alu": 31,
+    "copies": 4,
+    "co_issued": 11,
+    "fetches": 2,
+    "control_flow": 7,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/84e4d80e1fc6e615.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/8586b077d3e63bc1.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 48,
+    "copies": 19,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 11,
+    "registers": 14
+   },
+   "on": {
+    "alu": 25,
+    "copies": 2,
+    "co_issued": 2,
+    "fetches": 2,
+    "control_flow": 7,
+    "registers": 7
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/858b7f6b67e42fd6.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 31,
+    "copies": 16,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 8,
+    "registers": 12
+   },
+   "on": {
+    "alu": 11,
+    "copies": 0,
+    "co_issued": 2,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/85ae52ee303f618c.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 8,
+    "copies": 6,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 4
+   },
+   "on": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/85c8b022385334bf.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 71,
+    "copies": 20,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 15,
+    "registers": 14
+   },
+   "on": {
+    "alu": 36,
+    "copies": 2,
+    "co_issued": 10,
+    "fetches": 2,
+    "control_flow": 9,
+    "registers": 6
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/88a3de8e328f385a.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 19,
+    "copies": 11,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 7,
+    "registers": 6
+   },
+   "on": {
+    "alu": 11,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/8b4ce5184129a25a.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 8,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 4,
+    "registers": 4
+   },
+   "on": {
+    "alu": 4,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/8e555ecc28e3d240.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 26,
+    "copies": 18,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 9,
+    "registers": 8
+   },
+   "on": {
+    "alu": 14,
+    "copies": 6,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 6,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/8ecfa22174a91d18.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 12,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "on": {
+    "alu": 6,
+    "copies": 0,
+    "co_issued": 2,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/8f974c0335e452d5.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 32,
+    "copies": 21,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 10,
+    "registers": 7
+   },
+   "on": {
+    "alu": 17,
+    "copies": 7,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 6,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/92f6cc89e68fccea.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "on": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/93d36ce55e3f9bad.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 221,
+    "copies": 82,
+    "co_issued": 0,
+    "fetches": 5,
+    "control_flow": 40,
+    "registers": 13
+   },
+   "on": {
+    "alu": 199,
+    "copies": 67,
+    "co_issued": 22,
+    "fetches": 5,
+    "control_flow": 37,
+    "registers": 14
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/946541a3cc485e48.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 8,
+    "copies": 6,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 4
+   },
+   "on": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/987a188c27a802e5.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 19,
+    "copies": 11,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 6,
+    "registers": 8
+   },
+   "on": {
+    "alu": 8,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/9f1eca9bebdc35b6.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 11,
+    "copies": 7,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 6
+   },
+   "on": {
+    "alu": 4,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/a122a58ca77e3270.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 6,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/a2beec39ae2b951c.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/a35e191254f5ef46.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 17,
+    "copies": 7,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 5
+   },
+   "on": {
+    "alu": 10,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/a478595f52157a73.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 14,
+    "copies": 7,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 7
+   },
+   "on": {
+    "alu": 7,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 4,
+    "registers": 6
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/a479ce42ba36b7d8.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 35,
+    "copies": 18,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 8,
+    "registers": 11
+   },
+   "on": {
+    "alu": 14,
+    "copies": 2,
+    "co_issued": 2,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/a48b96d69ff86daf.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 1
+   },
+   "on": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/ad037db0d56a10dd.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 56,
+    "copies": 39,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 14,
+    "registers": 8
+   },
+   "on": {
+    "alu": 28,
+    "copies": 14,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 8,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/b331aaa6bee56ee9.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 85,
+    "copies": 25,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 17,
+    "registers": 15
+   },
+   "on": {
+    "alu": 48,
+    "copies": 3,
+    "co_issued": 7,
+    "fetches": 3,
+    "control_flow": 10,
+    "registers": 9
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/b40238367bc2ae70.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 53,
+    "copies": 19,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 12,
+    "registers": 16
+   },
+   "on": {
+    "alu": 30,
+    "copies": 2,
+    "co_issued": 2,
+    "fetches": 4,
+    "control_flow": 8,
+    "registers": 10
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/b4a8c01218dcffe9.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 47,
+    "copies": 19,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 11,
+    "registers": 15
+   },
+   "on": {
+    "alu": 24,
+    "copies": 1,
+    "co_issued": 2,
+    "fetches": 4,
+    "control_flow": 7,
+    "registers": 10
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/b4bd0f33bde7fc52.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 23,
+    "copies": 9,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 6,
+    "registers": 7
+   },
+   "on": {
+    "alu": 14,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/b624738d17bc5ca0.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 13,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 5
+   },
+   "on": {
+    "alu": 8,
+    "copies": 0,
+    "co_issued": 2,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/b72c3e79097987b4.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 6,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 3,
+    "copies": 0,
+    "co_issued": 1,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/ba930563b1db79f4.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 5,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 2,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/bacc292ad5a86eb3.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 107,
+    "copies": 75,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 22,
+    "registers": 7
+   },
+   "on": {
+    "alu": 51,
+    "copies": 27,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 12,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/bde83fec0182df1d.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 29,
+    "copies": 21,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 9,
+    "registers": 7
+   },
+   "on": {
+    "alu": 16,
+    "copies": 8,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 6,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/be7931e3ec0bb85e.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 15,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 5
+   },
+   "on": {
+    "alu": 10,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/c0887c56621045a9.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 37,
+    "copies": 26,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 10,
+    "registers": 7
+   },
+   "on": {
+    "alu": 19,
+    "copies": 8,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 7,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/c0ddfd4547c71e5a.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 245,
+    "copies": 89,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 44,
+    "registers": 12
+   },
+   "on": {
+    "alu": 220,
+    "copies": 72,
+    "co_issued": 25,
+    "fetches": 4,
+    "control_flow": 40,
+    "registers": 13
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/c165aaa5a5be8de5.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/c2679fcd0788b78d.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 24,
+    "copies": 11,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 6,
+    "registers": 8
+   },
+   "on": {
+    "alu": 13,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/c359885760b8a624.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 30,
+    "copies": 22,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 9,
+    "registers": 9
+   },
+   "on": {
+    "alu": 16,
+    "copies": 8,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 6,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/c4bb20c5e14ce9d8.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/c8673f02f09b439d.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 4,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/c91470b682614340.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/c98a0ca2e68f85a1.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 14,
+    "copies": 7,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 6
+   },
+   "on": {
+    "alu": 8,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/ca44599827bbdb23.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 38,
+    "copies": 17,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 8,
+    "registers": 10
+   },
+   "on": {
+    "alu": 19,
+    "copies": 4,
+    "co_issued": 4,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/cad12b640d1cfd9c.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 31,
+    "copies": 16,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 8,
+    "registers": 11
+   },
+   "on": {
+    "alu": 11,
+    "copies": 0,
+    "co_issued": 2,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/cbed2c9db6f723a5.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 8,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 4
+   },
+   "on": {
+    "alu": 3,
+    "copies": 0,
+    "co_issued": 1,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/ce4bffbb0b973310.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/cefc467138f9dac7.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 38,
+    "copies": 27,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 11,
+    "registers": 7
+   },
+   "on": {
+    "alu": 20,
+    "copies": 9,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 7,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/d1441271ff15f72c.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 8,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 4,
+    "registers": 4
+   },
+   "on": {
+    "alu": 4,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/d5d99e338acc096e.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 24,
+    "copies": 16,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 8,
+    "registers": 7
+   },
+   "on": {
+    "alu": 13,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 6,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/d8658b0e39305f51.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 266,
+    "copies": 102,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 49,
+    "registers": 12
+   },
+   "on": {
+    "alu": 161,
+    "copies": 16,
+    "co_issued": 25,
+    "fetches": 3,
+    "control_flow": 30,
+    "registers": 9
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/d8d724f61446ecbb.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 45,
+    "copies": 31,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 12,
+    "registers": 7
+   },
+   "on": {
+    "alu": 23,
+    "copies": 9,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 7,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/d90889c31c82dbe8.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 199,
+    "copies": 75,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 37,
+    "registers": 13
+   },
+   "on": {
+    "alu": 123,
+    "copies": 11,
+    "co_issued": 19,
+    "fetches": 4,
+    "control_flow": 24,
+    "registers": 11
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/da2593920df168c8.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 22,
+    "copies": 14,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 8,
+    "registers": 6
+   },
+   "on": {
+    "alu": 13,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 6,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/dae9addf7280e276.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 11,
+    "copies": 7,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "on": {
+    "alu": 4,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/dee3af7655c47a63.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 48,
+    "copies": 19,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 11,
+    "registers": 14
+   },
+   "on": {
+    "alu": 25,
+    "copies": 2,
+    "co_issued": 2,
+    "fetches": 2,
+    "control_flow": 7,
+    "registers": 7
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/e09e6878603dc742.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/e19f86ee747cb140.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 26,
+    "copies": 13,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 7,
+    "registers": 8
+   },
+   "on": {
+    "alu": 12,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/e2cfed9f9f80cbf0.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 89,
+    "copies": 26,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 17,
+    "registers": 16
+   },
+   "on": {
+    "alu": 50,
+    "copies": 1,
+    "co_issued": 7,
+    "fetches": 4,
+    "control_flow": 11,
+    "registers": 10
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/e2f1c3a692fdfb84.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 10,
+    "copies": 6,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 5
+   },
+   "on": {
+    "alu": 4,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/e3fba406929fde97.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 36,
+    "copies": 13,
+    "co_issued": 0,
+    "fetches": 8,
+    "control_flow": 9,
+    "registers": 18
+   },
+   "on": {
+    "alu": 24,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 8,
+    "control_flow": 7,
+    "registers": 16
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/e4c0798e6cc9e4ba.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 30,
+    "copies": 15,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 7,
+    "registers": 11
+   },
+   "on": {
+    "alu": 11,
+    "copies": 0,
+    "co_issued": 2,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/e5c535debebde1ed.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 5,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 4
+   },
+   "on": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/e5ea8b62e2ebf4ac.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 259,
+    "copies": 101,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 47,
+    "registers": 12
+   },
+   "on": {
+    "alu": 157,
+    "copies": 16,
+    "co_issued": 25,
+    "fetches": 3,
+    "control_flow": 30,
+    "registers": 9
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/e6ec5aee8cc08f41.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 11,
+    "copies": 7,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 5
+   },
+   "on": {
+    "alu": 4,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/e7fe951996d1f40b.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 42,
+    "copies": 19,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 10,
+    "registers": 14
+   },
+   "on": {
+    "alu": 19,
+    "copies": 1,
+    "co_issued": 2,
+    "fetches": 2,
+    "control_flow": 6,
+    "registers": 6
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/e9d14d2c939cffe4.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 247,
+    "copies": 89,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 45,
+    "registers": 13
+   },
+   "on": {
+    "alu": 153,
+    "copies": 11,
+    "co_issued": 25,
+    "fetches": 4,
+    "control_flow": 29,
+    "registers": 11
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/e9e5df17e9c42a02.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 30,
+    "copies": 15,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 7,
+    "registers": 12
+   },
+   "on": {
+    "alu": 11,
+    "copies": 0,
+    "co_issued": 2,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/ece2618e566d8623.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 3,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/ed3667059b5c9028.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 36,
+    "copies": 16,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 9,
+    "registers": 13
+   },
+   "on": {
+    "alu": 17,
+    "copies": 2,
+    "co_issued": 2,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 6
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/f12926532ee0b4d0.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 87,
+    "copies": 45,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 19,
+    "registers": 11
+   },
+   "on": {
+    "alu": 51,
+    "copies": 13,
+    "co_issued": 4,
+    "fetches": 4,
+    "control_flow": 12,
+    "registers": 8
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/f1f88472976e4bfb.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 214,
+    "copies": 76,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 40,
+    "registers": 13
+   },
+   "on": {
+    "alu": 133,
+    "copies": 9,
+    "co_issued": 22,
+    "fetches": 4,
+    "control_flow": 26,
+    "registers": 10
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/f2f1d4cd60de5251.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 21,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 6,
+    "registers": 6
+   },
+   "on": {
+    "alu": 12,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/f3825523049d31cf.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 56,
+    "copies": 23,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 12,
+    "registers": 14
+   },
+   "on": {
+    "alu": 30,
+    "copies": 3,
+    "co_issued": 2,
+    "fetches": 3,
+    "control_flow": 8,
+    "registers": 7
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/f526e9ffb3616812.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 4,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/f544e71db9210106.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/f5cb41c6eaf01a5f.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 43,
+    "copies": 19,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 10,
+    "registers": 14
+   },
+   "on": {
+    "alu": 19,
+    "copies": 0,
+    "co_issued": 3,
+    "fetches": 2,
+    "control_flow": 6,
+    "registers": 6
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/f6b5e1536572c9a5.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 9,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 3
+   },
+   "on": {
+    "alu": 7,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/dusklight-xenon/platforms/xenon/shaders/f7c1df6fe6364447.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 18,
+    "copies": 6,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 6
+   },
+   "on": {
+    "alu": 12,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/absign.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 10,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 7
+   },
+   "on": {
+    "alu": 7,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 6
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/angles.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 3,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 5
+   },
+   "on": {
+    "alu": 2,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/blend50.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 2,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 2,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/blend.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 2,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 2,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/bright.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 2,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 2,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/cf_if.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 2,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 2,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/chainmat.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 10,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 6,
+    "registers": 4
+   },
+   "on": {
+    "alu": 10,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 6,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/clamprange.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 3,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 3,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/cubedir.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 5,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "on": {
+    "alu": 5,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/divide.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 8,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 3
+   },
+   "on": {
+    "alu": 8,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/explog.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 15,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "on": {
+    "alu": 11,
+    "copies": 1,
+    "co_issued": 3,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/floorabs.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 4,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 4,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/fs_branch_local.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 3,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 5
+   },
+   "on": {
+    "alu": 3,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/fs_cubemap.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 4,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 4,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "not simulated: vector kCube"
+  },
+  "xsc/testdata/fs_deriv.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 14,
+    "copies": 7,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 6,
+    "registers": 5
+   },
+   "on": {
+    "alu": 8,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/fs_discard.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 2,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 2,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/fs_dsolid.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 10,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 5
+   },
+   "on": {
+    "alu": 6,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/fs_intdiv.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 18,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "on": {
+    "alu": 11,
+    "copies": 1,
+    "co_issued": 4,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/fs_minv.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 30,
+    "copies": 8,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 6,
+    "registers": 9
+   },
+   "on": {
+    "alu": 20,
+    "copies": 1,
+    "co_issued": 1,
+    "fetches": 0,
+    "control_flow": 5,
+    "registers": 6
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/fs_mtest.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 24,
+    "copies": 18,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 5,
+    "registers": 7
+   },
+   "on": {
+    "alu": 15,
+    "copies": 9,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 4,
+    "registers": 6
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/fs_refract.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 24,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 5,
+    "registers": 7
+   },
+   "on": {
+    "alu": 15,
+    "copies": 2,
+    "co_issued": 2,
+    "fetches": 0,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/fs_ternary.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 6,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 6
+   },
+   "on": {
+    "alu": 3,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/fs_texlod.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/fs_texproj.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 5,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 5
+   },
+   "on": {
+    "alu": 4,
+    "copies": 2,
+    "co_issued": 1,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/fs_texscale.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 2,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/fs_vrelation.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 30,
+    "copies": 16,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 6,
+    "registers": 8
+   },
+   "on": {
+    "alu": 15,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 4,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/gamma.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 14,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 5
+   },
+   "on": {
+    "alu": 8,
+    "copies": 2,
+    "co_issued": 3,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/gray.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 3,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 2,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/intbucket.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 7,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 5,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/intmix.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "on": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/invtrig.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 42,
+    "copies": 8,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 9,
+    "registers": 7
+   },
+   "on": {
+    "alu": 24,
+    "copies": 0,
+    "co_issued": 2,
+    "fetches": 1,
+    "control_flow": 6,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/lit01.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 5,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 3,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/loop_accum.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 9,
+    "copies": 6,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 4,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/loop_array.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 6,
+    "registers": 3
+   },
+   "on": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 6,
+    "registers": 3
+   },
+   "result": "not simulated: control flow '      loop i0, L4'"
+  },
+  "xsc/testdata/loop_break.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 5,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 6,
+    "registers": 4
+   },
+   "on": {
+    "alu": 5,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 6,
+    "registers": 4
+   },
+   "result": "not simulated: control flow '      loop i0, L4'"
+  },
+  "xsc/testdata/loop_cond.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 8,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 7,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/loop_nested.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 21,
+    "copies": 11,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 5,
+    "registers": 4
+   },
+   "on": {
+    "alu": 10,
+    "copies": 1,
+    "co_issued": 1,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/loop_stair.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 17,
+    "copies": 7,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 4,
+    "registers": 4
+   },
+   "on": {
+    "alu": 11,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/loop_uniform.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 6,
+    "registers": 3
+   },
+   "on": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 6,
+    "registers": 3
+   },
+   "result": "not simulated: control flow '      loop i0, L4'"
+  },
+  "xsc/testdata/loop_weight.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 12,
+    "copies": 6,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 4,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/loop_while.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 9,
+    "copies": 6,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 4,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/mathfns.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 22,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 6,
+    "registers": 7
+   },
+   "on": {
+    "alu": 10,
+    "copies": 0,
+    "co_issued": 5,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/modcross.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 14,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 6
+   },
+   "on": {
+    "alu": 5,
+    "copies": 0,
+    "co_issued": 1,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/modulate.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/nested_if.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 5,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 6
+   },
+   "on": {
+    "alu": 5,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/normlen.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 8,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 5
+   },
+   "on": {
+    "alu": 5,
+    "copies": 1,
+    "co_issued": 1,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/rounding.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 9,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 6
+   },
+   "on": {
+    "alu": 8,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/sat.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/shuffle2.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 4,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 3,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/spincube.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 6,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 3
+   },
+   "on": {
+    "alu": 6,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/stepsmooth.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 18,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 7
+   },
+   "on": {
+    "alu": 11,
+    "copies": 0,
+    "co_issued": 2,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/sw_swizzle.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 2,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/tangent.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 5,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 5
+   },
+   "on": {
+    "alu": 5,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/tint.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 3,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 2,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/verify_alloc.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 34,
+    "copies": 10,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 7,
+    "registers": 6
+   },
+   "on": {
+    "alu": 25,
+    "copies": 4,
+    "co_issued": 3,
+    "fetches": 0,
+    "control_flow": 6,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/verify_asin.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 17,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "on": {
+    "alu": 12,
+    "copies": 1,
+    "co_issued": 1,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/verify_atan.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 16,
+    "copies": 6,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 4,
+    "registers": 4
+   },
+   "on": {
+    "alu": 10,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/verify_cross.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 8,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 6,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/verify_fract.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 5,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 3
+   },
+   "on": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/verify_mod.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 6,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 4
+   },
+   "on": {
+    "alu": 4,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/verify_nest.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 5,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 5
+   },
+   "on": {
+    "alu": 4,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/verify_round.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 7,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 4,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/verify_sign.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 9,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 6,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/verify_smooth.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 12,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 8,
+    "copies": 1,
+    "co_issued": 1,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/verify_sqrt.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 4,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 3
+   },
+   "on": {
+    "alu": 3,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/verify_trunc.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 6,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 3
+   },
+   "on": {
+    "alu": 4,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 6,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 3
+   },
+   "on": {
+    "alu": 6,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_block_literals.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 5,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 3
+   },
+   "on": {
+    "alu": 3,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_blocks.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 14,
+    "copies": 6,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 6,
+    "registers": 4
+   },
+   "on": {
+    "alu": 9,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_clip_distance_literal.vert.spv": {
+   "result": "not compiled: gl_ClipDistance other than dot(gl_Position, a plane), the plane a whole vec4 of a block at a fixed index, as Xenos's user clip planes take it (v1)"
+  },
+  "xsc/testdata/vk_clip_distance.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 3
+   },
+   "on": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_clip_distance_world.vert.spv": {
+   "result": "not compiled: gl_ClipDistance other than dot(gl_Position, a plane), the plane a whole vec4 of a block at a fixed index, as Xenos's user clip planes take it (v1)"
+  },
+  "xsc/testdata/vk_composite_extract.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 20,
+    "copies": 11,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 5,
+    "registers": 6
+   },
+   "on": {
+    "alu": 8,
+    "copies": 1,
+    "co_issued": 1,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_constant_color.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_constant_varying.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 1
+   },
+   "on": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_cube.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 4,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 4,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "not simulated: vector kCube"
+  },
+  "xsc/testdata/vk_cube_grad.frag.spv": {
+   "result": "not compiled: gradients for a cube map or a 3D texture (v1)"
+  },
+  "xsc/testdata/vk_cull_distance.vert.spv": {
+   "result": "not compiled: gl_CullDistance: Xenos has no cull distances"
+  },
+  "xsc/testdata/vk_dependent_fetch.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 8,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 4,
+    "registers": 4
+   },
+   "on": {
+    "alu": 4,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_dependent_read.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 2,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_dot2.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 13,
+    "copies": 9,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 4,
+    "registers": 6
+   },
+   "on": {
+    "alu": 7,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_dynamic_matrices.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 12,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 6
+   },
+   "on": {
+    "alu": 12,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 6
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_dynamic_rows.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 18,
+    "copies": 9,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 7,
+    "registers": 6
+   },
+   "on": {
+    "alu": 17,
+    "copies": 9,
+    "co_issued": 1,
+    "fetches": 2,
+    "control_flow": 6,
+    "registers": 6
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_five_fetches.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 10,
+    "copies": 6,
+    "co_issued": 0,
+    "fetches": 5,
+    "control_flow": 6,
+    "registers": 7
+   },
+   "on": {
+    "alu": 7,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 5,
+    "control_flow": 5,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_four_outputs.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 8,
+    "copies": 6,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "on": {
+    "alu": 6,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_frag_coord_depth.frag.spv": {
+   "result": "not compiled: gl_FragCoord.zw: the pixel parameters hold no depth (v1)"
+  },
+  "xsc/testdata/vk_frag_coord.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 6,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 6,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_frag_depth_arms.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 6,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 5
+   },
+   "on": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_frag_depth_before.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 7,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 5
+   },
+   "on": {
+    "alu": 3,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_frag_depth_branch.frag.spv": {
+   "result": "not compiled: gl_FragDepth written on one path of an if/else only: the depth export needs every path"
+  },
+  "xsc/testdata/vk_frag_depth.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 10,
+    "copies": 6,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 4,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_front_facing_discard.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 5,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 5,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_front_facing.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 6,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 6
+   },
+   "on": {
+    "alu": 4,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_front_facing_if.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 8,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 5
+   },
+   "on": {
+    "alu": 6,
+    "copies": 2,
+    "co_issued": 1,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_grad.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 6,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 4,
+    "registers": 4
+   },
+   "on": {
+    "alu": 4,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 4,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_instance_alone.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 7,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 4
+   },
+   "on": {
+    "alu": 3,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_instance_index.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 21,
+    "copies": 8,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 7,
+    "registers": 6
+   },
+   "on": {
+    "alu": 19,
+    "copies": 7,
+    "co_issued": 2,
+    "fetches": 1,
+    "control_flow": 7,
+    "registers": 6
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_local_branch_reassign.frag.spv": {
+   "result": "not compiled: local %9 stored more than once where the unroller doesn't rewrite it"
+  },
+  "xsc/testdata/vk_local_chain.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 129,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 23,
+    "registers": 3
+   },
+   "on": {
+    "alu": 64,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 12,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_local_merged_early.frag.spv": {
+   "result": "not compiled: local %9 read before the if/else that assigns it ends"
+  },
+  "xsc/testdata/vk_local_partial.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 4,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 3
+   },
+   "on": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_local_reassign.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 5,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 4
+   },
+   "on": {
+    "alu": 2,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_local_reassign.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 2,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 2
+   },
+   "on": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_lod.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 9,
+    "copies": 7,
+    "co_issued": 0,
+    "fetches": 7,
+    "control_flow": 5,
+    "registers": 8
+   },
+   "on": {
+    "alu": 7,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 7,
+    "control_flow": 5,
+    "registers": 8
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_loop_break_data.frag.spv": {
+   "result": "not compiled: a break on data from a loop counted by a block: LOOP_END breaks when all 64 vertices or pixels agree (xenia:src/xenia/gpu/ucode.h:372-373) (v1)"
+  },
+  "xsc/testdata/vk_loop_count.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 4,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 6,
+    "registers": 3
+   },
+   "on": {
+    "alu": 4,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 6,
+    "registers": 3
+   },
+   "result": "not simulated: control flow '      loop i16, L5'"
+  },
+  "xsc/testdata/vk_loop_count_if.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 23,
+    "copies": 10,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 8,
+    "registers": 10
+   },
+   "on": {
+    "alu": 23,
+    "copies": 10,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 8,
+    "registers": 10
+   },
+   "result": "not simulated: control flow '      loop i16, L7'"
+  },
+  "xsc/testdata/vk_loop_if_break.frag.spv": {
+   "result": "not compiled: a break, discard or return inside an if/else on data; real-loop v1: condition must compare local induction var to a uniform"
+  },
+  "xsc/testdata/vk_loop_if.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 29,
+    "copies": 14,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 6,
+    "registers": 9
+   },
+   "on": {
+    "alu": 19,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 5,
+    "registers": 6
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_loop_swap.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 8,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 6,
+    "registers": 5
+   },
+   "on": {
+    "alu": 8,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 6,
+    "registers": 5
+   },
+   "result": "not simulated: control flow '      loop i16, L5'"
+  },
+  "xsc/testdata/vk_loop_uniform_if.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 34,
+    "copies": 19,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 11,
+    "registers": 5
+   },
+   "on": {
+    "alu": 34,
+    "copies": 19,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 11,
+    "registers": 5
+   },
+   "result": "not simulated: scalar kSetpGt"
+  },
+  "xsc/testdata/vk_many_fetches.frag.spv": {
+   "result": "not compiled: pixel shader needs 367 registers (r0..r366), over the 64 it may use; it would hang the GPU"
+  },
+  "xsc/testdata/vk_many_live.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 148,
+    "copies": 8,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 29,
+    "registers": 45
+   },
+   "on": {
+    "alu": 122,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 25,
+    "registers": 16
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_matrices.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 30,
+    "copies": 6,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 9,
+    "registers": 6
+   },
+   "on": {
+    "alu": 24,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 8,
+    "registers": 6
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_output_location_4.frag.spv": {
+   "result": "not compiled: a colour output at location 4, past oC3"
+  },
+  "xsc/testdata/vk_outputs_apart.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 5,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 3
+   },
+   "on": {
+    "alu": 2,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_outputs_branch.frag.spv": {
+   "result": "not compiled: the colour output at location 1 stored 2 times"
+  },
+  "xsc/testdata/vk_outputs_selected.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 5,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 4
+   },
+   "on": {
+    "alu": 4,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_point_coord.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 3,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "on": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_point_sprite.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 2,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 1
+   },
+   "on": {
+    "alu": 2,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_position_only.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 2,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 2
+   },
+   "on": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_samplers.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 2,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_shadow_cube.frag.spv": {
+   "result": "not compiled: depth comparisons other than a sampler2DShadow's unsupported"
+  },
+  "xsc/testdata/vk_shadow.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 6,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 6,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_six_fetches.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 11,
+    "copies": 6,
+    "co_issued": 0,
+    "fetches": 6,
+    "control_flow": 6,
+    "registers": 7
+   },
+   "on": {
+    "alu": 9,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 6,
+    "control_flow": 6,
+    "registers": 6
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_texel_dependent.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 6,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 6,
+    "registers": 5
+   },
+   "on": {
+    "alu": 4,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 6,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_texel_offset_operand.frag.spv": {
+   "result": "not compiled: image operands 0x8: offsets, a sample index or a minimum LOD (v1)"
+  },
+  "xsc/testdata/vk_texel_offsets.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 9,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 4,
+    "registers": 8
+   },
+   "on": {
+    "alu": 7,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 4,
+    "registers": 8
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_three_inputs.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 5,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 3
+   },
+   "on": {
+    "alu": 5,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_triangle.frag.gl.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_triangle.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_triangle.vert.gl.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "on": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_triangle.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "on": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_vertex_branch.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 7,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 4
+   },
+   "on": {
+    "alu": 5,
+    "copies": 1,
+    "co_issued": 1,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_vertex_if.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 26,
+    "copies": 14,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 8,
+    "registers": 9
+   },
+   "on": {
+    "alu": 16,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 7,
+    "registers": 6
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_vertex_index.vert.spv": {
+   "result": "not compiled: integer Load must be a foldable local"
+  },
+  "xsc/testdata/vk_vertex_loop_count.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 13,
+    "copies": 10,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 10,
+    "registers": 7
+   },
+   "on": {
+    "alu": 13,
+    "copies": 10,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 10,
+    "registers": 7
+   },
+   "result": "not simulated: control flow '      loop i0, L7'"
+  },
+  "xsc/testdata/vk_vertex_texture.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 5,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 5,
+    "control_flow": 6,
+    "registers": 5
+   },
+   "on": {
+    "alu": 4,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 5,
+    "control_flow": 5,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_vertex_uniform_if.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 14,
+    "copies": 8,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 6,
+    "registers": 7
+   },
+   "on": {
+    "alu": 9,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 6,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_volume.frag.spv": {
+   "stage": "pixel",
+   "off": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vk_volume.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "on": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vs_lighting.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 14,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 6,
+    "registers": 5
+   },
+   "on": {
+    "alu": 11,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 4,
+    "control_flow": 6,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vs_mat2.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 8,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 4
+   },
+   "on": {
+    "alu": 7,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vs_mat3.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 13,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 6,
+    "registers": 3
+   },
+   "on": {
+    "alu": 10,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vs_matmat.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 26,
+    "copies": 6,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 8,
+    "registers": 8
+   },
+   "on": {
+    "alu": 22,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 8,
+    "registers": 7
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vs_vecmat.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 7,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 4
+   },
+   "on": {
+    "alu": 6,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vs_wave.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 11,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 6,
+    "registers": 6
+   },
+   "on": {
+    "alu": 9,
+    "copies": 2,
+    "co_issued": 1,
+    "fetches": 3,
+    "control_flow": 6,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "xsc/testdata/vtx_arith.vert.spv": {
+   "stage": "vertex",
+   "off": {
+    "alu": 8,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 4
+   },
+   "on": {
+    "alu": 7,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/aurora_attr_defaults.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 7,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "on": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/aurora_attr_defaults.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 67,
+    "copies": 37,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 15,
+    "registers": 7
+   },
+   "on": {
+    "alu": 27,
+    "copies": 5,
+    "co_issued": 4,
+    "fetches": 2,
+    "control_flow": 8,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/aurora_emboss.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 7,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 6
+   },
+   "on": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/aurora_emboss.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 84,
+    "copies": 43,
+    "co_issued": 0,
+    "fetches": 5,
+    "control_flow": 17,
+    "registers": 11
+   },
+   "on": {
+    "alu": 47,
+    "copies": 13,
+    "co_issued": 5,
+    "fetches": 5,
+    "control_flow": 12,
+    "registers": 8
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/aurora_texgen_binormal.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 7,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "on": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/aurora_texgen_binormal.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 65,
+    "copies": 35,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 14,
+    "registers": 8
+   },
+   "on": {
+    "alu": 31,
+    "copies": 9,
+    "co_issued": 4,
+    "fetches": 3,
+    "control_flow": 9,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/aurora_texgen_prior.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 8,
+    "copies": 6,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 4,
+    "registers": 6
+   },
+   "on": {
+    "alu": 4,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 3,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/aurora_texgen_prior.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 83,
+    "copies": 45,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 17,
+    "registers": 8
+   },
+   "on": {
+    "alu": 38,
+    "copies": 12,
+    "co_issued": 4,
+    "fetches": 3,
+    "control_flow": 10,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/aurora_texgen_prior_inline.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 7,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "on": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/aurora_texgen_prior_inline.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 65,
+    "copies": 35,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 14,
+    "registers": 8
+   },
+   "on": {
+    "alu": 31,
+    "copies": 9,
+    "co_issued": 4,
+    "fetches": 3,
+    "control_flow": 9,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/aurora_texgen_q_zero.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 16,
+    "copies": 8,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 6
+   },
+   "on": {
+    "alu": 9,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/aurora_texgen_q_zero.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 76,
+    "copies": 39,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 16,
+    "registers": 8
+   },
+   "on": {
+    "alu": 40,
+    "copies": 10,
+    "co_issued": 4,
+    "fetches": 3,
+    "control_flow": 11,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/aurora_texgen_tangent.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 7,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "on": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/aurora_texgen_tangent.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 65,
+    "copies": 35,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 14,
+    "registers": 8
+   },
+   "on": {
+    "alu": 31,
+    "copies": 9,
+    "co_issued": 4,
+    "fetches": 3,
+    "control_flow": 9,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/aurora_texgen_zero.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 16,
+    "copies": 8,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 6
+   },
+   "on": {
+    "alu": 9,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/aurora_texgen_zero.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 75,
+    "copies": 34,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 16,
+    "registers": 7
+   },
+   "on": {
+    "alu": 42,
+    "copies": 9,
+    "co_issued": 5,
+    "fetches": 2,
+    "control_flow": 11,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/aurora_ztex_add_u24.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 40,
+    "copies": 15,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 9,
+    "registers": 9
+   },
+   "on": {
+    "alu": 19,
+    "copies": 1,
+    "co_issued": 1,
+    "fetches": 1,
+    "control_flow": 6,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/aurora_ztex_add_u24.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 61,
+    "copies": 34,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 14,
+    "registers": 8
+   },
+   "on": {
+    "alu": 31,
+    "copies": 10,
+    "co_issued": 4,
+    "fetches": 3,
+    "control_flow": 9,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/aurora_ztex_add_u8.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 35,
+    "copies": 13,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 8,
+    "registers": 9
+   },
+   "on": {
+    "alu": 16,
+    "copies": 1,
+    "co_issued": 1,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/aurora_ztex_add_u8.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 61,
+    "copies": 34,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 14,
+    "registers": 8
+   },
+   "on": {
+    "alu": 31,
+    "copies": 10,
+    "co_issued": 4,
+    "fetches": 3,
+    "control_flow": 9,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/aurora_ztex_replace_u24.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 25,
+    "copies": 9,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 7,
+    "registers": 6
+   },
+   "on": {
+    "alu": 13,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/aurora_ztex_replace_u24.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 59,
+    "copies": 32,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 13,
+    "registers": 8
+   },
+   "on": {
+    "alu": 28,
+    "copies": 8,
+    "co_issued": 4,
+    "fetches": 3,
+    "control_flow": 9,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/aurora_ztex_replace_u8.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 20,
+    "copies": 7,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 6,
+    "registers": 6
+   },
+   "on": {
+    "alu": 10,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/aurora_ztex_replace_u8.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 59,
+    "copies": 32,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 13,
+    "registers": 8
+   },
+   "on": {
+    "alu": 28,
+    "copies": 8,
+    "co_issued": 4,
+    "fetches": 3,
+    "control_flow": 9,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/band.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 6,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 6,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/branch_data.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 29,
+    "copies": 15,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 9,
+    "registers": 7
+   },
+   "on": {
+    "alu": 21,
+    "copies": 7,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 7,
+    "registers": 6
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/branch_uniform.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 16,
+    "copies": 9,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 7,
+    "registers": 6
+   },
+   "on": {
+    "alu": 8,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 6,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/clip.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 2,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 2
+   },
+   "on": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/clip_planes.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 3
+   },
+   "on": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/coord.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "on": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/cube.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 4,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 4,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "not simulated: vector kCube"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/depth_before.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 6,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 4
+   },
+   "on": {
+    "alu": 3,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/depth_if.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 5,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 4
+   },
+   "on": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/displace.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/displace.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 9,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 7,
+    "control_flow": 6,
+    "registers": 7
+   },
+   "on": {
+    "alu": 5,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 7,
+    "control_flow": 6,
+    "registers": 6
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/facing.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 4,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 3,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/facing.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "on": {
+    "alu": 2,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/facing_discard.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 5,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 5,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/format.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 2,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/format.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 4,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "on": {
+    "alu": 2,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/four_targets.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 5,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "on": {
+    "alu": 4,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/instanced.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 10,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 6,
+    "registers": 5
+   },
+   "on": {
+    "alu": 7,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/instanced_places.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 8,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 6,
+    "registers": 5
+   },
+   "on": {
+    "alu": 5,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/lod_bands.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 3,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 3
+   },
+   "on": {
+    "alu": 3,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/lod_bias.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 4,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 4,
+    "registers": 4
+   },
+   "on": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 4,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/lod_computed.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 4,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 4,
+    "registers": 4
+   },
+   "on": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 4,
+    "registers": 4
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/lod_constant.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 6,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 4,
+    "registers": 7
+   },
+   "on": {
+    "alu": 4,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 4,
+    "registers": 5
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/lod_gradients.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 11,
+    "copies": 6,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 5
+   },
+   "on": {
+    "alu": 8,
+    "copies": 4,
+    "co_issued": 2,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 6
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/loop_count.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 10,
+    "copies": 9,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 7,
+    "registers": 4
+   },
+   "on": {
+    "alu": 10,
+    "copies": 9,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 7,
+    "registers": 4
+   },
+   "result": "not simulated: control flow '      loop i16, L6'"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/loop_count.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 19,
+    "copies": 15,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 11,
+    "registers": 7
+   },
+   "on": {
+    "alu": 19,
+    "copies": 15,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 11,
+    "registers": 7
+   },
+   "result": "not simulated: control flow '      loop i0, L8'"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/loop_count_if.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 27,
+    "copies": 17,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 9,
+    "registers": 9
+   },
+   "on": {
+    "alu": 27,
+    "copies": 17,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 9,
+    "registers": 9
+   },
+   "result": "not simulated: control flow '      loop i16, L8'"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/loop_if.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 55,
+    "copies": 39,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 11,
+    "registers": 9
+   },
+   "on": {
+    "alu": 36,
+    "copies": 20,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 7,
+    "registers": 7
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/loop_uniform_if.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 55,
+    "copies": 40,
+    "co_issued": 3,
+    "fetches": 0,
+    "control_flow": 14,
+    "registers": 5
+   },
+   "on": {
+    "alu": 55,
+    "copies": 40,
+    "co_issued": 3,
+    "fetches": 0,
+    "control_flow": 14,
+    "registers": 5
+   },
+   "result": "not simulated: scalar kSetpGt"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/many_samplers.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 31,
+    "copies": 16,
+    "co_issued": 0,
+    "fetches": 16,
+    "control_flow": 10,
+    "registers": 32
+   },
+   "on": {
+    "alu": 31,
+    "copies": 16,
+    "co_issued": 0,
+    "fetches": 16,
+    "control_flow": 10,
+    "registers": 32
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/many_samplers.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 17,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 17,
+    "control_flow": 8,
+    "registers": 18
+   },
+   "on": {
+    "alu": 16,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 17,
+    "control_flow": 8,
+    "registers": 18
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/many_samplers_15.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 16,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 16,
+    "control_flow": 8,
+    "registers": 17
+   },
+   "on": {
+    "alu": 15,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 16,
+    "control_flow": 8,
+    "registers": 17
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/matrix_index.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 18,
+    "copies": 9,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 7,
+    "registers": 6
+   },
+   "on": {
+    "alu": 17,
+    "copies": 9,
+    "co_issued": 1,
+    "fetches": 2,
+    "control_flow": 6,
+    "registers": 6
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/point.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 2,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 1
+   },
+   "on": {
+    "alu": 2,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/point_coord.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 3,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "on": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/push.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/push.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 2,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 2
+   },
+   "on": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 4,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/scaled.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "on": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/shadow.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 6,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 6,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/texture.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/texture.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "on": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/triangle.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/triangle.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "on": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/uniform.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "on": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/uniform.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 6,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "on": {
+    "alu": 5,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/vertex_alpha.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 6,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 3
+   },
+   "on": {
+    "alu": 2,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/vertex_format.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 5,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 3
+   },
+   "on": {
+    "alu": 2,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/tests/shaders/volume.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/src/shaders/blit.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/src/shaders/blit.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "on": {
+    "alu": 2,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/src/shaders/blit_region.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 5,
+    "copies": 3,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 4
+   },
+   "on": {
+    "alu": 2,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/src/shaders/clear.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "on": {
+    "alu": 1,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/src/shaders/clear_four.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 4,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "on": {
+    "alu": 4,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 0,
+    "control_flow": 2,
+    "registers": 1
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/bench/shaders/mesh.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "on": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/bench/shaders/mesh.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 8,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 6,
+    "registers": 4
+   },
+   "on": {
+    "alu": 5,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/bench/shaders/mesh_gray.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 4,
+    "copies": 2,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 4
+   },
+   "on": {
+    "alu": 3,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/bench/shaders/mesh_uniform.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "on": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 2
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/bench/shaders/mesh_uniform.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 8,
+    "copies": 4,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 6,
+    "registers": 4
+   },
+   "on": {
+    "alu": 5,
+    "copies": 1,
+    "co_issued": 0,
+    "fetches": 2,
+    "control_flow": 5,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/bench/shaders/sprite.frag": {
+   "stage": "pixel",
+   "off": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "on": {
+    "alu": 1,
+    "copies": 0,
+    "co_issued": 0,
+    "fetches": 1,
+    "control_flow": 3,
+    "registers": 3
+   },
+   "result": "ok"
+  },
+  "/mnt/z/vulkan4xenon/bench/shaders/sprite.vert": {
+   "stage": "vertex",
+   "off": {
+    "alu": 5,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 3
+   },
+   "on": {
+    "alu": 5,
+    "copies": 5,
+    "co_issued": 0,
+    "fetches": 3,
+    "control_flow": 5,
+    "registers": 3
+   },
+   "result": "ok"
+  }
+ },
+ "totals": {
+  "vertex": {
+   "shaders": 121,
+   "off": {
+    "alu": 7172,
+    "copies": 3055,
+    "co_issued": 0,
+    "fetches": 337,
+    "control_flow": 1695,
+    "registers": 852,
+    "registers_most": 45
+   },
+   "on": {
+    "alu": 4499,
+    "copies": 838,
+    "co_issued": 527,
+    "fetches": 337,
+    "control_flow": 1230,
+    "registers": 603,
+    "registers_most": 18
+   }
+  },
+  "pixel": {
+   "shaders": 246,
+   "off": {
+    "alu": 4098,
+    "copies": 1673,
+    "co_issued": 3,
+    "fetches": 277,
+    "control_flow": 1275,
+    "registers": 1452,
+    "registers_most": 32
+   },
+   "on": {
+    "alu": 2322,
+    "copies": 399,
+    "co_issued": 199,
+    "fetches": 277,
+    "control_flow": 987,
+    "registers": 929,
+    "registers_most": 32
+   }
+  }
+ }
+}

@@ -375,3 +375,130 @@ programs compile on the console as on the PC, in 1.42 s, 9.5 ms a program, the s
 runs; before the milestone 1.32 s, 8.8 ms and 76 ms, at step 2 3.39 s, 22.6 ms and 228 ms. xsdk_test passed 380, the
 controller checks failing with no controller connected; vulkan4xenon_test 426; `probe_shader_cost` the same 100
 pictures and times as step 3, its run back to 11.8 s.
+
+## Step 4: more co-issue
+
+Built on 2026-10-17 and checked on the PC; the console runs are to come. Every ALU instruction has a vector and a
+scalar slot (xenia:src/xenia/gpu/ucode.h:1854-2095). The optimiser's last pass, `co_issue` (`src/xsc_optimize.c`), puts
+a scalar op alone into an instruction holding a vector op alone, or the other way, moving one of the two past the ops
+between.
+
+**Why so few paired.** Counted by what each pipe does in the corpus's optimised microcode at step 3, a vector op
+writing a component or changing state and a scalar op other than `retain_prev`: 657 instructions held both, 6114 a
+vector op alone, and 116 a scalar op alone. The pass had already paired nearly every scalar op it saw. The 116, counted
+at the optimiser's end:
+- **73 in programs the optimiser leaves alone:** 62 in the 9 that read a constant at a run-time index, 49 of them in
+  Dusklight's `93d36ce55e3f9bad.vert` and `c0ddfd4547c71e5a.vert`, and 11 in hardware loops and predicated code.
+- **19 kept from an independent vector op by the order:** 18 in their stage, where the later of the two couldn't move
+  up past an op between, and 1 whose vector op is past the colours' alloc.
+- **16 depend:** every vector op of their stage they could join reads their result, or a value computed from it, or
+  computes what they read.
+- **8 had only exports and instructions already co-issued** independent of them. An export's scalar op exports to the
+  same register as its vector op (ucode.h:2041-2042), so a scalar op into a temp joins none.
+
+None was kept apart only by the two-constant limit or a destination both write.
+In Dusklight's and vkbench's shaders all 50 lone scalar ops were in the three vertex shaders left alone: 47 `rcp`,
+`sqrt` and `rsq`, and the 3 `maxasf` that load a0. `check_optimize.py`'s co-issued count, taken from the disassembly,
+holds 3 more at every step: lone scalar ops whose idle vector op names a register other than r0.
+
+**What changed.**
+- **Both ways.** Once no op joins an earlier one anywhere in the program, an op joins a later one, moving down past
+  ops that neither read nor write what it writes nor write what it reads. Either way the later of the two mustn't read
+  what the earlier writes, as both pipes read their operands before either writes a result
+  (xenia:src/xenia/gpu/shader_interpreter.cc:287-955). Every pair found before is found first, the same way.
+- **Constants at a run-time index.** A program reading a constant at a0 past its register goes through `co_issue`
+  alone, as the other passes don't model the index, and keeps its registers whole, as before. Nothing moves past the
+  `maxas` or `maxasf` that loads a0, as nothing moves past any op that changes state. An instruction's two addressing
+  bits go to its constant operands in order (ucode.h:1945-1964) and a temp operand takes neither
+  (xenia:src/xenia/gpu/shader_translator.cc:1210-1238), so a scalar op joins there only with a temp operand and no
+  index of its own: a constant beside a copy of `c[4+a0]` could be read at a0 too, and the two-constant check counts
+  `c4` and `c[4+a0]` as one.
+- **The simulator** (`xdis/equivalence.py`) loads a0 as `maxas` rounds and `maxasf` floors it, and reads an addressed
+  constant a0 past its register, 0 below c0 (shader_interpreter.cc:260-286, 808-822), so `check_optimize.py` compares
+  those 9 programs too; a constant at the loop counter, and a vector `maxa`, stay unsupported. At step 3's xost it
+  reports 0 differ on them.
+- **Compile time.** `join` asked `stage_of` which stage each op it passed was in, a scan of the program each time; it
+  finds its stage's bounds once now.
+
+**The hardware's rules,** as the pass keeps them:
+- A scalar op reads src3 alone, its `a` and `b` from the swizzle's w and x (shader_translator.cc:1417-1460), so its
+  partner reads two operands at most: `mad`, the `cnd`s and `dp2add` read a third (xenia:src/xenia/gpu/ucode.cc:83-116)
+  and never pair, as before.
+- Two different constants an instruction, and three only if the second and third are one (`constants_fit`, as
+  before).
+- Exports: neither op of a pair is one, as above.
+- Predication, and the previous scalar result: programs with a predicated instruction, or one reading `ps` (`adds_prev`
+  and the like, or `retain_prev` written), are left alone, so no op is moved across a predicate and no `ps` a later op
+  reads changes.
+- State: nothing moves past a kill, a setp, or what loads a0.
+- Register packing: a pair is still a two-operand vector op and a scalar op, so step 3's rule holds. The vector result's
+  lanes may move, its two operands' swizzles with them, while the scalar op's src3 follows only its own value's lanes
+  (`xsdk_xsc_move_lanes`); the pass never puts a scalar op beside a `mad` or a `cnd`, which step 3 keeps in their lanes.
+
+It ran as the baseline's line with `--json ../results/2026-10-17-milestone-45/step4.json`, in 94 s; `step4.txt` is
+what it printed. The optimiser on, the baseline, step 3 and step 4:
+
+| | Corpus | | | Dusklight and vkbench | | |
+|---|---|---|---|---|---|---|
+| ALU | 8895 | 6887 | 6821 | 6641 | 4956 | 4909 |
+| Co-issued | 675, 7.6% | 660, 9.6% | 726, 10.6% | 583, 8.8% | 583, 11.8% | 630, 12.8% |
+| Copies | 3253 | 1271 | 1237 | 2397 | 733 | 701 |
+| Registers | 2115 | 1529 | 1532 | 1117 | 783 | 785 |
+
+66 more scalar ops pair: 15 both ways, in 14 shaders, and 51 in 5 programs reading at a run-time index, 47 of them in
+Dusklight's: `93d36ce55e3f9bad.vert` 221 to 199 ALU instructions, `c0ddfd4547c71e5a.vert` 245 to 220. Copies count 34
+fewer as a copy with a scalar op beside it isn't counted one; the instructions stay. Fetches are step 3's, and control
+flow 11 instructions fewer, exec clauses holding fewer instructions.
+
+**The ALU target isn't reached.** The corpus's 6821 instructions are 23.3% under the baseline's 8895; the milestone
+asks for 6671 or fewer, 150 more. Dusklight's and vkbench's are 26.1% under.
+
+**Registers** grow by 3, a register each in three shaders: testdata's `stepsmooth.frag`, 4 to 5, its two `rcp`s moved
+down keeping their sources live longer; and Dusklight's two, 13 to 14 and 12 to 13, where copies of constants moved up
+beside a scalar op start their registers earlier in programs whose registers stay whole. Dusklight's vertex shaders take
+6.38 registers on average (6.34 at step 3) and 14 at most (13); its pixel shaders are step 3's, 4.53 and 16.
+
+**What's left unpaired:** 50 lone scalar ops over the corpus, counted as above.
+- 11 in hardware loops and predicated code, left alone.
+- 11 `maxas` and `maxasf`, which load a0 and change state.
+- 16 depend on every vector op they could join, as before.
+- 11 have only exports and co-issued instructions independent of them: testdata's `divide.frag`, four `rcp`s each
+  feeding an export of its own, `gamma.frag` and `mathfns.frag` 3 each, `verify_sqrt.frag` 1. Three of them lost their
+  partner to another scalar op now that ops pair both ways.
+- 1, `vk_front_facing.frag`'s `rcpc`, whose independent `add` is past the colours' alloc: pairing across a stage's end
+  would take this one alone, so the pass still stops there.
+
+In Dusklight's and vkbench's shaders 3 are left, the `maxasf` of the three relative vertex shaders. Every other scalar
+op there pairs, so more co-issue would need the scalar unit to take work the lowering gives the vector one.
+
+**Checks:**
+- `check_optimize.py`: 0 differ, 15 not simulated, 16 not compiled. With the simulator as it was before the step, the
+  same run reports 0 differ with the baseline's 24 not simulated and 16 not compiled.
+- xost's tests, a file at a time in WSL, all pass but `test_xcomb_parity.py`, which runs on Windows.
+  `test_optimize.py` has 6 cases for the step: a scalar op and a vector op each moved down past a `mad` to their
+  partner; a scalar op kept above a `mad` writing what it reads; a scalar op joining a copy at a0; a scalar op reading
+  `c4` kept apart from a copy of `c[4+a0]`; and a copy at a0 kept below a second `maxasf`.
+- Broken on purpose:
+  - the later op's read of the earlier's result checked on the wrong side when an op moves down: 2 of
+    `test_optimize.py`'s cases fail, and 20 shaders of the corpus differ;
+  - the vector op's index dropped when a scalar op joins it: the copy-at-a0 case fails, and Dusklight's
+    `93d36ce55e3f9bad.vert` and `c0ddfd4547c71e5a.vert` differ;
+  - an op moved down past one that writes what it reads: the `mad` case fails, and no shader differs;
+  - a scalar op's constant let in beside a copy at a0: the `c4` case fails, and no shader differs;
+  - ops moved past what loads a0: the second-`maxasf` case fails, and no shader differs.
+
+  The corpus holds none of the last three's shapes: no scalar op there reads a constant in a program read at a
+  run-time index, and none could join an op across a `maxasf`.
+- Containers: 2 of the 150 programs in Dusklight's pack change against main's library (`62db399`),
+  `93d36ce55e3f9bad.vert` and `c0ddfd4547c71e5a.vert`; the other 148 come out byte for byte as before. Over the corpus
+  19 shaders change, all optimised: those 2, 6 of testdata's, vulkan4xenon's `matrix_index.vert` and 10 of its
+  `aurora_*.vert`. vkbench's 7 don't.
+- xsdk_test's compiler check: `tools/gen_xsc_shaders.py` gives the committed `tests/xsc_shaders.h` byte for byte with
+  main's library, and with the step's too: none of its 8 containers changes.
+- `make XSC_PACK=/mnt/z/dusklight-xenon/platforms/xenon/glsl_pack.c build/probe_shader_cost.xex build/probe_xsc.xex`
+  builds clean.
+- Compile time, the pack's 150 programs through `build/host/libxsc.so` on the PC as before, best of ten compiles of
+  each and the best of several runs: 69.9 ms against main's 69.3, 0.9% more, the slowest program 3.62 ms against 3.74.
+  The two relative vertex shaders take 0.87 and 1.11 ms against 0.13 and 0.14, a pass over the program for each of
+  their 22 and 25 pairs; before `join` found its stage's bounds once they took 1.23 and 1.58, and the pack 72.3 ms. At
+  that share the console's 1.42 s grows by about 0.01 s.

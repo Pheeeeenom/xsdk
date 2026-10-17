@@ -53,6 +53,11 @@ Each step is built, then verified as below, then the next begins.
    `results/2026-10-17-milestone-45/`.
 4. **More co-issue.** With the copies gone, more scalar operations stand next to an independent vector one; the
    pairing takes the vector instruction before or after where it sits now when the order allows.
+   Built on 2026-10-17 and checked on the PC, the console runs to come: `co_issue` already paired nearly every scalar op
+   the optimiser saw, so it now pairs both ways and in the programs it left alone for reading constants at a run-time
+   index. The corpus goes from 660 co-issued slots to 726 and from 6887 ALU instructions to 6821, short of the
+   milestone's 6671; Dusklight's two relative vertex shaders lose 22 and 25 instructions and take a register more each,
+   the rest of its pack is unchanged. Recorded in `results/2026-10-17-milestone-45/`.
 5. **Constants from the fetch.** A vertex attribute's missing components that the shader fills with 0 or 1 come from
    the fetch's destination swizzle, not ALU.
 6. **Fetches nothing uses dropped,** with the exports' liveness the optimiser already tracks.
