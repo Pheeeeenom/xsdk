@@ -1,0 +1,165 @@
+log: game:\probe_relstress.log
+log: named after \Device\Harddisk0\Partition1\XSDK\m45\probe_relstress.xex
+sbrk: the heap may grow to 474 MB from 0x00070000, the title's free memory
+relative constants probe: 39 cases; c[n] draws as red n, green 255 - n, blue n ^ 0x5A
+relative constants probe: [uniform]: the columns' a0 5 5 5 5
+relative constants probe: [varying]: the columns' a0 3 7 12 18
+relative constants probe: 1 right after maxasf [uniform]: model reads c125 c125 c125 c125, GPU read c125 c125 c125 c125, PASS, pixels 27827DFF 27827DFF 27827DFF 27827DFF
+relative constants probe: 1 right after maxasf [varying]: model reads c123 c127 c132 c138, GPU read c123 c127 c132 c138, PASS, pixels 21847BFF 25807FFF DE7B84FF D0758AFF
+relative constants probe: 2 one after maxasf [uniform]: model reads c125 c125 c125 c125, GPU read c125 c125 c125 c125, PASS, pixels 27827DFF 27827DFF 27827DFF 27827DFF
+relative constants probe: 2 one after maxasf [varying]: model reads c123 c127 c132 c138, GPU read c123 c127 c132 c138, PASS, pixels 21847BFF 25807FFF DE7B84FF D0758AFF
+relative constants probe: 2 two after maxasf [uniform]: model reads c125 c125 c125 c125, GPU read c125 c125 c125 c125, PASS, pixels 27827DFF 27827DFF 27827DFF 27827DFF
+relative constants probe: 2 two after maxasf [varying]: model reads c123 c127 c132 c138, GPU read c123 c127 c132 c138, PASS, pixels 21847BFF 25807FFF DE7B84FF D0758AFF
+relative constants probe: 2 four after maxasf [uniform]: model reads c125 c125 c125 c125, GPU read c125 c125 c125 c125, PASS, pixels 27827DFF 27827DFF 27827DFF 27827DFF
+relative constants probe: 2 four after maxasf [varying]: model reads c123 c127 c132 c138, GPU read c123 c127 c132 c138, PASS, pixels 21847BFF 25807FFF DE7B84FF D0758AFF
+relative constants probe: 2 eight after maxasf, an exec on [uniform]: model reads c125 c125 c125 c125, GPU read c125 c125 c125 c125, PASS, pixels 27827DFF 27827DFF 27827DFF 27827DFF
+relative constants probe: 2 eight after maxasf, an exec on [varying]: model reads c123 c127 c132 c138, GPU read c123 c127 c132 c138, PASS, pixels 21847BFF 25807FFF DE7B84FF D0758AFF
+relative constants probe: 3 an exec on [uniform]: model reads c125 c125 c125 c125, GPU read c125 c125 c125 c125, PASS, pixels 27827DFF 27827DFF 27827DFF 27827DFF
+relative constants probe: 3 an exec on [varying]: model reads c123 c127 c132 c138, GPU read c123 c127 c132 c138, PASS, pixels 21847BFF 25807FFF DE7B84FF D0758AFF
+relative constants probe: 3 three execs on [uniform]: model reads c125 c125 c125 c125, GPU read c125 c125 c125 c125, PASS, pixels 27827DFF 27827DFF 27827DFF 27827DFF
+relative constants probe: 3 three execs on [varying]: model reads c123 c127 c132 c138, GPU read c123 c127 c132 c138, PASS, pixels 21847BFF 25807FFF DE7B84FF D0758AFF
+relative constants probe: 4 after alloc interpolators [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 4 after alloc interpolators [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 4 maxasf before alloc position [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 4 maxasf before alloc position [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 5 co-issued with rcp of a temp [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 5 co-issued with rcp of a temp [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 6 src3 temp r1 [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 6 src3 temp r1 [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 6 src3 c0 [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 6 src3 c0 [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 6 src3 c152 [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 6 src3 c152 [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 7 c[152+a0] * c230.w [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 7 c[152+a0] * c230.w [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 7 c230.w * c[152+a0] [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 7 c230.w * c[152+a0] [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 7 c[152+a0] * r0.w [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 7 c[152+a0] * r0.w [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 7 r0.w * c[152+a0] [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 7 r0.w * c[152+a0] [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 8 old span [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels E3E3E3E3 CACACACA 73737373 55555555
+relative constants probe: 8 old span [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels E0E0E0E0 69696969 46464646 31313131
+relative constants probe: 8 old span, 14 registers [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels E3E3E3E3 CACACACA 73737373 55555555
+relative constants probe: 8 old span, 14 registers [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels E0E0E0E0 69696969 46464646 31313131
+relative constants probe: 8 step 4 span [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels ADD1E4FF F5E3E4FF FFFFE4FF FFFFE4FF
+relative constants probe: 8 step 4 span [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels B4D5E4FF FFFFE4FF FFFFE4FF FFFFE4FF
+relative constants probe: 8 step 4 span, 13 registers [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels ADD1E4FF F5E3E4FF FFFFE4FF FFFFE4FF
+relative constants probe: 8 step 4 span, 13 registers [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels B4D5E4FF FFFFE4FF FFFFE4FF FFFFE4FF
+relative constants probe: 8 old span, light code as fillers [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 8 old span, light code as fillers [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 8 step 4 span, light code as fillers [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels DFDFDFDF CFCFCFCF FFFFFFFF FFFFFFFF
+relative constants probe: 8 step 4 span, light code as fillers [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels B2B2B5FF F2F2F3FF FFFFFFFF FFFFFFFF
+relative constants probe: 9 right after a c230 read [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels D5D5D5D5 FFFFFFFF FFFFFFFF FFFFFFFF
+relative constants probe: 9 right after a c230 read [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels EDDFFFFF F1CFFFFF FFFFFFFF FFFFFFFF
+relative constants probe: 9 right after a c230 read, co-issued [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels B5B5B3FF FFFFF2FF FFFFFFFF FFFFFFFF
+relative constants probe: 9 right after a c230 read, co-issued [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 9 right after a c230 read, co-issued with rcp of what that wrote [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels D1D1D1D1 E3E3E3E3 FFFFFFFF FFFFFFFF
+relative constants probe: 9 right after a c230 read, co-issued with rcp of what that wrote [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 9 right after a c230 read, src3 what that wrote [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
+relative constants probe: 9 right after a c230 read, src3 what that wrote [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 9 right after a c230 read, before alloc interpolators [uniform]: model reads c125 c125 c125 c125, GPU read c125 c125 c125 c125, PASS, pixels 27827DFF 27827DFF 27827DFF 27827DFF
+relative constants probe: 9 right after a c230 read, before alloc interpolators [varying]: model reads c123 c127 c132 c138, GPU read c123 c127 c132 c138, PASS, pixels 21847BFF 25807FFF DE7B84FF D0758AFF
+relative constants probe: 9 one after a c230 read [uniform]: model reads c157 c157 c157 c157, GPU read c125 c129 c134 c140, DIFFERS, pixels 27827DFF DB7E81FF DC7986FF D6738CFF
+relative constants probe: 9 one after a c230 read [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 9 right after a read of c230 twice [uniform]: model reads c157 c157 c157 c157, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 9 right after a read of c230 twice [varying]: model reads c155 c159 c164 c170, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 10 right after a c[140+a0] read [uniform]: model reads c157 c157 c157 c157, GPU read c157 c157 c157 c157, PASS, pixels C7629DFF C7629DFF C7629DFF C7629DFF
+relative constants probe: 10 right after a c[140+a0] read [varying]: model reads c155 c159 c164 c170, GPU read c155 c159 c164 c170, PASS, pixels C1649BFF C5609FFF FE5BA4FF F055AAFF
+relative constants probe: 11 maxasf again after alloc interpolators [uniform]: model reads c157 c157 c157 c157, GPU read c157 c157 c157 c157, PASS, pixels C7629DFF C7629DFF C7629DFF C7629DFF
+relative constants probe: 11 maxasf again after alloc interpolators [varying]: model reads c155 c159 c164 c170, GPU read c155 c159 c164 c170, PASS, pixels C1649BFF C5609FFF FE5BA4FF F055AAFF
+relative constants probe: 11 maxasf again after alloc interpolators, one between [uniform]: model reads c157 c157 c157 c157, GPU read c157 c157 c157 c157, PASS, pixels C7629DFF C7629DFF C7629DFF C7629DFF
+relative constants probe: 11 maxasf again after alloc interpolators, one between [varying]: model reads c155 c159 c164 c170, GPU read c155 c159 c164 c170, PASS, pixels C1649BFF C5609FFF FE5BA4FF F055AAFF
+relative constants probe: 12 the read twice after alloc interpolators [uniform]: model reads c157 c157 c157 c157, GPU read c157 c157 c157 c157, PASS, pixels C7629DFF C7629DFF C7629DFF C7629DFF
+relative constants probe: 12 the read twice after alloc interpolators [varying]: model reads c155 c159 c164 c170, GPU read c155 c159 c164 c170, PASS, pixels C1649BFF C5609FFF FE5BA4FF F055AAFF
+relative constants probe: 13 maxasf before alloc position, read after it [uniform]: model reads c125 c125 c125 c125, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 13 maxasf before alloc position, read after it [varying]: model reads c123 c127 c132 c138, GPU read c? c? c? c?, DIFFERS, pixels 4080FFFF 4080FFFF 4080FFFF 4080FFFF
+relative constants probe: 14 read after the position export, before alloc interpolators [uniform]: model reads c125 c125 c125 c125, GPU read c125 c125 c125 c125, PASS, pixels 27827DFF 27827DFF 27827DFF 27827DFF
+relative constants probe: 14 read after the position export, before alloc interpolators [varying]: model reads c123 c127 c132 c138, GPU read c123 c127 c132 c138, PASS, pixels 21847BFF 25807FFF DE7B84FF D0758AFF
+relative constants probe: 15 after a throwaway c[152+a0] read, mask 0 [uniform]: model reads c157 c157 c157 c157, GPU read c157 c157 c157 c157, PASS, pixels C7629DFF C7629DFF C7629DFF C7629DFF
+relative constants probe: 15 after a throwaway c[152+a0] read, mask 0 [varying]: model reads c155 c159 c164 c170, GPU read c155 c159 c164 c170, PASS, pixels C1649BFF C5609FFF FE5BA4FF F055AAFF
+relative constants probe: 15 after a throwaway c[140+a0] read, mask 0 [uniform]: model reads c157 c157 c157 c157, GPU read c157 c157 c157 c157, PASS, pixels C7629DFF C7629DFF C7629DFF C7629DFF
+relative constants probe: 15 after a throwaway c[140+a0] read, mask 0 [varying]: model reads c155 c159 c164 c170, GPU read c155 c159 c164 c170, PASS, pixels C1649BFF C5609FFF FE5BA4FF F055AAFF
+relative constants probe: 15 after a throwaway c[0+a0] read, mask 0 [uniform]: model reads c157 c157 c157 c157, GPU read c157 c157 c157 c157, PASS, pixels C7629DFF C7629DFF C7629DFF C7629DFF
+relative constants probe: 15 after a throwaway c[0+a0] read, mask 0 [varying]: model reads c155 c159 c164 c170, GPU read c155 c159 c164 c170, PASS, pixels C1649BFF C5609FFF FE5BA4FF F055AAFF
+relative constants probe: stress: 10 cases, each one draw of 64 by 36 quads of 20 pixels square, 13824 vertices, cell i's a0 2 + i % 97, row by row from the top left, its centre pixel checked; 20 draws a load, each with c[n] holding n plus a shift of its own
+relative constants probe: stress [light]: the pixel shader's 0 ALU instructions before its export, 0 full-screen draws of the case before the grid
+relative constants probe: stress [busy pixels]: the pixel shader's 120 ALU instructions before its export, 0 full-screen draws of the case before the grid
+relative constants probe: stress [busy pixels, 4 passes]: the pixel shader's 120 ALU instructions before its export, 4 full-screen draws of the case before the grid
+relative constants probe: stress 1 in the a0 load's alloc region [light]: 0 of 20 draws wrong, 0 of 46080 cells in all, PASS, 40 ms
+relative constants probe: stress 1 in the a0 load's alloc region [busy pixels]: 0 of 20 draws wrong, 0 of 46080 cells in all, PASS, 158 ms
+relative constants probe: stress 1 in the a0 load's alloc region [busy pixels, 4 passes]: 0 of 20 draws wrong, 0 of 46080 cells in all, PASS, 521 ms
+relative constants probe: stress 2 after alloc interpolators, no remedy [light] draw 0: 2304 of 2304 cells wrong: (0,0) wants c154, read c? 4080FFFF; (1,0) wants c155, read c? 4080FFFF; (2,0) wants c156, read c? 4080FFFF; (3,0) wants c157, read c? 4080FFFF;
+relative constants probe: stress 2 after alloc interpolators, no remedy [light] draw 1: 2304 of 2304 cells wrong: (0,0) wants c154, read c? 4080FFFF; (1,0) wants c155, read c? 4080FFFF; (2,0) wants c156, read c? 4080FFFF; (3,0) wants c157, read c? 4080FFFF;
+relative constants probe: stress 2 after alloc interpolators, no remedy [light] draw 2: 2304 of 2304 cells wrong: (0,0) wants c154, read c? 4080FFFF; (1,0) wants c155, read c? 4080FFFF; (2,0) wants c156, read c? 4080FFFF; (3,0) wants c157, read c? 4080FFFF;
+relative constants probe: stress 2 after alloc interpolators, no remedy [light]: 20 of 20 draws wrong, 46080 of 46080 cells in all, DIFFERS, 116 ms
+relative constants probe: stress 2 after alloc interpolators, no remedy [busy pixels] draw 0: 2304 of 2304 cells wrong: (0,0) wants c154, read c? 4080FFFF; (1,0) wants c155, read c? 4080FFFF; (2,0) wants c156, read c? 4080FFFF; (3,0) wants c157, read c? 4080FFFF;
+relative constants probe: stress 2 after alloc interpolators, no remedy [busy pixels] draw 1: 2304 of 2304 cells wrong: (0,0) wants c154, read c? 4080FFFF; (1,0) wants c155, read c? 4080FFFF; (2,0) wants c156, read c? 4080FFFF; (3,0) wants c157, read c? 4080FFFF;
+relative constants probe: stress 2 after alloc interpolators, no remedy [busy pixels] draw 2: 2304 of 2304 cells wrong: (0,0) wants c154, read c? 4080FFFF; (1,0) wants c155, read c? 4080FFFF; (2,0) wants c156, read c? 4080FFFF; (3,0) wants c157, read c? 4080FFFF;
+relative constants probe: stress 2 after alloc interpolators, no remedy [busy pixels]: 20 of 20 draws wrong, 46080 of 46080 cells in all, DIFFERS, 244 ms
+relative constants probe: stress 2 after alloc interpolators, no remedy [busy pixels, 4 passes] draw 0: 2304 of 2304 cells wrong: (0,0) wants c154, read c? 800004FF; (1,0) wants c155, read c? 80000CFF; (2,0) wants c156, read c? 800014FF; (3,0) wants c157, read c? 80001CFF;
+relative constants probe: stress 2 after alloc interpolators, no remedy [busy pixels, 4 passes] draw 1: 2304 of 2304 cells wrong: (0,0) wants c154, read c? 800004FF; (1,0) wants c155, read c? 80000CFF; (2,0) wants c156, read c? 800014FF; (3,0) wants c157, read c? 80001CFF;
+relative constants probe: stress 2 after alloc interpolators, no remedy [busy pixels, 4 passes] draw 2: 2304 of 2304 cells wrong: (0,0) wants c154, read c? 800004FF; (1,0) wants c155, read c? 80000CFF; (2,0) wants c156, read c? 800014FF; (3,0) wants c157, read c? 80001CFF;
+relative constants probe: stress 2 after alloc interpolators, no remedy [busy pixels, 4 passes]: 20 of 20 draws wrong, 46080 of 46080 cells in all, DIFFERS, 672 ms
+relative constants probe: stress 3 after xost's throwaway [light] draw 0: 1920 of 2304 cells wrong: (32,0) wants c186, read c224 BB1EE1FF; (33,0) wants c187, read c? 7E4FFFFF; (34,0) wants c188, read c? 7E4FFFFF; (35,0) wants c189, read c224 BB1EE1FF;
+relative constants probe: stress 3 after xost's throwaway [light] draw 1: 1686 of 2304 cells wrong: (32,0) wants c186, read c224 B81DE2FF; (33,0) wants c187, read c224 B81DE2FF; (34,0) wants c188, read c224 B81DE2FF; (35,0) wants c189, read c224 B81DE2FF;
+relative constants probe: stress 3 after xost's throwaway [light] draw 2: 1853 of 2304 cells wrong: (32,0) wants c186, read c? D236CAFF; (33,0) wants c187, read c? D236CAFF; (34,0) wants c188, read c160 F95CA3FF; (35,0) wants c189, read c? D236CAFF;
+relative constants probe: stress 3 after xost's throwaway [light]: 20 of 20 draws wrong, 36978 of 46080 cells in all, DIFFERS, 122 ms
+relative constants probe: stress 3 after xost's throwaway [busy pixels] draw 0: 1950 of 2304 cells wrong: (32,0) wants c186, read c224 AF0AF5FF; (33,0) wants c187, read c224 AF0AF5FF; (34,0) wants c188, read c224 AF0AF5FF; (35,0) wants c189, read c224 AF0AF5FF;
+relative constants probe: stress 3 after xost's throwaway [busy pixels] draw 1: 1659 of 2304 cells wrong: (32,0) wants c186, read c194 8227D8FF; (33,0) wants c187, read c194 8227D8FF; (34,0) wants c188, read c194 8227D8FF; (35,0) wants c189, read c194 8227D8FF;
+relative constants probe: stress 3 after xost's throwaway [busy pixels] draw 2: 1967 of 2304 cells wrong: (32,0) wants c186, read c? 9515EBFF; (33,0) wants c187, read c194 8326D9FF; (34,0) wants c188, read c? 9414ECFF; (35,0) wants c189, read c194 8326D9FF;
+relative constants probe: stress 3 after xost's throwaway [busy pixels]: 20 of 20 draws wrong, 35670 of 46080 cells in all, DIFFERS, 225 ms
+relative constants probe: stress 3 after xost's throwaway [busy pixels, 4 passes] draw 0: 1615 of 2304 cells wrong: (0,0) wants c154, read c162 9134CBFF; (1,0) wants c155, read c162 9134CBFF; (2,0) wants c156, read c162 9134CBFF; (3,0) wants c157, read c162 9134CBFF;
+relative constants probe: stress 3 after xost's throwaway [busy pixels, 4 passes] draw 1: 1615 of 2304 cells wrong: (0,0) wants c154, read c162 9633CCFF; (1,0) wants c155, read c162 9633CCFF; (2,0) wants c156, read c162 9633CCFF; (3,0) wants c157, read c162 9633CCFF;
+relative constants probe: stress 3 after xost's throwaway [busy pixels, 4 passes] draw 2: 1615 of 2304 cells wrong: (0,0) wants c154, read c162 9732CDFF; (1,0) wants c155, read c162 9732CDFF; (2,0) wants c156, read c162 9732CDFF; (3,0) wants c157, read c162 9732CDFF;
+relative constants probe: stress 3 after xost's throwaway [busy pixels, 4 passes]: 20 of 20 draws wrong, 32227 of 46080 cells in all, DIFFERS, 592 ms
+relative constants probe: stress 4 after two throwaways [light] draw 0: 2000 of 2304 cells wrong: (32,0) wants c186, read c154 C1649BFF; (33,0) wants c187, read c155 C6639CFF; (34,0) wants c188, read c156 C7629DFF; (35,0) wants c189, read c157 C4619EFF;
+relative constants probe: stress 4 after two throwaways [light] draw 1: 1942 of 2304 cells wrong: (32,0) wants c186, read c154 C6639CFF; (33,0) wants c187, read c155 C7629DFF; (34,0) wants c188, read c156 C4619EFF; (35,0) wants c189, read c157 C5609FFF;
+relative constants probe: stress 4 after two throwaways [light] draw 2: 1992 of 2304 cells wrong: (32,0) wants c186, read c154 C7629DFF; (33,0) wants c187, read c155 C4619EFF; (34,0) wants c188, read c156 C5609FFF; (35,0) wants c189, read c157 FA5FA0FF;
+relative constants probe: stress 4 after two throwaways [light]: 20 of 20 draws wrong, 39184 of 46080 cells in all, DIFFERS, 106 ms
+relative constants probe: stress 4 after two throwaways [busy pixels] draw 0: 1949 of 2304 cells wrong: (32,0) wants c186, read c154 F550AFFF; (33,0) wants c187, read c155 EA4FB0FF; (34,0) wants c188, read c156 EB4EB1FF; (35,0) wants c189, read c157 E84DB2FF;
+relative constants probe: stress 4 after two throwaways [busy pixels] draw 1: 1919 of 2304 cells wrong: (32,0) wants c186, read c154 EA4FB0FF; (33,0) wants c187, read c155 EB4EB1FF; (34,0) wants c188, read c156 E84DB2FF; (35,0) wants c189, read c157 E94CB3FF;
+relative constants probe: stress 4 after two throwaways [busy pixels] draw 2: 2064 of 2304 cells wrong: (32,0) wants c186, read c154 EB4EB1FF; (33,0) wants c187, read c155 E84DB2FF; (34,0) wants c188, read c156 E94CB3FF; (35,0) wants c189, read c157 EE4BB4FF;
+relative constants probe: stress 4 after two throwaways [busy pixels]: 20 of 20 draws wrong, 39887 of 46080 cells in all, DIFFERS, 228 ms
+relative constants probe: stress 4 after two throwaways [busy pixels, 4 passes] draw 0: 1994 of 2304 cells wrong: (0,0) wants c154, read c? 800004FF; (1,0) wants c155, read c? 80000CFF; (2,0) wants c156, read c? 800014FF; (3,0) wants c157, read c? 80001CFF;
+relative constants probe: stress 4 after two throwaways [busy pixels, 4 passes] draw 1: 1994 of 2304 cells wrong: (0,0) wants c154, read c? 800004FF; (1,0) wants c155, read c? 80000CFF; (2,0) wants c156, read c? 800014FF; (3,0) wants c157, read c? 80001CFF;
+relative constants probe: stress 4 after two throwaways [busy pixels, 4 passes] draw 2: 2086 of 2304 cells wrong: (0,0) wants c154, read c? 800004FF; (1,0) wants c155, read c? 80000CFF; (2,0) wants c156, read c? 800014FF; (3,0) wants c157, read c? 80001CFF;
+relative constants probe: stress 4 after two throwaways [busy pixels, 4 passes]: 20 of 20 draws wrong, 39972 of 46080 cells in all, DIFFERS, 587 ms
+relative constants probe: stress 5 maxasf again right after the alloc [light]: 0 of 20 draws wrong, 0 of 46080 cells in all, PASS, 39 ms
+relative constants probe: stress 5 maxasf again right after the alloc [busy pixels]: 0 of 20 draws wrong, 0 of 46080 cells in all, PASS, 159 ms
+relative constants probe: stress 5 maxasf again right after the alloc [busy pixels, 4 passes]: 0 of 20 draws wrong, 0 of 46080 cells in all, PASS, 520 ms
+relative constants probe: stress 6 maxasf again in the read's exec, an exec of three before it [light]: 0 of 20 draws wrong, 0 of 46080 cells in all, PASS, 40 ms
+relative constants probe: stress 6 maxasf again in the read's exec, an exec of three before it [busy pixels]: 0 of 20 draws wrong, 0 of 46080 cells in all, PASS, 158 ms
+relative constants probe: stress 6 maxasf again in the read's exec, an exec of three before it [busy pixels, 4 passes]: 0 of 20 draws wrong, 0 of 46080 cells in all, PASS, 520 ms
+relative constants probe: stress 7 the read twice [light] draw 0: 1895 of 2304 cells wrong: (32,0) wants c186, read c192 9B3EC1FF; (33,0) wants c187, read c192 9B3EC1FF; (34,0) wants c188, read c192 9B3EC1FF; (35,0) wants c189, read c192 9B3EC1FF;
+relative constants probe: stress 7 the read twice [light] draw 1: 1727 of 2304 cells wrong: (32,0) wants c186, read c? CA46BAFF; (33,0) wants c187, read c? CA46BAFF; (34,0) wants c188, read c162 FE5BA4FF; (35,0) wants c189, read c? CA46BAFF;
+relative constants probe: stress 7 the read twice [light] draw 2: 1908 of 2304 cells wrong: (32,0) wants c186, read c? B61AE6FF; (33,0) wants c187, read c224 B91CE3FF; (34,0) wants c188, read c? B519E7FF; (35,0) wants c189, read c224 B91CE3FF;
+relative constants probe: stress 7 the read twice [light]: 20 of 20 draws wrong, 37827 of 46080 cells in all, DIFFERS, 115 ms
+relative constants probe: stress 7 the read twice [busy pixels] draw 0: 1660 of 2304 cells wrong: (32,0) wants c186, read c192 8F2AD5FF; (33,0) wants c187, read c192 8F2AD5FF; (34,0) wants c188, read c192 8F2AD5FF; (35,0) wants c189, read c192 8F2AD5FF;
+relative constants probe: stress 7 the read twice [busy pixels] draw 1: 1965 of 2304 cells wrong: (32,0) wants c186, read c? 9216EAFF; (33,0) wants c187, read c194 8227D8FF; (34,0) wants c188, read c? 9515EBFF; (35,0) wants c189, read c194 8227D8FF;
+relative constants probe: stress 7 the read twice [busy pixels] draw 2: 1654 of 2304 cells wrong: (32,0) wants c186, read c162 E346B9FF; (33,0) wants c187, read c162 E346B9FF; (34,0) wants c188, read c162 E346B9FF; (35,0) wants c189, read c162 E346B9FF;
+relative constants probe: stress 7 the read twice [busy pixels]: 20 of 20 draws wrong, 35977 of 46080 cells in all, DIFFERS, 223 ms
+relative constants probe: stress 7 the read twice [busy pixels, 4 passes] draw 0: 1618 of 2304 cells wrong: (0,0) wants c154, read c186 B91CE3FF; (1,0) wants c155, read c187 BE1BE4FF; (2,0) wants c156, read c188 BF1AE5FF; (3,0) wants c157, read c189 BC19E6FF;
+relative constants probe: stress 7 the read twice [busy pixels, 4 passes] draw 1: 1618 of 2304 cells wrong: (0,0) wants c154, read c186 BE1BE4FF; (1,0) wants c155, read c187 BF1AE5FF; (2,0) wants c156, read c188 BC19E6FF; (3,0) wants c157, read c189 BD18E7FF;
+relative constants probe: stress 7 the read twice [busy pixels, 4 passes] draw 2: 1571 of 2304 cells wrong: (0,0) wants c154, read c162 9732CDFF; (1,0) wants c155, read c162 9732CDFF; (2,0) wants c156, read c162 9732CDFF; (3,0) wants c157, read c162 9732CDFF;
+relative constants probe: stress 7 the read twice [busy pixels, 4 passes]: 20 of 20 draws wrong, 31865 of 46080 cells in all, DIFFERS, 588 ms
+relative constants probe: stress 8 the read before the alloc, after the position export [light]: 0 of 20 draws wrong, 0 of 46080 cells in all, PASS, 39 ms
+relative constants probe: stress 8 the read before the alloc, after the position export [busy pixels]: 0 of 20 draws wrong, 0 of 46080 cells in all, PASS, 158 ms
+relative constants probe: stress 8 the read before the alloc, after the position export [busy pixels, 4 passes]: 0 of 20 draws wrong, 0 of 46080 cells in all, PASS, 520 ms
+relative constants probe: stress 9 after four throwaways [light] draw 0: 2046 of 2304 cells wrong: (0,1) wants c218, read c? 4080FFFF; (1,1) wants c219, read c? 4080FFFF; (2,1) wants c220, read c? 4080FFFF; (3,1) wants c221, read c? 4080FFFF;
+relative constants probe: stress 9 after four throwaways [light] draw 1: 1877 of 2304 cells wrong: (0,1) wants c218, read c? 4080FFFF; (1,1) wants c219, read c? 4080FFFF; (2,1) wants c220, read c? 4080FFFF; (3,1) wants c221, read c? 4080FFFF;
+relative constants probe: stress 9 after four throwaways [light] draw 2: 1919 of 2304 cells wrong: (0,1) wants c218, read c? 4080FFFF; (1,1) wants c219, read c? 4080FFFF; (2,1) wants c220, read c? 4080FFFF; (3,1) wants c221, read c? 4080FFFF;
+relative constants probe: stress 9 after four throwaways [light]: 20 of 20 draws wrong, 38814 of 46080 cells in all, DIFFERS, 121 ms
+relative constants probe: stress 9 after four throwaways [busy pixels] draw 0: 1852 of 2304 cells wrong: (0,1) wants c218, read c? 4080FFFF; (1,1) wants c219, read c? 4080FFFF; (2,1) wants c220, read c? 4080FFFF; (3,1) wants c221, read c? 4080FFFF;
+relative constants probe: stress 9 after four throwaways [busy pixels] draw 1: 1897 of 2304 cells wrong: (0,1) wants c218, read c? 4080FFFF; (1,1) wants c219, read c? 4080FFFF; (2,1) wants c220, read c? 4080FFFF; (3,1) wants c221, read c? 4080FFFF;
+relative constants probe: stress 9 after four throwaways [busy pixels] draw 2: 1903 of 2304 cells wrong: (0,1) wants c218, read c? 4080FFFF; (1,1) wants c219, read c? 4080FFFF; (2,1) wants c220, read c? 4080FFFF; (3,1) wants c221, read c? 4080FFFF;
+relative constants probe: stress 9 after four throwaways [busy pixels]: 20 of 20 draws wrong, 38203 of 46080 cells in all, DIFFERS, 223 ms
+relative constants probe: stress 9 after four throwaways [busy pixels, 4 passes] draw 0: 1961 of 2304 cells wrong: (0,0) wants c154, read c? 800004FF; (1,0) wants c155, read c? 80000CFF; (2,0) wants c156, read c? 800014FF; (3,0) wants c157, read c? 80001CFF;
+relative constants probe: stress 9 after four throwaways [busy pixels, 4 passes] draw 1: 1961 of 2304 cells wrong: (0,0) wants c154, read c? 800004FF; (1,0) wants c155, read c? 80000CFF; (2,0) wants c156, read c? 800014FF; (3,0) wants c157, read c? 80001CFF;
+relative constants probe: stress 9 after four throwaways [busy pixels, 4 passes] draw 2: 1961 of 2304 cells wrong: (0,0) wants c154, read c? 800004FF; (1,0) wants c155, read c? 80000CFF; (2,0) wants c156, read c? 800014FF; (3,0) wants c157, read c? 80001CFF;
+relative constants probe: stress 9 after four throwaways [busy pixels, 4 passes]: 20 of 20 draws wrong, 39250 of 46080 cells in all, DIFFERS, 588 ms
+relative constants probe: stress 10 maxasf again, then a throwaway [light]: 0 of 20 draws wrong, 0 of 46080 cells in all, PASS, 39 ms
+relative constants probe: stress 10 maxasf again, then a throwaway [busy pixels]: 0 of 20 draws wrong, 0 of 46080 cells in all, PASS, 160 ms
+relative constants probe: stress 10 maxasf again, then a throwaway [busy pixels, 4 passes]: 0 of 20 draws wrong, 0 of 46080 cells in all, PASS, 519 ms
+relative constants probe: done, 78 draws: 32 PASS, 46 DIFFERS; stress, 30 runs of 20 draws: 15 PASS, 15 DIFFERS; xsdk_gpu_close 0x00000000
+exit: status 0
