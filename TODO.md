@@ -98,8 +98,6 @@ work begins.
   nearest sampling right (docs/HARDWARE.md, "Texture and vertex formats, vulkan4xenon milestone 20"); vulkan4xenon
   samples them nearest. To try: `k_2_10_10_10_AS_16_16_16_16` and the `_EXPAND` formats
   (xenia:src/xenia/gpu/xenos.h:503-505, 530).
-- **Resolving part of a target.** Depth resolves came with vulkan4xenon's milestone 14 (docs/HARDWARE.md, "Depth
-  resolves").
 
 ## GPU gaps the milestones left
 
@@ -127,12 +125,11 @@ work begins.
   four channels (`k_32_32_FLOAT`, `k_32_32_32_32_FLOAT`); DXN and DXT5A read signed, which Xenia doesn't read
   (vulkan/vulkan_texture_cache.cc:333-337, 384-388), and so the layer's BC4 and BC5 `SNORM`; and the formats no
   Vulkan format or port has asked for, such as CTX1 and DXT3A (`TextureFormat`, xenos.h:450-532).
-- **Render areas smaller than the framebuffer.** vulkan4xenon refuses them with `VK_ERROR_FEATURE_NOT_PRESENT`
-  (vulkan4xenon:docs/ROADMAP.md, milestone 4): a render pass may change only its area, but the SDK's resolves copy and
-  clear the whole target from its corner. It needs a resolve of a rectangle at an offset, which Xenos takes from the
-  resolve's drawn rectangle, widened to 8 pixels (xenia:src/xenia/gpu/draw_util.cc:893-902), or clears by drawing with
-  the rest of the target loaded first. encounter's Aurora always renders whole targets. A port that needs them gets
-  `vulkan4xenon: not supported: render areas smaller than the framebuffer` in its log, and `vkEndCommandBuffer` fails.
+- **Resolving part of a target, past vulkan4xenon milestone 27.** `xsdk_gpu_resolve_texture_rect` resolves a
+  rectangle on the 8-pixel grid into the same texels. Left: a rectangle into another place in the texture, which
+  Direct3D 9 does by moving the destination's address (xenia:src/xenia/gpu/xenos.h:944-955); part of the depth; and
+  hierarchical depth after a part's depth clear, which stays off till the whole is cleared. vulkan4xenon refuses render
+  areas off the grid, which a resolve can't keep to, unless it drew the rest of the target back in first.
 - **Mipped linear textures.** `xsdk_texture_create` returns `STATUS_NOT_IMPLEMENTED` for them. Xenia keeps their rows
   256-byte aligned (texture_util.cc:209-449). Vulkan rarely needs them.
 

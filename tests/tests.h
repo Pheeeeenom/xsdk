@@ -97,6 +97,9 @@ void test_texture(void);
 // Render to texture (milestone 8).
 void test_render(void);
 
+// Resolving part of a target, for vulkan4xenon milestone 27.
+void test_resolve_rect(void);
+
 // Frame pacing (milestone 9), each mode briefly; tests/pacing.c runs one for 10 minutes.
 void test_pacing(void);
 

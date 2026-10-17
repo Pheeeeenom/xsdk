@@ -118,6 +118,8 @@ static uint32_t last_block_fence;
 static bool direct;
 
 typedef struct {
+	uint32_t x;
+	uint32_t y;
 	uint32_t width;
 	uint32_t height;
 	// The fence after which no queued resolve reads the corners.
@@ -473,14 +475,15 @@ static bool fence_before(uint32_t a, uint32_t b)
 	return (int32_t)(a - b) < 0;
 }
 
-// The slot for this size, else the one used longest ago, after the GPU is done with it.
-static uint32_t rectangle_slot(uint32_t width, uint32_t height)
+// The slot for this place and size, else the one used longest ago, after the GPU is done with it.
+static uint32_t rectangle_slot(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 {
 	uint32_t oldest = 0;
 	for (uint32_t i = 0; i < RECTANGLE_SLOTS; i++) {
-		if (rectangles[i].width == width && rectangles[i].height == height)
+		const Rectangle *const slot = &rectangles[i];
+		if (slot->x == x && slot->y == y && slot->width == width && slot->height == height)
 			return i;
-		if (fence_before(rectangles[i].fence, rectangles[oldest].fence))
+		if (fence_before(slot->fence, rectangles[oldest].fence))
 			oldest = i;
 	}
 	Rectangle *const rectangle = &rectangles[oldest];
@@ -489,20 +492,24 @@ static uint32_t rectangle_slot(uint32_t width, uint32_t height)
 			(void)xsdk_gpu_fence();
 		(void)xsdk_gpu_wait(rectangle->fence, CLOSE_TIMEOUT_MS);
 	}
-	// libxenon's three corners, half a pixel up and left (libxenon:drivers/xenos/xe.c:1074-1081).
-	const float corners[RECTANGLE_FLOATS] = { -0.5f, -0.5f, width - 0.5f, 0, width - 0.5f, height - 0.5f };
+	// libxenon's three corners, from x and y, half a pixel up and left (libxenon:drivers/xenos/xe.c:1074-1081).
+	const float left = x - 0.5f;
+	const float right = x + width - 0.5f;
+	const float corners[RECTANGLE_FLOATS] = { left, y - 0.5f, right, (float)y, right, y + height - 0.5f };
 	for (uint32_t i = 0; i < RECTANGLE_FLOATS; i++)
 		writeback[(RECTANGLE_OFFSET + oldest * RECTANGLE_STRIDE) / 4 + i] = float_bits(corners[i]);
+	rectangle->x = x;
+	rectangle->y = y;
 	rectangle->width = width;
 	rectangle->height = height;
 	return oldest;
 }
 
-uint32_t xsdk_gpu_rectangle(uint32_t width, uint32_t height)
+uint32_t xsdk_gpu_rectangle(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 {
 	// A recorded resolve could outlive its slot.
 	assert(!recording);
-	const uint32_t slot = rectangle_slot(width, height);
+	const uint32_t slot = rectangle_slot(x, y, width, height);
 	// The resolve about to use it is queued before the next fence.
 	rectangles[slot].fence = last_fence + 1;
 	return writeback_physical + RECTANGLE_OFFSET + slot * RECTANGLE_STRIDE;

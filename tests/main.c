@@ -59,6 +59,7 @@ int main(int argc, char **argv)
 	test_triangle();
 	test_texture();
 	test_render();
+	test_resolve_rect();
 	test_pacing();
 	test_scale();
 	test_constants();

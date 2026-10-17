@@ -225,8 +225,8 @@ static inline void gpu_packets_done(const GpuPackets *packets)
 	assert(packets->count == packets->capacity);
 	(void)packets;
 }
-// The GPU address of a resolve's rectangle for this size; waits only to replace one a queued resolve may read.
-uint32_t xsdk_gpu_rectangle(uint32_t width, uint32_t height);
+// The GPU address of a resolve's rectangle at this place and size; waits only to replace one a queued resolve may read.
+uint32_t xsdk_gpu_rectangle(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 // Reads the registers the SDK changes, then queues libxenon's set-up.
 // A texture fetch constant's dword of levels and bias from the texture's and the sampler's (src/texture.c).
 uint32_t xsdk_texture_levels(uint32_t texture, uint32_t sampler);

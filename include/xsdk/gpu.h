@@ -121,6 +121,17 @@ void xsdk_gpu_resolve_texture(const XsdkTexture *texture, uint32_t clear_argb);
 // The same for eDRAM's depth and stencil, into a tiled XSDK_FORMAT_D24S8 texture; it clears depth and stencil as the
 // resolves above do, and colour never.
 void xsdk_gpu_resolve_depth_texture(const XsdkTexture *texture);
+
+enum {
+	// A resolve copies and clears 8 by 8 pixels at a time (xenia:src/xenia/gpu/xenos.h:978-984).
+	XSDK_RESOLVE_ALIGNMENT = 8,
+};
+
+// xsdk_gpu_resolve_texture for the pixels from (x, y), width by height, into the same texels, clearing only them: x
+// and y multiples of XSDK_RESOLVE_ALIGNMENT, and width and height too unless the rectangle reaches the texture's edge.
+// Clearing depth there turns hierarchical depth off till a clear of the whole.
+void xsdk_gpu_resolve_texture_rect(
+	const XsdkTexture *texture, uint32_t x, uint32_t y, uint32_t width, uint32_t height, uint32_t clear_argb);
 // Which of colour, and depth with stencil, the later resolves clear after copying; both until set.
 void xsdk_gpu_set_resolve_clears(bool color, bool depth_stencil);
 
@@ -256,9 +267,9 @@ typedef struct {
 
 void xsdk_gpu_depth_stencil_state(XsdkDepthStencilState *state, const XsdkDepthStencil *setting);
 // Applies to the draws after; xsdk_gpu_set_target and resolves turn depth and stencil off. Draws testing depth skip
-// hidden pixels before the pixel shader from a resolve that clears depth until another target is set, a recording is
-// begun or run, or depth is written with a compare the clear doesn't suit (docs/HARDWARE.md, "Hierarchical depth");
-// draws whose pixel shader writes depth never do.
+// hidden pixels before the pixel shader from a resolve that clears the whole target's depth until another target is
+// set, a recording is begun or run, part of the depth is cleared, or depth is written with a compare the clear doesn't
+// suit (docs/HARDWARE.md, "Hierarchical depth"); draws whose pixel shader writes depth never do.
 void xsdk_gpu_set_depth_stencil(const XsdkDepthStencilState *state);
 // The depth, 0 to 1, and stencil the later resolves clear to; far and 0 until set. Below 0.5 suits greater-than
 // compares, else less-than ones; equal suits both.
