@@ -55,6 +55,8 @@ typedef struct {
 	bool a0_set;
 	uint32_t a0_part;
 	int64_t a0_scale;
+	XscAlu a0_load;
+	size_t a0_allocs;
 } XscSaved;
 
 typedef struct {
@@ -80,9 +82,12 @@ typedef struct {
 	uint32_t *local_store;
 	int64_t *sample_reg;
 	int64_t *deriv_reg;
+	// What a0 holds, the instruction that loaded it, and the program's allocs then.
 	bool a0_set;
 	uint32_t a0_part;
 	int64_t a0_scale;
+	XscAlu a0_load;
+	size_t a0_allocs;
 	// The ids a constant fold has visited, as lower.py's seen set: marked by id, listed to clear.
 	bool *seen;
 	uint32_t *seen_ids;

@@ -274,6 +274,8 @@ static bool save_caches(XscLower *l, XscSaved *s)
 	s->a0_set = l->a0_set;
 	s->a0_part = l->a0_part;
 	s->a0_scale = l->a0_scale;
+	s->a0_load = l->a0_load;
+	s->a0_allocs = l->a0_allocs;
 	return true;
 }
 
@@ -287,6 +289,8 @@ static void restore_caches(XscLower *l, const XscSaved *s)
 	l->a0_set = s->a0_set;
 	l->a0_part = s->a0_part;
 	l->a0_scale = s->a0_scale;
+	l->a0_load = s->a0_load;
+	l->a0_allocs = s->a0_allocs;
 }
 
 // p0 = the condition: a setp on a - b, or on the bool as 1 or 0 not being 0 (xenia:src/xenia/gpu/ucode.h:1162-1204).

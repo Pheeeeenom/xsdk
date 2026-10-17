@@ -130,7 +130,10 @@ came from; that test and its test vectors stay in xost's archived repo (github.c
 - A block's array read at a run-time index takes `a0` from the index: one
   index a chain, into an array on 16-byte lines, `int(f)` for `f >= 0` as
   indices are (a0 is `floor(f)`), and the result within -256 to 255
-  (xenia:src/xenia/gpu/ucode.h:1138-1150).
+  (xenia:src/xenia/gpu/ucode.h:1138-1150). a0 doesn't survive an alloc on
+  the console, so a read at the same index past one loads a0 again first,
+  with the instruction that loaded it before
+  (xsdk:docs/HARDWARE.md, "a0 doesn't survive an alloc").
 - gl_InstanceIndex (Vulkan's InstanceIndex) → the float constant register
   past the blocks, before the literals, so no uniform block the GPU may load
   shares its group of 4. The runtime writes the instance's index, a float, into

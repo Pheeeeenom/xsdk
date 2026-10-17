@@ -9,6 +9,11 @@ parameters, as vulkan4xenon's milestone 11 needs for Aurora's matrices picked pe
   parameters on in the register past its interpolator, and the simulator, given the pixel parameters as the GPU
   writes them (the column's magnitude, the sign bit the facing), must pick each column's band.
 - vk_frag_coord_depth.frag reads gl_FragCoord.z, which the pixel parameters don't hold, and must be refused.
+- a0 doesn't survive an alloc on the console (docs/HARDWARE.md, "a0 doesn't survive an alloc"). In every testdata
+  shader that reads at a0, optimiser off and on, each read at a0 must have an a0 load since its alloc, and a load again
+  of what a0 held must come only where such a read needs it. vk_dynamic_interpolator.vert reads its colour, then its
+  scale's w, past the interpolators' alloc at the a0 its position loaded: the position's load must come again right
+  before the colour's read, and the simulator must give each of its 16 indices' position and colour.
 """
 import math
 import struct
@@ -227,8 +232,106 @@ def check_frag_coord_depth():
     return False
 
 
+def a0_ops(blob):
+    """Each a0 load and read at a0 in program order: (the allocs before it, "load" or "read", its words)."""
+    c = container.Container(blob)
+    ops, allocs = [], 0
+    for rec in xu._decode_program(c.ucode_dwords, c.shader_type)[0]:
+        if rec.kind == "cf" and rec.opcode == "alloc":
+            allocs += 1
+        elif rec.kind == "alu":
+            op = xu.AluInstruction(*rec.raw)
+            if op.scalar_opcode() in (S.kMaxAs, S.kMaxAsf) or op.vector_opcode() == V.kMaxA:
+                ops.append((allocs, "load", tuple(rec.raw)))
+            elif op.is_const_address_register_relative() and any(
+                    not op.src_is_temp(n) and op.src_const_is_addressed(n) for n in (1, 2, 3)):
+                ops.append((allocs, "read", tuple(rec.raw)))
+    return ops
+
+
+def a0_reloads(blob):
+    """(reloads, problem): the loads of what a0 held before an alloc, and what breaks the console's rule, a0 lost at
+    every alloc (docs/HARDWARE.md, "a0 doesn't survive an alloc"): a read at a0 with no load since the last alloc, or a
+    load again of what a0 holds that no read after an alloc needs."""
+    last, reloads, unread = None, 0, None
+    for allocs, kind, words in a0_ops(blob):
+        if unread is not None and (kind == "load" or allocs != unread):
+            return reloads, f"a0 loaded again after alloc {unread} with no read at a0 after it"
+        if kind == "read":
+            if last is None or last[0] != allocs:
+                return reloads, f"a read at a0 after alloc {allocs} with no a0 load since"
+            unread = None
+            continue
+        if last is not None and last[1] == words:
+            reloads += 1
+            unread = allocs
+            if last[0] == allocs:
+                return reloads, f"a0 loaded again in alloc region {allocs}, where it holds that already"
+        last = (allocs, words)
+    return reloads, None if unread is None else f"a0 loaded again after alloc {unread} with no read at a0 after it"
+
+
+# The shaders that read at a0, and the reloads each takes: only vk_dynamic_interpolator.vert reads at a0 past an alloc
+# what it loaded a0 with before it.
+RELOADS = {"vk_dynamic_rows.vert": 0, "vk_dynamic_matrices.vert": 0, "vk_frag_coord.frag": 0,
+           "vk_instance_index.vert": 0, "vk_loop_count_if.frag": 0, "vk_dynamic_interpolator.vert": 1}
+ROWS = 16
+
+
+def check_reloads():
+    for name, want in RELOADS.items():
+        for optimize in (False, True):
+            blob, _ = lower_ex(spirv.Module.parse((TD / f"{name}.spv").read_bytes()), XSDK_REGISTERS,
+                               optimize=optimize)
+            reloads, problem = a0_reloads(blob)
+            if problem or reloads != want:
+                print(f"  FAIL {name}: optimiser {'on' if optimize else 'off'}: {reloads} a0 reloads, want {want}"
+                      f"{f'; {problem}' if problem else ''}")
+                return False
+    print(f"  PASS a0 reloads: {', '.join(f'{n} {w}' for n, w in RELOADS.items())}, optimiser off and on; every read "
+          f"at a0 has a load since its alloc, and no load again goes unread")
+    return True
+
+
+def check_interpolator():
+    name = "vk_dynamic_interpolator.vert"
+    scales = [[1.0 + 0.1 * i, 2.0 - 0.1 * i, 0.5 + 0.05 * i, 1.0 + 0.25 * i] for i in range(ROWS)]
+    colors = [[0.05 * i, 0.2, 0.06 * i, 1.0] for i in range(ROWS)]
+    for optimize in (False, True):
+        blob, manifest = lower_ex(spirv.Module.parse((TD / f"{name}.spv").read_bytes()), XSDK_REGISTERS,
+                                  optimize=optimize)
+        ops = a0_ops(blob)
+        loads = [i for i, (_, kind, _) in enumerate(ops) if kind == "load"]
+        past = [i for i, (allocs, kind, _) in enumerate(ops) if kind == "read" and allocs == 2]
+        # The position's load and reads after alloc position, then the reload right before the colour's read and the
+        # scale's after alloc interpolators.
+        if (len(loads) != 2 or len(past) != 2 or ops[loads[0]][0] != 1 or ops[loads[1]][0] != 2
+                or loads[1] != past[0] - 1 or ops[loads[0]][2] != ops[loads[1]][2]):
+            print(f"  FAIL {name}: optimiser {'on' if optimize else 'off'}: a0 loads and reads {ops}: want the "
+                  f"position's load again after alloc interpolators, right before the first of its two reads there")
+            return False
+        consts = registers([x for row in scales + colors for x in row], 0)
+        consts.update({reg: list(values) for reg, values in manifest})
+        for index in range(ROWS):
+            exports = run(blob, {0: [0.25, -0.5, float(index), 0.0]}, consts)
+            want = [0.25 * scales[index][0], -0.5 * scales[index][1], 0.5 * scales[index][2], scales[index][3]]
+            color = [x * scales[index][3] for x in colors[index]]
+            if not close(exports.get(OPOS, []), want) or not close(exports.get(0, []), color):
+                print(f"  FAIL {name}: index {index}: position {exports.get(OPOS)} (want {want}), colour "
+                      f"{exports.get(0)} (want {color})")
+                return False
+    problem = oracle_reads_a0(blob, "vk_dynamic_interpolator_vert", ["scales", "colors"])
+    if problem:
+        print(f"  FAIL {name}: {problem}")
+        return False
+    print(f"  PASS {name}: the position's maxasf again past the interpolators' alloc, right before colors[i]'s read; "
+          f"position and colour for i 0 to {ROWS - 1}, optimiser off and on")
+    return True
+
+
 def main():
-    results = [check_rows(), check_matrices(), check_frag_coord(), check_frag_coord_depth()]
+    results = [check_rows(), check_matrices(), check_frag_coord(), check_frag_coord_depth(), check_reloads(),
+               check_interpolator()]
     sys.exit(0 if all(results) else 1)
 
 

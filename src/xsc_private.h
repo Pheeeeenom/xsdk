@@ -739,6 +739,8 @@ typedef struct {
 	bool exports_point_size;
 	// The optimiser rewrote it, so the allocator packs its values into components.
 	bool optimized;
+	// The allocs so far: a0 doesn't survive one (docs/HARDWARE.md, "a0 doesn't survive an alloc").
+	size_t alloc_count;
 } XscProgram;
 
 bool xsdk_xsc_program_init(Xsc *x, XscProgram *p, bool pixel, uint32_t registers);

@@ -238,6 +238,7 @@ XscOp *xsdk_xsc_program_export(Xsc *x, XscProgram *p, int64_t o, uint32_t usage,
 bool xsdk_xsc_program_alloc(Xsc *x, XscProgram *p, int64_t alloc_type)
 {
 	p->stages[p->stage_count - 1].alloc_after = alloc_type;
+	p->alloc_count++;
 	return add_stage(x, p);
 }
 

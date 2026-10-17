@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "constant_shaders.h"
@@ -17,7 +18,8 @@
 
 // One cell per piece of raster and blend state, each checked by pixel against what the CPU works out; then, for
 // vulkan4xenon milestone 26, a row of quads drawn as their edges and their corners, a row of cells clipped by planes,
-// and point sprites from xost's shaders compiled on the console.
+// and point sprites from xost's shaders compiled on the console; and a grid of quads coloured from a block at their
+// vertices' index, read at a0 past the interpolators' alloc (docs/HARDWARE.md, "a0 doesn't survive an alloc").
 
 enum {
 	WIDTH = 1280,
@@ -53,6 +55,17 @@ enum {
 	FILL_WIDTH = 200,
 	FILL_HEIGHT = 80,
 	FILL_SLACK = 1,
+	// The indexed grid, one draw: 70 by 8 quads 10 pixels square right of the constant blends, each centre checked.
+	INDEXED_X = 540,
+	INDEXED_Y = 620,
+	INDEXED_SIZE = 10,
+	INDEXED_COLUMNS = 70,
+	INDEXED_ROWS = 8,
+	INDEXED_QUADS = INDEXED_COLUMNS * INDEXED_ROWS,
+	INDEXED_VERTICES = INDEXED_QUADS * QUAD_VERTICES,
+	// The length of each of vk_dynamic_interpolator.vert's arrays, its scales and its colours.
+	INDEXED_INDICES = 16,
+	MAX_INDEXED_LOGGED = 8,
 };
 
 // Point sprites, each centred on a pixel's corner, as wide as its size, from vk_point_sprite.vert.
@@ -617,6 +630,58 @@ static void draw_sprites(const Sprites *s)
 	}
 }
 
+// What the indexed grid draws with: vk_dynamic_interpolator.vert, its block's register and rows, and the quads.
+typedef struct {
+	XsdkShader vertex;
+	XsdkXscShader compiled;
+	const XsdkXscNeed *needs;
+	size_t need_count;
+	uint32_t block;
+	float rows[2 * INDEXED_INDICES][4];
+	volatile uint32_t *memory;
+	uint32_t vertices;
+} Indexed;
+
+// Index i's colour: red 16i + 8, green its complement and blue it xor 0x5A, so a pixel names the row read.
+static uint32_t indexed_argb(uint32_t i)
+{
+	const uint32_t n = 16 * i + 8;
+	return 0xFF000000 | n << 16 | (255 - n) << 8 | (n ^ 0x5A);
+}
+
+static void draw_indexed(const Indexed *r, const XsdkShader *pixel)
+{
+	xsdk_gpu_set_shaders(&r->vertex, pixel);
+	xsdk_gpu_set_vertices(0, r->vertices, INDEXED_VERTICES * STRIDE_BYTES);
+	set_literals(r->needs, r->need_count, true);
+	xsdk_gpu_set_vertex_constants(r->block, &r->rows[0][0], 2 * INDEXED_INDICES);
+	xsdk_gpu_draw(XSDK_PRIMITIVE_TRIANGLE_LIST, INDEXED_VERTICES);
+}
+
+// The indexed grid's quads whose centre doesn't hold their index's colour, the first few logged.
+static uint32_t indexed_wrong(volatile const uint32_t *pixels, uint32_t frame, uint32_t *logged)
+{
+	uint32_t wrong = 0;
+	for (uint32_t quad = 0; quad < INDEXED_QUADS; quad++) {
+		const uint32_t column = quad % INDEXED_COLUMNS;
+		const uint32_t row = quad / INDEXED_COLUMNS;
+		const uint32_t x = INDEXED_X + column * INDEXED_SIZE + INDEXED_SIZE / 2;
+		const uint32_t y = INDEXED_Y + row * INDEXED_SIZE + INDEXED_SIZE / 2;
+		const uint32_t stored = pixels[tiled_index(x, y, WIDTH)];
+		const uint32_t argb = indexed_argb(quad % INDEXED_INDICES);
+		if (colour_near(stored, argb))
+			continue;
+		if (*logged < MAX_INDEXED_LOGGED) {
+			xsdk_log_write("raster: frame %u: the indexed quad at column %u, row %u, index %u, held %08X, not %08X",
+				(unsigned)frame, (unsigned)column, (unsigned)row, (unsigned)(quad % INDEXED_INDICES), (unsigned)stored,
+				(unsigned)__builtin_bswap32(argb));
+			(*logged)++;
+		}
+		wrong++;
+	}
+	return wrong;
+}
+
 static bool point_holds(volatile const uint32_t *pixels, const Point *p, uint32_t frame, uint32_t *misses)
 {
 	const uint32_t stored = pixels[tiled_index(p->x, p->y, WIDTH)];
@@ -636,7 +701,7 @@ static bool point_holds(volatile const uint32_t *pixels, const Point *p, uint32_
 
 // Each frame draws every cell into eDRAM, resolves into the buffer not on screen, and shows it.
 static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint32_t vertices,
-	volatile uint32_t *const *buffers, bool has_display, const Sprites *s)
+	volatile uint32_t *const *buffers, bool has_display, const Sprites *s, const Indexed *r)
 {
 	States states;
 	make_states(&states);
@@ -655,6 +720,9 @@ static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint3
 	uint32_t clip_frames_wrong = 0;
 	uint32_t sprite_frames_wrong = 0;
 	uint32_t fill_frames_wrong = 0;
+	uint32_t indexed_checked = 0;
+	uint32_t indexed_quads_wrong = 0;
+	uint32_t indexed_logged = 0;
 	bool fences_landed = true;
 	bool shown = true;
 	for (uint32_t frame = 0; frame < FRAMES && fences_landed; frame++) {
@@ -668,6 +736,8 @@ static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint3
 		draw_clipped(&states);
 		if (s)
 			draw_sprites(s);
+		if (r)
+			draw_indexed(r, pixel);
 		xsdk_gpu_resolve(address, WIDTH, HEIGHT, CLEAR_ARGB);
 		fences_landed = NT_SUCCESS(xsdk_gpu_wait(xsdk_gpu_fence(), FENCE_TIMEOUT_MS));
 		if (!fences_landed)
@@ -690,6 +760,10 @@ static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint3
 			for (uint32_t i = 0; i < fill_point_count; i++)
 				filled &= fill_holds(buffer, &fill_points[i], frame, &misses);
 			fill_frames_wrong += !filled;
+			if (r) {
+				indexed_quads_wrong += indexed_wrong(buffer, frame, &indexed_logged);
+				indexed_checked += INDEXED_QUADS;
+			}
 		}
 		if (has_display)
 			shown = shown && NT_SUCCESS(xsdk_display_show(address, WIDTH));
@@ -712,6 +786,13 @@ static void draw_frames(const XsdkShader *vertex, const XsdkShader *pixel, uint3
 		"raster: point sprites from xost's shaders compiled on the console as wide as their gl_PointSize, 24 and 64 "
 		"pixels, gl_PointCoord across them from the top left",
 		fences_landed && sprite_frames_wrong == 0);
+	char name[256];
+	(void)snprintf(name, sizeof name,
+		"raster: one draw of xost's vk_dynamic_interpolator.vert compiled on the console colours each of %u quads as "
+		"its vertices' index, 0 to %u, picks, read at a0 past the interpolators' alloc: %u of %u wrong",
+		(unsigned)INDEXED_QUADS, (unsigned)(INDEXED_INDICES - 1), (unsigned)indexed_quads_wrong,
+		(unsigned)indexed_checked);
+	check(name, fences_landed && indexed_checked && indexed_quads_wrong == 0);
 	if (has_display) {
 		check("raster: every frame shown", shown);
 		xsdk_log_write("raster: the last frame stays on screen for %u ms for a capture", (unsigned)TEST_SHOW_MS);
@@ -766,6 +847,44 @@ static bool make_sprites(Sprites *s)
 	return true;
 }
 
+// vk_dynamic_interpolator.vert, its block's rows, scales 1 and each index's colour, and the grid's quads, each placed
+// as set_draw_constants places the square, its index in z; false, the grid undrawn, on a failure.
+static bool make_indexed(Indexed *r)
+{
+	if (!compile_shader("vk_dynamic_interpolator.vert", &r->vertex, &r->compiled, &r->needs, &r->need_count) ||
+		r->compiled.resource_count != 1 ||
+		!NT_SUCCESS(xsdk_shader_set_vertex_layout(
+			&r->vertex, layout, sizeof layout / sizeof layout[0], (const uint32_t[]){ STRIDE_BYTES })))
+		return false;
+	r->block = r->compiled.resources[0].reg;
+	for (uint32_t i = 0; i < INDEXED_INDICES; i++) {
+		const uint32_t argb = indexed_argb(i);
+		const float colour[4] = { channel(argb, 16), channel(argb, 8), channel(argb, 0), channel(argb, 24) };
+		for (uint32_t c = 0; c < 4; c++) {
+			r->rows[i][c] = 1.0f;
+			r->rows[INDEXED_INDICES + i][c] = colour[c];
+		}
+	}
+	r->memory = xsdk_gpu_alloc(INDEXED_VERTICES * STRIDE_BYTES);
+	if (!r->memory)
+		return false;
+	for (uint32_t v = 0; v < INDEXED_VERTICES; v++) {
+		const uint32_t quad = v / QUAD_VERTICES;
+		const float *const corner = square[v % QUAD_VERTICES];
+		const uint32_t x = INDEXED_X + quad % INDEXED_COLUMNS * INDEXED_SIZE + (corner[0] ? INDEXED_SIZE : 0);
+		const uint32_t y = INDEXED_Y + quad / INDEXED_COLUMNS * INDEXED_SIZE + (corner[1] ? INDEXED_SIZE : 0);
+		const float vertex[VERTEX_FLOATS] = { clip_x(x), clip_y(y), (float)(quad % INDEXED_INDICES), 0.0f };
+		uint32_t words[VERTEX_FLOATS];
+		memcpy(words, vertex, sizeof words);
+		for (uint32_t i = 0; i < VERTEX_FLOATS; i++)
+			r->memory[v * VERTEX_FLOATS + i] = words[i];
+	}
+	__asm__ volatile("sync" ::: "memory");
+	r->vertices = xsdk_gpu_address(r->memory);
+	xsdk_gpu_invalidate(r->vertices, INDEXED_VERTICES * STRIDE_BYTES);
+	return true;
+}
+
 static volatile uint32_t *upload_square(void)
 {
 	volatile uint32_t *const vertices = xsdk_gpu_alloc(sizeof square);
@@ -807,11 +926,18 @@ void test_raster(void)
 	Sprites sprite_state = { .vertex = { .microcode = NULL }, .pixel = { .microcode = NULL } };
 	const bool sprites_made = make_sprites(&sprite_state);
 	check("raster: xost compiles and xsdk loads the point sprite shaders on the console", sprites_made);
+	Indexed indexed = { .vertex = { .microcode = NULL } };
+	const bool indexed_made = make_indexed(&indexed);
+	check("raster: xost compiles and xsdk loads vk_dynamic_interpolator.vert on the console", indexed_made);
 	// Without a display, as in Xenia, the frames still draw and are checked.
 	if (patched && vertices && buffers[0] && buffers[1])
-		draw_frames(
-			&vertex, &pixel, xsdk_gpu_address(vertices), buffers, has_display, sprites_made ? &sprite_state : NULL);
+		draw_frames(&vertex, &pixel, xsdk_gpu_address(vertices), buffers, has_display,
+			sprites_made ? &sprite_state : NULL, indexed_made ? &indexed : NULL);
 	xsdk_display_close();
+	if (indexed.memory)
+		xsdk_gpu_free(indexed.memory);
+	if (indexed.vertex.microcode)
+		xsdk_shader_free(&indexed.vertex);
 	if (sprite_state.memory)
 		xsdk_gpu_free(sprite_state.memory);
 	if (sprite_state.pixel.microcode)
@@ -821,6 +947,7 @@ void test_raster(void)
 	// The shaders' fetch patch records point into the containers (src/shader.c), so they go last.
 	xsdk_xsc_free(&sprite_state.pixel_compiled);
 	xsdk_xsc_free(&sprite_state.vertex_compiled);
+	xsdk_xsc_free(&indexed.compiled);
 	for (uint32_t i = 0; i < BUFFERS; i++)
 		xsdk_gpu_free(buffers[i]);
 	xsdk_gpu_free(vertices);

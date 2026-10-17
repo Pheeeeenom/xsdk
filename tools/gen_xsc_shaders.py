@@ -7,7 +7,8 @@ fetches together; vk_vertex_if.vert has if/else arms on data the unroller merges
 arms on a push constant merged the same way, and vk_loop_count_if.frag a hardware loop a uniform buffer's int counts
 (vulkan4xenon milestone 21); vulkan4xenon milestone 26's vk_clip_distance.vert writes three clip distances from planes
 in its blocks, and vk_point_sprite.vert and vk_point_coord.frag a point's size and its sprite's coordinates, which the
-raster test draws with too. Prints a C header. Runs in WSL, where make builds the compiler for the PC.
+raster test draws with too, as it does vk_dynamic_interpolator.vert, which reads a colour at a0 past the interpolators'
+alloc, a0 loaded again before it. Prints a C header. Runs in WSL, where make builds the compiler for the PC.
 """
 
 import struct
@@ -21,7 +22,8 @@ import xsc.native as native  # noqa: E402
 
 TESTDATA = ROOT / "xenos-toolchain" / "xsc" / "testdata"
 SHADERS = ("vk_block_literals.vert", "vk_texel_offsets.frag", "vk_vertex_if.vert", "vk_vertex_uniform_if.vert",
-           "vk_loop_count_if.frag", "vk_clip_distance.vert", "vk_point_sprite.vert", "vk_point_coord.frag")
+           "vk_loop_count_if.frag", "vk_clip_distance.vert", "vk_point_sprite.vert", "vk_point_coord.frag",
+           "vk_dynamic_interpolator.vert")
 # xsdk's split (xsdk:src/gpu_setup.c).
 REGISTERS = 64
 RESOURCE_KINDS = {"push": "XSDK_XSC_PUSH_CONSTANTS", "uniform": "XSDK_XSC_UNIFORM_BUFFER",

@@ -167,8 +167,13 @@ bool xsdk_xsc_block_access(XscLower *l, uint32_t ptr_id, XscBlockAccess *access,
 // a0 = the run-time part times the registers an element; it's -256 to 255 (xenia:src/xenia/gpu/ucode.h:1138-1150).
 static bool set_a0(XscLower *l, uint32_t part, int64_t scale)
 {
-	if (l->a0_set && l->a0_part == part && l->a0_scale == scale)
-		return true;
+	if (l->a0_set && l->a0_part == part && l->a0_scale == scale) {
+		if (l->a0_allocs == l->p->alloc_count)
+			return true;
+		// a0 doesn't survive an alloc, so the same load goes again (docs/HARDWARE.md, "a0 doesn't survive an alloc").
+		l->a0_allocs = l->p->alloc_count;
+		return xsdk_xsc_emit_alu(l, &l->a0_load);
+	}
 	const XscInstr *const ins = xsdk_xsc_lower_result(l, part);
 	if (!ins)
 		return false;
@@ -212,6 +217,8 @@ static bool set_a0(XscLower *l, uint32_t part, int64_t scale)
 	l->a0_set = true;
 	l->a0_part = part;
 	l->a0_scale = scale;
+	l->a0_load = f;
+	l->a0_allocs = l->p->alloc_count;
 	return true;
 }
 

@@ -3616,3 +3616,52 @@ each status word copied once the GPU was idle:
 Broken on purpose, the copy without the idle wait, every id read from the first word and the id unshifted each failed
 the checks `xsdk_test_breaks.py` names (`xsdk_test_broken_a.log` to `_c`). xsdk_test passed 380 of 382, the two left
 the controller's, no button pressed.
+
+## a0 doesn't survive an alloc (2026-10-17)
+
+`tests/probe_relative_constants.c` draws vertex shaders `tools/gen_relative_constant_probe.py` builds by hand, each
+loading a0 with xost's `maxasf` from a vertex input and reading `c[k+a0]`; c[n] draws as red n, green 255 - n and blue
+n ^ 0x5A, so a pixel names the constant read (`results/2026-10-17-milestone-45/`). Its first run,
+`probe_relative_constants.log`, drew 39 shapes over four quads each, a0 the same in all four and then 3, 7, 12 and 18.
+Its stress run, `probe_relative_constants_stress.log`, draws ten shapes as one draw each of a 64 by 36 grid of 20-pixel
+quads, 13824 vertices, quad i's a0 2 + i % 97, every quad's centre checked: 20 draws of each under three loads, the
+plain pixel shader, one of 120 ALU instructions before its export, and that with four full-screen draws before the grid.
+- **a0 is lost at any control flow `alloc`.** Read after the interpolators' alloc with a0 loaded before it, all 46,080
+  quads of each load were wrong, reading no constant; so were the first run's reads after the position's alloc (case
+  13). The wrong reads are a0's, not the instruction's: vector-only or co-issued with an `rcp`, src3 a temp or a
+  constant, a `mul` with the constant either operand, all failed (cases 4 to 7, 9).
+- **Remedies that don't hold.** One, two or four throwaway reads before the read, `max rN._, c[k+a0], c[k+a0]` with
+  write mask 0, and the read done twice, passed in the first run's light draws of four quads (cases 10, 12 and 15), and
+  failed in every draw of the stress run under every load: 69 to 87% of quads wrong, most reading another vertex's
+  row, some no constant at all.
+- **What holds:** a0 loaded again after the alloc with the same `maxasf` of the same input, right after the alloc or in
+  the read's exec with an exec of other work between; the read moved before the alloc, into a temp; and reads in the
+  alloc region a0 was loaded in, any number of instructions or execs later. Each passed all 46,080 quads under every
+  load, and the first run's cases 1 to 3, 11 and 14 too. An export between the load and the read, no alloc between,
+  doesn't matter (case 14).
+- **Dusklight:** `93d36ce55e3f9bad.vert` and `c0ddfd4547c71e5a.vert` load a0 after the position's alloc for a skinned
+  vertex's matrix, `c[120..122+a0]`, and read its normal matrix, `c[152..154+a0]`, for the lighting after the
+  interpolators' alloc, so skinned characters were lit from wrong rows. Case 8 replays 93d36's instructions from its
+  `maxasf` to its `c[152+a0]` read as xost wrote them before milestone 45 and at its step 4, at both register counts and
+  with the lighting's instructions as fillers: none read the row, and the two read different wrong values.
+- **xost now** loads a0 again after an alloc before a read at a0 that needs it (`set_a0`, `src/xsc_lower_block.c`): the
+  lowering keeps the instruction that loaded a0 and the program's alloc count then (`xsdk_xsc_program_alloc`,
+  `src/xsc_program.c`), and a read at the same index with an alloc since emits that instruction again first, in the
+  read's alloc region, right before it. Every alloc kind xost emits counts, position, interpolators and colours, in
+  vertex and pixel shaders. It goes in before register allocation, so the allocator keeps the load's source live to it,
+  and the optimiser moves nothing past an a0 load. Over milestone 45's corpus only those two Dusklight shaders take one,
+  an ALU instruction more each and no register more, besides the test shader below.
+- **The throwaway was wrong** (`b6b9004`, withdrawn): the first run read the row after one, and it took that as the
+  first read after an alloc writing nothing. Across 2304 quads a draw, a0 itself is gone, and xsdk_test's check of it,
+  two quads, failed in about 4 of 59 frames.
+- **Xenia doesn't show it:** its a0 changes only at `maxa`, `maxas` and `maxasf`
+  (xenia:src/xenia/gpu/shader_interpreter.cc:600-602, 808-823), a constant at a0 is read from it whatever came between
+  (260-266), and an alloc only opens an export there (242-249) and matters to its SPIR-V translator only for memory
+  export (xenia:src/xenia/gpu/spirv_shader_translator.cc:1125-1131). xost's simulator (`xdis/equivalence.py`) models
+  a0 the same way, so no check on the PC could see it.
+- **Not tried:** reads at the loop index, aL, after an alloc. xost reads at aL only in `xsdk_xsc_lower_real_loop`'s
+  loop (`src/xsc_lower_loop.c`), before the colours' alloc, so nothing it compiles does.
+
+The fix is to be run on the console: xsdk_test's raster test draws xost's `vk_dynamic_interpolator.vert`, compiled
+there, over a grid of 560 quads in one draw, each its own index of 16, the colour read at a0 past the interpolators'
+alloc.
