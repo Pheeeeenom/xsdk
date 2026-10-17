@@ -3,7 +3,8 @@
 #include "xsc_private.h"
 
 // The optimiser, as xenos-toolchain/xasm/optimize.py rewrites a program's instructions before allocation: common
-// subexpressions, copies propagated, multiply-adds fused, dead code removed, and scalar ops co-issued.
+// subexpressions, copies propagated, multiply-adds fused, values computed into their copies' places, dead code removed,
+// and scalar ops co-issued.
 
 enum {
 	ALL = 0xF,
@@ -943,6 +944,327 @@ static bool co_issue(Optimizer *o, bool *changed)
 	return true;
 }
 
+// Ops whose result is the same in every lane (xenia:src/xenia/gpu/shader_interpreter.cc:436-519, 614-618).
+static bool replicates(int64_t op)
+{
+	return op == XSC_VECTOR_DP4 || op == XSC_VECTOR_DP3 || op == XSC_VECTOR_DP2_ADD || op == XSC_VECTOR_MAX4;
+}
+
+// A max of one temp with itself into a temp or an export, clamped or not, alone in its instruction.
+static bool is_copy(const XscOp *op)
+{
+	if (fixed(op) || scalar_active(op) || op->alu.vector_opcode != XSC_VECTOR_MAX || !op->alu.vector_write_mask)
+		return false;
+	if (op->alu.is_export && (op->alu.scalar_write_mask || op->alu.is_scalar_dest_relative))
+		return false;
+	const Source a = source(op, 1);
+	const Source b = source(op, 2);
+	return same_value(&a, &b) && a.temp && !a.absolute && !a.negate;
+}
+
+// Whether nothing in the program writes key k, though it writes k's register: the value there is undefined.
+static bool undefined(const Optimizer *o, int64_t k)
+{
+	const int64_t first = k - k % 4;
+	if (k < 0 || first + 4 > o->key_count)
+		return false;
+	return o->write_start[k] == o->write_start[k + 1] && o->write_start[first] != o->write_start[first + 4];
+}
+
+// A writer of what the copy at j copies, and the copy's lanes it gives, which the copy reads through s.
+typedef struct {
+	size_t i;
+	size_t j;
+	Source s;
+	int64_t lanes;
+} Place;
+
+static int64_t result_reg(const XscOp *w)
+{
+	return vector_active(w) ? w->alu.vector_dest : w->alu.scalar_dest;
+}
+
+static int64_t result_mask(const XscOp *w)
+{
+	return vector_active(w) ? w->alu.vector_write_mask : w->alu.scalar_write_mask;
+}
+
+// The copy's lane that will hold component c of the writer's result, or -1.
+static int holder(const Optimizer *o, const Place *pl, int c)
+{
+	const XscOp *const w = o->ops[pl->i];
+	// A scalar result fills each lane it writes (xenia:src/xenia/gpu/shader_interpreter.cc:948-955).
+	const bool same = !vector_active(w) || replicates(w->alu.vector_opcode);
+	for (int lane = 0; lane < 4; lane++) {
+		if ((pl->lanes >> lane & 1) && (same || pl->s.components[lane] == c))
+			return lane;
+	}
+	return -1;
+}
+
+// Whether a vector op's result fits the copy's lanes: swizzled to them, the same in all, or in its own lanes.
+static bool lands(const Optimizer *o, const Place *pl)
+{
+	const int64_t op = o->ops[pl->i]->alu.vector_opcode;
+	if (elementwise(op) || replicates(op))
+		return true;
+	for (int lane = 0; lane < 4; lane++) {
+		if ((pl->lanes >> lane & 1) && pl->s.components[lane] != lane)
+			return false;
+	}
+	return true;
+}
+
+// Whether nothing from the writer to the copy reads or writes the copy's lanes, nor the writer reads them.
+static bool place_free(const Optimizer *o, const Place *pl)
+{
+	const XscAlu *const copy = &o->ops[pl->j]->alu;
+	// An export's writer moves to the copy instead, so nothing between may write what it reads.
+	if (copy->is_export) {
+		for (size_t k = pl->i + 1; k < pl->j; k++) {
+			if (intersects(&o->defs[k], &o->reads[pl->i]))
+				return false;
+		}
+		return true;
+	}
+	KeySet place = { .count = 0 };
+	for (int c = 0; c < 4; c++) {
+		if (pl->lanes >> c & 1)
+			add_key(&place, key(copy->vector_dest, c));
+	}
+	if (intersects(&o->reads[pl->i], &place))
+		return false;
+	for (size_t k = pl->i + 1; k < pl->j; k++) {
+		if (intersects(&o->reads[k], &place) || intersects(&o->defs[k], &place))
+			return false;
+	}
+	return true;
+}
+
+// Whether nothing between from and to but skip writes key k.
+static bool unwritten(const Optimizer *o, size_t from, size_t to, size_t skip, int64_t k)
+{
+	for (size_t at = from + 1; at < to; at++) {
+		if (at != skip && has_key(&o->defs[at], k))
+			return false;
+	}
+	return true;
+}
+
+// Whether operand n of op r reads the writer's result: its first lane read does, as can_redirect leaves no other.
+static bool reads_result(const Optimizer *o, const Place *pl, size_t r, int n, const int64_t lanes[4])
+{
+	const Source s = source(o->ops[r], n);
+	const int64_t t = result_reg(o->ops[pl->i]);
+	for (int lane = 0; s.temp && s.reg == t && lane < 4; lane++) {
+		if (lanes[n] >> lane & 1)
+			return flow_at(o, r, key(t, s.components[lane])) == (int64_t)pl->i;
+	}
+	return false;
+}
+
+// Whether op r, another reader of the writer's result, can read it from the copy's place instead.
+static bool can_redirect(const Optimizer *o, const Place *pl, size_t r)
+{
+	const XscOp *const reader = o->ops[r];
+	const int64_t t = result_reg(o->ops[pl->i]);
+	const int64_t d = o->ops[pl->j]->alu.vector_dest;
+	if (fixed(reader) || d == t)
+		return false;
+	int64_t lanes[4];
+	bool named[4];
+	reads(reader, lanes, named);
+	for (int n = 1; n <= 3; n++) {
+		const Source s = source(reader, n);
+		if (!named[n] || !s.temp || s.reg != t)
+			continue;
+		// An operand reads the result alone or none of it.
+		int ours = 0, others = 0;
+		for (int lane = 0; lane < 4; lane++) {
+			if (!(lanes[n] >> lane & 1))
+				continue;
+			if (flow_at(o, r, key(t, s.components[lane])) != (int64_t)pl->i) {
+				others++;
+				continue;
+			}
+			const int h = holder(o, pl, s.components[lane]);
+			if (h < 0 || !unwritten(o, pl->i, r, pl->j, key(d, h)))
+				return false;
+			ours++;
+		}
+		if (ours && others)
+			return false;
+	}
+	return true;
+}
+
+static void redirect(Optimizer *o, const Place *pl, size_t r)
+{
+	XscOp *const reader = o->ops[r];
+	int64_t lanes[4];
+	bool named[4];
+	reads(reader, lanes, named);
+	for (int n = 1; n <= 3; n++) {
+		if (!named[n] || !reads_result(o, pl, r, n, lanes))
+			continue;
+		const Source old = source(reader, n);
+		Source moved = old;
+		moved.reg = o->ops[pl->j]->alu.vector_dest;
+		// A lane the reader doesn't read may hold anything.
+		for (int lane = 0; lane < 4; lane++) {
+			const int h = holder(o, pl, old.components[lane]);
+			moved.components[lane] = h < 0 ? lane : h;
+		}
+		set_source(reader, n, &moved);
+	}
+}
+
+// Whether the writer can write the copy's lanes itself, its other readers finding its result there unclamped.
+static bool can_place(Optimizer *o, const Place *pl, size_t *users)
+{
+	const XscOp *const w = o->ops[pl->i];
+	const XscOp *const copy = o->ops[pl->j];
+	const bool vector = plain_vector(w);
+	if (!vector && !scalar_only(w))
+		return false;
+	// A vector op exports after the export's alloc, as the lowering's do (xsc_lower.c, xsdk_xsc_emit_construct).
+	if (copy->alu.is_export && (!vector || stage_of(o->p, w) != stage_of(o->p, copy)))
+		return false;
+	if ((vector && !lands(o, pl)) || !place_free(o, pl))
+		return false;
+	const size_t count = users_of(o, pl->i, result_reg(w), result_mask(w), users);
+	for (size_t u = 0; u < count; u++) {
+		if (users[u] != pl->j && (copy->alu.is_export || copy->alu.vector_clamp || !can_redirect(o, pl, users[u])))
+			return false;
+	}
+	return true;
+}
+
+// Moves op w down its stage to just before op copy, so the exports stay where they were.
+static void sink(XscProgram *p, XscOp *w, const XscOp *copy)
+{
+	XscStage *const stage = &p->stages[stage_of(p, w)];
+	size_t at = 0;
+	while (stage->ops[at] != w)
+		at++;
+	for (; stage->ops[at + 1] != copy; at++)
+		stage->ops[at] = stage->ops[at + 1];
+	stage->ops[at] = w;
+}
+
+// The writer writes the copy's lanes, clamped as the copy is (xenia:src/xenia/gpu/shader_interpreter.cc:902-909).
+static void place(Optimizer *o, const Place *pl, size_t *users)
+{
+	XscOp *const w = o->ops[pl->i];
+	const XscAlu *const c = &o->ops[pl->j]->alu;
+	const size_t count = users_of(o, pl->i, result_reg(w), result_mask(w), users);
+	for (size_t u = 0; u < count; u++) {
+		if (users[u] != pl->j)
+			redirect(o, pl, users[u]);
+	}
+	XscAlu *const f = &w->alu;
+	if (!vector_active(w)) {
+		f->scalar_dest = c->vector_dest;
+		f->scalar_write_mask = pl->lanes;
+		f->scalar_clamp = f->scalar_clamp || c->vector_clamp;
+		return;
+	}
+	int table[3];
+	const int operands = vector_reads_table(f->vector_opcode, table);
+	for (int n = 1; elementwise(f->vector_opcode) && n <= operands; n++) {
+		const Source old = source(w, n);
+		Source moved = old;
+		for (int lane = 0; lane < 4; lane++)
+			moved.components[lane] = old.components[pl->s.components[lane]];
+		set_source(w, n, &moved);
+	}
+	f->vector_dest = c->vector_dest;
+	f->vector_write_mask = pl->lanes;
+	f->is_export = c->is_export;
+	f->vector_clamp = f->vector_clamp || c->vector_clamp;
+	if (c->is_export)
+		sink(o->p, w, o->ops[pl->j]);
+}
+
+// The copy's lanes whose value writer w gave.
+static int64_t lanes_from(const int64_t writers[4], int64_t mask, int64_t w)
+{
+	int64_t lanes = 0;
+	for (int lane = 0; lane < 4; lane++) {
+		if ((mask >> lane & 1) && writers[lane] == w)
+			lanes |= (int64_t)1 << lane;
+	}
+	return lanes;
+}
+
+// Each lane's writer, an undefined lane taking a defined one's; false where a lane has none.
+static bool copy_writers(const Optimizer *o, size_t j, Source *s, int64_t writers[4])
+{
+	const int64_t mask = o->ops[j]->alu.vector_write_mask;
+	int defined = -1;
+	for (int lane = 0; lane < 4; lane++) {
+		writers[lane] = (mask >> lane & 1) ? flow_at(o, j, key(s->reg, s->components[lane])) : OUTSIDE;
+		if (writers[lane] != OUTSIDE && defined < 0)
+			defined = lane;
+	}
+	for (int lane = 0; lane < 4; lane++) {
+		if (!(mask >> lane & 1) || writers[lane] != OUTSIDE)
+			continue;
+		if (defined < 0 || !undefined(o, key(s->reg, s->components[lane])))
+			return false;
+		s->components[lane] = s->components[defined];
+		writers[lane] = writers[defined];
+	}
+	return true;
+}
+
+// Whether the copy at j went, each instruction it copies from now writing its lanes.
+static bool try_place(Optimizer *o, size_t j, size_t *users)
+{
+	XscOp *const copy = o->ops[j];
+	if (!is_copy(copy))
+		return false;
+	Source s = source(copy, 1);
+	int64_t writers[4];
+	if (!copy_writers(o, j, &s, writers))
+		return false;
+	const int64_t mask = copy->alu.vector_write_mask;
+	Place places[4];
+	int count = 0;
+	int64_t seen = 0;
+	for (int lane = 0; lane < 4; lane++) {
+		if (!(mask >> lane & 1) || (seen >> lane & 1))
+			continue;
+		places[count] = (Place){ (size_t)writers[lane], j, s, lanes_from(writers, mask, writers[lane]) };
+		seen |= places[count].lanes;
+		if (!can_place(o, &places[count++], users))
+			return false;
+	}
+	for (int n = 0; n < count; n++)
+		place(o, &places[n], users);
+	XscOp *doomed = copy;
+	remove_ops(o, &doomed, 1);
+	return true;
+}
+
+static bool compute_in_place(Optimizer *o, bool *changed)
+{
+	*changed = false;
+	if (!build_flow(o))
+		return false;
+	fill_readers(o);
+	size_t *const users = xsdk_xsc_alloc(o->x, (4 * o->count + 1) * sizeof *users);
+	if (!users)
+		return false;
+	for (size_t j = 0; j < o->count; j++) {
+		if (try_place(o, j, users)) {
+			*changed = true;
+			return true;
+		}
+	}
+	return true;
+}
+
 static const bool *refused_flags(const XscAlu *f, bool flags[9])
 {
 	flags[0] = f->is_vector_dest_relative;
@@ -997,7 +1319,9 @@ static bool first_round(Optimizer *o, bool *changed)
 		return o->x->status == XSDK_XSC_OK;
 	if (!propagate_copies(o, changed) || *changed)
 		return o->x->status == XSDK_XSC_OK;
-	return fuse_multiply_adds(o, changed);
+	if (!fuse_multiply_adds(o, changed) || *changed)
+		return o->x->status == XSDK_XSC_OK;
+	return compute_in_place(o, changed);
 }
 
 bool xsdk_xsc_optimize(Xsc *x, XscProgram *p, bool *ran)
