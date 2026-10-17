@@ -169,6 +169,14 @@ $(BUILD)/tests/probe_xsc_break.o: tests/probe_xsc.c $(BUILD)/probe/probe_xsc_pro
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -I$(BUILD)/probe -DXSC_PROBE_BREAK -c $< -o $@
 
+# Milestone 45's probe of what xost's code costs the GPU, from the same pack, so outside all too.
+$(BUILD)/probe/probe_shader_cost_programs.h: $(XSC_PACK) tools/gen_shader_cost_probe.py tools/gen_xsc_probe.py \
+	tools/gen_triangle_shaders.py
+	$(PYTHON) tools/gen_shader_cost_probe.py $(XSC_PACK) $@
+
+$(BUILD)/tests/probe_shader_cost.o: CFLAGS += -I$(BUILD)/probe
+$(BUILD)/tests/probe_shader_cost.o: $(BUILD)/probe/probe_shader_cost_programs.h
+
 $(BUILD)/host/libxsc.so: $(XSC_SOURCES:src/%.c=$(BUILD)/host/%.o)
 	$(HOST_CC) -shared -o $@ $^
 

@@ -35,6 +35,9 @@ Each step is built, then verified as below, then the next begins.
    testdata and vulkan4xenon's shaders goes in `results/`. A console probe, `probe_shader_cost`, draws a set of the
    pack's pixel shaders over 1280x720 and a vertex-heavy mesh with the heaviest vertex shaders, timed by the GPU's
    clock, so each step's gain is measured on the hardware as well as counted.
+   Built on 2026-10-17: the counts and the baseline are in `results/2026-10-17-milestone-45/`, and the probe times
+   every shader in the pack, hashing each pixel shader's picture; the step waits for the probe's baseline run on the
+   console.
 2. **Values computed into place.** Where a copy moves a computed component into another register's component, and
    nothing between the computation and the copy reads or writes either place, the computation writes there and the
    copy goes. This covers vectors built a component at a time and exports assembled from parts.
