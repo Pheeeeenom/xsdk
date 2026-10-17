@@ -74,8 +74,8 @@ uint64_t xsdk_gpu_clock(void);
 // Visibility queries, D3D's: the draws between a query's begin and end set bit id % 32 of a status word if any of them
 // got past rasterizing and the coarse hierarchical depth test. A draw hidden behind others sets it too, so it tells
 // whether draws could show, not whether a sample passed the depth test (docs/HARDWARE.md, "Occlusion queries,
-// vulkan4xenon milestone 28"). Unverified: whether an id begun again around draws that rasterize nothing comes back
-// clear, as Xenia has the end write the bit back (xenia:src/xenia/gpu/command_processor.cc:1622-1630).
+// vulkan4xenon milestone 28"). A query's end writes its bit, set or clear, so an id can be begun again once its word is
+// copied; PA_SC_VIZ_QUERY's id, which the begin sets to the packet's, picks the bit the draws set.
 enum {
 	XSDK_VISIBILITY_IDS = 64,
 };

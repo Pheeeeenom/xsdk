@@ -3598,3 +3598,21 @@ counting around each. None got sample counts:
 So sample counts stay out of reach, and nothing public is left to try. The user took the visibility query for
 vulkan4xenon's occlusion queries all the same, a deviation without `occlusionQueryPrecise`: a query answers 1 if its
 draws rasterized anything (`xsdk_gpu_begin_visibility`; vulkan4xenon:docs/SUPPORT.md, Queries).
+
+`xsdk_gpu_begin_visibility` and `xsdk_gpu_end_visibility` then ran in xsdk_test (`xsdk_test.log` in the same folder),
+each status word copied once the GPU was idle:
+- **A query's end writes its result, set or clear:** id 1, begun again around no draw after its quad had set it, read
+  clear (0x2, then 0x8 once ids 3 and 1 had run), so an id can be reused once its last result is copied.
+- **Ids 32 to 63 answer in `PA_SC_VIZ_QUERY_STATUS_1`,** id 63's quad setting its bit 31 and id 32's no draw leaving its
+  bit 0 clear.
+- **`PA_SC_VIZ_QUERY`'s id picks the bit the draws set, not the packet's:** with the id written unshifted, over the
+  enable bit, a query whose packet named id 1 set bit 0, the id the register then held (`xsdk_test_broken_c.log`), where
+  Xenia sets the packet's (xenia:src/xenia/gpu/command_processor.cc:1622-1630). xsdk writes the same id in both.
+- **The status words outlast a title:** the broken runs began with bits 0 and 3 set, left by an earlier run, which is
+  why the break sets don't list the checks such a bit could pass.
+- Through vulkan4xenon, a quad off screen and one culled left their bits clear, and `vkCmdClearAttachments` ended and
+  began its query's id around itself so its rectangle isn't counted (vulkan4xenon:docs/ROADMAP.md, milestone 28).
+
+Broken on purpose, the copy without the idle wait, every id read from the first word and the id unshifted each failed
+the checks `xsdk_test_breaks.py` names (`xsdk_test_broken_a.log` to `_c`). xsdk_test passed 380 of 382, the two left
+the controller's, no button pressed.

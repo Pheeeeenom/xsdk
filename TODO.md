@@ -97,8 +97,8 @@ work begins.
   across draws. Nothing public is left to try. What's taken instead is D3D's visibility query,
   `xsdk_gpu_begin_visibility` and `xsdk_gpu_end_visibility` (include/xsdk/gpu.h): it answers whether a draw got past
   rasterizing and the coarse hierarchical test, a quad hidden behind another too, not whether a sample passed the
-  depth test, so vulkan4xenon's occlusion queries are conservative, without `occlusionQueryPrecise`. Whether an id
-  begun again around draws that rasterize nothing comes back clear waits for the console (tests/test_visibility.c).
+  depth test, so vulkan4xenon's occlusion queries are conservative, without `occlusionQueryPrecise`; an id begun again
+  around draws that rasterize nothing comes back clear on the console.
 - **Filtering 10-10-10-2 and 16-bit float textures.** The console filtered them wrong halfway between two texels,
   nearest sampling right (docs/HARDWARE.md, "Texture and vertex formats, vulkan4xenon milestone 20"); vulkan4xenon
   samples them nearest. To try: `k_2_10_10_10_AS_16_16_16_16` and the `_EXPAND` formats

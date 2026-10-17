@@ -6,8 +6,10 @@ builds each set into a title of its own (builds.sh here builds the probe's tries
 is read, ignoring PA_SC_VIZ_QUERY, so only the console fails sets a and c.
 - a: the status word copied without waiting for the GPU to be idle, which on the console held the bits from before.
 - b: every id's bit read from the first status word, ids 32 to 63's too.
-- c: the id put in PA_SC_VIZ_QUERY unshifted, over its enable bit. If the console still passes, the register's id
-  doesn't pick the query the draws go to, the packet's does.
+- c: the id put in PA_SC_VIZ_QUERY unshifted, over its enable bit: on the console the draws set the register's id's bit,
+  not the packet's, so the quad's query reads clear and the reused id reads set.
+The status words outlast a title, so the hidden quad's id, and in set c the high ids, may hold a bit from an earlier
+run whatever the break: those checks aren't listed where a run can pass them on what it found.
 """
 import pathlib
 import sys
@@ -22,14 +24,14 @@ SETS = {
     "a": [
         ("src/gpu_draw.c",
          "gpu_put_register(&packets, WAIT_UNTIL, WAIT_3D_IDLE_CLEAN);\n\tgpu_put_type3(&packets, PM4_REG_TO_MEM",
-         "gpu_put_register(&packets, WAIT_UNTIL, 0);\n\tgpu_put_type3(&packets, PM4_REG_TO_MEM", [QUAD, HIDDEN, REUSED, HIGH]),
+         "gpu_put_register(&packets, WAIT_UNTIL, 0);\n\tgpu_put_type3(&packets, PM4_REG_TO_MEM", [QUAD, REUSED, HIGH]),
     ],
     "b": [
         ("src/gpu_draw.c", "id < VISIBILITY_IDS_PER_WORD ? PA_SC_VIZ_QUERY_STATUS_0 : PA_SC_VIZ_QUERY_STATUS_1",
          "PA_SC_VIZ_QUERY_STATUS_0", [HIGH]),
     ],
     "c": [
-        ("src/gpu_draw.c", "VIZ_QUERY_ENA | id << VIZ_QUERY_ID_SHIFT", "VIZ_QUERY_ENA | id", [QUAD, HIDDEN, HIGH]),
+        ("src/gpu_draw.c", "VIZ_QUERY_ENA | id << VIZ_QUERY_ID_SHIFT", "VIZ_QUERY_ENA | id", [QUAD, REUSED]),
     ],
 }
 

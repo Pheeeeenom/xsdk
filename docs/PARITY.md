@@ -138,7 +138,7 @@ which implements what the games it runs need:
 | Resolves of colour and depth, to memory and textures, with a clear | Yes | `xsdk_gpu_resolve*` | `tests/test_render.c`, `test_depth.c` | Clearing eDRAM without a copy (SCOPE.md) |
 | Resolving part of a target into the same texels | Partial | `xsdk_gpu_resolve_texture_rect` (`gpu.h`) | `tests/test_resolve_rect.c` | Into another place in the texture; part of the depth; rectangles off the 8-pixel grid (TODO.md) |
 | Command buffers recorded once and run many times | Yes | `xsdk_gpu_record_*`, `xsdk_gpu_execute` | `tests/test_replay.c` | Fences and resolves inside a recording; recording on several threads, as the ring takes one at a time |
-| Occlusion queries, as D3D's visibility query, and GPU timers | Partial | `xsdk_gpu_begin_visibility`, `xsdk_gpu_end_visibility`; `xsdk_gpu_write_clock` (`gpu.h`) | `tests/test_visibility.c`, not yet on the console; `test_gpu.c` | Sample counts: `ZPASS_DONE` hangs the GPU, so a query answers whether its draws rasterized anything, a hidden one too (TODO.md) |
+| Occlusion queries, as D3D's visibility query, and GPU timers | Partial | `xsdk_gpu_begin_visibility`, `xsdk_gpu_end_visibility`; `xsdk_gpu_write_clock` (`gpu.h`) | `tests/test_visibility.c`; `test_gpu.c` | Sample counts: `ZPASS_DONE` hangs the GPU, so a query answers whether its draws rasterized anything, a hidden one too (TODO.md) |
 | Memory export from shaders | No | | | xost doesn't emit it (SCOPE.md) |
 
 ## Shaders
