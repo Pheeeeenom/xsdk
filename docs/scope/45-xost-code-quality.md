@@ -41,13 +41,16 @@ Each step is built, then verified as below, then the next begins.
 2. **Values computed into place.** Where a copy moves a computed component into another register's component, and
    nothing between the computation and the copy reads or writes either place, the computation writes there and the
    copy goes. This covers vectors built a component at a time and exports assembled from parts.
-   Built on 2026-10-17, its console runs to come: the optimiser's `compute_in_place` takes the corpus from 8895 ALU
-   instructions to 6887 and from 3253 copies to 1271, counted in `results/2026-10-17-milestone-45/`.
+   Built and run on the console on 2026-10-17: the optimiser's `compute_in_place` takes the corpus from 8895 ALU
+   instructions to 6887 and from 3253 copies to 1271, and Dusklight's pixel shaders take 15.0% less of the GPU, its
+   vertex shaders 14.7%, recorded in `results/2026-10-17-milestone-45/`. It made compiling Dusklight's 150 programs on
+   the console 2.6 times slower, 1.32 s to 3.39 s; agreed on 2026-10-17 to bring that back within this milestone.
 3. **Registers packed.** The allocator gives values whose components don't overlap in time components of one
    register, rather than a register each.
-   Built on 2026-10-17, its console runs to come: in the programs the optimiser rewrites, the allocator's
+   Built and run on the console on 2026-10-17: in the programs the optimiser rewrites, the allocator's
    `pack_registers` takes the corpus from 1973 registers to 1529, Dusklight's pixel shaders from 6.2 a shader to 4.5
-   and its vertex shaders from 7.5 to 6.3, counted in `results/2026-10-17-milestone-45/`.
+   and its vertex shaders from 7.5 to 6.3, and its pixel shaders take 4.9% less of the GPU than at step 2, recorded in
+   `results/2026-10-17-milestone-45/`.
 4. **More co-issue.** With the copies gone, more scalar operations stand next to an independent vector one; the
    pairing takes the vector instruction before or after where it sits now when the order allows.
 5. **Constants from the fetch.** A vertex attribute's missing components that the shader fills with 0 or 1 come from
@@ -61,19 +64,27 @@ Each step is built, then verified as below, then the next begins.
   targets them; the counts against the baseline.
 - **On the console, every step,** driven from the PC through the user's local console agent, which uploads, launches,
   fetches logs and reboots: xsdk_test, whose compiler check compiles shaders on the console and compares them with
-  the PC's; vulkan4xenon_test, twice; `probe_shader_cost` against the baseline; and Dusklight's attract loop with
-  frame captures compared pixel for pixel with captures taken before the milestone, as the arithmetic doesn't change.
-  Break sets as before, each failing the checks it names.
+  the PC's; vulkan4xenon_test, twice, its shaders compiled with the optimiser by the step's xost; `probe_shader_cost`
+  against the baseline, its pictures of every program in Dusklight's pack compared pixel for pixel with the
+  baseline's, as the arithmetic doesn't change; and Dusklight's title scene as a smoke run, its 600th frame captured
+  and looked at. Break sets as before, each failing the checks it names.
+- **Dusklight's frames,** agreed on 2026-10-17: two runs of one build capture the same 600th frame but for the sky,
+  but a step that makes shaders cheaper reaches it at another point of the ride, so frames aren't compared across
+  steps; the probe's pictures are the pixel check.
 - **Recovery:** a GPU hang ends the run, and the agent's reboot recovers it, as for milestone 28's 13 hung tries. The
   user is needed only if the console stops answering the agent, or if xbWatson breaks into an assert, so it stays
   closed during the runs.
 
 ## Done when
 
-- Copies are under 5% of the corpus's ALU instructions, and its ALU total down by at least 25% from the baseline.
+- Every copy left is one no step can take: a constant, a fetched value into an export, or one in a shader the
+  optimiser leaves alone, counted by kind (agreed on 2026-10-17, in place of under 5% of the ALU instructions, as
+  copies of constants alone are 5.7% of Dusklight's and vkbench's after step 2). The corpus's ALU total is down by at
+  least 25% from the baseline.
 - Co-issued slots and GPRs improve on the baseline, with the numbers recorded.
-- Every shader's exports match with the optimiser on and off, and every console check above passes, Dusklight's frames
-  matching their captures.
+- Every shader's exports match with the optimiser on and off, and every console check above passes.
+- Compiling Dusklight's 150 programs on the console, as `probe_xsc` times it, takes about what it did before the
+  milestone, 1.32 s.
 - `probe_shader_cost` shows the gain on the console, recorded in docs/HARDWARE.md.
 
 ## Not in it

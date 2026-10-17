@@ -295,3 +295,18 @@ they take; most of the difference is what stays in place above and the three sha
 - `probe_shader_cost` builds from the pack unchanged.
 - Compile time: the check took 86 s, as step 2's did. Compiling the pack's 150 programs on the PC takes 178 ms against
   step 2's 174, best of ten, 2.6% more; at that share the console's compile of them grows by about 0.2 s.
+
+### Step 3 on the console
+
+Run on 2026-10-17 through the console agent, everything cleaned and built in full:
+- **xsdk_test:** 380 passed, the compiler check among them; the two controller checks failed with 0x48F, no controller
+  connected.
+- **`probe_shader_cost`** (`probe_step3.log`): pixel shaders 77,668 → 62,830 µs for a draw of each (−19.1%; −4.9%
+  against step 2's 66,036), 4.53 registers a shader against 6.21 at step 2; vertex shaders 14,056 µs, as at step 2,
+  with 6.34 registers against 7.49. The same 100 pictures as the baseline, and no vertex draw reaching the pixels.
+- **vulkan4xenon_test:** 426 passed as committed, and 426 in each of two runs with its 84 shaders compiled with
+  `--optimize` by the step's xost, which changes 348 lines of `tests/shaders.c` against step 2's.
+- **Dusklight,** built against the step's xsdk and vulkan4xenon with its pack from the step's xost: the title scene
+  runs at 30 fps as before and its 600th frame, captured, shows the ride into Hyrule Field as the baseline's does.
+- **Broken on purpose,** an elementwise op's operands left in their lanes when the allocator moves its result: 34 of
+  the probe's 100 pictures differ from the baseline.
