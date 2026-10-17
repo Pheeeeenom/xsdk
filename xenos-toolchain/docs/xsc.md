@@ -61,7 +61,7 @@ came from; that test and its test vectors stay in xost's archived repo (github.c
 | **`if/else`**, incl. **nested**, assigning the output | branch-free chained `cndgt`/`cndge`/`cndeq` selects |
 | **`if/else` assigning a Function-local** later read by the output | branch-free `cnd*` select into a temp registered as that local's merged value (pixel shaders) |
 | `if/else`, or a `?:` glslang branches for, in a **vertex** shader, nested, `&&`/`\|\|` (a Phi) | the unroller runs both arms and merges each local and output they leave apart with a select: a `cnd*` on the comparison branched on, on a condition every vertex shares too, as execs on the predicate hung the GPU (see Control flow; `tests/test_vertex_branches.py`) |
-| **`discard` / `OpKill` inside `if(cond)`** | `kill_gt`/`kill_ge`/`kill_eq`/`kill_ne` ALU side effect; oracle-valid, pending console verification in `glslgallery` G26 |
+| **`discard` / `OpKill` inside `if(cond)`** | `kill_gt`/`kill_ge`/`kill_eq`/`kill_ne` ALU side effect; confirmed on the console, a `discard` on `!gl_FrontFacing` (vulkan4xenon milestone 22) |
 | **`for`/`while`** with a compile-time trip count, incl. **nested** | unrolled to branch-free SSA; induction variable constant-folded (see below) |
 | uniform-bound loop `sum += const` | real `LOOP_START/END` (G28 pending) |
 | `for (int i = 0; i < b.n; i++)`, `n` an int in a push constant or uniform block, in a vertex or pixel shader | a hardware loop the runtime counts from the block: what the loop carries in registers, `i` a float counter, an if/else in the pass, a break ending it (see "Loops a block counts"; `tests/test_hardware_loops.py`) |

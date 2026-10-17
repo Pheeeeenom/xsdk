@@ -3448,3 +3448,23 @@ vulkan4xenon:results/2026-10-16-milestone-21/):
   said; a vertex shader's counted by a dynamic uniform buffer ran its count at each draw's offset; and a vertex and a
   pixel shader each ran their own count at once, the vertex shader's loop constant 0 and the pixel shader's 16.
   Writing all 40 boolean and loop words between draws, where a count changed, didn't hang.
+
+## LODs, facing and vertex textures, vulkan4xenon milestone 22 (2026-10-16)
+
+xost's milestone 22 lowering on the zero-fuse console (`results/2026-10-16-vulkan4xenon-milestone-22/`;
+vulkan4xenon:results/2026-10-16-milestone-22/), each drawn over an image whose levels are each a colour:
+- **A LOD, gradients or a bias the shader works out** took the level Xenia's model says, in eight bands each:
+  `setTexLOD` with the fetch's computed LOD off for `textureLod`, `setGradientH` and `setGradientV` with
+  UseRegisterGradients for `textureGrad`, and `setTexLOD` added to the computed LOD for `texture()`'s bias; a constant
+  LOD of 1.25 and 6.25 in the fetch's LOD bias field took levels 1 and 6.
+- **`setTexLOD`'s value held across execs:** a vertex shader whose setter and fetch sit in different execs sampled the
+  level it set.
+- **`gl_FrontFacing`,** the sign of the pixel parameters' x, held on the face the pipeline's front face makes front,
+  clockwise and counter-clockwise, and a `discard` on it with no interpolator, the parameters in r0, kept the front
+  face alone.
+- **A vertex shader's texture fetches,** at the LOD it gives, with FetchValidOnly off and no vertex cache bits, read
+  the same 32 fetch constants as a pixel shader's: two textures moved a column of vertices and picked its level.
+  `xsdk_shader_move_textures` moved a fetch's constant to slot 5 and back, and vulkan4xenon's vertex samplers drew
+  from the slots after the fragment shader's.
+- **One launch froze the console** before the title opened its log, the run before it clean; three runs after a
+  reboot passed, so it's not known to be the title's.
