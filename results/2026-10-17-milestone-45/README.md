@@ -181,3 +181,23 @@ but would split a register's exports with other instructions, which xost's optim
   containers changed: `vk_block_literals.vert`, `vk_vertex_if.vert`, `vk_vertex_uniform_if.vert` and
   `vk_clip_distance.vert`. Their SPIR-V, literals and resources are the same.
 - `probe_shader_cost` builds from the pack unchanged.
+
+### Step 2 on the console
+
+Run on 2026-10-17 through the console agent, everything cleaned and built in full:
+- **xsdk_test:** 380 passed, among them the compiler check's 8 containers compiled on the console. The two controller
+  checks failed with 0x48F, no controller connected, as at step 1.
+- **`probe_shader_cost`** (`probe_step2.log`): pixel shaders 77,668 → 66,036 µs for a draw of each (−15.0%), vertex
+  shaders 16,472 → 14,054 µs (−14.7%), against the better of the two baseline runs; the same 100 pictures as the
+  baseline, and no vertex draw reaching the pixels. The run took 13.8 s against 11.8 s, the hashing the same: compiling
+  the 150 programs on the console takes about 2 s more, as the step's pass starts its scan over after each copy it
+  takes out.
+- **vulkan4xenon_test:** its committed shaders are compiled without the optimiser, so the step changes none of them.
+  Built with its 84 shaders (tests, the layer's and vkbench's) compiled with `--optimize`, by main's xost and by the
+  step's, which differ in 681 lines of `tests/shaders.c`: 426 passed with main's, and 426 in each of two runs with the
+  step's.
+- **Dusklight,** its pack built with the step's xost: the title scene's 600th frame matches the baseline's, 0 of
+  921,600 pixels different.
+- **Broken on purpose,** the copy's clamp left off the instruction that takes its place: 12 of the probe's 100
+  pictures differ from the baseline. Dusklight's frame doesn't change, so the probe's pictures are the check that
+  catches such a fault.
